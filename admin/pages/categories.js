@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 export default function Categories() {
     const [name, setName] = useState("");
     const [categories, setCategories] = useState([]);
+    const [parentCategory, setParentCategory] = useState("")
     useEffect(() => {
         fetchCategories()
     }, []);
@@ -16,7 +17,7 @@ export default function Categories() {
     }
     async function saveCategory(e) {
         e.preventDefault();
-        await axios.post("/api/categories", { name: name });
+        await axios.post("/api/categories", { name, parentCategory });
         setName("");
         fetchCategories()
     }
@@ -35,6 +36,14 @@ export default function Categories() {
                     onChange={(e) => setName(e.target.value)}
                     value={name}
                 />
+                <select className="border-2 border-gray-300 rounded-md px-1 w-full " value={parentCategory}
+                    onChange={e => setParentCategory(e.target.value)}>
+                    <option value="0">No Parent Category</option>
+                    {categories.length > 0 &&
+                        categories.map((category) => (
+                            <option value={category._id} >{category.name}</option>
+                        ))}
+                </select>
                 <button
                     type="submit"
                     className="bg-blue-900 text-white py-1 px-2 rounded-md"
@@ -46,6 +55,7 @@ export default function Categories() {
                 <thead className="bg-blue-100">
                     <tr className="border p-1 border-blue-200">
                         <td className="border p-1 border-blue-200">Category Name</td>
+                        <td className="border p-1 border-blue-200">Parent Category</td>
                     </tr>
                 </thead>
                 <tbody>
@@ -53,6 +63,8 @@ export default function Categories() {
                         categories.map((category) => (
                             <tr className="border p-1 border-blue-200">
                                 <td className="border p-1 border-blue-200">{category.name}</td>
+                                {/* important */}
+                                <td className="border p-1 border-blue-200">{category?.parent?.name}</td>
                             </tr>
                         ))}
                 </tbody>
