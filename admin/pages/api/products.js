@@ -12,25 +12,35 @@ export default async function newProduct(req, res) {
     }
   }
   if (method === "POST") {
-    const { title, description, price, images, category } = req.body;
+    const { title, description, price, images, category, properties } =
+      req.body;
     const productDoc = await Product.create({
       title,
       description,
       price,
       images,
       category,
+      properties,
     });
     res.json(productDoc);
   }
   if (method === "PUT") {
-    const { title, description, price, images, category, _id } = req.body;
+    const { title, description, price, images, category, properties, _id } =
+      req.body;
     console.log(req.body);
     // If the category value is an empty string, set it to null
     const updatedCategory = category === "" ? null : category;
 
     await Product.updateOne(
       { _id },
-      { title, description, price, images, category: updatedCategory }
+      {
+        title,
+        description,
+        price,
+        images,
+        category: updatedCategory,
+        properties,
+      }
     );
 
     res.json(true);

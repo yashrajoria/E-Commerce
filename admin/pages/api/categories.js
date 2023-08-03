@@ -11,17 +11,21 @@ export default async function newCategory(req, res) {
   }
 
   if (method === "POST") {
-    const { name, parentCategory } = req.body;
+    const { name, parentCategory, properties } = req.body;
     console.log(name);
-    const cateDoc = await Category.create({ name, parent: parentCategory });
+    const cateDoc = await Category.create({
+      name,
+      parent: parentCategory,
+      properties,
+    });
     res.json(cateDoc);
   }
   if (method === "PUT") {
-    const { name, parentCategory, _id } = req.body;
+    const { name, parentCategory, _id, properties } = req.body;
     console.log(name);
     const cateDoc = await Category.updateOne(
       { _id },
-      { name, parent: parentCategory }
+      { name, parent: parentCategory, properties: properties }
     );
     res.json(cateDoc);
   }
