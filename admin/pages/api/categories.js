@@ -1,32 +1,34 @@
-import { mongooseConnect } from "@/lib/mongoose"
-import { Category } from "@/models/Category"
-import mongoose from "mongoose"
+import { mongooseConnect } from "@/lib/mongoose";
+import { Category } from "@/models/Category";
+import mongoose from "mongoose";
 
 export default async function newCategory(req, res) {
-    const { method } = req
-    await mongooseConnect()
+  const { method } = req;
+  await mongooseConnect();
 
-    if (method === "GET") {
-        res.json(await Category.find().populate('parent'))
-    }
+  if (method === "GET") {
+    res.json(await Category.find().populate("parent"));
+  }
 
+  if (method === "POST") {
+    const { name, parentCategory } = req.body;
+    console.log(name);
+    const cateDoc = await Category.create({ name, parent: parentCategory });
+    res.json(cateDoc);
+  }
+  if (method === "PUT") {
+    const { name, parentCategory, _id } = req.body;
+    console.log(name);
+    const cateDoc = await Category.updateOne(
+      { _id },
+      { name, parent: parentCategory }
+    );
+    res.json(cateDoc);
+  }
 
-    if (method === "POST") {
-        const { name, parentCategory } = req.body
-        console.log(name)
-        const cateDoc = await Category.create({ name, parent: parentCategory })
-        res.json(cateDoc)
-    }
-    if (method === "PUT") {
-        const { name, parentCategory, _id } = req.body
-        console.log(name)
-        const cateDoc = await Category.updateOne({ _id }, { name, parent: parentCategory })
-        res.json(cateDoc)
-    }
-
-    if (method === "DELETE") {
-        const { _id } = req.query
-        await Category.deleteOne({ _id })
-        res.json("Category deleted")
-    }
+  if (method === "DELETE") {
+    const { _id } = req.query;
+    await Category.deleteOne({ _id });
+    res.json("Category deleted");
+  }
 }

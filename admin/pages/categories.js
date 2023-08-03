@@ -73,9 +73,9 @@ function Category({ swal }) {
             });
     }
     function addProperty() {
-        setProperties(prev => {
-            return [...prev, { name: '', values: '' }]
-        })
+        setProperties((prev) => {
+            return [...prev, { name: "", values: "" }];
+        });
     }
     return (
         <Layout>
@@ -119,12 +119,23 @@ function Category({ swal }) {
                         Add Property
                     </button>
 
-                    {properties.length > 0 && properties.map(property => (
-                        <div className="gap-3 flex mt-3">
-                            <input className="border border-blue-700 px-1 py-2 rounded-md" type="text" placeholder="Property Name (eg: Color)" />
-                            <input type="text" className="border border-blue-700 rounded-md px-1 py-2" placeholder="Values, comma seperated" />
-                        </div>
-                    ))}
+                    {properties.length > 0 &&
+                        properties.map((property) => (
+                            <div className="gap-3 flex mt-3">
+                                <input
+                                    value={property.name}
+                                    className="border border-blue-700 px-1 py-2 rounded-md"
+                                    type="text"
+                                    placeholder="Property Name (eg: Color)"
+                                />
+                                <input
+                                    value={property.values}
+                                    type="text"
+                                    className="border border-blue-700 rounded-md px-1 py-2"
+                                    placeholder="Values, comma seperated"
+                                />
+                            </div>
+                        ))}
                 </div>
                 <button
                     type="submit"
