@@ -20,23 +20,37 @@ function Category({ swal }) {
     }
     async function saveCategory(e) {
         e.preventDefault();
-        const data = { name, parentCategory }
+        const data = { name };
+
+        // If parentCategory is not empty, set the value as an ObjectId
+        if (parentCategory) {
+            data.parentCategory = parentCategory;
+        } else {
+            // If parentCategory is empty (user selected "No parent category"), set it as null
+            data.parentCategory = null;
+        }
+
         if (editedCategory) {
-            data._id = editedCategory._id
+            data._id = editedCategory._id;
             await axios.put("/api/categories", data);
-            setEditedCategory(null)
+            setEditedCategory(null);
         } else {
             await axios.post("/api/categories", data);
         }
+
         setName("");
-        fetchCategories()
+        fetchCategories();
     }
 
     function editCategory(category) {
-        console.log(category)
-        setEditedCategory(category);
-        setName(category.name)
-        setParentCategory(category.parent?._id)
+        try {
+            console.log(category._id)
+            setEditedCategory(category);
+            setName(category.name)
+            setParentCategory(category.parent?._id)
+        } catch (err) {
+            console.log(err)
+        }
     }
 
     function deleteCategory(category) {
@@ -74,16 +88,16 @@ function Category({ swal }) {
                 />
 
                 <select
-                    className="border-2 border-gray-300 rounded-md px-1 w-full "
-                    value={parentCategory}
-                    onChange={(e) => setParentCategory(e.target.value)}
+                    className="border-2 border-gray-300 rounded-md px-1 w-full"
+                    value={parentCategory || ""} // Set the value to an empty string if parentCategory is null
+                    onChange={(e) => setParentCategory(e.target.value || null)} // Set parentCategory to null if the user selects the option with an empty string value
                 >
-                    <option value="0">No Parent Category</option>
-                    {categories.length > 0 &&
-                        categories.map((category) => (
-                            <option value={category._id}>{category.name}</option>
-                        ))}
+                    <option value="">No parent category</option>
+                    {categories.length > 0 && categories.map((category) => (
+                        <option key={category._id} value={category._id}>{category.name}</option>
+                    ))}
                 </select>
+
                 <button
                     type="submit"
                     className="bg-blue-900 text-white py-1 px-2 rounded-md"

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Spinner from "../components/Spinner.js";
 import { ReactSortable } from "react-sortablejs";
 
@@ -12,16 +12,28 @@ export default function ProductForm({
     description: existingDescription,
     price: existingPrice,
     images: existingImages,
+    category: existingCategory
 }) {
     const [title, setTitle] = useState(existingTitle || "");
     const [description, setDescription] = useState(existingDescription || "");
     const [price, setPrice] = useState(existingPrice || "");
+    const [category, setCategory] = useState(existingCategory || "");
     const [images, setImages] = useState(existingImages || []);
     const [isUploading, setIsUploading] = useState(false)
+    const [categories, setCategories] = useState([])
     const router = useRouter();
+
+    useEffect(() => {
+        axios.get("/api/categories").then(result => {
+            console.log(result);
+            setCategories(result.data)
+        })
+    }, [])
+
+
     async function saveProduct(e) {
         e.preventDefault();
-        const data = { title, description, price, images };
+        const data = { title, description, price, images, category };
         if (_id) {
             await axios.put("/api/products", { ...data, _id });
             router.push("/products");
@@ -63,7 +75,17 @@ export default function ProductForm({
                 placeholder="Product Name"
             />
 
-            <label>Product Image</label>
+            <label className="mb-2 text-blue-900 text-center flex text-12px gap-1 rounded-lg">Category</label>
+            <select className="mb-2 border border-gray-500 rounded-md" value={category} onChange={e => setCategory(e.target.value)}>
+                <option value=""
+                >Choose a Category</option>
+                {categories.length > 0 && categories.map(c => (
+                    <option value={c._id}>{c.name}</option>
+                ))}
+            </select>
+
+
+            <label className="mb-2 text-blue-900 text-center flex text-12px gap-1 rounded-lg">Product Image</label>
             <div className="mb-2 flex flex-wrap gap-2">
                 <ReactSortable list={images} className="flex flex-wrap gap-2" setList={updateImagesOrder}>
                     {!!images?.length &&

@@ -15,17 +15,21 @@ export default async function newProduct(req, res) {
         }
     }
     if (method === 'POST') {
-        const { title, description, price, images } = req.body
-        const productDoc = await Product.create({ title, description, price, images })
+        const { title, description, price, images, category } = req.body
+        const productDoc = await Product.create({ title, description, price, images, category, })
         res.json(productDoc)
     }
     if (method === 'PUT') {
-        const { title, description, price, images, _id } = req.body
+        const { title, description, price, images, category, _id } = req.body;
         console.log(req.body)
-        console.log({ images })
-        await Product.updateOne({ _id }, { title, description, price, images })
-        res.json(true)
+        // If the category value is an empty string, set it to null
+        const updatedCategory = category === '' ? null : category;
+
+        await Product.updateOne({ _id }, { title, description, price, images, category: updatedCategory });
+
+        res.json(true);
     }
+
     if (method === 'DELETE') {
         if (req.query?.id) {
             await Product.deleteOne({ _id: req.query?.id })
