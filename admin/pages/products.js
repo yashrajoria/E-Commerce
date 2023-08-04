@@ -14,22 +14,22 @@ function Products() {
     <Layout>
       <Link
         href={"/products/new"}
-        className="bg-green-500 text-white py-1 px-2 rounded-md"
+        className="bg-primary text-white py-1 px-2 rounded-md"
       >
         Add New Product
       </Link>
-      <table className="w-full border mt-5">
-        <thead className="bg-blue-100">
-          <tr className="border p-1 border-blue-200">
+      <table className="w-full  mt-5">
+        <thead className="text-sm text-gray-800 uppercase border-b border-gray-300">
+          <tr>
             <td>Product Name</td>
-            <td className="border p-1 border-blue-200"></td>
+            <td>Actions</td>
           </tr>
         </thead>
         <tbody>
           {products.map((product) => (
             <tr key={product._id}>
-              <td className="border p-1 border-blue-200">{product.title}</td>
-              <td className="border p-1 border-blue-200 flex items-center gap-2">
+              <td>{product.title}</td>
+              <td className=" flex items-center gap-2">
                 <Link
                   href={"/products/edit/" + product._id}
                   className="bg-blue-900 text-white px-2 py-1 rounded-md gap-1 inline-flex"
