@@ -3,11 +3,15 @@ import { v2 as cloudinary } from "cloudinary";
 import dotenv from "dotenv";
 import fs from "fs";
 import mime from "mime-types";
+import { mongooseConnect } from "@/lib/mongoose";
+import { isAdminRequest } from "./auth/[...nextauth]";
 dotenv.config();
 
 //Function to upload image, understand this again
 export default async function uploadImage(req, res) {
   try {
+    await mongooseConnect();
+    await isAdminRequest(req, res);
     const form = new multiparty.Form();
     const { fields, files } = await new Promise((resolve, reject) => {
       form.parse(req, (err, fields, files) => {
