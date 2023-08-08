@@ -50,7 +50,11 @@ export function CartContextProvider({ children }) {
   }
 
   function clearCart() {
-    setCartProducts([]);
+    try {
+      setCartProducts([]);
+    } catch (err) {
+      "Error clearing cart", err;
+    }
   }
 
   return (
