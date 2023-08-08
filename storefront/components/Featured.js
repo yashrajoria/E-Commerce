@@ -55,10 +55,14 @@ function Featured({ product }) {
               <Title>{product.title}</Title>
               <Desc>{product.description}</Desc>
               <ButtonsWrapper>
-                <ButtonLink href={"/products/" + product._id} outline white>
+                <ButtonLink
+                  href={"/products/" + product._id}
+                  outline="true"
+                  white="true"
+                >
                   Read More
                 </ButtonLink>
-                <Button white onClick={addFeaturedToCart}>
+                <Button white="true" onClick={addFeaturedToCart}>
                   <CartIcon /> Add to Cart
                 </Button>
               </ButtonsWrapper>

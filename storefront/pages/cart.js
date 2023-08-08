@@ -49,7 +49,8 @@ const CityHolder = styled.div`
 `;
 
 function Cart() {
-  const { cartProducts, addProduct, removeProduct } = useContext(CartContext);
+  const { cartProducts, addProduct, removeProduct, clearCart } =
+    useContext(CartContext);
   const [products, setProducts] = useState([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -69,6 +70,15 @@ function Cart() {
     }
   }, [cartProducts]);
 
+  useEffect(() => {
+    if (
+      typeof window !== "undefined" &&
+      window.location.href.includes("success")
+    ) {
+      clearCart();
+    }
+  }, []);
+
   function moreOfThisProduct(id) {
     addProduct(id);
   }
@@ -76,14 +86,13 @@ function Cart() {
     removeProduct(id);
   }
   let total = 0;
-  //!TODO: Also calcualte total number of products
+  //!TODO: Also calculate total number of products
   let totalQuantity = 0;
   for (const productId of cartProducts) {
     const price = products.find((p) => p._id === productId)?.price || 0;
 
     total += price;
     totalQuantity += cartProducts.length;
-    // console.log(totalQuantity);
   }
   async function goToPayment() {
     const response = await axios.post("/api/checkout", {
@@ -97,11 +106,14 @@ function Cart() {
       cartProducts,
     });
     if (response.data.url) {
+      console.log(response.data);
       window.location = response.data.url;
     }
   }
-
-  if (window.location.href.includes("success")) {
+  if (
+    typeof window !== "undefined" &&
+    window.location.href.includes("success")
+  ) {
     return (
       <>
         <Header />

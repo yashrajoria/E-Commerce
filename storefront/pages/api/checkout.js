@@ -56,6 +56,7 @@ async function Checkout(req, res) {
     const session = await stripe.checkout.sessions.create({
       line_items,
       mode: "payment",
+      payment_method_types: ["card"],
       customer_email: email,
       success_url: process.env.PUBLIC_URL + "/cart?success=true",
       cancel_url: process.env.PUBLIC_URL + "/cart?cancelled=true",

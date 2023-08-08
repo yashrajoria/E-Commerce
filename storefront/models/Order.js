@@ -16,4 +16,5 @@ const OrderSchema = new Schema(
   }
 );
 
-export const Order = model("Order", OrderSchema);
+// Check if the model already exists, otherwise create it
+export const Order = mongoose.models.Order || model("Order", OrderSchema);

@@ -48,7 +48,7 @@ function ProductBox({ _id, title, description, price, images }) {
   const { addProduct } = useContext(CartContext);
   const url = "/products/" + _id;
   return (
-    <ProductWrapper>
+    <ProductWrapper key={_id}>
       <WhiteBox href={url}>
         <div>
           <img src={images[0]} alt="product image" />
@@ -58,7 +58,7 @@ function ProductBox({ _id, title, description, price, images }) {
         <Title href={url}>{title}</Title>
         <PriceRow>
           <Price>₹{price}</Price>
-          <Button primary outline onClick={() => addProduct(_id)}>
+          <Button primary="true" outline="true" onClick={() => addProduct(_id)}>
             Add To Cart
           </Button>
         </PriceRow>
