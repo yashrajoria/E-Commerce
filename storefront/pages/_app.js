@@ -1,3 +1,4 @@
+import { CartContextProvider } from "@/components/CartContext";
 import { Helmet } from "react-helmet";
 import { createGlobalStyle } from "styled-components";
 
@@ -14,13 +15,15 @@ export default function App({ Component, pageProps }) {
   return (
     <>
       <GlobalStyles />
-      <Helmet>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
-          rel="stylesheet"
-        />
-      </Helmet>
-      <Component {...pageProps} />
+      <CartContextProvider>
+        <Helmet>
+          <link
+            href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
+            rel="stylesheet"
+          />
+        </Helmet>
+        <Component {...pageProps} />
+      </CartContextProvider>
     </>
   );
 }

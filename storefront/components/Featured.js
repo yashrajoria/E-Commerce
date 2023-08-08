@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useContext } from "react";
 import Center from "./Center";
 import { styled } from "styled-components";
 import Button from "./Button";
 import ButtonLink from "./ButtonLink";
 import CartIcon from "./icons/CartIcon";
+import { CartContext } from "./CartContext";
 
 const Bg = styled.div`
   background-color: #222;
@@ -41,6 +42,10 @@ const ButtonsWrapper = styled.div`
   text-decoration: none;
 `;
 function Featured({ product }) {
+  const { addProduct } = useContext(CartContext);
+  function addFeaturedToCart() {
+    addProduct((prev) => [...prev, product._id]);
+  }
   return (
     <Bg>
       <Center>
@@ -53,7 +58,7 @@ function Featured({ product }) {
                 <ButtonLink href={"/products/" + product._id} outline white>
                   Read More
                 </ButtonLink>
-                <Button white>
+                <Button white onClick={addFeaturedToCart}>
                   <CartIcon /> Add to Cart
                 </Button>
               </ButtonsWrapper>

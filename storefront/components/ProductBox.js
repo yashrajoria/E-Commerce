@@ -2,12 +2,14 @@ import { styled } from "styled-components";
 import Button from "./Button";
 import CartIcon from "./icons/CartIcon";
 import Link from "next/link";
+import { useContext } from "react";
+import { CartContext } from "./CartContext";
 
 const ProductWrapper = styled.div``;
 
 const WhiteBox = styled(Link)`
   background-color: white;
-  padding: 20px;s
+  padding: 20px;
   height: 120px;
   text-align: center;
   display: flex;
@@ -43,6 +45,7 @@ const Price = styled.div`
   font-weight: 500;
 `;
 function ProductBox({ _id, title, description, price, images }) {
+  const { addProduct } = useContext(CartContext);
   const url = "/products/" + _id;
   return (
     <ProductWrapper>
@@ -54,8 +57,8 @@ function ProductBox({ _id, title, description, price, images }) {
       <ProductInfoBox>
         <Title href={url}>{title}</Title>
         <PriceRow>
-          <Price>${price}</Price>
-          <Button primary outline>
+          <Price>₹{price}</Price>
+          <Button primary outline onClick={() => addProduct(_id)}>
             Add To Cart
           </Button>
         </PriceRow>
