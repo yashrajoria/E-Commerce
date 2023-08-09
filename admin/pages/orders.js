@@ -24,7 +24,7 @@ function Orders() {
           {orders?.length > 0 &&
             orders.map((order) => (
               <tr>
-                <td>{order.createdAt}</td>
+                <td>{order.createdAt.replace("T", " ").substring(0, 19)}</td>
                 <td>
                   {order.name} {order.email} <br />
                   {order.city} {order.pCode} {order.country} <br />
