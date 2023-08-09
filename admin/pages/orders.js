@@ -24,7 +24,16 @@ function Orders() {
           {orders?.length > 0 &&
             orders.map((order) => (
               <tr>
-                <td>{order.createdAt.replace("T", " ").substring(0, 19)}</td>
+                <td>
+                  {new Date(order.createdAt).toLocaleString("en-GB", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour24: true,
+                  })}
+                </td>
                 <td>
                   {order.name} {order.email} <br />
                   {order.city} {order.pCode} {order.country} <br />
