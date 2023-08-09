@@ -7,6 +7,7 @@ function Orders() {
   useEffect(() => {
     axios.get("/api/orders").then((response) => {
       setOrders(response.data);
+      console.log(response.data);
     });
   }, []);
   return (
@@ -18,6 +19,7 @@ function Orders() {
             <th className="border p-1 border-blue-200">Date</th>
             <th className="border p-1 border-blue-200">Recipient</th>
             <th className="border p-1 border-blue-200">Products</th>
+            <th className="border p-1 border-blue-200">Paid</th>
           </tr>
         </thead>
         <tbody>
@@ -47,6 +49,9 @@ function Orders() {
                       <br />
                     </>
                   ))}
+                </td>
+                <td className={order.paid ? "text-green-600" : "text-red-600"}>
+                  {order.paid ? "YES" : "NO"}
                 </td>
               </tr>
             ))}
