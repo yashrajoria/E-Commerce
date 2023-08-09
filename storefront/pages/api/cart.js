@@ -4,9 +4,9 @@ import { Product } from "@/models/Product";
 async function getCartProducts(req, res) {
   try {
     await mongooseConnect();
-    
+
     const ids = req.body.ids;
-    const cartProducts = await Product.find({ _id: { $in: ids } });
+    const cartProducts = await Product.find({ _id: ids });
 
     res.json(cartProducts);
   } catch (error) {

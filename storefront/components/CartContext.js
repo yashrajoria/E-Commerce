@@ -50,11 +50,10 @@ export function CartContextProvider({ children }) {
   }
 
   function clearCart() {
-    try {
-      setCartProducts([]);
-    } catch (err) {
-      "Error clearing cart", err;
-    }
+    console.log("Clearing cart...");
+    setCartProducts([]);
+    console.log("Cart Cleared");
+    localStorage.removeItem("cart");
   }
 
   return (

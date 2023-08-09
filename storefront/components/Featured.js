@@ -11,11 +11,13 @@ const Bg = styled.div`
   color: #fff;
   padding: 50px 0;
 `;
-
 const Title = styled.h1`
   margin: 0;
   font-weight: normal;
-  font-size: 3rem;
+  font-size: 1.5rem;
+  @media screen and (min-width: 768px) {
+    font-size: 3rem;
+  }
 `;
 const Desc = styled.p`
   color: #aaa;
@@ -23,24 +25,37 @@ const Desc = styled.p`
 `;
 const ColumnsWrapper = styled.div`
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
+  grid-template-columns: 1fr;
   gap: 40px;
   img {
-    max-width: 60%;
+    max-width: 100%;
+    max-height: 200px;
+    display: block;
+    margin: 0 auto;
+  }
+  div:nth-child(1) {
+    order: 2;
+  }
+  @media screen and (min-width: 768px) {
+    grid-template-columns: 1.1fr 0.9fr;
+    div:nth-child(1) {
+      order: 0;
+    }
+    img {
+      max-width: 100%;
+    }
   }
 `;
-
 const Column = styled.div`
   display: flex;
   align-items: center;
-  flex-direction: column;
 `;
 const ButtonsWrapper = styled.div`
   display: flex;
   gap: 10px;
   margin-top: 25px;
-  text-decoration: none;
 `;
+
 function Featured({ product }) {
   const { addProduct } = useContext(CartContext);
   function addFeaturedToCart() {

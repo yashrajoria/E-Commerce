@@ -7,16 +7,19 @@ import React, { useContext, useEffect, useState } from "react";
 import { styled } from "styled-components";
 import Table from "@/components/Table";
 import Input from "@/components/Input";
-
+import { WhiteBox } from "@/components/WhiteBox";
 const ColumnsWrapper = styled.div`
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
+  grid-template-columns: 1fr;
+  @media screen and (min-width: 768px) {
+    grid-template-columns: 1.2fr 0.8fr;
+  }
   gap: 40px;
   margin-top: 40px;
 `;
 
 const Box = styled.div`
-  background-color: white;
+  background-color: #fff;
   border-radius: 10px;
   padding: 30px;
 `;
@@ -26,21 +29,36 @@ const ProductInfoCell = styled.td`
 `;
 
 const ProductImageBox = styled.div`
-  width: 100px;
+  width: 70px;
   height: 100px;
-  padding: 10px;
+  padding: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 10px;
   img {
-    max-width: 80px;
-    max-height: 80px;
+    max-width: 60px;
+    max-height: 60px;
+  }
+  @media screen and (min-width: 768px) {
+    padding: 10px;
+    width: 100px;
+    height: 100px;
+    img {
+      max-width: 80px;
+      max-height: 80px;
+    }
   }
 `;
 
 const QuantityLabel = styled.span`
-  padding: 0 3px;
+  padding: 0 15px;
+  display: block;
+  @media screen and (min-width: 768px) {
+    display: inline-block;
+    padding: 0 10px;
+  }
 `;
 
 const CityHolder = styled.div`
@@ -59,6 +77,7 @@ function Cart() {
   const [address, setAddress] = useState("");
   const [country, setCountry] = useState("");
   const [phone, setPhone] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
     if (cartProducts.length > 0) {
@@ -71,11 +90,18 @@ function Cart() {
   }, [cartProducts]);
 
   useEffect(() => {
+    console.log(window.location.href.includes("success"));
     if (
       typeof window !== "undefined" &&
       window.location.href.includes("success")
     ) {
+      console.log("Payment success detected. Clearing cart...");
       clearCart();
+      console.log("LS remove started");
+      localStorage.removeItem("cart");
+      console.log("LS removed finished");
+      setIsSuccess(true);
+      console.log("Cart cleared");
     }
   }, []);
 
@@ -86,7 +112,9 @@ function Cart() {
     removeProduct(id);
   }
   let total = 0;
+
   //!TODO: Also calculate total number of products
+
   let totalQuantity = 0;
   for (const productId of cartProducts) {
     const price = products.find((p) => p._id === productId)?.price || 0;
@@ -110,19 +138,16 @@ function Cart() {
       window.location = response.data.url;
     }
   }
-  if (
-    typeof window !== "undefined" &&
-    window.location.href.includes("success")
-  ) {
+  if (isSuccess) {
     return (
       <>
         <Header />
         <Center>
           <ColumnsWrapper>
-            <Box>
+            <WhiteBox>
               <h1>Thanks for the payment</h1>
               <p>Your order is confirmed</p>
-            </Box>
+            </WhiteBox>
           </ColumnsWrapper>
         </Center>
       </>
@@ -135,7 +160,7 @@ function Cart() {
       <Center>
         <ColumnsWrapper>
           {/* Check if cartProducts is empty */}
-          <Box>
+          <WhiteBox>
             <h2>Cart</h2>
             {!cartProducts?.length && <h4>Your cart is empty</h4>}
             {products?.length > 0 && (
@@ -184,10 +209,10 @@ function Cart() {
                 </tbody>
               </Table>
             )}
-          </Box>
+          </WhiteBox>
           {/* Display the Box if cartProducts is not empty */}
           {!!cartProducts?.length && (
-            <Box>
+            <WhiteBox>
               <h2>Order Information</h2>
               <Input
                 type="text"
@@ -243,7 +268,7 @@ function Cart() {
               <Button black block onClick={goToPayment}>
                 Continue to Payment
               </Button>
-            </Box>
+            </WhiteBox>
           )}
         </ColumnsWrapper>
       </Center>
