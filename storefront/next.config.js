@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false,
   compiler: {
     styledComponents: true, // https://github.com/vercel/next.js/issues
   },

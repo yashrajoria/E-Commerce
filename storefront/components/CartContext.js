@@ -3,7 +3,7 @@ import { createContext, useState, useEffect } from "react";
 export const CartContext = createContext({});
 
 export function CartContextProvider({ children }) {
-  const ls = typeof window !== "undefined" ? window.localStorage : null;
+  const ls = null;
 
   // Handle potential parse errors when retrieving from localStorage
   const defaultProducts = ls ? JSON.parse(ls?.getItem("cart")) || [] : [];
@@ -51,7 +51,6 @@ export function CartContextProvider({ children }) {
 
   function clearCart() {
     setCartProducts([]);
-
     localStorage.removeItem("cart");
   }
 
