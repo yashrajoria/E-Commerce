@@ -90,18 +90,15 @@ function Cart() {
   }, [cartProducts]);
 
   useEffect(() => {
-    console.log(window.location.href.includes("success"));
     if (
       typeof window !== "undefined" &&
       window.location.href.includes("success")
     ) {
-      console.log("Payment success detected. Clearing cart...");
       clearCart();
-      console.log("LS remove started");
+
       localStorage.removeItem("cart");
-      console.log("LS removed finished");
+
       setIsSuccess(true);
-      console.log("Cart cleared");
     }
   }, []);
 
@@ -134,7 +131,6 @@ function Cart() {
       cartProducts,
     });
     if (response.data.url) {
-      console.log(response.data);
       window.location = response.data.url;
     }
   }

@@ -14,7 +14,7 @@ export default async function newCategory(req, res) {
 
   if (method === "POST") {
     const { name, parentCategory, properties } = req.body;
-    console.log(name);
+
     const cateDoc = await Category.create({
       name,
       parent: parentCategory,
@@ -24,7 +24,7 @@ export default async function newCategory(req, res) {
   }
   if (method === "PUT") {
     const { name, parentCategory, _id, properties } = req.body;
-    console.log(name);
+
     const cateDoc = await Category.updateOne(
       { _id },
       { name, parent: parentCategory, properties: properties }

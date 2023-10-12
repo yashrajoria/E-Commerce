@@ -6,7 +6,6 @@ import { mongooseConnect } from "@/lib/mongoose";
 import NewProducts from "@/components/NewProducts";
 
 export default function Home({ featuredProduct, recentProducts }) {
-  // console.log({ recentProducts });
   return (
     <div>
       <Header />
@@ -24,7 +23,7 @@ export async function getServerSideProps() {
     sort: { _id: -1 },
     limit: 10,
   });
-  // console.log(recentProducts);
+
   return {
     //Converting this to string as mongoDB does not serialize
     props: {

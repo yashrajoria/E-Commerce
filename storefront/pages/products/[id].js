@@ -61,11 +61,10 @@ export default function ProductPage({ product }) {
 
 export async function getServerSideProps(context) {
   await mongooseConnect();
-  // console.log(context.query);
+
   const { id } = context.query;
   const product = await Product.findById(id);
-  console.log("Mongoprodtc data", product);
-  console.log(JSON.parse(JSON.stringify(product)));
+
   return {
     props: {
       product: JSON.parse(JSON.stringify(product)),
