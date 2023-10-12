@@ -7,9 +7,10 @@ import React, { useContext, useEffect, useState } from "react";
 import { styled } from "styled-components";
 import Table from "@/components/Table";
 import Input from "@/components/Input";
-import { WhiteBox } from "@/components/WhiteBox";
+// import { WhiteBox } from "@/components/WhiteBox";
 const ColumnsWrapper = styled.div`
   display: grid;
+
   grid-template-columns: 1fr;
   @media screen and (min-width: 768px) {
     grid-template-columns: 1.2fr 0.8fr;
@@ -18,7 +19,7 @@ const ColumnsWrapper = styled.div`
   margin-top: 40px;
 `;
 
-const Box = styled.div`
+const WhiteBox = styled.div`
   background-color: #fff;
   border-radius: 10px;
   padding: 30px;
@@ -90,18 +91,12 @@ function Cart() {
   }, [cartProducts]);
 
   useEffect(() => {
-    console.log(window.location.href.includes("success"));
-    if (
-      typeof window !== "undefined" &&
-      window.location.href.includes("success")
-    ) {
-      console.log("Payment success detected. Clearing cart...");
+    if (window.location.href.includes("success")) {
       clearCart();
-      console.log("LS remove started");
+
       localStorage.removeItem("cart");
-      console.log("LS removed finished");
+
       setIsSuccess(true);
-      console.log("Cart cleared");
     }
   }, []);
 
@@ -134,7 +129,6 @@ function Cart() {
       cartProducts,
     });
     if (response.data.url) {
-      console.log(response.data);
       window.location = response.data.url;
     }
   }
@@ -174,7 +168,7 @@ function Cart() {
                 </thead>
                 <tbody>
                   {products.map((product) => (
-                    <tr>
+                    <tr key={product._id}>
                       <ProductInfoCell>
                         <ProductImageBox>
                           <img src={product.images[0]}></img>
@@ -203,9 +197,11 @@ function Cart() {
                       </td>
                     </tr>
                   ))}
-                  <td>Total</td>
-                  <td></td>
-                  <td>₹{total}</td>
+                  <tr>
+                    <td>Total</td>
+                    <td></td>
+                    <td>₹{total}</td>
+                  </tr>
                 </tbody>
               </Table>
             )}

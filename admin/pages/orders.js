@@ -7,7 +7,6 @@ function Orders() {
   useEffect(() => {
     axios.get("/api/orders").then((response) => {
       setOrders(response.data);
-      console.log(response.data);
     });
   }, []);
   return (

@@ -27,10 +27,10 @@ async function Webhook(req, res) {
   switch (event.type) {
     case "checkout.session.completed":
       const checkoutSessionCompleted = event.data.object;
-      console.log(checkoutSessionCompleted);
+
       const orderId = checkoutSessionCompleted.metadata.orderId;
       const paid = checkoutSessionCompleted.payment_status === "paid";
-      console.log(checkoutSessionCompleted.payment_status);
+
       if (orderId && paid) {
         await Order.findByIdAndUpdate(orderId, {
           paid: true,

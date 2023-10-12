@@ -28,7 +28,6 @@ export default function ProductForm({
 
   useEffect(() => {
     axios.get("/api/categories").then((result) => {
-      console.log(result);
       setCategories(result.data);
     });
   }, []);
@@ -68,7 +67,6 @@ export default function ProductForm({
   }
 
   function updateImagesOrder(images) {
-    console.log(arguments);
     //setting new images in the old images state hence console logged arguments above to see how the images are coming
     setImages(images);
   }

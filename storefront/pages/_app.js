@@ -1,6 +1,7 @@
 import { CartContextProvider } from "@/components/CartContext";
 import { Helmet } from "react-helmet";
 import { createGlobalStyle } from "styled-components";
+import { HydrationProvider } from "react-hydration-provider";
 
 const GlobalStyles = createGlobalStyle`
   body {
@@ -14,16 +15,18 @@ const GlobalStyles = createGlobalStyle`
 export default function App({ Component, pageProps }) {
   return (
     <>
-      <GlobalStyles />
-      <CartContextProvider>
-        <Helmet>
-          <link
-            href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
-            rel="stylesheet"
-          />
-        </Helmet>
-        <Component {...pageProps} />
-      </CartContextProvider>
+      <HydrationProvider>
+        <GlobalStyles />
+        <CartContextProvider>
+          <Helmet>
+            <link
+              href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
+              rel="stylesheet"
+            />
+          </Helmet>
+          <Component {...pageProps} />
+        </CartContextProvider>
+      </HydrationProvider>
     </>
   );
 }

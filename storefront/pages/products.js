@@ -8,7 +8,6 @@ import ProductsGrid from "@/components/ProductsGrid";
 import Title from "@/components/Title";
 
 export default function Products({ products }) {
-  console.log({ products });
   return (
     <>
       <Header />
@@ -23,7 +22,7 @@ export default function Products({ products }) {
 export async function getServerSideProps() {
   await mongooseConnect();
   const products = await Product.find({}, null, { sort: { _id: -1 } });
-  console.log("Server", products);
+
   return {
     props: {
       products: JSON.parse(JSON.stringify(products)),
