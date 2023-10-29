@@ -72,12 +72,12 @@ function Featured({ product }) {
               <ButtonsWrapper>
                 <ButtonLink
                   href={"/products/" + product._id}
-                  outline="true"
-                  white="true"
+                  $outline="true"
+                  $white="true"
                 >
                   Read More
                 </ButtonLink>
-                <Button white="true" onClick={addFeaturedToCart}>
+                <Button $white="true" onClick={addFeaturedToCart}>
                   <CartIcon /> Add to Cart
                 </Button>
               </ButtonsWrapper>

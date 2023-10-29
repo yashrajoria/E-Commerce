@@ -1,13 +1,11 @@
 import Link from "next/link";
-import React from "react";
-import { ButtonStyle } from "./Button";
-import { styled } from "styled-components";
+import styled from "styled-components";
+import { ButtonStyle } from "@/components/Button";
 
 const StyledLink = styled(Link)`
   ${ButtonStyle}
 `;
-function ButtonLink(props) {
+
+export default function ButtonLink(props) {
   return <StyledLink {...props} />;
 }
-
-export default ButtonLink;

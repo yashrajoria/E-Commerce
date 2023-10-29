@@ -35,7 +35,7 @@ async function Checkout(req, res) {
           price_data: {
             currency: "INR",
             product_data: { name: productInfo.title },
-            unit_amount: quantity * productInfo.price * 100,
+            unit_amount: (quantity * productInfo.price * 100) / 2,
           },
         });
       }
@@ -57,6 +57,7 @@ async function Checkout(req, res) {
       line_items,
       mode: "payment",
       payment_method_types: ["card"],
+      billing_address_collection: "required",
       customer_email: email,
       success_url: process.env.PUBLIC_URL + "/cart?success=1",
       cancel_url: process.env.PUBLIC_URL + "/cart?cancelled=1",
