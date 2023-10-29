@@ -69,7 +69,11 @@ function ProductBox({ _id, title, description, price, images }) {
         <Title href={url}>{title}</Title>
         <PriceRow>
           <Price>₹{price}</Price>
-          <Button primary="true" outline="true" onClick={() => addProduct(_id)}>
+          <Button
+            $primary="true"
+            $outline="true"
+            onClick={() => addProduct(_id)}
+          >
             Add To Cart
           </Button>
         </PriceRow>

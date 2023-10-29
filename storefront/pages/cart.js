@@ -7,7 +7,8 @@ import React, { useContext, useEffect, useState } from "react";
 import { styled } from "styled-components";
 import Table from "@/components/Table";
 import Input from "@/components/Input";
-// import { WhiteBox } from "@/components/WhiteBox";
+import { WhiteBox } from "@/components/WhiteBox";
+
 const ColumnsWrapper = styled.div`
   display: grid;
 
@@ -19,11 +20,11 @@ const ColumnsWrapper = styled.div`
   margin-top: 40px;
 `;
 
-const WhiteBox = styled.div`
-  background-color: #fff;
-  border-radius: 10px;
-  padding: 30px;
-`;
+// const WhiteBox = styled.div`
+//   background-color: #fff;
+//   border-radius: 10px;
+//   padding: 30px;
+// `;
 
 const ProductInfoCell = styled.td`
   padding: 10px 0;
