@@ -39,9 +39,6 @@ export default async function uploadImage(req, res) {
       });
       const link = result.url;
       links.push(link);
-
-      // console.log(result);
-      // console.log('Link:', links);
     }
 
     // Send the response back to the client

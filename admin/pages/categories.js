@@ -52,7 +52,6 @@ function Category({ swal }) {
 
   function editCategory(category) {
     try {
-      console.log(category._id);
       setEditedCategory(category);
       setName(category.name);
       setParentCategory(category.parent?._id);

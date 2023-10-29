@@ -14,7 +14,7 @@ export default async function newCategory(req, res) {
 
   if (method === "POST") {
     const { name, parentCategory, properties } = req.body;
-    console.log(name);
+
     const cateDoc = await Category.create({
       name,
       parent: parentCategory,
