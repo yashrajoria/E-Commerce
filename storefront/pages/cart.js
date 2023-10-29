@@ -116,8 +116,9 @@ function Cart() {
     const price = products.find((p) => p._id === productId)?.price || 0;
 
     total += price;
-    totalQuantity += cartProducts.length;
   }
+  totalQuantity += cartProducts.length;
+  console.log(totalQuantity);
   async function goToPayment() {
     const response = await axios.post("/api/checkout", {
       name,
@@ -200,7 +201,7 @@ function Cart() {
                   ))}
                   <tr>
                     <td>Total</td>
-                    <td></td>
+                    <td>{totalQuantity}</td>
                     <td>₹{total}</td>
                   </tr>
                 </tbody>
