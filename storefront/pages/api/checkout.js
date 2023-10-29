@@ -35,7 +35,7 @@ async function Checkout(req, res) {
           price_data: {
             currency: "INR",
             product_data: { name: productInfo.title },
-            unit_amount: (quantity * productInfo.price * 100) / 2,
+            unit_amount: quantity * productInfo.price * 100,
           },
         });
       }
