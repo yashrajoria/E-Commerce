@@ -30,7 +30,6 @@ export default async function newProduct(req, res) {
   if (method === "PUT") {
     const { title, description, price, images, category, properties, _id } =
       req.body;
-
     // If the category value is an empty string, set it to null
     const updatedCategory = category === "" ? null : category;
 

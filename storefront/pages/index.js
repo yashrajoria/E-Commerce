@@ -1,14 +1,33 @@
-import Head from "next/head";
-import Image from "next/image";
-import { Inter } from "next/font/google";
-import styles from "@/styles/Home.module.css";
+import Header from "@/components/Header";
+import Featured from "@/components/Featured";
+import { Product } from "@/models/Product";
+import { mongooseConnect } from "@/lib/mongoose";
+import NewProducts from "@/components/NewProducts";
 
-const inter = Inter({ subsets: ["latin"] });
-
-export default function Home() {
+export default function Home({ featuredProduct, recentProducts }) {
   return (
     <div>
-      <h2>Landing page</h2>
+      <Header />
+      <Featured product={featuredProduct} />
+      <NewProducts products={recentProducts} />
     </div>
   );
+}
+
+export async function getServerSideProps() {
+  const featuredProductId = "64cb9fab679d6748d40a04cc";
+  await mongooseConnect();
+  const featuredProduct = await Product.findById(featuredProductId);
+  const recentProducts = await Product.find({}, null, {
+    sort: { _id: -1 },
+    limit: 10,
+  });
+
+  return {
+    //Converting this to string as mongoDB does not serialize
+    props: {
+      featuredProduct: JSON.parse(JSON.stringify(featuredProduct)),
+      recentProducts: JSON.parse(JSON.stringify(recentProducts)),
+    },
+  };
 }

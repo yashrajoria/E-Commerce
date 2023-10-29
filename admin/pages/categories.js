@@ -23,6 +23,7 @@ function Category({ swal }) {
     const data = {
       name,
       properties: properties.map((p) => ({
+        key: p._id,
         name: p.name,
         values: p.values.split(","),
       })),
@@ -58,6 +59,7 @@ function Category({ swal }) {
       setProperties(
         category.properties.map(({ name, values }) => ({
           name,
+          key: category.parent._id,
           //doing the below because values is an array seperated by ","
           values: values.join(","),
         }))
@@ -150,7 +152,7 @@ function Category({ swal }) {
           <label className="block">Properties</label>
           <button
             type="button"
-            class="px-4 py-1 text-sm bg-blue-900 text-white font-semibold rounded-md border-blue-200"
+            className="px-4 py-1 text-sm bg-blue-900 text-white font-semibold rounded-md border-blue-200"
             onClick={addProperty}
           >
             Add Property
@@ -158,7 +160,7 @@ function Category({ swal }) {
 
           {properties.length > 0 &&
             properties.map((property, index) => (
-              <div className="gap-3 flex mt-3">
+              <div className="gap-3 flex mt-3" key={property._id}>
                 <input
                   value={property.name}
                   onChange={(e) =>
@@ -219,7 +221,7 @@ function Category({ swal }) {
           <tbody>
             {categories.length > 0 &&
               categories.map((category) => (
-                <tr className="border p-1 border-blue-200">
+                <tr className="border p-1 border-blue-200" key={category._id}>
                   <td className="border p-1 border-blue-200">
                     {category.name}
                   </td>

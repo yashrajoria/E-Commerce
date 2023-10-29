@@ -11,18 +11,22 @@ export default function Layout({ children }) {
   const { data: session } = useSession();
   const [showNav, setShowNav] = useState(false);
   if (!session)
-    return (
-      <div className="bg-gray-200 w-screen h-screen flex items-center">
-        <div className="text-center w-full px-4 ">
-          <button
-            className="bg-white px-4 py-4 rounded-md"
-            onClick={() => signIn("google")}
-          >
-            Login With Google
-          </button>
+    try {
+      return (
+        <div className="bg-gray-200 w-screen h-screen flex items-center">
+          <div className="text-center w-full px-4 ">
+            <button
+              className="bg-white px-4 py-4 rounded-md"
+              onClick={() => signIn("google")}
+            >
+              Login With Google
+            </button>
+          </div>
         </div>
-      </div>
-    );
+      );
+    } catch (err) {
+      "Failed to sign in", err;
+    }
 
   return (
     <div className="bg-bgGray min-h-screen">
