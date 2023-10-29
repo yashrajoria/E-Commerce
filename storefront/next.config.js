@@ -1,8 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: false,
+  reactStrictMode: true,
+  // This is the property you need to add
   compiler: {
-    styledComponents: true, // https://github.com/vercel/next.js/issues
+    // ssr and displayName are configured by default
+    styledComponents: true,
   },
 };
 
