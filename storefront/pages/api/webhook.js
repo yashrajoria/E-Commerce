@@ -3,7 +3,7 @@ import { Order } from "@/models/Order";
 import { buffer } from "micro";
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-const endpointSecret = "whsec_oJGFdEtMgvYiP8bcWNcB2DMuJLPJP1Ac";
+const endpointSecret = process.env.STRIPE_WEBHOOK_KEY;
 
 async function Webhook(req, res) {
   await mongooseConnect();
