@@ -118,7 +118,7 @@ function Cart() {
     total += price;
   }
   totalQuantity += cartProducts.length;
-  console.log(totalQuantity);
+
   async function goToPayment() {
     const response = await axios.post("/api/checkout", {
       name,
