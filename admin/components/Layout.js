@@ -1,9 +1,5 @@
-import Head from "next/head";
-import Image from "next/image";
-import { Inter } from "next/font/google";
-import styles from "@/styles/Home.module.css";
 import Nav from "@/components/Nav";
-import { useSession, signIn, signOut } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useState } from "react";
 import Logo from "./Logo";
 
@@ -15,6 +11,14 @@ export default function Layout({ children }) {
       return (
         <div className="bg-gray-200 w-screen h-screen flex items-center">
           <div className="text-center w-full px-4 ">
+            <div className="gap-5 flex flex-col">
+              <h1 className="text-3xl text-white font-bold">
+                Welcome to ShopSwift Admin!!
+              </h1>
+              <h4 className="text-xl text-white font-bold">
+                Please login below to continue to admin page
+              </h4>
+            </div>
             <button
               className="bg-white px-4 py-4 rounded-md"
               onClick={() => signIn("google")}
