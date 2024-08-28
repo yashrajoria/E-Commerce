@@ -18,7 +18,7 @@ export default function Logo() {
         />
       </svg>
 
-      <span>Ecommerce Admin</span>
+      <span>ShopSwift Admin</span>
     </Link>
   );
 }
