@@ -5,7 +5,11 @@ const nextConfig = {
     styledComponents: true, // https://github.com/vercel/next.js/issues
   },
   images: {
-    domains: ["lh3.googleusercontent.com"],
+    domains: [
+      "lh3.googleusercontent.com",
+      "media.istockphoto.com",
+      "cdn.dummyjson.com",
+    ],
   },
 };
 
