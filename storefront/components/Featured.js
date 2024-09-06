@@ -84,7 +84,11 @@ function Featured({ product }) {
             </div>
           </Column>
           <div>
-            <img src="http://res.cloudinary.com/dtw3bd2xf/image/upload/v1691398213/lskpfgbirsjzfchhv4xg.jpg"></img>
+            <img
+              src={product.images[0]}
+              alt={product.title}
+              className="max-w-full h-auto md:max-h-[400px] object-cover rounded-md"
+            />
           </div>
         </ColumnsWrapper>
       </Center>
