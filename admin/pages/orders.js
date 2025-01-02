@@ -1,7 +1,7 @@
 import Layout from "@/components/Layout";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-
+import OrderStatusDropdown from "@/components/OrderStatus";
 function Orders() {
   const [orders, setOrders] = useState();
   useEffect(() => {
@@ -19,6 +19,7 @@ function Orders() {
       products: "Products",
       paid: "Paid",
       total: "Total",
+      status: "Status",
     },
   ];
 
@@ -86,6 +87,12 @@ function Orders() {
                         return sum + parseFloat(formattedValue);
                       }, 0)
                       .toLocaleString()}
+                  </td>
+                  <td className="p-2 text-center">
+                    <OrderStatusDropdown
+                      order={order.status}
+                      email={order.email}
+                    />
                   </td>
                 </tr>
               ))}
