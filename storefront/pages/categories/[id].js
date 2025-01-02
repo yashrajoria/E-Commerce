@@ -1,7 +1,6 @@
 import { CartContext } from "@/components/CartContext";
 import Header from "@/components/Header";
 import ProductsGrid from "@/components/ProductsGrid";
-import Title from "@/components/Title";
 import { mongooseConnect } from "@/lib/mongoose";
 import { Category } from "@/models/Category";
 import { Product } from "@/models/Product";
@@ -19,7 +18,7 @@ export default function CategoryPage({ category, products }) {
           {/* Product Details */}
           <div className="flex flex-col justify-between">
             <div>
-              <Title className="text-3xl font-bold">{category.name}</Title>
+              <h2 className="text-3xl font-bold">{category.name}</h2>
               <p className="text-white text-lg mt-4">{category.description}</p>
             </div>
 
