@@ -51,7 +51,7 @@ export const getRecentOrders = async () => {
     });
 
     const totalOrderValue = (totalAmount / 100).toLocaleString();
-    const { name, paid, createdAt, phone } = response[i];
+    const { name, paid, createdAt, phone, status } = response[i];
     const orderDate = new Date(createdAt).toLocaleString();
 
     recentOrder.push({
@@ -60,6 +60,7 @@ export const getRecentOrders = async () => {
       date: orderDate,
       total: totalOrderValue,
       contact_no: phone,
+      status: status,
     });
   }
 
