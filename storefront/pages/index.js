@@ -15,19 +15,34 @@ export default function Home({ featuredProduct, recentProducts }) {
 }
 
 export async function getServerSideProps() {
-  const featuredProductId = "64cb9fab679d6748d40a04cc";
-  await mongooseConnect();
-  const featuredProduct = await Product.findById(featuredProductId);
-  const recentProducts = await Product.find({}, null, {
-    sort: { _id: -1 },
-    limit: 10,
-  });
+  try {
+    await mongooseConnect();
 
-  return {
-    //Converting this to string as mongoDB does not serialize
-    props: {
-      featuredProduct: JSON.parse(JSON.stringify(featuredProduct)),
-      recentProducts: JSON.parse(JSON.stringify(recentProducts)),
-    },
-  };
+    const featuredProduct = await Product.find({}, null, {
+      sort: { _id: -1 },
+      limit: 5,
+    }).lean(); // Convert Mongoose documents to plain JavaScript objects
+
+    const recentProducts = await Product.find({}, null, {
+      sort: { _id: -1 },
+      limit: 10,
+    }).lean();
+
+    // Return serialized data
+    return {
+      props: {
+        featuredProduct: JSON.parse(JSON.stringify(featuredProduct)),
+        recentProducts: JSON.parse(JSON.stringify(recentProducts)),
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    // Handle the error and return an empty array or some default data
+    return {
+      props: {
+        featuredProduct: [],
+        recentProducts: [],
+      },
+    };
+  }
 }
