@@ -31,7 +31,7 @@ export default async function newProduct(req, res) {
   if (method === "POST") {
     try {
       const isBulk = Array.isArray(req.body.data);
-      console.log(req.body.data);
+
       const products = isBulk ? req.body.data : [req.body];
 
       // Gather all unique category names from the products
