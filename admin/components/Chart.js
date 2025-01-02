@@ -9,27 +9,35 @@ function Chart() {
   const [count, setCount] = useState();
   const [orderValue, setOrderValue] = useState();
   const [productCount, setProductCount] = useState(0);
-
+  const [completedOrders, setCompletedOrders] = useState(0);
   useEffect(() => {
     const fetchOrderDataAndProcess = async () => {
       try {
         const data = await fetchOrderData();
+
         const productData = await getProductData();
         setProductCount(productData.data.products.length);
         setOrders(data);
         const { completedOrders, totalOrderValue } = paidOrders(data);
-        setCount(completedOrders);
+        setCompletedOrders(completedOrders);
+        setCount(data.length);
         setOrderValue(totalOrderValue);
       } catch (error) {
         console.log("Product data not found", error);
       }
     };
-
     fetchOrderDataAndProcess();
   }, []);
   const cardsData = [
     { title: "Total Products", icon: Package, value: productCount },
-    { title: "Total Orders", icon: ShoppingCart, value: count },
+    {
+      title: "Total Orders",
+      icon: ShoppingCart,
+      value: count,
+      orderDetails: [
+        { unpaid: count - completedOrders, paid: completedOrders },
+      ],
+    },
     {
       title: "Total Revenue",
       icon: CreditCard,
@@ -47,6 +55,7 @@ function Chart() {
               icon={card.icon}
               value={card.value}
               currency={card.currency}
+              orderDetails={card.orderDetails}
             />
           </div>
         ))}
