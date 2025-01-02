@@ -1,21 +1,14 @@
-const { styled } = require("styled-components");
 import ProductBox from "./ProductBox";
-const StyledProductGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  @media screen and (min-width: 768px) {
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-  }
-`;
 
 export default function ProductsGrid({ products }) {
   return (
-    <StyledProductGrid>
-      {products?.length > 0 &&
-        products.map((product) => (
-          <ProductBox {...product} key={product._id} />
-        ))}
-    </StyledProductGrid>
+    <>
+      <div className="p-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+        {products?.length > 0 &&
+          products.map((product) => (
+            <ProductBox {...product} key={product._id} />
+          ))}
+      </div>
+    </>
   );
 }

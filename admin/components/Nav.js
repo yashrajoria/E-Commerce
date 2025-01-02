@@ -1,11 +1,11 @@
+import Logo from "@/components/Logo";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { signOut } from "next-auth/react";
-import Logo from "@/components/Logo";
 
 export default function Nav({ show }) {
   const inactiveLink = "flex gap-1 p-1";
-  const activeLink = inactiveLink + " bg-highlight text-black rounded-sm";
+  const activeLink = inactiveLink + " bg-white text-blue-700 rounded-md";
   const inactiveIcon = "w-6 h-6";
   const activeIcon = inactiveIcon + " text-primary";
   const router = useRouter();
@@ -18,13 +18,13 @@ export default function Nav({ show }) {
     <aside
       className={
         (show ? "left-0" : "-left-full") +
-        " top-0 text-white p-4 fixed w-full bg-blue-800 md:static md:w-auto transition-all min-h-screen"
+        " top-0 text-white p-4 fixed w-full bg-gray-800 md:static md:w-auto transition-all min-h-screen"
       }
     >
-      <div className="mb-4 mr-4">
+      <div className="mb-6 mr-4">
         <Logo />
       </div>
-      <nav className="flex flex-col gap-2">
+      <nav className="flex flex-col gap-6">
         <Link
           href={"/"}
           className={pathname === "/" ? activeLink : inactiveLink}

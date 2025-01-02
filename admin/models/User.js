@@ -4,6 +4,7 @@ const UserSchema = new Schema({
   name: { type: String },
   email: { type: String },
   image: { type: String },
+  storeName: { type: String },
 });
 
 export const User = mongoose.models.User || model("User", UserSchema);

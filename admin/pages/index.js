@@ -1,3 +1,4 @@
+import Chart from "@/components/Chart";
 import Layout from "@/components/Layout";
 import { useSession } from "next-auth/react";
 
@@ -18,6 +19,7 @@ export default function Home() {
           <span className="px-2">{session?.user?.name}</span>
         </div>
       </div>
+      <Chart />
     </Layout>
   );
 }
