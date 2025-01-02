@@ -1,57 +1,37 @@
-import styled from "styled-components";
 import { useState } from "react";
-
-const Image = styled.img`
-  max-width: 100%;
-  max-height: 100%;
-`;
-const BigImage = styled.img`
-  max-width: 100%;
-  max-height: 200px;
-`;
-const ImageButtons = styled.div`
-  display: flex;
-  gap: 10px;
-  flex-grow: 0;
-  margin-top: 10px;
-`;
-const ImageButton = styled.div`
-  border: 2px solid #ccc;
-  ${(props) =>
-    props.active
-      ? `
-      border-color: #ccc;
-    `
-      : `
-      border-color: transparent;
-    `}
-  height: 40px;
-  padding: 2px;
-  cursor: pointer;
-  border-radius: 5px;
-`;
-const BigImageWrapper = styled.div`
-  text-align: center;
-`;
 
 export default function ProductImages({ images }) {
   const [activeImage, setActiveImage] = useState(images?.[0]);
+
   return (
-    <>
-      <BigImageWrapper>
-        <BigImage src={activeImage} />
-      </BigImageWrapper>
-      <ImageButtons>
+    <div>
+      {/* Main Image Display */}
+      <div className="text-center mb-4">
+        <img
+          src={activeImage}
+          alt="Product"
+          className="w-full max-h-[400px] object-contain mx-auto"
+        />
+      </div>
+
+      {/* Thumbnail Image Buttons */}
+      <div className="flex gap-2 overflow-x-auto py-2">
         {images.map((image) => (
-          <ImageButton
+          <div
             key={image}
-            active={image === activeImage}
             onClick={() => setActiveImage(image)}
+            className={`border-2 rounded-md cursor-pointer overflow-hidden ${
+              image === activeImage ? "border-gray-300" : "border-transparent"
+            }`}
           >
-            <Image src={image} alt="" />
-          </ImageButton>
+            <img
+              src={image}
+              alt=""
+              className="w-20 h-20 object-contain transition-transform duration-300 ease-in-out hover:scale-110"
+            />
+          </div>
         ))}
-      </ImageButtons>
-    </>
+      </div>
+    </div>
   );
 }
