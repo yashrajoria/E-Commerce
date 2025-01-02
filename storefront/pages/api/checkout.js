@@ -51,6 +51,7 @@ async function Checkout(req, res) {
       country,
       phone,
       paid: false,
+      status: "In Progress",
     });
 
     const session = await stripe.checkout.sessions.create({
@@ -59,8 +60,8 @@ async function Checkout(req, res) {
       payment_method_types: ["card"],
       billing_address_collection: "required",
       customer_email: email,
-      success_url: process.env.PUBLIC_URL + "/cart?success=1",
-      cancel_url: process.env.PUBLIC_URL + "/cart?cancelled=1",
+      success_url: process.env.PUBLIC_URL + "cart?success=1",
+      cancel_url: process.env.PUBLIC_URL + "cart?cancelled=1",
       metadata: {
         orderId: orderDoc._id.toString(),
         test: "ok",
@@ -69,6 +70,7 @@ async function Checkout(req, res) {
 
     res.json({
       url: session.url,
+      order_id: session?.metadata?.orderId,
     });
   } catch (error) {
     console.error("Error occurred:", error);
