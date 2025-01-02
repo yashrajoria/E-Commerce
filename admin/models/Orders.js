@@ -10,6 +10,7 @@ const OrderSchema = new Schema(
     address: String,
     phone: String,
     paid: Boolean,
+    status: String,
   },
   {
     timestamps: true,
