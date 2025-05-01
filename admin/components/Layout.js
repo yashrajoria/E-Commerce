@@ -1,81 +1,42 @@
-import Nav from "@/components/Nav";
-import axios from "axios"; // Use axios to make API requests
+import { Dialog } from "@/components/ui/dialog"; // Assuming ShadCN Dialog component is set up
 import { signIn, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import Logo from "./Logo";
-import { Dialog } from "./ui/dialog";
 
 export default function Layout({ children }) {
   const { data: session, status } = useSession();
-  const [showNav, setShowNav] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [storeName, setStoreName] = useState("");
-  const [isStoreNameSet, setIsStoreNameSet] = useState(false);
 
-  // Fetch store name status when user logs in
-  useEffect(() => {
-    // if (session) {
-    // console.log(session);
-    fetchStoreName();
-    // }
-  }, []);
-
-  const fetchStoreName = async () => {
-    try {
-      const response = await axios.get("/api/store-name");
-      if (response.data.storeName) {
-        setIsStoreNameSet(true);
-      } else {
-        setIsStoreNameSet(false);
-        setShowModal(true); // Open the modal if store name is not set
-      }
-    } catch (error) {
-      console.error("Error fetching store name:", error);
-    }
-  };
-
-  const handleStoreNameSubmit = async () => {
-    if (storeName.trim() === "") return;
-
-    try {
-      await axios.post("/api/store-name", { storeName });
-      setIsStoreNameSet(true);
-      setShowModal(false); // Close the modal after submission
-    } catch (error) {
-      console.error("Error saving store name:", error);
-    }
-  };
-
-  // Display a loading state while session status is loading
   if (status === "loading") {
     return (
-      <div className="bg-gray-200 w-screen h-screen flex items-center">
-        <div className="text-center w-full px-4">
-          <h1 className="text-3xl text-white font-bold">Loading...</h1>
+      <div className="bg-gray-100 w-screen h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-purple-600">Loading...</h1>
         </div>
       </div>
     );
   }
 
-  // Show login prompt if no session
+  // If not logged in, show the login prompt
   if (!session) {
     return (
-      <div className="bg-gray-100 w-screen h-screen flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
+      <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 w-screen h-screen flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center transform transition-all duration-300 ease-in-out scale-95 hover:scale-100">
           <img
             src="/background.webp"
             alt="E-commerce Illustration"
-            className="w-32 mx-auto mb-6"
+            className="w-32 mx-auto mb-6 rounded-full shadow-md"
           />
-          <h1 className="text-3xl text-gray-800 font-bold mb-4">
+          <h1 className="text-4xl font-bold text-gray-800 mb-4">
             Welcome to ShopSwift Admin!
           </h1>
           <p className="text-lg text-gray-600 mb-8">
-            Please login to access the admin dashboard and manage your store.
+            Please login to manage your store.
           </p>
           <button
-            className="bg-purple-500 text-white px-6 py-3 rounded-md font-semibold hover:bg-blue-600 transition"
+            className="bg-gradient-to-r from-purple-500 to-blue-600 text-white px-6 py-3 rounded-lg font-semibold shadow-md hover:bg-blue-700 transition-all duration-300 ease-in-out transform hover:scale-105"
             onClick={() => signIn("google")}
+            aria-label="Login with Google"
           >
             <span className="flex items-center justify-center">
               <svg
@@ -108,59 +69,40 @@ export default function Layout({ children }) {
     );
   }
 
-  // Render the main layout if store name is set
+  // Render the main layout if session is available
   return (
-    <div className="bg-bgGray min-h-screen">
-      <div className="block md:hidden flex items-center p-4">
-        <button onClick={() => setShowNav(true)}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-6 h-6"
+    <div className="bg-gradient-to-r from-gray-100 to-gray-300 min-h-screen">
+      <div className="flex justify-center items-center h-full">
+        <div className="w-full max-w-7xl p-4">{children}</div>
+      </div>
+
+      {/* Modal for Store Name */}
+      <Dialog
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-500 bg-opacity-50"
+      >
+        <div className="bg-white rounded-lg p-8 shadow-xl w-full max-w-md">
+          <h1 className="text-2xl font-semibold mb-4">Enter Your Store Name</h1>
+          <input
+            type="text"
+            placeholder="Store Name"
+            className="border border-gray-300 rounded-md p-2 w-full mb-4"
+            value={storeName}
+            onChange={(e) => setStoreName(e.target.value)}
+          />
+          <button
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold w-full hover:bg-blue-700 transition-all duration-300 ease-in-out"
+            onClick={() => {
+              if (storeName.trim()) {
+                setShowModal(false);
+              }
+            }}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-            />
-          </svg>
-        </button>
-        <div className="flex grow justify-center">
-          <Logo />
+            Save Store Name
+          </button>
         </div>
-      </div>
-      <div className="bg-bgGray min-h-screen flex">
-        <Nav show={showNav} />
-        <div className="flex-grow p-4">{children}</div>
-      </div>
-      {/* Render modal if store name is not set */}
-      {!isStoreNameSet && (
-        <Dialog
-          open={showModal}
-          onClose={() => setShowModal(false)} // Ensure modal can be closed
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-500 bg-opacity-50"
-        >
-          <div className="bg-white rounded-lg p-8 shadow-lg w-full max-w-md">
-            <h1 className="text-2xl font-bold mb-4">Enter Your Store Name</h1>
-            <input
-              type="text"
-              placeholder="Store Name"
-              className="border border-gray-300 rounded-md p-2 w-full mb-4"
-              value={storeName}
-              onChange={(e) => setStoreName(e.target.value)}
-            />
-            <button
-              className="bg-blue-600 text-white px-6 py-3 rounded-md font-semibold w-full"
-              onClick={handleStoreNameSubmit}
-            >
-              Save Store Name
-            </button>
-          </div>
-        </Dialog>
-      )}
+      </Dialog>
     </div>
   );
 }
