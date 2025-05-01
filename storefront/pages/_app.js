@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet";
 import { createGlobalStyle } from "styled-components";
 import { HydrationProvider } from "react-hydration-provider";
 import "@/styles/globals.css";
+
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -21,24 +22,24 @@ export default function App({
 }) {
   return (
     <>
-      <SessionProvider session={session}>
-        <HydrationProvider>
-          <GlobalStyles />
-          <Toaster />
+      {/* <SessionProvider session={session}> */}
+      <HydrationProvider>
+        <GlobalStyles />
+        <Toaster />
 
-          <CartContextProvider>
-            <Helmet>
-              <link
-                href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
-                rel="stylesheet"
-              />
-            </Helmet>
-            {/* <div className="min-h-screen p-4"> */}
-            <Component {...pageProps} />
-            {/* </div> */}
-          </CartContextProvider>
-        </HydrationProvider>
-      </SessionProvider>
+        <CartContextProvider>
+          <Helmet>
+            <link
+              href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
+              rel="stylesheet"
+            />
+          </Helmet>
+          {/* <div className="min-h-screen p-4"> */}
+          <Component {...pageProps} />
+          {/* </div> */}
+        </CartContextProvider>
+      </HydrationProvider>
+      {/* </SessionProvider> */}
     </>
   );
 }
