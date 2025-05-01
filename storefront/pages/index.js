@@ -1,16 +1,43 @@
-import Header from "@/components/Header";
-import Featured from "@/components/Featured";
-import { Product } from "@/models/Product";
+import { useContext, useEffect } from "react";
+import { motion } from "framer-motion";
+
+import { CartContext } from "@/components/CartContext";
 import { mongooseConnect } from "@/lib/mongoose";
-import NewProducts from "@/components/NewProducts";
+import Product from "@/models/Product";
+
+import HeroSection from "@/components/HeroSection";
+import Navbar from "@/components/Navbar";
+import ProductSection from "@/components/ProductSection";
 
 export default function Home({ featuredProduct, recentProducts }) {
+  const { cartProducts } = useContext(CartContext);
+
+  useEffect(() => {
+    console.log(cartProducts);
+  }, [cartProducts]);
+
   return (
-    <div>
-      <Header />
-      <Featured product={featuredProduct} />
-      <NewProducts products={recentProducts} />
-    </div>
+    <motion.div
+      className="min-h-screen bg-shop-dark/95 text-white overflow-x-hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <Navbar cartProducts={cartProducts} />
+
+      <main className="pt-24 px-4 sm:px-8 max-w-7xl mx-auto">
+        <HeroSection products={recentProducts} />
+
+        {/* Once styled properly, enable these: */}
+        <div className="mt-12">
+          <ProductSection title="New Arrivals" products={recentProducts} />
+        </div>
+
+        <div className="mt-12">
+          <ProductSection title="Trending Now" products={featuredProduct} />
+        </div>
+      </main>
+    </motion.div>
   );
 }
 
@@ -21,14 +48,13 @@ export async function getServerSideProps() {
     const featuredProduct = await Product.find({}, null, {
       sort: { _id: -1 },
       limit: 5,
-    }).lean(); // Convert Mongoose documents to plain JavaScript objects
-
+    }).lean();
+    console.log({ Product });
     const recentProducts = await Product.find({}, null, {
       sort: { _id: -1 },
       limit: 10,
     }).lean();
-
-    // Return serialized data
+    console.log(featuredProduct);
     return {
       props: {
         featuredProduct: JSON.parse(JSON.stringify(featuredProduct)),
@@ -37,7 +63,6 @@ export async function getServerSideProps() {
     };
   } catch (error) {
     console.error("Error fetching data:", error);
-    // Handle the error and return an empty array or some default data
     return {
       props: {
         featuredProduct: [],
