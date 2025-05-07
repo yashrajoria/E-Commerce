@@ -47,6 +47,7 @@ const AuthForm = () => {
         {
           email: authData.email,
           password: authData.password,
+          role: "admin",
         },
 
         {
