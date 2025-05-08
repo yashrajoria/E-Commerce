@@ -18,7 +18,14 @@ import {
   PaginationPrevious,
   PaginationLink,
 } from "@/components/ui/pagination";
-import { Search, Plus, Filter, ArrowUpDown, Package } from "lucide-react";
+import {
+  Search,
+  Plus,
+  Filter,
+  ArrowUpDown,
+  Package,
+  Rows3,
+} from "lucide-react";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import ProductCard from "@/components/products/ProductCard";
 import axios from "axios";
@@ -30,7 +37,12 @@ const PRODUCTS_PER_PAGE = 10;
 const Products = () => {
   useEffect(() => {
     const fetchProducts = async () => {
-      const res = await axios.get("/api/products");
+      const res = await axios.get("/api/products", {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
       setProducts(res?.data?.products);
     };
     fetchProducts();
@@ -123,16 +135,22 @@ const Products = () => {
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => setViewMode("grid")}
+                  onClick={() =>
+                    setViewMode(viewMode === "grid" ? "list" : "grid")
+                  }
                   className={viewMode === "grid" ? "bg-white/10" : ""}
                 >
-                  <Package size={18} />
+                  {viewMode === "grid" ? (
+                    <Rows3 size={18} />
+                  ) : (
+                    <Package size={18} />
+                  )}
                 </Button>
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => setViewMode("list")}
-                  className={viewMode === "list" ? "bg-white/10" : ""}
+                  // onClick={() => setViewMode("list")}
+                  // className={viewMode === "list" ? "bg-white/10" : ""}
                 >
                   <Filter size={18} />
                 </Button>
