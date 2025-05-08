@@ -22,7 +22,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
     <Card className="glass-effect overflow-hidden group">
       <div className="relative h-48 overflow-hidden">
         <img
-          src={product.images[0] ? product.images[0] : "/favicon.ico"}
+          src={product?.images[0] ? product?.images[0] : "/no-image.png"}
           alt={product.title}
           className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
           width={500}
@@ -41,7 +41,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <div className="absolute top-3 left-3">
           <span
             className={`px-2 py-1 text-xs font-medium rounded-full ${
-              product?.quantity == 0
+              product?.quantity > 0
                 ? "bg-emerald-500/20 text-emerald-500"
                 : "bg-amber-500/20 text-amber-500"
             }`}
