@@ -46,6 +46,8 @@ import Papa from "papaparse";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { CldImage } from "next-cloudinary";
+import { toast } from "sonner";
+import axios from "axios";
 // Define form schema for single product
 const singleProductSchema = z.object({
   title: z.string().min(2, "Product name must be at least 2 characters"),
@@ -95,7 +97,7 @@ const AddProduct = () => {
       images: [],
     },
   });
-  const handleFileUpload = (event) => {
+  const handleFileUpload = (event: { target: { files: unknown[] } }) => {
     const file = event.target.files?.[0];
     console.log(file, "FILE");
     if (!file) return;
@@ -108,7 +110,9 @@ const AddProduct = () => {
         setIsBulk(true);
         setBulkFile(file);
       },
-      error: function (err) {
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      error: function (err: any) {
         console.error("Error parsing CSV:", err);
       },
     });
@@ -118,42 +122,19 @@ const AddProduct = () => {
     data: z.infer<typeof singleProductSchema>
   ) => {
     try {
-      let imageUrl: string | null = null;
-      console.log({ imagePreview });
-      if (uploadedImage === "url" && imagePreview) {
-        imageUrl = imagePreview;
-      } else if (uploadedImage === "file" && imageFile) {
-        // Upload file to backend or cloud storage
-        const formData = new FormData();
-        formData.append("file", imageFile);
-
-        const response = await fetch("/api/products/image", {
-          method: "POST",
-          body: formData,
-        });
-
-        const result = await response.json();
-        imageUrl = result.url; // assuming your API returns { url: '...' }
-      }
-
-      const payload = {
-        ...data,
-        images: imageUrl ? [imageUrl] : [],
-      };
-
-      console.log(payload, "Final Product Data");
-
       // Send to your create product API
-      const res = await fetch("/api/products", {
-        method: "POST",
+      const res = await axios.post("/api/products", data, {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
+        withCredentials: true,
       });
-
-      if (!res.ok) throw new Error("Failed to create product");
-      console.log(res);
+      console.log(res.data, "Response from API");
+      if (res.status === 200) {
+        toast.success("Product created successfully!");
+      } else {
+        toast.error("Failed to create product.");
+      }
       // Optional: show success toast / reset form
       // toast({ title: "Product Created!" });
       form.reset();
@@ -163,6 +144,38 @@ const AddProduct = () => {
     } catch (error) {
       console.error("Error submitting product:", error);
       // toast({ title: "Error", description: error.message });
+    }
+  };
+
+  const handleBulkUpload = async () => {
+    try {
+      if (!bulkFile) {
+        toast.error("Please upload a CSV file first.");
+        return;
+      }
+
+      const formData = new FormData();
+
+      formData.append("file", bulkFile);
+
+      const response = await axios.post(
+        "/api/products/",
+
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          params: {
+            isBulk: 1,
+          },
+          withCredentials: true,
+        }
+      );
+
+      console.log({ response });
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -414,7 +427,7 @@ const AddProduct = () => {
                           {/* Upload Button */}
                           <div>
                             <Button
-                              // onClick={handleBulkUpload}
+                              onClick={handleBulkUpload}
                               disabled={!isBulk}
                               className="px-6 bg-amber-400 text-white"
                             >
