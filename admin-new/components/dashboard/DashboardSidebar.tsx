@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useRouter } from "next/router";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +15,9 @@ import {
 import Link from "next/link";
 
 const DashboardSidebar = () => {
+  const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const [tab, setTab] = useState(router.pathname);
 
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -53,10 +56,11 @@ const DashboardSidebar = () => {
           <Link
             key={index}
             href={item.path}
+            onClick={() => setTab(item.path)}
             className={cn(
               "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
               "hover:bg-white/10",
-              item.label === "Dashboard"
+              tab === item.path
                 ? "bg-white/10 text-white"
                 : "text-muted-foreground"
             )}
