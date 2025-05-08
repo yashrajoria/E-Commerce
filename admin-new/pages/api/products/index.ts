@@ -1,43 +1,76 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+
+import fs from "fs";
+import formidable from "formidable";
+import FormData from "form-data";
 import axios from "axios";
+
+export const config = {
+  api: {
+    bodyParser: false, // Required for formidable to work
+  },
+};
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  console.log("BULK", req?.query?.isBulk);
-  if (req.method === "POST") {
-    // return res.status(405).json({ message: "Method not allowed" });
-    if (req?.query?.isBulk === "1") {
+  if (req.method === "POST" && req.query.isBulk === "1") {
+    // Parse incoming form data
+    const form = formidable({ keepExtensions: true });
+
+    form.parse(req, async (err, fields, files) => {
+      if (err) {
+        console.error("Form parsing error:", err);
+        return res.status(500).json({ message: "Error parsing form data" });
+      }
+
       try {
-        console.log(req.body, "BODY");
-        // console.log(req.headers, "HEADERS");
-        console.log(req.query, "QUERY");
-        console.log(req.method, "METHOD");
-        console.log(req.url, "URL");
-        console.log(req.headers.cookie, "COOKIE");
+        const file = files.file?.[0];
+        if (!file) {
+          return res.status(400).json({ message: "No file uploaded" });
+        }
+
+        // Read the file as a stream
+        const fileStream = fs.createReadStream(file.filepath);
+
+        // Create form data for proxying
+        const formData = new FormData();
+        formData.append(
+          "file",
+          fileStream,
+          file.originalFilename || "upload.csv"
+        );
+
+        // Extract token from cookie
+        const cookie = req.headers.cookie
+          ?.split(";")
+          .find((c) => c.trim().startsWith("token="));
+
+        // Make the proxy request to your backend
         const response = await axios.post(
           `${process.env.NEXT_PUBLIC_NEW_API_URL}products/bulk`,
-          req.body,
+          formData,
           {
             headers: {
-              "Content-Type": "multipart/form-data",
-              Cookie: req.headers.cookie || "",
+              ...formData.getHeaders(),
+              Cookie: cookie || "",
             },
+            withCredentials: true,
           }
         );
 
-        res.status(response.status).json(response.data);
+        return res.status(response.status).json(response.data);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
-        console.error("Auth proxy error:", error);
-        res
+        console.error("Proxy error:", error);
+        return res
           .status(error.response?.status || 500)
           .json({ message: error.response?.data?.message || "Server error" });
       }
-    }
-    console.log("REQ", req.body);
-
+    });
+  } else if (req.method === "POST") {
+    // Handle normal product creation
     try {
       const response = await axios.post(
         process.env.NEXT_PUBLIC_AUTH_URL as string,
@@ -49,33 +82,35 @@ export default async function handler(
         }
       );
 
-      res.status(response.status).json(response.data);
+      return res.status(response.status).json(response.data);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error) {
       console.error("Auth proxy error:", error);
-      res
+      return res
         .status(error.response?.status || 500)
         .json({ message: error.response?.data?.message || "Server error" });
     }
-  }
-
-  if (req.method === "GET") {
+  } else if (req.method === "GET") {
     try {
-      console.log("COOKIE", req.headers.cookie);
+      const cookie = req.headers.cookie
+        ?.split(";")
+        .find((c) => c.trim().startsWith("token="));
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_NEW_API_URL}products/`,
         {
           headers: {
             "Content-Type": "application/json",
-            Cookie: req.headers.cookie || "",
+            Cookie: cookie || "",
           },
+          withCredentials: true,
         }
       );
-
-      res.status(response.status).json(response.data);
+      return res.status(response.status).json(response.data);
     } catch (err) {
       console.error("Error fetching products:", err);
-      res.status(500).json({ message: "Error fetching products" });
+      return res.status(500).json({ message: "Error fetching products" });
     }
+  } else {
+    return res.status(405).json({ message: "Method not allowed" });
   }
 }
