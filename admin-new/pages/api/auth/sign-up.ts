@@ -17,6 +17,7 @@ export default async function handler(
         headers: {
           "Content-Type": "application/json",
         },
+        withCredentials: true,
       }
     );
 
@@ -26,8 +27,15 @@ export default async function handler(
       return res.status(409).json({ message: "User already exists" });
     }
 
+    // ✅ Forward the Set-Cookie header to the browser
+    const setCookieHeader = response.headers["set-cookie"];
+    if (setCookieHeader) {
+      res.setHeader("Set-Cookie", setCookieHeader);
+    }
+
     // ✅ Send response only once
     return res.status(statusCode).json(response.data);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Auth proxy error:", error);
     return res
