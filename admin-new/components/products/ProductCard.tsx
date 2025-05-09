@@ -5,7 +5,7 @@ import { Edit } from "lucide-react";
 
 type Product = {
   id: string;
-  title: string;
+  name: string;
   category: string;
   quantity: number;
   images: string[];
@@ -18,12 +18,13 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
+  console.log(typeof product);
   return (
     <Card className="glass-effect overflow-hidden group">
       <div className="relative h-48 overflow-hidden">
         <img
           src={product?.images[0] ? product?.images[0] : "/no-image.png"}
-          alt={product.title}
+          alt={product.name}
           className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
           width={500}
           height={500}
@@ -52,7 +53,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       </div>
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-1">
-          <h3 className="font-medium line-clamp-1">{product.title}</h3>
+          <h3 className="font-medium line-clamp-1">{product.name}</h3>
           <span className="text-sm font-semibold">
             ${product.price.toFixed(2)}
           </span>

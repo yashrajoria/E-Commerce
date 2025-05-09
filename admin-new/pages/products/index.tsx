@@ -50,7 +50,7 @@ const Products = () => {
   const [products, setProducts] = useState<
     {
       id: string;
-      title: string;
+      name: string;
       category: string;
       price: number;
       quantity: number;
@@ -68,10 +68,11 @@ const Products = () => {
   // Filter products based on search query
   const filteredProducts = products.filter(
     (product) =>
-      product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchQuery.toLowerCase())
+      product?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product?.category?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  console.log({ filteredProducts });
   // Calculate pagination
   const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
   const paginatedProducts = filteredProducts.slice(
@@ -191,7 +192,7 @@ const Products = () => {
                               <div className="h-10 w-10 rounded-md bg-white/10 overflow-hidden">
                                 <img
                                   src={product?.images[0]}
-                                  alt={product?.title}
+                                  alt={product?.name}
                                   width={40}
                                   height={40}
                                   priority
@@ -199,7 +200,7 @@ const Products = () => {
                                 />
                               </div>
                               <span className="font-medium">
-                                {product?.title}
+                                {product?.name}
                               </span>
                             </div>
                           </TableCell>

@@ -64,7 +64,7 @@ const singleProductSchema = z.object({
 });
 interface Category {
   _id: string;
-  name: string;
+  name: string[];
 }
 const AddProduct = () => {
   //   const { toast } = useToast();
