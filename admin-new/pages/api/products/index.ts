@@ -7,15 +7,31 @@ import axios from "axios";
 
 export const config = {
   api: {
-    bodyParser: false, // Required for formidable to work
+    bodyParser: false,
   },
 };
+// Helper to parse JSON body when bodyParser is disabled
+async function parseJSONBody(req: NextApiRequest): Promise<any> {
+  return new Promise((resolve, reject) => {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk;
+    });
+    req.on("end", () => {
+      try {
+        const parsed = JSON.parse(body);
+        resolve(parsed);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  });
+}
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  console.log(req.body);
   if (req.method === "POST" && req.query.isBulk === "1") {
     // Parse incoming form data
     const form = formidable({ keepExtensions: true });
@@ -71,16 +87,26 @@ export default async function handler(
       }
     });
   } else if (req.method === "POST") {
+    // console.log("REQ", req);
+    const jsonBody = await parseJSONBody(req); // manually parse since bodyParser is disabled
+    console.log(jsonBody);
+
     // Handle normal product creation
+    // Extract token from cookie
+    const cookie = req.headers.cookie
+      ?.split(";")
+      .find((c) => c.trim().startsWith("token="));
+
     try {
-      // console.log("REQ", req);
       const response = await axios.post(
-        process.env.NEXT_PUBLIC_AUTH_URL as string,
-        req.body,
+        `${process.env.NEXT_PUBLIC_NEW_API_URL}products` as string,
+        jsonBody,
         {
           headers: {
             "Content-Type": "application/json",
+            Cookie: cookie || "",
           },
+          withCredentials: true,
         }
       );
 
