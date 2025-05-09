@@ -15,6 +15,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  console.log(req.body);
   if (req.method === "POST" && req.query.isBulk === "1") {
     // Parse incoming form data
     const form = formidable({ keepExtensions: true });
@@ -72,6 +73,7 @@ export default async function handler(
   } else if (req.method === "POST") {
     // Handle normal product creation
     try {
+      // console.log("REQ", req);
       const response = await axios.post(
         process.env.NEXT_PUBLIC_AUTH_URL as string,
         req.body,

@@ -50,7 +50,7 @@ import * as z from "zod";
 // Define form schema for single product
 const singleProductSchema = z.object({
   title: z.string().min(2, "Product name must be at least 2 characters"),
-  category: z.string().min(1, "Please select a category"),
+  category: z.array(z.string()).min(1, "At least one category is required"),
   price: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
     message: "Price must be a positive number",
   }),
@@ -82,7 +82,7 @@ const AddProduct = () => {
     resolver: zodResolver(singleProductSchema),
     defaultValues: {
       title: "",
-      category: "",
+      category: [],
       price: "",
       quantity: "",
       description: "",
@@ -114,6 +114,7 @@ const AddProduct = () => {
   const onSubmitSingleProduct = async (
     data: z.infer<typeof singleProductSchema>
   ) => {
+    console.log({ data });
     try {
       // Send to your create product API
       const res = await axios.post("/api/products", data, {
@@ -417,7 +418,10 @@ const AddProduct = () => {
 
                           {/* Submit */}
                           <div className="flex justify-end">
-                            <Button type="submit" className="px-8">
+                            <Button
+                              type="submit"
+                              className="px-8 cursor-pointer"
+                            >
                               <Plus className="mr-2 h-4 w-4" />
                               Create Product
                             </Button>
