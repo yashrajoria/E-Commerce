@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 // import { Link } from "react-router-dom";
 import { ArrowDown, ArrowLeft, Plus, Upload } from "lucide-react";
 // import { useToast } from "@/components/ui/use-toast";
@@ -41,13 +41,12 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
 import Link from "next/link";
 import Papa from "papaparse";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { CldImage } from "next-cloudinary";
 import { toast } from "sonner";
-import axios from "axios";
+import * as z from "zod";
 // Define form schema for single product
 const singleProductSchema = z.object({
   title: z.string().min(2, "Product name must be at least 2 characters"),
@@ -63,18 +62,10 @@ const singleProductSchema = z.object({
   description: z.string().optional(),
   images: z.array(z.string()).optional(),
 });
-
-const PRODUCT_CATEGORIES = [
-  "Electronics",
-  "Computers",
-  "Wearables",
-  "Accessories",
-  "Audio",
-  "Furniture",
-  "Storage",
-  "Displays",
-];
-
+interface Category {
+  _id: string;
+  name: string;
+}
 const AddProduct = () => {
   //   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("single");
@@ -84,6 +75,7 @@ const AddProduct = () => {
   const [csvData, setCsvData] = useState([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [categories, setCategories] = useState([]);
 
   // Form definition for single product
   const form = useForm<z.infer<typeof singleProductSchema>>({
@@ -97,6 +89,7 @@ const AddProduct = () => {
       images: [],
     },
   });
+
   const handleFileUpload = (event: { target: { files: unknown[] } }) => {
     const file = event.target.files?.[0];
     console.log(file, "FILE");
@@ -178,6 +171,26 @@ const AddProduct = () => {
       console.log(err);
     }
   };
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      await axios
+        .get("/api/categories", {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        })
+        .then((res) => {
+          console.log(res.data);
+          setCategories(res?.data);
+        })
+        .catch((err) => {
+          console.error("Error fetching categories:", err);
+        });
+    };
+    fetchCategories();
+  }, []);
 
   return (
     <div className="flex min-h-screen">
@@ -266,14 +279,16 @@ const AddProduct = () => {
                                         </SelectTrigger>
                                       </FormControl>
                                       <SelectContent>
-                                        {PRODUCT_CATEGORIES.map((category) => (
-                                          <SelectItem
-                                            key={category}
-                                            value={category}
-                                          >
-                                            {category}
-                                          </SelectItem>
-                                        ))}
+                                        {categories.map(
+                                          (category: Category) => (
+                                            <SelectItem
+                                              key={category?._id}
+                                              value={category?.name}
+                                            >
+                                              {category?.name}
+                                            </SelectItem>
+                                          )
+                                        )}
                                       </SelectContent>
                                     </Select>
                                     <FormMessage />
