@@ -92,7 +92,7 @@ const Products = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen">
       {/* Sidebar */}
       <DashboardSidebar />
 
