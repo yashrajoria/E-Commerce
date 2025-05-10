@@ -4,7 +4,7 @@ import { Edit } from "lucide-react";
 // import Image from "next/image";
 
 type Product = {
-  id: string;
+  _id: string;
   name: string;
   category: string;
   quantity: number;
@@ -17,8 +17,13 @@ interface ProductCardProps {
   product: Product;
 }
 
+const openEditModal = (product: Product) => {
+  // Function to open the edit modal
+  console.log("Open edit modal for product:", product);
+};
+
 const ProductCard = ({ product }: ProductCardProps) => {
-  console.log(typeof product);
+  console.log(product);
   return (
     <Card className="glass-effect overflow-hidden group">
       <div className="relative h-48 overflow-hidden">
@@ -35,8 +40,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
             variant="secondary"
             size="icon"
             className="h-8 w-8 rounded-full opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300"
+            onClick={() => {
+              openEditModal(product);
+            }}
           >
-            <Edit size={14} />
+            <Edit size={18} />
           </Button>
         </div>
         <div className="absolute top-3 left-3">
