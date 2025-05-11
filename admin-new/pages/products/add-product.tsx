@@ -375,7 +375,7 @@ const AddProduct = () => {
                                             <SelectTrigger className="w-full bg-white dark:bg-gray-950">
                                               <SelectValue placeholder="Select categories" />
                                             </SelectTrigger>
-                                            <SelectContent>
+                                            <SelectContent className="glass-effect">
                                               {categories.map((category) => (
                                                 <SelectItem
                                                   key={category}
