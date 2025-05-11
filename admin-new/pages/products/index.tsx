@@ -30,6 +30,7 @@ import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import ProductCard from "@/components/products/ProductCard";
 import axios from "axios";
 import Link from "next/link";
+import { toast } from "sonner";
 // import Image from "next/image";
 
 const PRODUCTS_PER_PAGE = 10;
@@ -47,9 +48,35 @@ const Products = () => {
     };
     fetchProducts();
   }, []);
+  const [categories, setCategories] = useState([]);
+
+  interface Category {
+    _id: string;
+    name: string[];
+  }
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      await axios
+        .get("/api/categories", {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        })
+        .then((res) => {
+          setCategories(res.data.map((cat: Category) => cat.name));
+        })
+        .catch((err) => {
+          console.error("Error fetching categories:", err);
+          toast.error("Failed to load categories");
+        });
+    };
+    fetchCategories();
+  }, []);
   const [products, setProducts] = useState<
     {
-      id: string;
+      _id: string;
       name: string;
       category: string;
       price: number;
@@ -72,7 +99,6 @@ const Products = () => {
       product?.category?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  console.log({ filteredProducts });
   // Calculate pagination
   const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
   const paginatedProducts = filteredProducts.slice(
@@ -167,7 +193,11 @@ const Products = () => {
               // Grid View
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {paginatedProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard
+                    key={product._id}
+                    product={product}
+                    category={categories}
+                  />
                 ))}
               </div>
             ) : (
@@ -186,7 +216,7 @@ const Products = () => {
                     </TableHeader>
                     <TableBody>
                       {paginatedProducts.map((product) => (
-                        <TableRow key={product.id}>
+                        <TableRow key={product._id}>
                           <TableCell>
                             <div className="flex items-center gap-3">
                               <div className="h-10 w-10 rounded-md bg-white/10 overflow-hidden">
