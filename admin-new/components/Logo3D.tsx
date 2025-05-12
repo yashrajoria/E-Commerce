@@ -47,7 +47,7 @@ const Logo3D = () => {
       className="flex flex-col items-center transition-transform duration-200 ease-out cursor-pointer"
     >
       <div className="relative">
-        <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-violet-600 rounded-2xl flex items-center justify-center shadow-lg relative overflow-hidden animate-spin">
+        <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-violet-600 rounded-2xl flex items-center justify-center shadow-lg relative overflow-hidden animate-spin [animation-duration:5s]">
           {/* Inner cube */}
           <div className="w-12 h-12 bg-gradient-to-tr from-teal-400 to-blue-600 rounded-lg absolute animate-pulse"></div>
 
