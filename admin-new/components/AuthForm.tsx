@@ -123,7 +123,7 @@ const AuthForm = () => {
             onValueChange={(v) => setTab(v as any)}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-2 mb-8">
+            <TabsList className="grid w-full grid-cols-2 mb-8 ">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
@@ -234,14 +234,18 @@ const AuthForm = () => {
                   />
                   <Button
                     type="button"
-                    className="absolute right-3 top-9 text-muted-foreground"
+                    className="absolute right-2 top-5.5 text-muted-foreground"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </Button>
                 </div>
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button
+                  type="submit"
+                  className="w-full bg-purple-800"
+                  disabled={isLoading}
+                >
                   {isLoading ? (
                     <Loader2 className="animate-spin w-4 h-4 mr-2" />
                   ) : (
@@ -257,7 +261,7 @@ const AuthForm = () => {
               <span className="w-full border-t border-white/20" />
             </div>
             <div className="relative flex justify-center text-xs text-muted-foreground">
-              <span className="bg-background px-2">Or continue with</span>
+              <span className="px-2">Or continue with</span>
             </div>
           </div>
 
