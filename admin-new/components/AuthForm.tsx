@@ -11,12 +11,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import axios from "axios";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, LockKeyhole, Mail, User } from "lucide-react";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { toast } from "sonner";
 import OTPVerificationDialog from "./OTPVerificationDialog";
+import { motion } from "framer-motion";
 
 const AuthForm = () => {
   const router = useRouter();
@@ -107,183 +108,246 @@ const AuthForm = () => {
 
   return (
     <>
-      <Card className="w-full max-w-md backdrop-blur-md bg-white/5 border-white/10 border rounded-2xl shadow-xl">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">
-            Authentication
-          </CardTitle>
-          <CardDescription className="text-center">
-            Securely access your admin dashboard
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs
-            value={tab}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            onValueChange={(v) => setTab(v as any)}
-            className="w-full"
-          >
-            <TabsList className="grid w-full grid-cols-2 mb-8 ">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
-
-            <TabsContent
-              value="signin"
-              className="transition-opacity duration-300 ease-in-out"
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+        <Card className="w-full max-w-md backdrop-blur-md bg-white/5 border-white/10 border rounded-2xl shadow-2xl">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center text-gradient">
+              Authentication
+            </CardTitle>
+            <CardDescription className="text-center text-white/70">
+              Securely access your admin dashboard
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs
+              value={tab}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onValueChange={(v) => setTab(v as any)}
+              className="w-full"
             >
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="signin-email">Email</Label>
-                  <Input
-                    id="signin-email"
-                    name="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={signinData.email}
-                    onChange={(e) => handleInputChange(e, "signin")}
-                    disabled={isLoading}
-                    required
-                  />
-                </div>
-
-                <div className="grid gap-2 relative">
-                  <Label htmlFor="signin-password">Password</Label>
-                  <Input
-                    id="signin-password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={signinData.password}
-                    onChange={(e) => handleInputChange(e, "signin")}
-                    disabled={isLoading}
-                    required
-                  />
-                  <button
-                    type="button"
-                    className="absolute right-3 top-9 text-muted-foreground"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-
-                <div className="text-right text-xs text-muted-foreground">
-                  <button type="button" className="hover:underline">
-                    Forgot password?
-                  </button>
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full bg-purple-700 hover:bg-purple-800"
-                  disabled={isLoading}
+              <TabsList className="grid w-full grid-cols-2 mb-8 bg-muted/50">
+                <TabsTrigger
+                  value="signin"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                 >
-                  {isLoading ? (
-                    <Loader2 className="animate-spin w-4 h-4 mr-2" />
-                  ) : (
-                    "Sign In"
-                  )}
-                </Button>
-              </form>
-            </TabsContent>
+                  Sign In
+                </TabsTrigger>
+                <TabsTrigger
+                  value="signup"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
+                  Sign Up
+                </TabsTrigger>
+              </TabsList>
 
-            <TabsContent
-              value="signup"
-              className="transition-opacity duration-300 ease-in-out"
-            >
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="name">Name</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    placeholder="John Doe"
-                    value={signupData.name}
-                    onChange={(e) => handleInputChange(e, "signup")}
-                    disabled={isLoading}
-                    required
-                  />
-                </div>
+              <TabsContent
+                value="signin"
+                className="transition-opacity duration-300 ease-in-out"
+              >
+                <form onSubmit={handleSignIn} className="space-y-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="signin-email" className="text-white/80">
+                      Email
+                    </Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="signin-email"
+                        name="email"
+                        type="email"
+                        placeholder="you@example.com"
+                        value={signinData.email}
+                        onChange={(e) => handleInputChange(e, "signin")}
+                        disabled={isLoading}
+                        required
+                        className="pl-10 bg-white/5 border-white/10 focus:border-primary transition-colors"
+                      />
+                    </div>
+                  </div>
 
-                <div className="grid gap-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input
-                    id="signup-email"
-                    name="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={signupData.email}
-                    onChange={(e) => handleInputChange(e, "signup")}
-                    disabled={isLoading}
-                    required
-                  />
-                </div>
+                  <div className="grid gap-2 relative">
+                    <Label htmlFor="signin-password" className="text-white/80">
+                      Password
+                    </Label>
+                    <div className="relative">
+                      <LockKeyhole className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="signin-password"
+                        name="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={signinData.password}
+                        onChange={(e) => handleInputChange(e, "signin")}
+                        disabled={isLoading}
+                        required
+                        className="pl-10 bg-white/5 border-white/10 focus:border-primary transition-colors"
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-3 text-muted-foreground hover:text-white transition-colors"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff size={16} />
+                        ) : (
+                          <Eye size={16} />
+                        )}
+                      </button>
+                    </div>
+                  </div>
 
-                <div className="grid gap-2 relative">
-                  <Label htmlFor="signup-password">Password</Label>
-                  <Input
-                    id="signup-password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={signupData.password}
-                    onChange={(e) => handleInputChange(e, "signup")}
-                    disabled={isLoading}
-                    required
-                  />
+                  <div className="text-right text-xs text-muted-foreground">
+                    <button
+                      type="button"
+                      className="hover:text-primary transition-colors"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+
                   <Button
-                    type="button"
-                    className="absolute right-2 top-5.5 text-muted-foreground"
-                    onClick={() => setShowPassword(!showPassword)}
+                    type="submit"
+                    className="w-full gradient-teal text-white hover:opacity-90"
+                    disabled={isLoading}
                   >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="animate-spin w-4 h-4 mr-2" />
+                        Signing in...
+                      </>
+                    ) : (
+                      "Sign In"
+                    )}
                   </Button>
-                </div>
+                </form>
+              </TabsContent>
 
-                <Button
-                  type="submit"
-                  className="w-full bg-purple-800"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <Loader2 className="animate-spin w-4 h-4 mr-2" />
-                  ) : (
-                    "Create Account"
-                  )}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+              <TabsContent
+                value="signup"
+                className="transition-opacity duration-300 ease-in-out"
+              >
+                <form onSubmit={handleSignUp} className="space-y-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="name" className="text-white/80">
+                      Name
+                    </Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="name"
+                        name="name"
+                        placeholder="John Doe"
+                        value={signupData.name}
+                        onChange={(e) => handleInputChange(e, "signup")}
+                        disabled={isLoading}
+                        required
+                        className="pl-10 bg-white/5 border-white/10 focus:border-primary transition-colors"
+                      />
+                    </div>
+                  </div>
 
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-white/20" />
+                  <div className="grid gap-2">
+                    <Label htmlFor="signup-email" className="text-white/80">
+                      Email
+                    </Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="signup-email"
+                        name="email"
+                        type="email"
+                        placeholder="you@example.com"
+                        value={signupData.email}
+                        onChange={(e) => handleInputChange(e, "signup")}
+                        disabled={isLoading}
+                        required
+                        className="pl-10 bg-white/5 border-white/10 focus:border-primary transition-colors"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-2 relative">
+                    <Label htmlFor="signup-password" className="text-white/80">
+                      Password
+                    </Label>
+                    <div className="relative">
+                      <LockKeyhole className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="signup-password"
+                        name="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={signupData.password}
+                        onChange={(e) => handleInputChange(e, "signup")}
+                        disabled={isLoading}
+                        required
+                        className="pl-10 bg-white/5 border-white/10 focus:border-primary transition-colors"
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-3 text-muted-foreground hover:text-white transition-colors"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff size={16} />
+                        ) : (
+                          <Eye size={16} />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full gradient-teal text-white hover:opacity-90"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="animate-spin w-4 h-4 mr-2" />
+                        Creating Account...
+                      </>
+                    ) : (
+                      "Create Account"
+                    )}
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
+
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-white/10" />
+              </div>
+              <div className="relative flex justify-center text-xs text-muted-foreground">
+                <span className="px-2 bg-card">Or continue with</span>
+              </div>
             </div>
-            <div className="relative flex justify-center text-xs text-muted-foreground">
-              <span className="px-2">Or continue with</span>
-            </div>
-          </div>
 
-          <Button
-            variant="outline"
-            type="button"
-            disabled={isLoading}
-            onClick={handleGoogleAuth}
-            className="w-full text-white border-white/20 hover:bg-white/10"
-          >
-            <FcGoogle className="mr-2 h-5 w-5" />
-            Continue with Google
-          </Button>
-        </CardContent>
+            <Button
+              variant="outline"
+              type="button"
+              disabled={isLoading}
+              onClick={handleGoogleAuth}
+              className="w-full text-white border-white/10 hover:bg-white/10"
+            >
+              <FcGoogle className="mr-2 h-5 w-5" />
+              Continue with Google
+            </Button>
+          </CardContent>
 
-        <CardFooter className="flex flex-col text-center text-muted-foreground text-sm pb-6 px-8">
-          <p>
-            Protected by enterprise-grade security. We prioritize the protection
-            of your data.
-          </p>
-        </CardFooter>
-      </Card>
+          <CardFooter className="flex flex-col text-center text-muted-foreground text-sm pb-6 px-8">
+            <p className="flex items-center justify-center gap-1">
+              <LockKeyhole size={14} className="text-primary" />
+              Protected by enterprise-grade security
+            </p>
+          </CardFooter>
+        </Card>
+      </motion.div>
 
       <OTPVerificationDialog
         open={showOTPVerification}
