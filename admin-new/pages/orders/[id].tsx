@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -26,6 +27,7 @@ import {
   CheckCircle,
   Clock,
   CreditCard,
+  Loader2,
   MapPin,
   Package,
   RefreshCw,
@@ -46,8 +48,15 @@ const statusIcons = {
 };
 
 // Status badge styling
-const getStatusBadgeStyle = (status) => {
-  const styles = {
+type OrderStatus =
+  | "pending"
+  | "processing"
+  | "shipped"
+  | "delivered"
+  | "cancelled";
+
+const getStatusBadgeStyle = (status: OrderStatus) => {
+  const styles: Record<OrderStatus, string> = {
     pending: "bg-amber-500/10 text-amber-500 border-amber-500/20",
     processing: "bg-blue-400/10 text-blue-400 border-blue-400/20",
     shipped: "bg-violet-500/10 text-violet-500 border-violet-500/20",
@@ -57,64 +66,137 @@ const getStatusBadgeStyle = (status) => {
   return styles[status] || styles["pending"];
 };
 
+// Add these interfaces after the imports
+interface OrderItem {
+  _id: string;
+  name: string;
+  sku: string;
+  price: number;
+  quantity: number;
+  image: string;
+}
+
+interface Address {
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+}
+
+interface Customer {
+  name: string;
+  email: string;
+  phone: string;
+  avatar: string;
+}
+
+interface Order {
+  _id: string;
+  orderNumber: string;
+  customer: Customer;
+  date: string;
+  total: number;
+  subtotal: number;
+  tax: number;
+  shipping: number;
+  discount: number;
+  items: OrderItem[];
+  status: OrderStatus;
+  paymentMethod: string;
+  paymentId: string;
+  shippingAddress: Address;
+  billingAddress: Address;
+  trackingNumber: string;
+  notes?: string;
+}
+
 const OrderDetails = () => {
-  // Mock order data - replace with actual API call
-  const [order, setOrder] = useState({
-    _id: "ord-001",
-    orderNumber: "ORD-2023-001",
-    customer: {
-      name: "John Doe",
-      email: "john@example.com",
-      phone: "+1 (555) 123-4567",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    date: "2023-05-15T10:30:00",
-    total: 129.99,
-    subtotal: 119.99,
-    tax: 10.0,
-    shipping: 0,
-    discount: 0,
-    items: [
-      {
-        _id: "item-001",
-        name: "Premium Wireless Headphones",
-        sku: "SKU-001",
-        price: 79.99,
-        quantity: 1,
-        image: "/placeholder.svg?height=60&width=60",
-      },
-      {
-        _id: "item-002",
-        name: "Smart Fitness Tracker",
-        sku: "SKU-002",
-        price: 39.99,
-        quantity: 1,
-        image: "/placeholder.svg?height=60&width=60",
-      },
-    ],
-    status: "delivered",
-    paymentMethod: "Credit Card",
-    paymentId: "PAY-123456789",
-    shippingAddress: {
-      street: "123 Main St",
-      city: "New York",
-      state: "NY",
-      zipCode: "10001",
-      country: "United States",
-    },
-    billingAddress: {
-      street: "123 Main St",
-      city: "New York",
-      state: "NY",
-      zipCode: "10001",
-      country: "United States",
-    },
-    trackingNumber: "TRK-987654321",
-    notes: "Please leave the package at the front door.",
-  });
+  const router = useRouter();
+  const { id: orderId } = router.query;
+  const [order, setOrder] = useState<Order | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!orderId) return;
+
+    const fetchOrderDetails = async () => {
+      try {
+        setIsLoading(true);
+        // In a real app, fetch from your API using the orderId
+        // const response = await fetch(`/api/orders/${orderId}`);
+        // const data = await response.json();
+
+        // For demo, we'll use the mock data after a delay
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        setOrder({
+          _id: "ord-001",
+          orderNumber: "ORD-2023-001",
+          customer: {
+            name: "Yash Rajoria",
+            email: "john@example.com",
+            phone: "+1 (555) 123-4567",
+            avatar: "/placeholder.svg?height=40&width=40",
+          },
+          date: "2023-05-15T10:30:00",
+          total: 129.99,
+          subtotal: 119.99,
+          tax: 10.0,
+          shipping: 0,
+          discount: 0,
+          items: [
+            {
+              _id: "item-001",
+              name: "Premium Wireless Headphones",
+              sku: "SKU-001",
+              price: 79.99,
+              quantity: 1,
+              image: "/placeholder.svg?height=60&width=60",
+            },
+            {
+              _id: "item-002",
+              name: "Smart Fitness Tracker",
+              sku: "SKU-002",
+              price: 39.99,
+              quantity: 1,
+              image: "/placeholder.svg?height=60&width=60",
+            },
+          ],
+          status: "delivered" as OrderStatus,
+          paymentMethod: "Credit Card",
+          paymentId: "PAY-123456789",
+          shippingAddress: {
+            street: "123 Main St",
+            city: "New York",
+            state: "NY",
+            zipCode: "10001",
+            country: "United States",
+          },
+          billingAddress: {
+            street: "123 Main St",
+            city: "New York",
+            state: "NY",
+            zipCode: "10001",
+            country: "United States",
+          },
+          trackingNumber: "TRK-987654321",
+          notes: "Please leave the package at the front door.",
+        });
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch order details"
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchOrderDetails();
+  }, [orderId]); // Add orderId as dependency
 
   // Format date
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("en-US", {
       year: "numeric",
@@ -125,21 +207,71 @@ const OrderDetails = () => {
     }).format(date);
   };
 
-  // Handle status update
-  const handleStatusUpdate = async (newStatus) => {
+  // Handle status update with proper error handling
+  const handleStatusUpdate = async (newStatus: OrderStatus) => {
     try {
-      // In a real app, you would call your API here
-      // await axios.patch(`/api/orders/${order._id}`, { status: newStatus })
+      if (!order) return;
 
-      // For demo, we'll update the state directly
+      // Optimistically update the UI
+      const previousStatus = order.status;
       setOrder({ ...order, status: newStatus });
 
+      // In a real app, make the API call
+      // try {
+      //   await axios.patch(`/api/orders/${order._id}`, { status: newStatus });
+      // } catch (error) {
+      //   // Revert to previous status if API call fails
+      //   setOrder({ ...order, status: previousStatus });
+      //   throw error;
+      // }
+
+      // For demo, simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 500));
       toast.success(`Order status updated to ${newStatus}`);
     } catch (error) {
       console.error("Error updating order status:", error);
       toast.error("Failed to update order status");
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <p className="text-muted-foreground">Loading order details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <XCircle className="h-8 w-8 text-destructive" />
+          <p className="text-destructive">{error}</p>
+          <Button onClick={() => window.location.reload()} variant="outline">
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!order) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Package className="h-8 w-8 text-muted-foreground" />
+          <p className="text-muted-foreground">No order found</p>
+          <Link href="/orders">
+            <Button variant="outline">Back to Orders</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen">
