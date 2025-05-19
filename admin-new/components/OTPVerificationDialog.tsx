@@ -86,7 +86,7 @@ const OTPVerificationDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="glass-effect max-w-md">
+      <DialogContent className="glass-effect max-w-md p-8 rounded-3xl shadow-2xl">
         {isVerified ? (
           <motion.div
             className="flex flex-col items-center justify-center py-8 text-center"
@@ -102,9 +102,16 @@ const OTPVerificationDialog = ({
               <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
             </motion.div>
             <h2 className="text-2xl font-bold mb-2">Email Verified!</h2>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-6">
               Your email has been successfully verified.
             </p>
+            <Button
+              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white"
+              aria-label="Continue"
+              onClick={onClose}
+            >
+              Continue
+            </Button>
           </motion.div>
         ) : (
           <>
@@ -122,16 +129,22 @@ const OTPVerificationDialog = ({
             </DialogHeader>
 
             <div className="py-4">
-              <div className="mb-5">
+              <div className="mb-5 flex justify-center">
                 <InputOTP
                   maxLength={6}
                   value={value}
                   onChange={setValue}
                   disabled={isVerifying}
+                  aria-label="Enter 6-digit OTP code"
                 >
                   <InputOTPGroup>
                     {Array.from({ length: 6 }).map((_, idx) => (
-                      <InputOTPSlot key={idx} index={idx} />
+                      <InputOTPSlot
+                        key={idx}
+                        index={idx}
+                        className="w-12 h-14 text-xl mx-1 rounded-lg border-2 border-blue-200 focus:border-blue-500 transition-all"
+                        aria-label={`OTP digit ${idx + 1}`}
+                      />
                     ))}
                   </InputOTPGroup>
                 </InputOTP>
@@ -149,6 +162,7 @@ const OTPVerificationDialog = ({
                   className="text-xs text-muted-foreground"
                   disabled={isResending}
                   onClick={handleResendOTP}
+                  aria-label="Resend OTP code"
                 >
                   {isResending ? (
                     <>
@@ -164,9 +178,10 @@ const OTPVerificationDialog = ({
 
             <DialogFooter>
               <Button
-                className="w-full"
+                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white"
                 disabled={value.length < 6 || isVerifying}
                 onClick={handleVerify}
+                aria-label="Verify Email"
               >
                 {isVerifying ? "Verifying..." : "Verify Email"}
               </Button>
