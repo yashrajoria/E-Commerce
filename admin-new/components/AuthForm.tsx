@@ -132,13 +132,13 @@ const AuthForm = () => {
               <TabsList className="grid w-full grid-cols-2 mb-8 bg-muted/50">
                 <TabsTrigger
                   value="signin"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  className="data-[state=active]:bg-blue-700 data-[state=active]:text-primary-foreground"
                 >
                   Sign In
                 </TabsTrigger>
                 <TabsTrigger
                   value="signup"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  className="data-[state=active]:bg-blue-700 data-[state=active]:text-primary-foreground"
                 >
                   Sign Up
                 </TabsTrigger>
@@ -211,7 +211,7 @@ const AuthForm = () => {
 
                   <Button
                     type="submit"
-                    className="w-full gradient-teal text-white hover:opacity-90"
+                    className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:opacity-90"
                     disabled={isLoading}
                   >
                     {isLoading ? (
@@ -303,7 +303,7 @@ const AuthForm = () => {
 
                   <Button
                     type="submit"
-                    className="w-full gradient-teal text-white hover:opacity-90"
+                    className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:opacity-90"
                     disabled={isLoading}
                   >
                     {isLoading ? (
