@@ -9,10 +9,22 @@ export default async function handler(
     return res.status(405).json({ message: "Method not allowed" });
   }
 
+  const { name, email, password } = req.body;
+
+  if (!name || !email || !password) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+  const body = {
+    full_name: name,
+    email,
+    password,
+    role: "admin",
+  };
   try {
+    console.log({ body });
     const response = await axios.post(
       process.env.NEXT_PUBLIC_SIGNUP_URL as string,
-      req.body,
+      body,
       {
         headers: {
           "Content-Type": "application/json",
