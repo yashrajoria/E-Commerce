@@ -18,7 +18,7 @@ export default async function handler(
         ?.split(";")
         .find((c) => c.trim().startsWith("token="));
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_NEW_API_URL}category/`,
+        `${process.env.NEXT_PUBLIC_NEW_API_URL}categories/`,
         {
           headers: {
             "Content-Type": "application/json",
