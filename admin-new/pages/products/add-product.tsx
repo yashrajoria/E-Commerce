@@ -49,6 +49,7 @@ import Papa from "papaparse";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
+import { MultiSelectCombobox } from "@/components/products/MultiSelectCombobox";
 
 // Define form schema for single product
 const singleProductSchema = z.object({
@@ -359,6 +360,12 @@ const AddProduct = () => {
                                       <FormLabel>Categories</FormLabel>
                                       <FormControl>
                                         <div className="relative">
+                                          {/* <MultiSelectCombobox
+                                            form={form}
+                                            name="categories"
+                                            categories={categories}
+                                          /> */}
+                                          {/* 
                                           <Select
                                             value=""
                                             onValueChange={(value) => {
@@ -385,7 +392,7 @@ const AddProduct = () => {
                                                 </SelectItem>
                                               ))}
                                             </SelectContent>
-                                          </Select>
+                                          </Select> */}
 
                                           {/* Show selected items */}
                                           <div className="flex flex-wrap mt-3 gap-2">

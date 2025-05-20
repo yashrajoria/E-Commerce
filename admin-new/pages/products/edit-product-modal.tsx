@@ -25,6 +25,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
 import { AnimatePresence, motion } from "framer-motion";
 import { ImageIcon, Minus, Plus, RotateCw, Save, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -157,7 +158,13 @@ const ProductEditModal = ({
         images,
       };
       console.log({ updatedProduct });
-      // onSave(updatedProduct);
+      const res = await axios.put("/api/products", updatedProduct, {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      });
+      console.log(res.data);
+      toast.success("Product updated successfully!");
+
       toast.success("Product updated successfully!");
       setIsLoading(false);
       onClose();

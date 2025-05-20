@@ -1,110 +1,91 @@
-import { useEffect, useState } from "react";
+import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import ProductCard from "@/components/products/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-} from "@/components/ui/table";
-import {
   Pagination,
   PaginationContent,
   PaginationItem,
+  PaginationLink,
   PaginationNext,
   PaginationPrevious,
-  PaginationLink,
 } from "@/components/ui/pagination";
 import {
-  Search,
-  Plus,
-  Filter,
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useCategories } from "@/hooks/useCategory";
+import { useProducts } from "@/hooks/useProducts";
+import {
   ArrowUpDown,
+  Filter,
+  Loader2Icon,
   Package,
+  Plus,
   Rows3,
+  Search,
 } from "lucide-react";
-import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
-import ProductCard from "@/components/products/ProductCard";
-import axios from "axios";
 import Link from "next/link";
-import { toast } from "sonner";
+import { useState } from "react";
 // import Image from "next/image";
 
-const PRODUCTS_PER_PAGE = 10;
+const PRODUCTS_PER_PAGE = 12;
 
 const Products = () => {
-  useEffect(() => {
-    const fetchProducts = async () => {
-      const res = await axios.get("/api/products", {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
-      });
-      setProducts(res?.data?.products);
-    };
-    fetchProducts();
-  }, []);
-  const [categories, setCategories] = useState([]);
-
-  interface Category {
-    _id: string;
-    name: string[];
-  }
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      await axios
-        .get("/api/categories", {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        })
-        .then((res) => {
-          setCategories(res.data.map((cat: Category) => cat.name));
-        })
-        .catch((err) => {
-          console.error("Error fetching categories:", err);
-          toast.error("Failed to load categories");
-        });
-    };
-    fetchCategories();
-  }, []);
-  const [products, setProducts] = useState<
-    {
-      _id: string;
-      name: string;
-      category: string;
-      price: number;
-      quantity: number;
-      status: string;
-      images: string[];
-      description: string;
-    }[]
-  >([]);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(PRODUCTS_PER_PAGE);
 
-  console.log({ products });
+  const query = {
+    page: currentPage,
+    perPage: perPage,
+    search: searchQuery,
+  };
 
-  // Filter products based on search query
-  const filteredProducts = products.filter(
-    (product) =>
-      product?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product?.category?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const { categories, loading: categoriesLoading } = useCategories();
+  type ProductsMeta = {
+    totalPages: number;
+    // add other properties if needed
+  };
+
+  const {
+    products,
+    loading: productsLoading,
+    meta,
+  } = useProducts(query) as {
+    products: [
+      {
+        _id: string;
+        name: string;
+        category: string;
+        price: number;
+        quantity: number;
+        status: string;
+        images: string[];
+        description: string;
+      }
+    ];
+    loading: boolean;
+    meta: ProductsMeta;
+  };
 
   // Calculate pagination
-  const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
-  const paginatedProducts = filteredProducts.slice(
-    (currentPage - 1) * PRODUCTS_PER_PAGE,
-    currentPage * PRODUCTS_PER_PAGE
-  );
+  const totalPages = meta?.totalPages || 1;
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,6 +96,12 @@ const Products = () => {
   // Handle page change
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handlePerPageChange = (value: string) => {
+    const parsedValue = parseInt(value, 10);
+    setPerPage(parsedValue);
+    setCurrentPage(1); // Reset to first page on per page change
   };
 
   return (
@@ -185,136 +172,161 @@ const Products = () => {
                   <ArrowUpDown size={14} />
                   Sort
                 </Button>
+                {/* Per page selector */}
+                <div className="ml-4 ">
+                  <Select onValueChange={handlePerPageChange}>
+                    <SelectTrigger className="w-[180px] glass-effect">
+                      <SelectValue placeholder="Select Per Page" />
+                    </SelectTrigger>
+                    <SelectContent className="glass-effect">
+                      <SelectGroup>
+                        <SelectLabel>Select Per Page</SelectLabel>
+                        <SelectItem value="12">12</SelectItem>
+                        <SelectItem value="20">20</SelectItem>
+                        <SelectItem value="50">50</SelectItem>
+                        <SelectItem value="100">100</SelectItem>
+                        <SelectItem value="400">400</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
-
-            {/* Products Display */}
-            {viewMode === "grid" ? (
-              // Grid View
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {paginatedProducts.map((product) => (
-                  <ProductCard
-                    key={product._id}
-                    product={product}
-                    category={categories}
-                  />
-                ))}
-              </div>
+            {productsLoading || categoriesLoading ? (
+              <Loader2Icon />
             ) : (
-              // List View
-              <Card className="glass-effect">
-                <CardContent className="p-0 overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Product</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Price</TableHead>
-                        <TableHead>Inventory</TableHead>
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {paginatedProducts.map((product) => (
-                        <TableRow key={product._id}>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <div className="h-10 w-10 rounded-md bg-white/10 overflow-hidden">
-                                <img
-                                  src={product?.images[0]}
-                                  alt={product?.name}
-                                  width={40}
-                                  height={40}
-                                  priority
-                                  className="h-full w-full object-cover"
-                                />
-                              </div>
-                              <span className="font-medium">
-                                {product?.name}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>{product.category}</TableCell>
-                          <TableCell>${product.price.toFixed(2)}</TableCell>
-                          <TableCell>{product.quantity}</TableCell>
-                          <TableCell>
-                            <span
-                              className={`px-2 py-1 text-xs font-medium rounded-full ${
-                                product.quantity >= 1
-                                  ? "bg-emerald-500/10 text-emerald-500"
-                                  : "bg-amber-500/10 text-amber-500"
-                              }`}
-                            >
-                              {product.quantity >= 1
-                                ? "In Stock"
-                                : "Out of Stock"}
-                            </span>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            )}
+              <>
+                {/* Products Display */}
+                {viewMode === "grid" ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {products.map((product) => (
+                      <ProductCard
+                        key={product._id}
+                        product={product}
+                        category={categories}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <Card className="glass-effect">
+                    <CardContent className="p-0 overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Product</TableHead>
+                            <TableHead>Category</TableHead>
+                            <TableHead>Price</TableHead>
+                            <TableHead>Inventory</TableHead>
+                            <TableHead>Status</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {products.map((product) => (
+                            <TableRow key={product._id}>
+                              <TableCell>
+                                <div className="flex items-center gap-3">
+                                  <div className="h-10 w-10 rounded-md bg-white/10 overflow-hidden">
+                                    <img
+                                      src={product?.images[0]}
+                                      alt={product?.name}
+                                      width={40}
+                                      height={40}
+                                      // priority
+                                      className="h-full w-full object-cover"
+                                    />
+                                  </div>
+                                  <span className="font-medium">
+                                    {product?.name}
+                                  </span>
+                                </div>
+                              </TableCell>
+                              <TableCell>{product.category}</TableCell>
+                              <TableCell>${product.price.toFixed(2)}</TableCell>
+                              <TableCell>{product.quantity}</TableCell>
+                              <TableCell>
+                                <span
+                                  className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                    product.quantity >= 1
+                                      ? "bg-emerald-500/10 text-emerald-500"
+                                      : "bg-amber-500/10 text-amber-500"
+                                  }`}
+                                >
+                                  {product.quantity >= 1
+                                    ? "In Stock"
+                                    : "Out of Stock"}
+                                </span>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                )}
 
-            {/* Pagination */}
-            <div className="flex justify-center mt-6">
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      onClick={() =>
-                        handlePageChange(Math.max(1, currentPage - 1))
-                      }
-                      className={
-                        currentPage === 1
-                          ? "pointer-events-none opacity-50"
-                          : ""
-                      }
-                    />
-                  </PaginationItem>
+                {/* Pagination */}
+                <div className="flex justify-center mt-6">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={() =>
+                            handlePageChange(Math.max(1, currentPage - 1))
+                          }
+                          className={
+                            currentPage === 1
+                              ? "pointer-events-none opacity-50"
+                              : ""
+                          }
+                        />
+                      </PaginationItem>
 
-                  {Array.from({ length: Math.min(5, totalPages) }).map(
-                    (_, i) => {
-                      // Logic for showing appropriate page numbers
-                      let pageNum = i + 1;
-                      if (totalPages > 5) {
-                        if (currentPage > 3 && currentPage < totalPages - 1) {
-                          pageNum = currentPage - 2 + i;
-                        } else if (currentPage >= totalPages - 1) {
-                          pageNum = totalPages - 4 + i;
+                      {Array.from({ length: Math.min(5, totalPages) }).map(
+                        (_, i) => {
+                          let pageNum = i + 1;
+                          if (totalPages > 5) {
+                            if (
+                              currentPage > 3 &&
+                              currentPage < totalPages - 1
+                            ) {
+                              pageNum = currentPage - 2 + i;
+                            } else if (currentPage >= totalPages - 1) {
+                              pageNum = totalPages - 4 + i;
+                            }
+                          }
+
+                          return pageNum <= totalPages ? (
+                            <PaginationItem key={pageNum}>
+                              <PaginationLink
+                                isActive={currentPage === pageNum}
+                                onClick={() => handlePageChange(pageNum)}
+                              >
+                                {pageNum}
+                              </PaginationLink>
+                            </PaginationItem>
+                          ) : null;
                         }
-                      }
+                      )}
 
-                      return pageNum <= totalPages ? (
-                        <PaginationItem key={pageNum}>
-                          <PaginationLink
-                            isActive={currentPage === pageNum}
-                            onClick={() => handlePageChange(pageNum)}
-                          >
-                            {pageNum}
-                          </PaginationLink>
-                        </PaginationItem>
-                      ) : null;
-                    }
-                  )}
-
-                  <PaginationItem>
-                    <PaginationNext
-                      onClick={() =>
-                        handlePageChange(Math.min(totalPages, currentPage + 1))
-                      }
-                      className={
-                        currentPage === totalPages
-                          ? "pointer-events-none opacity-50"
-                          : ""
-                      }
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </div>
+                      <PaginationItem>
+                        <PaginationNext
+                          onClick={() =>
+                            handlePageChange(
+                              Math.min(totalPages, currentPage + 1)
+                            )
+                          }
+                          className={
+                            currentPage === totalPages
+                              ? "pointer-events-none opacity-50"
+                              : ""
+                          }
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              </>
+            )}
           </div>
         </main>
       </div>
