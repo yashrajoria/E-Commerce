@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import fs from "fs";
-import formidable from "formidable";
+import formidable, { IncomingForm } from "formidable";
 import FormData from "form-data";
 import axios from "axios";
 
@@ -25,6 +25,7 @@ const parseForm = (
   });
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const parseJSONBody = (req: NextApiRequest): Promise<any> => {
   return new Promise((resolve, reject) => {
     let body = "";
@@ -59,23 +60,69 @@ const proxyRequest = async (config: any, cookie?: string) => {
 };
 
 async function handleCreateProduct(req: NextApiRequest, res: NextApiResponse) {
-  const jsonBody = await parseJSONBody(req);
-  const cookie = extractTokenFromCookie(req);
-  const response = await proxyRequest(
-    {
-      method: "POST",
-      url: `${API_URL}products`,
-      data: jsonBody,
-      headers: {
-        "Content-Type": "application/json",
-      },
-    },
-    cookie
-  );
+  console.log("RECD");
+  const form = new IncomingForm({ multiples: true });
 
-  return res.status(response.status).json(response.data);
+  form.parse(req, async (err, fields, files) => {
+    if (err) {
+      return res.status(500).json({ error: "Error parsing form" });
+    }
+
+    const name = fields.name?.[0];
+    const category = JSON.parse(fields.category?.[0] || "[]");
+    const price = parseFloat(fields.price?.[0]);
+    const quantity = parseInt(fields.quantity?.[0], 10);
+    const description = fields.description?.[0];
+    const images = files.images;
+    // console.log({ images });
+    if (!name || !category.length || isNaN(price)) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("category", JSON.stringify(category));
+    formData.append("price", price.toString());
+    formData.append("quantity", quantity.toString());
+    formData.append("description", description || "");
+    console.log("formData", formData.getHeaders());
+    // Append images
+    const imagesArray = Array.isArray(images) ? images : [images];
+    for (const img of imagesArray) {
+      if (img) {
+        const stream = fs.createReadStream(img.filepath);
+        formData.append("images", stream, img.originalFilename || "image.jpg");
+      }
+    }
+    const cookie = req.headers.cookie
+      ?.split(";")
+      .find((c) => c.trim().startsWith("token="));
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_NEW_API_URL}products`,
+        formData,
+        {
+          headers: {
+            ...formData.getHeaders(), // <-- very important
+
+            Cookie: cookie || "",
+          },
+          withCredentials: true,
+        }
+      );
+      console.log("REACHED");
+      console.log(response);
+
+      return res.status(201).json({
+        message: "Product created successfully",
+      });
+      return res.status(response.status).json(response.data);
+    } catch (error) {
+      console.error("Upload failed:", error?.response?.data || error.message);
+      return res.status(500).json({ message: "Error uploading product" });
+    }
+  });
 }
-
 async function handleGetProducts(req: NextApiRequest, res: NextApiResponse) {
   /*
   console.log("Full Cookie Header:", req.headers.cookie);
@@ -104,6 +151,8 @@ async function handleGetProducts(req: NextApiRequest, res: NextApiResponse) {
     const query = req.query;
     const page = query.page || 1;
     const perPage = query.perPage || 10;
+    console.log("REACHED");
+    console.log(API_URL);
     const response = await axios.get(`${API_URL}products`, {
       headers: {
         "Content-Type": "application/json",
@@ -115,6 +164,7 @@ async function handleGetProducts(req: NextApiRequest, res: NextApiResponse) {
       },
       withCredentials: true,
     });
+    console.log("RESPONSE", response);
     return res.status(response.status).json(response.data);
   } catch (err) {
     console.error("Error fetching products:", err);
@@ -282,3 +332,11 @@ export default async function handler(
 //     return res.status(405).json({ message: "Method not allowed" });
 //   }
 // }
+/*{
+    "name": "Apple iPhone 13 Mini",
+    "category": ["iOS", "Mobile"],
+    "price": 36499,
+    "quantity": 50,
+    "description": "Compact and powerful smartphone with A15 Bionic chip.",
+    "images": ["https://m.media-amazon.com/images/I/71gm8v4uPBL._AC_SX679_.jpg"]
+  }*/
