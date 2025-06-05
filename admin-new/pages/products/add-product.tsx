@@ -2,24 +2,17 @@
 
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import BulkUpload from "@/components/products/BulkUpload";
-import ProductForm from "@/components/products/ProductForm";
+import CategorySection from "@/components/products/CategorySection";
+import ProductInformation from "@/components/products/ProductInformation";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBulkUpload } from "@/hooks/useBulkUpload";
 import { useProductForm } from "@/hooks/useProductForm";
-import axios from "axios";
 import { motion } from "framer-motion";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+
+import { useState } from "react";
+import { FormProvider } from "react-hook-form";
 
 interface Category {
   _id: string;
@@ -39,41 +32,23 @@ interface ImageItem {
   file: File;
   url: string;
 }
+
 const AddProduct = () => {
-  const [activeTab, setActiveTab] = useState("single");
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-
-  const [images, setImages] = useState<ImageItem[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mode, setMode] = useState<"single" | "bulk">("single");
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+  // const [images, setImages] = useState<ImageItem[]>([]);
   const [imagePreview, setImagePreview] = useState(null);
-  const [categories, setCategories] = useState([]);
+  const [uploadedImages, setUploadedImages] = useState<ImageItem[]>([]);
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      await axios
-        .get("/api/categories", {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        })
-        .then((res) => {
-          console.log(res.data);
-          setCategories(res.data.map((cat: Category) => cat.name));
-        })
-        .catch((err) => {
-          console.error("Error fetching categories:", err);
-          toast.error("Failed to load categories");
-        });
-    };
-    fetchCategories();
-  }, []);
   const { form, onSubmitSingleProduct } = useProductForm(
-    setImages,
+    // setImages,
     setImagePreview,
-    setUploadedImage,
-    images,
+    setUploadedImages,
+    uploadedImages,
     imagePreview
   );
+
   const {
     handleFileUpload,
     handleBulkUpload,
@@ -81,107 +56,118 @@ const AddProduct = () => {
     csvData,
     isBulk,
     bulkFile,
+    setCsvData,
   } = useBulkUpload();
 
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      const newImages = Array.from(files).map((file) => ({
+        id: crypto.randomUUID(),
+        file,
+        url: URL.createObjectURL(file),
+      }));
+      setUploadedImages((prev) => [...prev, ...newImages].slice(0, 5));
+    }
+  };
+  const removeImage = (index: number) => {
+    setUploadedImages((prev) => {
+      // Revoke the object URL of the image being removed
+      URL.revokeObjectURL(prev[index].url);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen w-full">
       <DashboardSidebar />
 
       <div className="flex-1">
-        <header className="backdrop-blur-lg sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 border-b">
+        {/* Header */}
+        <motion.header
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="border-b border-white/10 bg-card/30 backdrop-blur-lg sticky top-0 z-10"
+        >
           <div className="h-16 px-6 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Button
-                size="icon"
-                variant="ghost"
-                asChild
-                className="rounded-full"
-              >
-                <Link href="/products">
-                  <ArrowLeft className="h-4 w-4" />
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/" className="flex items-center gap-2">
+                  <ArrowLeft size={16} />
+                  Back to Products
                 </Link>
               </Button>
-              <h1 className="text-xl font-semibold">Add Products</h1>
+              <h1 className="text-xl font-semibold">
+                {mode === "single" ? "Add New Product" : "Bulk Add Products"}
+              </h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant={mode === "single" ? "default" : "outline"}
+                size="sm"
+                className={mode === "single" ? "bg-white text-black" : ""}
+                onClick={() => setMode("single")}
+              >
+                Single Product
+              </Button>
+              <Button
+                variant={mode === "bulk" ? "default" : "outline"}
+                size="sm"
+                className={mode === "bulk" ? "bg-white text-black" : ""}
+                onClick={() => setMode("bulk")}
+              >
+                Bulk Upload
+              </Button>
             </div>
           </div>
-        </header>
+        </motion.header>
 
+        {/* Main Content */}
         <main className="p-6">
           <motion.div
-            className="max-w-5xl mx-auto"
-            initial="hidden"
-            animate="visible"
-            variants={{
-              hidden: { opacity: 0 },
-              visible: {
-                opacity: 1,
-                transition: {
-                  staggerChildren: 0.1,
-                },
-              },
-            }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="max-w-6xl mx-auto"
           >
-            <motion.div className="mb-8" variants={fadeIn}>
-              <Card className="overflow-hidden border border-gray-200 dark:border-gray-800 shadow-lg rounded-xl">
-                <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-b">
-                  <CardTitle className="text-2xl flex items-center gap-2">
-                    <Plus className="h-5 w-5 text-emerald-500" />
-                    Add New Products
-                  </CardTitle>
-                  <CardDescription>
-                    Create single products or upload in bulk using a CSV file
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <Tabs
-                    defaultValue="single"
-                    onValueChange={setActiveTab}
-                    value={activeTab}
-                    className="space-y-6"
-                  >
-                    <TabsList className="grid w-full grid-cols-2 rounded-lg p-1">
-                      <TabsTrigger
-                        value="single"
-                        className="data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700 dark:data-[state=active]:bg-emerald-900/20 dark:data-[state=active]:text-emerald-400"
-                      >
-                        Single Product
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="bulk"
-                        className="data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700 dark:data-[state=active]:bg-emerald-900/20 dark:data-[state=active]:text-emerald-400"
-                      >
-                        Bulk Upload
-                      </TabsTrigger>
-                    </TabsList>
+            {mode === "single" ? (
+              // Single Product Form
+              <FormProvider {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmitSingleProduct)}
+                  className="space-y-8"
+                >
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Main Product Information */}
+                    <ProductInformation
+                      form={form}
+                      handleImageUpload={handleImageUpload}
+                      uploadedImages={uploadedImages}
+                      removeImage={removeImage}
+                    />
 
-                    <TabsContent value="single" className="space-y-6 mt-4">
-                      <ProductForm
-                        form={form}
-                        categories={categories}
-                        images={images}
-                        setImages={setImages}
-                        imagePreview={imagePreview}
-                        setImagePreview={setImagePreview}
-                        uploadedImage={uploadedImage}
-                        setUploadedImage={setUploadedImage}
-                        onSubmitSingleProduct={onSubmitSingleProduct}
-                      />
-                    </TabsContent>
-
-                    <TabsContent value="bulk" className="space-y-6 mt-4">
-                      <BulkUpload
-                        handleFileUpload={handleFileUpload}
-                        handleBulkUpload={handleBulkUpload}
-                        downloadSampleCSV={downloadSampleCSV}
-                        isBulk={isBulk}
-                        csvData={csvData}
-                        bulkFile={bulkFile}
-                      />
-                    </TabsContent>
-                  </Tabs>
-                </CardContent>
-              </Card>
-            </motion.div>
+                    {/* Sidebar */}
+                    <CategorySection
+                      form={form}
+                      isSubmitting={isSubmitting}
+                      setUploadedImages={setUploadedImages}
+                    />
+                  </div>
+                </form>
+              </FormProvider>
+            ) : (
+              // Bulk Upload Interface
+              <BulkUpload
+                csvData={csvData}
+                handleFileUpload={handleFileUpload}
+                downloadSampleCSV={downloadSampleCSV}
+                csvFile={csvFile}
+                handleBulkUpload={handleBulkUpload}
+                isSubmitting={isSubmitting}
+                setCsvData={setCsvData}
+                setCsvFile={setCsvFile}
+              />
+            )}
           </motion.div>
         </main>
       </div>
