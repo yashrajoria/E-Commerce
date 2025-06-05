@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { X, Check } from "lucide-react";
+import { X, Check, LayoutGrid } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,7 +33,7 @@ export function MultiSelectCombobox({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: any;
   name: string;
-  categories: [];
+  categories: string[];
 }) {
   const [open, setOpen] = React.useState(false);
 
@@ -43,7 +43,10 @@ export function MultiSelectCombobox({
       name={name}
       render={({ field }) => (
         <FormItem className="mb-4">
-          <FormLabel>Categories</FormLabel>
+          <FormLabel>
+            <LayoutGrid className="h-5 w-5 text-red-600 dark:text-red-400" />
+            Categories
+          </FormLabel>
           <FormControl>
             <div className="relative">
               <Popover open={open} onOpenChange={setOpen}>
