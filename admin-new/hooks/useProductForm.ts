@@ -27,9 +27,8 @@ const singleProductSchema = z.object({
 });
 
 export function useProductForm(
-  setImages: any,
   setImagePreview: any,
-  setUploadedImage: any,
+  setUploadedImages: any,
   images: any,
   imagePreview: any
 ) {
@@ -58,8 +57,8 @@ export function useProductForm(
       formData.append("description", data.description || "");
 
       if (images && images.length > 0) {
-        images.forEach((img: { file: File | null }) => {
-          if (img?.file instanceof File) {
+        images.forEach((img: { file: File }) => {
+          if (img.file instanceof File) {
             formData.append("images", img.file);
           }
         });
@@ -71,7 +70,6 @@ export function useProductForm(
       for (const pair of formData.entries()) {
         console.log(pair[0], pair[1]);
       }
-
       const res = await axios.post("/api/products", formData, {
         withCredentials: true,
       });
@@ -83,9 +81,8 @@ export function useProductForm(
       }
 
       form.reset();
-      setImages([]);
       setImagePreview(null);
-      setUploadedImage(null);
+      setUploadedImages(null);
       return res;
     } catch (error) {
       console.error("Error submitting product:", error);
