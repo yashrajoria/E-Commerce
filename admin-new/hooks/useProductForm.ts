@@ -44,12 +44,13 @@ export function useProductForm(
     },
   });
 
-  const onSubmitSingleProduct = async (
-    data: z.infer<typeof singleProductSchema>
-  ) => {
+  const onSubmitSingleProduct = async (data) => {
     try {
-      const formData = new FormData();
+      // Transform category into array of strings
+      const transformedCategory = data.category.map((cat) => cat.id);
 
+      console.log(transformedCategory); // <-- now you'll see array of strings
+      const formData = new FormData();
       formData.append("name", data.name);
       formData.append("category", JSON.stringify(data.category));
       formData.append("price", data.price.toString());
@@ -57,7 +58,7 @@ export function useProductForm(
       formData.append("description", data.description || "");
 
       if (images && images.length > 0) {
-        images.forEach((img: { file: File }) => {
+        images.forEach((img) => {
           if (img.file instanceof File) {
             formData.append("images", img.file);
           }
@@ -66,10 +67,10 @@ export function useProductForm(
         formData.append("images", imagePreview);
       }
 
-      // Log contents properly
       for (const pair of formData.entries()) {
         console.log(pair[0], pair[1]);
       }
+
       const res = await axios.post("/api/products", formData, {
         withCredentials: true,
       });
@@ -90,5 +91,33 @@ export function useProductForm(
     }
   };
 
-  return { form, onSubmitSingleProduct };
+  const updateSingleProduct = async (
+    productId: string,
+    data: z.infer<typeof singleProductSchema>
+  ) => {
+    try {
+      // console.log({ data });
+      console.log({ productId });
+      const id = productId._id;
+      console.log(id);
+      const res = await axios.put(`/api/products/${productId}`, data, {
+        withCredentials: true,
+      });
+
+      if (res.status === 200) {
+        toast.success("Product updated successfully!");
+      } else {
+        toast.error("Failed to update product.");
+      }
+    } catch (error) {
+      console.error("Error updating product:", error);
+      toast.error("Error updating product");
+    }
+  };
+  return {
+    form,
+    onSubmitSingleProduct,
+    updateSingleProduct,
+    isSubmitting: form.formState.isSubmitting,
+  };
 }
