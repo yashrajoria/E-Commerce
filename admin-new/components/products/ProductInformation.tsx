@@ -1,32 +1,40 @@
-import { motion, AnimatePresence } from "framer-motion";
-import { Upload, X, Image, DollarSign, Package, FileText } from "lucide-react";
-import React from "react";
+import { useCategories } from "@/hooks/useCategory";
+import { AnimatePresence, motion } from "framer-motion";
+import { DollarSign, FileText, Image, Package, Upload, X } from "lucide-react";
+import { useFormContext } from "react-hook-form";
+import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import {
   Card,
+  CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardContent,
 } from "../ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import {
+  FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage,
-  FormDescription,
 } from "../ui/form";
-import { Textarea } from "../ui/textarea";
 import { Input } from "../ui/input";
-import { Badge } from "../ui/badge";
+import { Textarea } from "../ui/textarea";
+import { MultiSelectCombobox } from "./MultiSelectCombobox";
 
 const ProductInformation = ({
-  form,
+  type,
+  // form,
   handleImageUpload,
   uploadedImages,
   removeImage,
+  // onOpenChange,
 }) => {
+  const form = useFormContext();
+  const { categories } = useCategories();
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -49,30 +57,48 @@ const ProductInformation = ({
       },
     },
   };
+  const isEdit = type === "edit";
 
-  return (
+  const FormBody = (
     <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="lg:col-span-2 space-y-6"
+      className="lg:col-span-2 space-y-6 gap-4"
     >
       {/* Product Information Section */}
       <motion.div variants={itemVariants}>
         <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-50 to-blue-50/50 dark:from-slate-900/50 dark:to-blue-950/30 shadow-xl">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-indigo-500/5" />
           <CardHeader className="relative">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <div className="flex justify-between items-start gap-3">
+              {/* Left Side */}
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                  <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                    Product Information
+                  </CardTitle>
+                  <CardDescription className="text-muted-foreground">
+                    Enter the basic details for your product
+                  </CardDescription>
+                </div>
               </div>
-              <div>
-                <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                  Product Information
-                </CardTitle>
-                <CardDescription className="text-muted-foreground">
-                  Enter the basic details for your product
-                </CardDescription>
+
+              {/* Right Side (Buttons) */}
+              <div className="flex items-center gap-2">
+                <Button type="submit" className="bg-blue-500 text-white">
+                  Create Product
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => form.reset()}
+                >
+                  Reset
+                </Button>
               </div>
             </div>
           </CardHeader>
@@ -144,9 +170,12 @@ const ProductInformation = ({
                           placeholder="0.00"
                           className="h-12 pl-8 border-gray-200 focus:border-green-400 focus:ring-green-400/20 dark:border-gray-700 dark:focus:border-green-500 transition-all duration-200"
                           {...field}
-                          onChange={(e) =>
-                            field.onChange(parseFloat(e.target.value))
-                          }
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(
+                              value === "" ? "" : parseFloat(value)
+                            );
+                          }}
                         />
                       </div>
                     </FormControl>
@@ -170,9 +199,12 @@ const ProductInformation = ({
                         placeholder="0"
                         className="h-12 border-gray-200 focus:border-orange-400 focus:ring-orange-400/20 dark:border-gray-700 dark:focus:border-orange-500 transition-all duration-200"
                         {...field}
-                        onChange={(e) =>
-                          field.onChange(parseInt(e.target.value))
-                        }
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          field.onChange(
+                            value === "" ? "" : parseInt(value, 10)
+                          );
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -180,6 +212,61 @@ const ProductInformation = ({
                 )}
               />
             </div>
+
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            >
+              <MultiSelectCombobox
+                form={form}
+                name="category"
+                categories={categories}
+              />
+              {/* <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex space-x-2 items-center">
+                      <CircleCheck className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                      <FormLabel className="text-zinc-300 w-full">
+                        Status
+                      </FormLabel>
+                    </div>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? ""}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="bg-zinc-800 border-zinc-700 text-zinc-100 w-full">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-zinc-800 border-zinc-700 text-zinc-100">
+                        <SelectItem
+                          value="active"
+                          className="hover:bg-zinc-700"
+                        >
+                          Active
+                        </SelectItem>
+                        <SelectItem
+                          value="inactive"
+                          className="hover:bg-zinc-700"
+                        >
+                          Inactive
+                        </SelectItem>
+                        <SelectItem value="draft" className="hover:bg-zinc-700">
+                          Draft
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              /> */}
+            </motion.div>
           </CardContent>
         </Card>
       </motion.div>
@@ -332,6 +419,20 @@ const ProductInformation = ({
         </Card>
       </motion.div>
     </motion.div>
+  );
+
+  return isEdit ? (
+    // <Dialog open onOpenChange={onOpenChange}>
+    <Dialog open>
+      <DialogContent className="w-full max-w-3xl sm:max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>Edit Product</DialogTitle>
+        </DialogHeader>
+        <div className="max-h-[70vh] overflow-y-auto pr-2">{FormBody}</div>
+      </DialogContent>
+    </Dialog>
+  ) : (
+    FormBody
   );
 };
 
