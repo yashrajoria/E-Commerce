@@ -33,10 +33,10 @@ export function MultiSelectCombobox({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: any;
   name: string;
-  categories: string[];
+  categories: { _id: string; name: string }[];
 }) {
   const [open, setOpen] = React.useState(false);
-
+  console.log(categories);
   return (
     <FormField
       control={form.control}
@@ -71,19 +71,21 @@ export function MultiSelectCombobox({
                       <CommandGroup className="max-h-64 overflow-auto">
                         {categories.map((category) => (
                           <CommandItem
-                            key={category}
-                            value={category}
+                            key={category._id}
+                            value={category.name}
                             onSelect={() => {
-                              if (field.value.includes(category)) {
+                              const alreadySelected =
+                                field.value.includes(category);
+                              if (alreadySelected) {
                                 field.onChange(
                                   field.value.filter(
-                                    (item: string) => item !== category
+                                    (item: { _id: string }) =>
+                                      item._id !== category._id
                                   )
                                 );
                               } else {
-                                field.onChange([...field.value, category]);
+                                field.onChange([...field.value, category.name]);
                               }
-                              // Keep the popover open after selection
                               setOpen(true);
                             }}
                           >
@@ -94,7 +96,7 @@ export function MultiSelectCombobox({
                                   : "opacity-0"
                               }`}
                             />
-                            {category}
+                            {category?.name}
                           </CommandItem>
                         ))}
                       </CommandGroup>
