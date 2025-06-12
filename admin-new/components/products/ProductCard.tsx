@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Package } from "lucide-react";
+import { Package, Edit } from "lucide-react";
 
 interface Product {
   _id: string;
@@ -23,10 +23,10 @@ interface Category {
 interface ProductCardProps {
   product: Product;
   categories: Category[];
+  onEdit?: (product: Product) => void;
 }
 
-const ProductCard = ({ product, categories }: ProductCardProps) => {
-  console.log({ categories });
+const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
   const getCategoryName = (categoryId: string) => {
     const category = categories?.find((cat) => cat._id === categoryId);
     return category?.name || categoryId;
@@ -87,10 +87,7 @@ const ProductCard = ({ product, categories }: ProductCardProps) => {
             </motion.div>
 
             <div className="absolute top-3 left-3">
-              <Badge
-                variant="secondary"
-                className="bg-background/80 backdrop-blur-sm border-border/50 text-xs font-medium"
-              >
+              <Badge variant="secondary" className="bg-white text-black">
                 {getCategoryName(product.category)}
               </Badge>
             </div>
@@ -107,6 +104,25 @@ const ProductCard = ({ product, categories }: ProductCardProps) => {
                 {product.quantity >= 1 ? "In Stock" : "Out of Stock"}
               </Badge>
             </div>
+
+            {/* Edit Button - appears on hover */}
+            <motion.div
+              className="absolute top-3 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              initial={{ opacity: 0, y: -10 }}
+              whileHover={{ opacity: 1, y: 0 }}
+            >
+              <Button
+                size="icon"
+                variant="secondary"
+                className="h-8 w-8 bg-background/90 backdrop-blur-sm hover:bg-primary hover:text-primary-foreground transition-all duration-200"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit?.(product);
+                }}
+              >
+                <Edit className="h-3 w-3" />
+              </Button>
+            </motion.div>
 
             <motion.div
               className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -143,18 +159,30 @@ const ProductCard = ({ product, categories }: ProductCardProps) => {
         </CardContent>
 
         <CardFooter className="p-4 pt-0 space-y-2">
-          <motion.div
-            className="w-full"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Button
-              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-md hover:shadow-lg transition-all duration-300"
-              disabled={product.quantity < 1}
+          <div className="w-full flex gap-2">
+            <motion.div
+              className="flex-1"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              {product.quantity >= 1 ? "View Details" : "Out of Stock"}
-            </Button>
-          </motion.div>
+              <Button
+                className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-primary/90 hover:to-primary/70 shadow-md hover:shadow-lg transition-all duration-300"
+                disabled={product.quantity < 1}
+              >
+                {product.quantity >= 1 ? "View Details" : "Out of Stock"}
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                size="icon"
+                variant="outline"
+                className="hover:bg-accent/50 transition-all duration-300"
+                onClick={() => onEdit?.(product)}
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+            </motion.div>
+          </div>
         </CardFooter>
       </Card>
     </motion.div>
