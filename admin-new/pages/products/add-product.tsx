@@ -2,7 +2,6 @@
 
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import BulkUpload from "@/components/products/BulkUpload";
-import CategorySection from "@/components/products/CategorySection";
 import ProductInformation from "@/components/products/ProductInformation";
 import { Button } from "@/components/ui/button";
 import { useBulkUpload } from "@/hooks/useBulkUpload";
@@ -13,7 +12,7 @@ import Link from "next/link";
 
 import { useState } from "react";
 import { FormProvider } from "react-hook-form";
-
+/*
 interface Category {
   _id: string;
   name: string[];
@@ -27,6 +26,7 @@ const fadeIn = {
     transition: { duration: 0.4 },
   },
 };
+*/
 interface ImageItem {
   id: string;
   file: File;
@@ -134,23 +134,32 @@ const AddProduct = () => {
               // Single Product Form
               <FormProvider {...form}>
                 <form
-                  onSubmit={form.handleSubmit(onSubmitSingleProduct)}
+                  onSubmit={form.handleSubmit(
+                    onSubmitSingleProduct,
+                    (errors) => {
+                      console.log("Validation Errors: ", errors);
+                    }
+                  )}
+                  className="space-y-8"
+                ></form>
+
+                <form
+                  onSubmit={form.handleSubmit(
+                    onSubmitSingleProduct,
+                    (errors) => {
+                      console.log("Validation Errors: ", errors);
+                    }
+                  )}
                   className="space-y-8"
                 >
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Main Product Information */}
                     <ProductInformation
-                      form={form}
                       handleImageUpload={handleImageUpload}
                       uploadedImages={uploadedImages}
                       removeImage={removeImage}
-                    />
-
-                    {/* Sidebar */}
-                    <CategorySection
-                      form={form}
-                      isSubmitting={isSubmitting}
-                      setUploadedImages={setUploadedImages}
+                      type="create"
+                      // onOpenChange={undefined}
                     />
                   </div>
                 </form>
