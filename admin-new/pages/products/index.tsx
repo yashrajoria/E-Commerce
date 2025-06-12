@@ -1,8 +1,11 @@
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import ProductCard from "@/components/products/ProductCard";
+
+import ProductsFilters from "@/components/products/ProductFilters";
+import ProductsHeader from "@/components/products/ProductHeader";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
   Pagination,
   PaginationContent,
@@ -12,13 +15,6 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Table,
   TableBody,
   TableCell,
@@ -26,21 +22,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-import { useProducts } from "@/hooks/useProducts";
-import {
-  ArrowUpDown,
-  Filter,
-  Package,
-  Plus,
-  Rows3,
-  Search,
-} from "lucide-react";
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useCategories } from "@/hooks/useCategory";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import Link from "next/link";
+import { useProducts } from "@/hooks/useProducts";
+import { AnimatePresence, motion } from "framer-motion";
+import { Edit, Package, Plus } from "lucide-react";
+import { useState } from "react";
 
 const PRODUCTS_PER_PAGE = 12;
 
@@ -49,6 +35,8 @@ const Products = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(PRODUCTS_PER_PAGE);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const query = {
     page: currentPage,
@@ -58,7 +46,7 @@ const Products = () => {
 
   const { categories, loading: categoriesLoading } = useCategories();
   const { products, loading: productsLoading, meta } = useProducts(query);
-
+  console.log(products);
   const totalPages = meta?.totalPages || 1;
   const isLoading = productsLoading || categoriesLoading;
 
@@ -75,6 +63,11 @@ const Products = () => {
     const parsedValue = parseInt(value, 10);
     setPerPage(parsedValue);
     setCurrentPage(1);
+  };
+
+  const handleEditProduct = (product: any) => {
+    setEditingProduct(product);
+    setIsEditDialogOpen(true);
   };
 
   const containerVariants = {
@@ -98,39 +91,17 @@ const Products = () => {
       },
     },
   };
+  const productsCount = products?.length || 0;
 
+  const handleViewModeChange = (mode: "grid" | "list") => {
+    setViewMode(mode);
+  };
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <DashboardSidebar />
 
       <div className="flex-1">
-        <motion.header
-          initial={{ y: -50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="border-b border-border/40 bg-card/30 backdrop-blur-xl sticky top-0 z-10 shadow-sm"
-        >
-          <div className="h-16 px-6 flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
-                Products
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                Manage your product inventory
-              </p>
-            </div>
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Button
-                size="sm"
-                className="gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                <Plus size={16} />
-                <Link href="/products/add-product">Add Product</Link>
-              </Button>
-            </motion.div>
-          </div>
-        </motion.header>
-
+        <ProductsHeader productsCount={productsCount} />
         <main className="p-6">
           <motion.div
             variants={containerVariants}
@@ -138,80 +109,15 @@ const Products = () => {
             animate="visible"
             className="flex flex-col gap-8 max-w-7xl mx-auto"
           >
-            <motion.div
-              variants={itemVariants}
-              className="flex flex-col sm:flex-row gap-4"
-            >
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search products..."
-                  className="pl-9 bg-background/50 border-border/50 focus:border-primary/50 transition-all duration-300"
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                />
-              </div>
-              <div className="flex gap-2">
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() =>
-                      setViewMode(viewMode === "grid" ? "list" : "grid")
-                    }
-                    className={`transition-all duration-300 ${
-                      viewMode === "grid"
-                        ? "bg-primary/10 border-primary/50 text-primary"
-                        : "hover:bg-accent/50"
-                    }`}
-                  >
-                    {viewMode === "grid" ? (
-                      <Rows3 size={18} />
-                    ) : (
-                      <Package size={18} />
-                    )}
-                  </Button>
-                </motion.div>
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="hover:bg-accent/50 transition-all duration-300"
-                  >
-                    <Filter size={18} />
-                  </Button>
-                </motion.div>
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1 hover:bg-accent/50 transition-all duration-300"
-                  >
-                    <ArrowUpDown size={14} />
-                    Sort
-                  </Button>
-                </motion.div>
-                <Select onValueChange={handlePerPageChange}>
-                  <SelectTrigger className="w-[140px] bg-background/50 border-border/50 hover:border-primary/50 transition-all duration-300">
-                    <SelectValue placeholder={`${perPage} per page`} />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background/95 backdrop-blur-xl border-border/50">
-                    <SelectItem value="12">12 per page</SelectItem>
-                    <SelectItem value="20">20 per page</SelectItem>
-                    <SelectItem value="50">50 per page</SelectItem>
-                    <SelectItem value="100">100 per page</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <motion.div variants={itemVariants}>
+              <ProductsFilters
+                searchQuery={searchQuery}
+                onSearchChange={handleSearchChange}
+                viewMode={viewMode}
+                onViewModeChange={handleViewModeChange}
+                perPage={perPage}
+                onPerPageChange={handlePerPageChange}
+              />
             </motion.div>
 
             <AnimatePresence mode="wait">
@@ -246,6 +152,7 @@ const Products = () => {
                           <ProductCard
                             product={product}
                             categories={categories}
+                            onEdit={handleEditProduct}
                           />
                         </motion.div>
                       ))}
@@ -276,6 +183,9 @@ const Products = () => {
                                 <TableHead className="font-semibold">
                                   Status
                                 </TableHead>
+                                <TableHead className="font-semibold">
+                                  Actions
+                                </TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -296,7 +206,7 @@ const Products = () => {
                                             "/placeholder.svg"
                                           }
                                           alt={product?.name}
-                                          className="h-full w-full object-contain"
+                                          className="h-full w-full object-cover"
                                         />
                                       </div>
                                       <div>
@@ -330,6 +240,16 @@ const Products = () => {
                                         ? "In Stock"
                                         : "Out of Stock"}
                                     </span>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-8 w-8 hover:bg-accent/50 transition-all duration-200"
+                                      onClick={() => handleEditProduct(product)}
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
                                   </TableCell>
                                 </motion.tr>
                               ))}
@@ -450,6 +370,16 @@ const Products = () => {
           </motion.div>
         </main>
       </div>
+
+      {/* Edit Product Dialog */}
+      {/* <EditProductDialog
+        product={editingProduct}
+        open={isEditDialogOpen}
+        onOpenChange={(open) => {
+          setIsEditDialogOpen(open);
+          if (!open) setEditingProduct(null);
+        }}
+      /> */}
     </div>
   );
 };
