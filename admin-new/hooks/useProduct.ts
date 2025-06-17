@@ -4,8 +4,9 @@ import axios from "axios";
 import { toast } from "sonner";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const useProducts = (query: any) => {
-  const [products, setProducts] = useState<
+export const useProduct = (productId: string) => {
+  console.log({ productId });
+  const [product, setProduct] = useState<
     {
       _id: string;
       name: string;
@@ -18,22 +19,21 @@ export const useProducts = (query: any) => {
     }[]
   >([]);
   const [loading, setLoading] = useState(true);
-  const [meta, setMeta] = useState({});
+  //   const [meta, setMeta] = useState({});
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchProduct = async () => {
       try {
-        const res = await axios.get(
-          `/api/products?page=${query.page}&perPage=${query.perPage}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-            withCredentials: true,
-          }
-        );
-        setProducts(res?.data?.products);
-        setMeta(res?.data?.meta);
+        const res = await axios.get(`/api/products/${productId}`, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        });
+        console.log({ res });
+        setProduct(res?.data);
+        // console.log("META", res.data.meta);
+        // setMeta(res?.data?.meta);
       } catch (error) {
         console.error("Error fetching products:", error);
         toast.error("Failed to load products");
@@ -42,8 +42,8 @@ export const useProducts = (query: any) => {
       }
     };
 
-    fetchProducts();
-  }, [query.page, query.perPage, query.search]);
+    fetchProduct();
+  }, [productId]);
 
-  return { products, loading, meta };
+  return { product, loading };
 };

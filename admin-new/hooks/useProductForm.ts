@@ -114,10 +114,22 @@ export function useProductForm(
       toast.error("Error updating product");
     }
   };
+  const deleteSingleProduct = async (productId: string) => {
+    try {
+      console.log({ productId });
+      const res = await axios.delete(`/api/products/${productId}`, {
+        withCredentials: true,
+      });
+      console.log(res);
+    } catch (err) {
+      console.log(err);
+    }
+  };
   return {
     form,
     onSubmitSingleProduct,
     updateSingleProduct,
+    deleteSingleProduct,
     isSubmitting: form.formState.isSubmitting,
   };
 }
