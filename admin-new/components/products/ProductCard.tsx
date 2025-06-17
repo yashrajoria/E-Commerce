@@ -3,6 +3,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Package, Edit } from "lucide-react";
+import Link from "next/link";
 
 interface Product {
   _id: string;
@@ -166,21 +167,25 @@ const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
               whileTap={{ scale: 0.98 }}
             >
               <Button
-                className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-primary/90 hover:to-primary/70 shadow-md hover:shadow-lg transition-all duration-300"
+                className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-primary/90 hover:to-primary/70 shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
                 disabled={product.quantity < 1}
               >
-                {product.quantity >= 1 ? "View Details" : "Out of Stock"}
+                {product.quantity >= 1 ? (
+                  <Link href={`/products/${product._id}/`}>View Details</Link>
+                ) : (
+                  "Out of Stock"
+                )}
               </Button>
             </motion.div>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
+              {/* <Button
                 size="icon"
                 variant="outline"
                 className="hover:bg-accent/50 transition-all duration-300"
                 onClick={() => onEdit?.(product)}
               >
                 <Edit className="h-4 w-4" />
-              </Button>
+              </Button> */}
             </motion.div>
           </div>
         </CardFooter>

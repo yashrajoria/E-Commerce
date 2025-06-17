@@ -224,48 +224,6 @@ const ProductInformation = ({
                 name="category"
                 categories={categories}
               />
-              {/* <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex space-x-2 items-center">
-                      <CircleCheck className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
-                      <FormLabel className="text-zinc-300 w-full">
-                        Status
-                      </FormLabel>
-                    </div>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value ?? ""}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="bg-zinc-800 border-zinc-700 text-zinc-100 w-full">
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-zinc-800 border-zinc-700 text-zinc-100">
-                        <SelectItem
-                          value="active"
-                          className="hover:bg-zinc-700"
-                        >
-                          Active
-                        </SelectItem>
-                        <SelectItem
-                          value="inactive"
-                          className="hover:bg-zinc-700"
-                        >
-                          Inactive
-                        </SelectItem>
-                        <SelectItem value="draft" className="hover:bg-zinc-700">
-                          Draft
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              /> */}
             </motion.div>
           </CardContent>
         </Card>
