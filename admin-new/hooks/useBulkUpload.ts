@@ -40,7 +40,7 @@ export function useBulkUpload() {
         withCredentials: true,
       });
 
-      if (res.status === 201) {
+      if (res.status === 200) {
         toast.success("Products uploaded successfully!");
         setCsvData([]);
         setBulkFile(null);
