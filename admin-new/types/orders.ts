@@ -31,10 +31,10 @@ export interface OrderItem {
 
 export interface Order {
   _id: string;
-  orderNumber: string;
+  order_number: string;
   customer: Customer;
   date: string;
-  total: number;
+  amount: number;
   subtotal?: number;
   tax?: number;
   shipping?: number;
@@ -47,6 +47,10 @@ export interface Order {
   billingAddress?: Address;
   trackingNumber?: string;
   notes?: string;
+  id: string;
+  user_id: string;
+  CreatedAt: string;
+  updatedAt: string;
 }
 
 export interface SortConfig {
