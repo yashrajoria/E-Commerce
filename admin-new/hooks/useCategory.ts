@@ -14,8 +14,14 @@ export const useCategories = () => {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
         });
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        setCategories(res.data.map((cat: any) => cat.name));
+        setCategories(
+          res.data.map((cat: any) => ({
+            name: cat.name,
+            id: cat._id,
+          }))
+        );
       } catch (error) {
         console.error("Error fetching categories:", error);
         toast.error("Failed to load categories");
