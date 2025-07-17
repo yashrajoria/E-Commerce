@@ -33,13 +33,14 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useProduct } from "@/hooks/useProduct";
 import { useProductForm } from "@/hooks/useProductForm";
+import Head from "next/head";
 
 // You can type this better based on your real product model
 type Product = {
   _id: string;
   name: string;
   sku: string;
-  category_id: string;
+  category_ids: string;
   brand: string;
   description: string;
   images: string[];
@@ -75,6 +76,8 @@ const ProductDetails = () => {
     [],
     null
   );
+
+  console.log(editedProduct);
   const handleSave = async () => {
     if (!editedProduct?._id) {
       toast.error("Product ID missing.");
@@ -86,7 +89,7 @@ const ProductDetails = () => {
     try {
       updateSingleProduct(_id, {
         ...updatePayload,
-        category: [editedProduct.category_id],
+        category: [editedProduct.category_ids],
       });
       toast.success("Product updated successfully!");
       setIsEditing(false);
@@ -127,6 +130,9 @@ const ProductDetails = () => {
 
   return (
     <div className="flex min-h-screen bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-indigo-500/5">
+      <Head>
+        <title>{editedProduct?.name}</title>
+      </Head>
       <DashboardSidebar />
       <div className="flex-1 overflow-hidden">
         <motion.header

@@ -26,6 +26,7 @@ import { useCategories } from "@/hooks/useCategory";
 import { useProducts } from "@/hooks/useProducts";
 import { AnimatePresence, motion } from "framer-motion";
 import { Edit, Package, Plus } from "lucide-react";
+import Head from "next/head";
 import { useState } from "react";
 
 const PRODUCTS_PER_PAGE = 12;
@@ -98,6 +99,9 @@ const Products = () => {
   };
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      <Head>
+        <title>Products</title>
+      </Head>
       <DashboardSidebar />
 
       <div className="flex-1">
