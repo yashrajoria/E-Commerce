@@ -28,13 +28,13 @@ const ProductInfo = ({ product, isEditing, handleInputChange }) => {
         {isEditing ? (
           <Input
             type="text"
-            value={product?.category_id}
+            value={product?.category_ids}
             onChange={(e) => handleInputChange("category", e.target.value)}
             className="w-full bg-zinc-800 border-zinc-700 text-white"
           />
         ) : (
           <p className="text-white font-medium">
-            {product?.category_id || "-"}
+            {product?.category_ids || "-"}
           </p>
         )}
       </div>
