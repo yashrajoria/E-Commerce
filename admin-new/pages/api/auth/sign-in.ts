@@ -16,22 +16,24 @@ export default async function handler(
       {
         headers: {
           "Content-Type": "application/json",
+          Cookie: req.headers.cookie || "",
         },
         withCredentials: true,
       }
     );
 
-    // ✅ Forward the Set-Cookie header to the browser
     const setCookieHeader = response.headers["set-cookie"];
     if (setCookieHeader) {
       res.setHeader("Set-Cookie", setCookieHeader);
     }
 
-    res.status(response.status).json(response.data);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return res.status(response.status).json(response.data);
   } catch (error: any) {
-    console.error("Auth proxy error:", error);
-    res
+    console.error(
+      "🔴 Auth proxy error:",
+      error.response?.data || error.message
+    );
+    return res
       .status(error.response?.status || 500)
       .json({ message: error.response?.data?.message || "Server error" });
   }
