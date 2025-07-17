@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import { OrdersFilters } from "@/components/orders/OrdersFilters";
+import { OrdersTable } from "@/components/orders/OrdersTable";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
@@ -13,14 +14,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Pagination,
   PaginationContent,
@@ -29,18 +22,25 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { OrdersTable } from "@/components/orders/OrdersTable";
-import { OrdersFilters } from "@/components/orders/OrdersFilters";
-import { filterOrders } from "@/lib/orders";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useOrders } from "@/hooks/useOrders";
 import { Order, OrderStatus } from "@/types/orders";
+import { useRouter } from "next/router";
+import { useState } from "react";
 import { toast } from "sonner";
 
 const ORDERS_PER_PAGE = 10;
 
 const Orders = () => {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
-  const [orders, setOrders] = useState<Order[]>([]);
+  const limit = ORDERS_PER_PAGE;
+  // const [orders, setOrders] = useState<Order[]>([]);
   const [filter, setFilter] = useState({
     search: "",
     status: "all" as OrderStatus | "all",
@@ -53,48 +53,15 @@ const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
 
-  // Fetch orders
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        setIsLoading(true);
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+  const query = {
+    page: currentPage,
+    perPage: limit,
+    // search: searchQuery,
+  };
 
-        // In a real app, fetch from your API
-        // const response = await fetch("/api/orders");
-        // const data = await response.json();
+  const { orders, meta, loading: isLoading } = useOrders(query);
 
-        setOrders([
-          // Your mock data here
-          {
-            _id: "ord-001",
-            orderNumber: "ORD-2023-001",
-            customer: {
-              name: "Yash Rajoria",
-              email: "john@example.com",
-              avatar: "/placeholder.svg",
-            },
-            date: "2023-05-15T10:30:00",
-            total: 129.99,
-            items: 3,
-            status: "delivered" as OrderStatus,
-            paymentMethod: "Credit Card",
-            shippingAddress: "123 Main St, New York, NY 10001",
-          },
-          // ... more orders
-        ]);
-      } catch (error) {
-        console.error("Error fetching orders:", error);
-        toast.error("Failed to fetch orders");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchOrders();
-  }, []);
-
+  // return;
   // Handle sort
   const handleSort = (key: string) => {
     setSortConfig((prev) => ({
@@ -105,7 +72,7 @@ const Orders = () => {
 
   // Handle status update
   const handleStatusUpdate = async (orderId: string) => {
-    const order = orders.find((o) => o._id === orderId);
+    const order = orders.find((o) => o.id === orderId);
     if (order) {
       setSelectedOrder(order);
       setIsUpdateDialogOpen(true);
@@ -118,16 +85,7 @@ const Orders = () => {
     setCurrentPage(1);
   };
 
-  // Apply filters and sorting
-  const filteredOrders = filterOrders(orders, filter, sortConfig);
-
-  // Calculate pagination
-  const totalPages = Math.ceil(filteredOrders.length / ORDERS_PER_PAGE);
-  const paginatedOrders = filteredOrders.slice(
-    (currentPage - 1) * ORDERS_PER_PAGE,
-    currentPage * ORDERS_PER_PAGE
-  );
-
+  const totalPages = meta?.total_pages;
   return (
     <div className="flex min-h-screen">
       <DashboardSidebar />
@@ -138,7 +96,7 @@ const Orders = () => {
             <h1 className="text-xl font-semibold">Orders</h1>
             <div className="flex items-center gap-2">
               <Badge className="bg-blue-400 hover:bg-blue-500 transition-all">
-                {filteredOrders.length} Orders
+                {orders.length} Orders
               </Badge>
             </div>
           </div>
@@ -157,7 +115,7 @@ const Orders = () => {
             <Card className="glass-effect overflow-hidden transition-all duration-300 hover:shadow-lg">
               <CardContent className="p-0">
                 <OrdersTable
-                  orders={paginatedOrders}
+                  orders={orders}
                   isLoading={isLoading}
                   sortConfig={sortConfig}
                   onSort={handleSort}
@@ -235,7 +193,7 @@ const Orders = () => {
             <DialogHeader>
               <DialogTitle>Update Order Status</DialogTitle>
               <DialogDescription>
-                Change the status for order {selectedOrder?.orderNumber}
+                Change the status for order {selectedOrder?.order_number}
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
@@ -253,12 +211,6 @@ const Orders = () => {
                           : order
                       )
                     );
-
-                    // In a real app, make the API call here
-                    // await fetch(`/api/orders/${selectedOrder._id}`, {
-                    //   method: "PATCH",
-                    //   body: JSON.stringify({ status: value }),
-                    // });
 
                     toast.success(`Order status updated to ${value}`);
                     setIsUpdateDialogOpen(false);

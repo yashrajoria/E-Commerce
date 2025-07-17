@@ -1,4 +1,7 @@
 // import { useState } from "react";
+import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import OrdersChart from "@/components/dashboard/charts/OrdersChart";
+import RevenueChart from "@/components/dashboard/charts/RevenueChart";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,22 +11,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Wallet,
-  Package,
-  Users,
-  ShoppingCart,
-  ArrowUpRight,
-  Bell,
-  Eye,
-  Activity,
-  BarChart3,
-  Clock,
-} from "lucide-react";
-import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
-import RevenueChart from "@/components/dashboard/charts/RevenueChart";
-import OrdersChart from "@/components/dashboard/charts/OrdersChart";
+import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
+import {
+  Activity,
+  ArrowUpRight,
+  BarChart3,
+  Bell,
+  Clock,
+  Eye,
+  Package,
+  Search,
+  ShoppingCart,
+  Users,
+  Wallet,
+} from "lucide-react";
+import { GetServerSideProps } from "next";
 // import { formatCurrency } from "@/lib/utils";
 
 // Animation configuration
@@ -42,7 +45,7 @@ const item = {
   show: { opacity: 1, y: 0 },
 };
 
-const Dashboard = () => {
+const Dashboard = ({ name }: { name: string }) => {
   const stats = [
     {
       title: "Total Revenue",
@@ -65,13 +68,13 @@ const Dashboard = () => {
       icon: Package,
       color: "gradient-purple",
     },
-    {
-      title: "Active Users",
-      value: "2,317",
-      trend: "+8.4%",
-      icon: Users,
-      color: "gradient-amber",
-    },
+    // {
+    //   title: "Active Users",
+    //   value: "2,317",
+    //   trend: "+8.4%",
+    //   icon: Users,
+    //   color: "gradient-amber",
+    // },
   ];
 
   const activities = [
@@ -103,6 +106,9 @@ const Dashboard = () => {
 
   return (
     <div className="flex min-h-screen">
+      <Head>
+        <title>Dashboard</title>
+      </Head>
       {/* Sidebar */}
       <DashboardSidebar />
 
@@ -112,6 +118,10 @@ const Dashboard = () => {
         <header className="border-b border-white/10 bg-card/30 backdrop-blur-lg sticky top-0 z-10">
           <div className="h-16 px-6 flex items-center justify-between">
             <h1 className="text-xl font-semibold">Dashboard</h1>
+            <div className="flex items-center gap-4">
+              <Search />
+              <Input className="rounded-md px-4 py-2 bg-background border border-border text-sm w-72 shadow-sm" />
+            </div>
             <div className="flex items-center gap-4">
               <Button variant="ghost" size="icon" className="relative">
                 <Bell size={18} />
@@ -134,7 +144,9 @@ const Dashboard = () => {
               className="flex justify-between items-center flex-wrap gap-4"
             >
               <div>
-                <h2 className="text-3xl font-bold mb-2">Welcome back, Admin</h2>
+                <h2 className="text-3xl font-bold mb-2">
+                  Welcome back, <span className="text-gradient">{name}</span>
+                </h2>
                 <p className="text-muted-foreground">
                   Here&apos;s what&apos;s happening with your store today
                 </p>
@@ -276,3 +288,40 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
+import jwt from "jsonwebtoken";
+import Head from "next/head";
+
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+  const cookie = req.cookies["token"];
+  const token = cookie ? cookie : null;
+  let name: string | null = null;
+  const decoded = token
+    ? jwt.verify(token, process.env.JWT_SECRET as string)
+    : null;
+  if (decoded && typeof decoded === "object" && "name" in decoded) {
+    name = (decoded as { name?: string }).name ?? null;
+  }
+  if (!decoded) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  if (!token) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+  return {
+    props: {
+      name,
+    },
+  };
+};
