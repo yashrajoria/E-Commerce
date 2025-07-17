@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useOrders } from "@/hooks/useOrders";
 
 // Status icons mapping
 const statusIcons = {
@@ -117,12 +118,17 @@ const OrderDetails = () => {
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const query = {
+    orderId: orderId,
+  };
 
+  const getOrder = useOrders(query);
   useEffect(() => {
     if (!orderId) return;
 
     const fetchOrderDetails = async () => {
       try {
+        console.log({ getOrder });
         setIsLoading(true);
         // In a real app, fetch from your API using the orderId
         // const response = await fetch(`/api/orders/${orderId}`);
