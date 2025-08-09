@@ -1,26 +1,34 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Search, ShoppingCart, User, Menu, Heart, Bell } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Badge } from "../ui/badge";
-// import { MegaMenu } from './mega-menu';
-// import { CartDrawer } from '../common/cart-drawer';
+import { MegaMenu } from "./mega-menu";
+import { CartDrawer } from "../common/cart-drawer";
 import { LoginModal } from "../common/login-modal";
+import Link from "next/link";
+import { AccountDropdown } from "../common/account-dropwdown";
+import { CartItem, useCart } from "@/context/CartContext";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
+
+  const [loggedIn, setLoggedIn] = useState(true);
   const { theme, setTheme } = useTheme();
+
+  const { cart } = useCart();
 
   return (
     <>
       <motion.header
-        className="sticky top-0 z-50 w-full border-b bg-black"
+        className="sticky top-0 z-50 w-full border-b "
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -37,7 +45,9 @@ export function Header() {
                 <span className="text-white font-bold text-sm">S</span>
               </div>
               <span className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                SuperStore
+                <Link href="/" className="hover:underline">
+                  SuperStore
+                </Link>
               </span>
             </motion.div>
 
@@ -52,7 +62,7 @@ export function Header() {
 
                 <Button
                   size="sm"
-                  className="bg-white text-black absolute right-1 top-1/2 transform -translate-y-1/2 h-8"
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8"
                 >
                   Search
                 </Button>
@@ -66,7 +76,7 @@ export function Header() {
                 size="icon"
                 className="relative hover:bg-muted/50 cursor-pointer"
               >
-                <Heart className="h-5 w-5 text-white" />
+                <Heart className="h-5 w-5 " />
                 <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
                   3
                 </Badge>
@@ -78,9 +88,9 @@ export function Header() {
                 className="relative hover:bg-muted/50 cursor-pointer"
                 onClick={() => setIsCartOpen(true)}
               >
-                <ShoppingCart className="h-5 w-5 text-white" />
+                <ShoppingCart className="h-5 w-5" />
                 <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
-                  2
+                  {cart.length}
                 </Badge>
               </Button>
 
@@ -89,16 +99,20 @@ export function Header() {
                 size="icon"
                 className="hover:bg-muted/50 cursor-pointer"
               >
-                <Bell className="h-5 w-5 text-white" />
+                <Bell className="h-5 w-5" />
               </Button>
 
               <Button
                 variant="outline"
-                className="bg-black text-white hover:bg-muted/50 hover:text-white cursor-pointer"
-                onClick={() => setIsLoginOpen(true)}
+                className="hover:bg-muted/50 cursor-pointer"
+                onClick={() =>
+                  loggedIn
+                    ? setIsAccountOpen(!isAccountOpen)
+                    : setIsLoginOpen(true)
+                }
               >
                 <User className="h-4 w-4 mr-2" />
-                Login
+                {loggedIn ? "My Account" : "Login"}
               </Button>
 
               <Button
@@ -113,6 +127,13 @@ export function Header() {
                   {theme === "dark" ? "☀️" : "🌙"}
                 </motion.div>
               </Button>
+              {loggedIn && (
+                <AccountDropdown
+                  isOpen={isAccountOpen}
+                  onClose={() => setIsAccountOpen(false)}
+                  setLoggedIn={setLoggedIn}
+                />
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -145,13 +166,22 @@ export function Header() {
       </motion.header>
 
       {/* Mobile Menu */}
-      {/* <MegaMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} /> */}
+      <MegaMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
 
       {/* Cart Drawer */}
-      {/* <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} /> */}
+      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
 
       {/* Login Modal */}
-      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
+      <LoginModal
+        isOpen={isLoginOpen}
+        setLoggedIn={setLoggedIn}
+        loggedIn={loggedIn}
+        onClose={() => {
+          setIsLoginOpen(false);
+          // Close account dropdown if it was open when login modal was triggered
+          setIsAccountOpen(false);
+        }}
+      />
     </>
   );
 }
