@@ -1,30 +1,38 @@
 import "@/styles/globals.css";
 import { ThemeProvider } from "next-themes";
 import type { AppProps } from "next/app";
-import { Metadata } from "next/types";
 import { Inter } from "next/font/google";
+import { Toaster } from "sonner";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { UserProvider } from "@/context/UserContext";
+import { CartProvider } from "@/context/CartContext";
 
-export const metadata: Metadata = {
-  title: "SuperStore - Everything You Need in One Place",
-  description:
-    "Discover millions of products from trusted brands. Fast delivery, secure payments, and unbeatable prices.",
-};
 const inter = Inter({ subsets: ["latin"] });
+
+const queryClient = new QueryClient();
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
       {/* <html lang="en" suppressHydrationWarning> */}
-      <body className={inter.className}>
+      <div className={inter.className}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <Component {...pageProps} />
+          <UserProvider>
+            <CartProvider>
+              <Toaster />
+              <QueryClientProvider client={queryClient}>
+                <Component {...pageProps} />
+              </QueryClientProvider>
+            </CartProvider>
+          </UserProvider>
         </ThemeProvider>
-      </body>
+      </div>
+
       {/* </html> */}
     </>
   );
