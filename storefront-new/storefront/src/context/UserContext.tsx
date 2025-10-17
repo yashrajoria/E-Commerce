@@ -1,25 +1,27 @@
-import { getUserData } from "@/lib/user";
+import { getUserData, logoutUser } from "@/lib/user";
 import {
   createContext,
   useContext,
   useEffect,
   useState,
+  useCallback,
   ReactNode,
 } from "react";
 
-// NOTE: You should adjust this to match your actual user data structure.
 interface User {
   id: string;
   email: string;
   name: string;
   phone_number?: string;
-  created_at: string; // Assuming this is a date string
+  created_at: string;
   role: string;
 }
 
 interface UserContextType {
   user: User | null;
   loading: boolean;
+  refetchUser: () => void;
+  signOut: () => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -30,30 +32,59 @@ interface UserProviderProps {
 
 export function UserProvider({ children }: UserProviderProps) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Always start in a loading state
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const userData: User = await getUserData();
-        console.log(userData);
-        setUser(userData);
-      } catch (err) {
-        console.error("[UserContext] Fetch failed:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUser();
+  const fetchUser = useCallback(async () => {
+    try {
+      const userData: User = await getUserData();
+      setUser(userData);
+    } catch (err) {
+      // If fetching the user fails, it means they are not logged in.
+      setUser(null);
+    } finally {
+      // Always stop loading after the first attempt
+      setLoading(false);
+    }
   }, []);
 
-  const value = { user, loading };
+  const signOut = useCallback(async () => {
+    try {
+      // Call the backend API to clear the HttpOnly cookies
+      await logoutUser();
+    } catch (error) {
+      console.error("[UserContext] Logout API call failed:", error);
+    } finally {
+      // Always clear the frontend state
+      setUser(null);
+    }
+  }, []);
+
+  // On initial application load, always try to fetch the user.
+  // The presence of valid cookies will determine if this succeeds or fails.
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
+
+  // Add an event listener to handle forced logouts from the Axios interceptor
+  useEffect(() => {
+    const handleForcedLogout = () => {
+      console.log("Forced logout event received.");
+      signOut();
+    };
+
+    window.addEventListener("logout", handleForcedLogout);
+
+    // Cleanup the event listener when the component unmounts
+    return () => {
+      window.removeEventListener("logout", handleForcedLogout);
+    };
+  }, [signOut]);
+
+  const value = { user, loading, refetchUser: fetchUser, signOut };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }
 
-// Custom hook for easy usage
 export function useUser() {
   const context = useContext(UserContext);
   if (context === undefined) {
