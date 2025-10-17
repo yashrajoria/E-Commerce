@@ -25,9 +25,14 @@ export const registerUser = async (
 };
 
 export const verifyEmail = async (email: string, code: string) => {
-  const response = await axiosInstance.post(API_ROUTES.AUTH.VERIFY_EMAIL, {
-    email,
-    code,
-  });
-  return response.data;
+  console.log(email, code);
+  try {
+    const response = await axiosInstance.post(API_ROUTES.AUTH.VERIFY_EMAIL, {
+      email,
+      code,
+    });
+    return response.data;
+  } catch (err) {
+    console.log(err);
+  }
 };

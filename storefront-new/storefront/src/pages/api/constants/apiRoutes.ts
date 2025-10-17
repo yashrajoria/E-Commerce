@@ -2,13 +2,14 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export const API_ROUTES = {
   AUTH: {
-    LOGIN: `${BASE_URL}/auth/login`,
-    REGISTER: `${BASE_URL}/auth/register`,
-    VERIFY_EMAIL: `${BASE_URL}/auth/verify-email`,
-    LOGOUT: `${BASE_URL}/auth/logout`,
+    LOGIN: `${BASE_URL}/auth/auth/login`,
+    REGISTER: `${BASE_URL}/auth/auth/register`,
+    VERIFY_EMAIL: `${BASE_URL}/auth/auth/verify-email`,
+    LOGOUT: `${BASE_URL}/auth/auth/logout`,
+    REFRESH: `${BASE_URL}/auth/auth/refresh-token`,
   },
   USER: {
-    PROFILE: `${BASE_URL}/users/profile`,
+    PROFILE: `${BASE_URL}/users/profile/`,
     UPDATE_PASSWORD: `${BASE_URL}/users/change-password`,
     UPDATE_USER_DATA: `${BASE_URL}/users/profile`,
   },
