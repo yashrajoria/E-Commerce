@@ -5,65 +5,12 @@ import { motion } from "framer-motion";
 import { Package, Truck, CheckCircle, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useUserOrders } from "@/hooks/useOrders";
+import Image from "next/image";
 
-const orders = [
-  {
-    id: "ORD-2024-001",
-    date: "2024-01-20",
-    status: "delivered",
-    total: 159.98,
-    items: [
-      {
-        name: "Wireless Bluetooth Headphones",
-        image:
-          "https://images.pexels.com/photos/3394650/pexels-photo-3394650.jpeg?auto=compress&cs=tinysrgb&w=100",
-        quantity: 1,
-        price: 79.99,
-      },
-      {
-        name: "Wireless Charging Pad",
-        image:
-          "https://images.pexels.com/photos/4968636/pexels-photo-4968636.jpeg?auto=compress&cs=tinysrgb&w=100",
-        quantity: 2,
-        price: 34.99,
-      },
-    ],
-  },
-  {
-    id: "ORD-2024-002",
-    date: "2024-01-15",
-    status: "shipped",
-    total: 199.99,
-    items: [
-      {
-        name: "Smart Fitness Watch",
-        image:
-          "https://images.pexels.com/photos/393047/pexels-photo-393047.jpeg?auto=compress&cs=tinysrgb&w=100",
-        quantity: 1,
-        price: 199.99,
-      },
-    ],
-  },
-  {
-    id: "ORD-2024-003",
-    date: "2024-01-10",
-    status: "processing",
-    total: 149.99,
-    items: [
-      {
-        name: "Premium Coffee Maker",
-        image:
-          "https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&cs=tinysrgb&w=100",
-        quantity: 1,
-        price: 149.99,
-      },
-    ],
-  },
-];
-
-const getStatusIcon = (status: string) => {
-  switch (status) {
-    case "delivered":
+const getStatusIcon = (Status: string) => {
+  switch (Status) {
+    case "paid":
       return <CheckCircle className="h-4 w-4 text-green-500" />;
     case "shipped":
       return <Truck className="h-4 w-4 text-blue-500" />;
@@ -74,9 +21,9 @@ const getStatusIcon = (status: string) => {
   }
 };
 
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "delivered":
+const getStatusColor = (Status: string) => {
+  switch (Status) {
+    case "paid":
       return "bg-green-500";
     case "shipped":
       return "bg-blue-500";
@@ -88,6 +35,12 @@ const getStatusColor = (status: string) => {
 };
 
 export function OrderHistory() {
+  const data = useUserOrders();
+  console.log({ data });
+  console.log((data?.orders?.orders ?? []).map((order) => order.ID));
+  const ordersData = data?.orders?.orders ?? [];
+
+  // return;
   return (
     <motion.div
       className="space-y-6"
@@ -100,9 +53,9 @@ export function OrderHistory() {
         <Button variant="outline">Download All</Button>
       </div>
 
-      {orders.map((order, index) => (
+      {ordersData.map((order, index) => (
         <motion.div
-          key={order.id}
+          key={order.ID}
           className="bg-card border rounded-lg p-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -110,24 +63,25 @@ export function OrderHistory() {
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
-              <h3 className="font-semibold">{order.id}</h3>
-              <Badge className={getStatusColor(order.status)}>
-                {getStatusIcon(order.status)}
-                <span className="ml-1 capitalize">{order.status}</span>
+              <h3 className="font-semibold">{order.OrderNumber}</h3>
+              <Badge className={getStatusColor(order.Status)}>
+                {getStatusIcon(order.Status)}
+                <span className="ml-1 capitalize">{order.Status}</span>
               </Badge>
             </div>
             <div className="text-right">
-              <p className="font-semibold">${order.total.toFixed(2)}</p>
+              <p className="font-semibold">${order.Amount.toFixed(2)}</p>
               <p className="text-sm text-muted-foreground">
-                {new Date(order.date).toLocaleDateString()}
+                {/* {new Date(order.date).toLocaleDateString()} */}
+                {new Date(order.CompletedAt).toLocaleDateString()}
               </p>
             </div>
           </div>
 
           <div className="space-y-3">
-            {order.items.map((item, itemIndex) => (
+            {order.OrderItems.map((item, itemIndex) => (
               <div key={itemIndex} className="flex items-center space-x-4">
-                <img
+                <Image
                   src={item.image}
                   alt={item.name}
                   className="w-12 h-12 object-cover rounded-lg"
@@ -135,7 +89,7 @@ export function OrderHistory() {
                 <div className="flex-1">
                   <p className="font-medium">{item.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    Qty: {item.quantity} × ${item.price}
+                    Qty: {item.Quantity} × ${item.Price}
                   </p>
                 </div>
               </div>
