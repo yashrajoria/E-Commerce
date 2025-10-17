@@ -1,44 +1,44 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  User,
-  Package,
-  Heart,
-  Settings,
-  Bell,
-  CreditCard,
-  MapPin,
-  Shield,
-  LogOut,
-  ChevronRight,
-  Star,
-  Clock,
-  Gift,
-  Crown,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { useUser } from "@/context/UserContext";
-import { useRouter } from "next/router";
 import { logoutUser } from "@/lib/user";
+import axios from "axios";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Bell,
+  ChevronRight,
+  CreditCard,
+  Crown,
+  Heart,
+  LogOut,
+  MapPin,
+  Package,
+  Settings,
+  User,
+} from "lucide-react";
+import { useRouter } from "next/router";
+import { useState } from "react";
 
 interface AccountDropdownProps {
   isOpen: boolean;
   onClose: () => void;
-  setLoggedIn: (value: boolean) => void;
+  // setLoggedIn: (value: boolean) => void;
 }
 
 export function AccountDropdown({
   isOpen,
   onClose,
-  setLoggedIn,
-}: AccountDropdownProps) {
+}: // setLoggedIn,
+AccountDropdownProps) {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
-  const { user, loading } = useUser();
+  const { user, loading, signOut } = useUser();
+  // const getAccountStats = async () => {
+  //   await axios.get()
+  // }
   const accountStats = [
     {
       label: "Orders",
@@ -124,7 +124,13 @@ export function AccountDropdown({
   const handleLogout = async () => {
     const response = await logoutUser();
     console.log(response);
-    setLoggedIn(false);
+    // setLoggedIn(false);
+    if (signOut) {
+      signOut();
+    }
+
+    localStorage.removeItem("isLoggedIn");
+    router.push("/");
     onClose();
     console.log("Logged out");
   };
