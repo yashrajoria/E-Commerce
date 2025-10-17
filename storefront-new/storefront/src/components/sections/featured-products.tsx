@@ -5,10 +5,12 @@ import { motion } from "framer-motion";
 import { Star, Heart, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { featuredProducts } from "@/lib/data";
+// import { featuredProducts } from "@/lib/data";
 import { useCart } from "@/context/CartContext";
+import { useProducts } from "@/hooks/useProducts";
 
 export function FeaturedProducts() {
+  const { data: products = [], isLoading, error } = useProducts(4, 1, true);
   const { addToCart } = useCart();
   return (
     <section className="py-16">
@@ -27,7 +29,7 @@ export function FeaturedProducts() {
 
         {/* Masonry Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featuredProducts.map((product, index) => (
+          {products?.products?.map((product, index) => (
             <motion.div
               key={product.id}
               className={`group relative ${
@@ -46,7 +48,7 @@ export function FeaturedProducts() {
                   } overflow-hidden`}
                 >
                   <motion.img
-                    src={product.image}
+                    src={product.images[0]}
                     alt={product.name}
                     className="w-full h-full object-cover"
                     whileHover={{ scale: 1.05 }}
@@ -134,9 +136,12 @@ export function FeaturedProducts() {
                     </Button>
                   </div>
 
-                  {!product.inStock && (
-                    <Badge variant="destructive" className="mt-2">
-                      Out of Stock
+                  {product.quantity >= 0 && (
+                    <Badge
+                      variant="default"
+                      className="mt-2 bg-green-600 text-white"
+                    >
+                      In Stock
                     </Badge>
                   )}
                 </div>

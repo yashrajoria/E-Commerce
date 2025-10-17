@@ -42,7 +42,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const handleAddToCart = () => {
     console.log("first");
     addToCart({
-      id: product.id,
+      _id: product.id,
       name: product.name,
       price: product.price,
       image: product.image,
@@ -220,7 +220,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
               <Button size="lg" className="flex-1" onClick={handleAddToCart}>
                 <ShoppingCart className="h-4 w-4 mr-2" />
-                Add to Cart
+                Add to Cartss
               </Button>
 
               <Button variant="outline" size="icon">

@@ -7,69 +7,63 @@ import { SearchFilters } from "@/components/search/search-filters";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { useProducts } from "@/hooks/useProducts";
-import { categories, featuredProducts } from "@/lib/data";
+import { categories } from "@/lib/data";
 import { motion } from "framer-motion";
 import { Filter, Grid, List, Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react"; // Imported useEffect
 
 export default function SearchPage() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [priceRange, setPriceRange] = useState([0, 500]);
   const [sortBy, setSortBy] = useState("relevance");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showFilters, setShowFilters] = useState(false);
-  const [filteredProducts, setFilteredProducts] = useState(featuredProducts);
-  const { data: products = [], isLoading, error } = useProducts();
-  console.log({ products });
+  const [productCount, setProductCount] = useState(12);
+
+  // Set page from URL query on initial load
+  const [page, setPage] = useState(Number(router.query.page) || 1);
+
+  const {
+    data: products = [],
+    isLoading,
+    error,
+  } = useProducts(productCount, page);
+
+  console.log(products);
+  // Effect to update state if URL changes (e.g., browser back/forward)
   useEffect(() => {
-    let filtered = featuredProducts;
-
-    // Filter by search query
-    if (searchQuery) {
-      filtered = filtered.filter(
-        (product) =>
-          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.category.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+    if (router.query.page) {
+      setPage(Number(router.query.page));
     }
+  }, [router.query.page]);
 
-    // Filter by category
-    if (selectedCategory) {
-      filtered = filtered.filter(
-        (product) => product.category === selectedCategory
-      );
-    }
+  const handlePageChange = (newPage: number) => {
+    // Prevent going to page 0 or below
+    if (newPage < 1) return;
 
-    // Filter by price range
-    filtered = filtered.filter(
-      (product) =>
-        product.price >= priceRange[0] && product.price <= priceRange[1]
+    setPage(newPage);
+    router.push(
+      {
+        pathname: router.pathname,
+        query: { ...router.query, page: newPage },
+      },
+      undefined,
+      { shallow: true }
     );
-
-    // Sort products
-    switch (sortBy) {
-      case "price-low":
-        filtered.sort((a, b) => a.price - b.price);
-        break;
-      case "price-high":
-        filtered.sort((a, b) => b.price - a.price);
-        break;
-      case "rating":
-        filtered.sort((a, b) => b.rating - a.rating);
-        break;
-      case "newest":
-        // Assuming newer products have higher IDs
-        filtered.sort((a, b) => parseInt(b.id) - parseInt(a.id));
-        break;
-      default:
-        // Keep original order for relevance
-        break;
-    }
-
-    setFilteredProducts(filtered);
-  }, [searchQuery, selectedCategory, priceRange, sortBy]);
+  };
 
   return (
     <div className="min-h-screen">
@@ -111,7 +105,7 @@ export default function SearchPage() {
                 className="cursor-pointer"
                 onClick={() => setSearchQuery("")}
               >
-                Search: "{searchQuery}" ×
+                Search: &quot;{searchQuery}&quot; ×
               </Badge>
             )}
             {selectedCategory && (
@@ -137,11 +131,22 @@ export default function SearchPage() {
           {/* Results Info & Controls */}
           <div className="flex items-center justify-between">
             <p className="text-muted-foreground">
-              {filteredProducts.length} results found
+              {products?.products?.length} results found
               {searchQuery && ` for "${searchQuery}"`}
             </p>
-
             <div className="flex items-center space-x-4">
+              <select
+                value={productCount}
+                onChange={(e) => setProductCount(Number(e.target.value))}
+                className="border rounded-md px-3 py-1 text-sm"
+              >
+                <option value="12">12</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="250">250</option>
+              </select>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
@@ -178,7 +183,7 @@ export default function SearchPage() {
 
         <div className="flex gap-8">
           {/* Filters Sidebar */}
-          <motion.div
+          <motion.aside
             className={`${
               showFilters ? "block" : "hidden"
             } md:block w-full md:w-64 flex-shrink-0`}
@@ -193,11 +198,15 @@ export default function SearchPage() {
               priceRange={priceRange}
               onPriceRangeChange={setPriceRange}
             />
-          </motion.div>
+          </motion.aside>
 
           {/* Products Grid */}
           <div className="flex-1">
-            {filteredProducts.length === 0 ? (
+            {isLoading ? (
+              <p>Loading products...</p>
+            ) : error ? (
+              <p>Error loading products.</p>
+            ) : products?.products?.length === 0 ? (
               <motion.div
                 className="text-center py-16"
                 initial={{ opacity: 0 }}
@@ -223,7 +232,7 @@ export default function SearchPage() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
               >
-                {filteredProducts.map((product, index) => (
+                {products?.products?.map((product, index) => (
                   <motion.div
                     key={product.id}
                     initial={{ opacity: 0, y: 30 }}
@@ -237,6 +246,29 @@ export default function SearchPage() {
             )}
           </div>
         </div>
+
+        {/* --- PAGINATION FIX --- */}
+        <Pagination className="mt-8">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => handlePageChange(page - 1)}
+                // Optionally disable the button on the first page
+                className={page <= 1 ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+            {/* This part should be rendered dynamically based on total pages */}
+            <PaginationItem>
+              <PaginationLink isActive>{page}</PaginationLink>
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationEllipsis />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationNext onClick={() => handlePageChange(page + 1)} />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </main>
 
       <Footer />

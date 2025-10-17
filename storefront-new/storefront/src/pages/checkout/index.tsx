@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
+import { useCart } from "@/context/CartContext";
+import { useToast } from "@/hooks/use-toast";
+import axios from "axios";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -33,27 +36,52 @@ export default function CheckoutPage() {
     { id: 2, title: "Payment", icon: CreditCard },
     { id: 3, title: "Review", icon: Package },
   ];
+  const { cart } = useCart();
+  const { showSuccess } = useToast();
+  const body = {
+    // Map over the cart to create an array of item objects
+    items: cart.map((item) => ({
+      product_id: item._id,
+      quantity: item.quantity,
+    })),
+  };
 
-  const cartItems = [
-    {
-      id: 1,
-      name: "Premium Wireless Headphones",
-      price: 299.99,
-      quantity: 1,
-      image:
-        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100&h=100&fit=crop",
-    },
-    {
-      id: 2,
-      name: "Smart Fitness Tracker",
-      price: 199.99,
-      quantity: 2,
-      image:
-        "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=100&h=100&fit=crop",
-    },
-  ];
+  console.log(body);
+  // return;
 
-  const subtotal = cartItems.reduce(
+  // return;
+  const completeOrder = async () => {
+    //Call to checkout API or process the order
+    await axios
+      .post(
+        "http://localhost:8080/cart/add",
+        {
+          items: cart.map((item) => ({
+            product_id: item._id,
+            quantity: item.quantity,
+          })),
+        },
+        {
+          withCredentials: true,
+        }
+      )
+      .then(async (response) => {
+        console.log("Order placed successfully:", response.status);
+        if (response.status === 200) {
+          const data = await axios.post(
+            "http://localhost:8080/cart/checkout",
+            {},
+            {
+              withCredentials: true,
+            }
+          );
+          if (data.status === 200) {
+            showSuccess("Order completed successfully!");
+          }
+        }
+      });
+  };
+  const subtotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
@@ -437,7 +465,7 @@ export default function CheckoutPage() {
 
                   {/* Order Items */}
                   <div className="space-y-4">
-                    {cartItems.map((item) => (
+                    {cart.map((item) => (
                       <div
                         key={item.id}
                         className="flex items-center space-x-4 p-4 border rounded-lg"
@@ -500,7 +528,7 @@ export default function CheckoutPage() {
                       setCurrentStep(currentStep + 1);
                     } else {
                       // Handle order placement
-                      console.log("Place order");
+                      completeOrder();
                     }
                   }}
                 >
@@ -526,10 +554,10 @@ export default function CheckoutPage() {
 
                 {/* Items */}
                 <div className="space-y-4 mb-6">
-                  {cartItems.map((item) => (
+                  {cart.map((item) => (
                     <div key={item.id} className="flex items-center space-x-3">
                       <img
-                        src={item.image}
+                        src={item.images[0]}
                         alt={item.name}
                         className="w-12 h-12 object-cover rounded-lg"
                       />

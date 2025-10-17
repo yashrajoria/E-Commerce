@@ -1,29 +1,38 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useCart } from "@/context/CartContext";
 import { motion } from "framer-motion";
-import { Search, ShoppingCart, User, Menu, Heart, Bell } from "lucide-react";
+import { Bell, Heart, Menu, Search, ShoppingCart, User } from "lucide-react";
 import { useTheme } from "next-themes";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Badge } from "../ui/badge";
-import { MegaMenu } from "./mega-menu";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { AccountDropdown } from "../common/account-dropwdown";
 import { CartDrawer } from "../common/cart-drawer";
 import { LoginModal } from "../common/login-modal";
-import Link from "next/link";
-import { AccountDropdown } from "../common/account-dropwdown";
-import { CartItem, useCart } from "@/context/CartContext";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { MegaMenu } from "./mega-menu";
+import { useUser } from "@/context/UserContext";
+import { WishlistDrawer } from "../common/wishlist-drawer";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
 
-  const [loggedIn, setLoggedIn] = useState(true);
+  // const [loggedIn, setLoggedIn] = useState(false);
   const { theme, setTheme } = useTheme();
-
+  const [mounted, setMounted] = useState(false);
+  // console.log(loggedIn);
+  // When mounted on client, now we can show the UI
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
   const { cart } = useCart();
+  const { user, loading } = useUser(); // NEW
+  const loggedIn = !!user; // Derived status
 
   return (
     <>
@@ -75,10 +84,11 @@ export function Header() {
                 variant="ghost"
                 size="icon"
                 className="relative hover:bg-muted/50 cursor-pointer"
+                onClick={() => setIsWishlistOpen(true)}
               >
                 <Heart className="h-5 w-5 " />
                 <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
-                  3
+                  0
                 </Badge>
               </Button>
 
@@ -131,7 +141,7 @@ export function Header() {
                 <AccountDropdown
                   isOpen={isAccountOpen}
                   onClose={() => setIsAccountOpen(false)}
-                  setLoggedIn={setLoggedIn}
+                  // setLoggedIn={setLoggedIn}
                 />
               )}
             </div>
@@ -170,11 +180,16 @@ export function Header() {
 
       {/* Cart Drawer */}
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      {/* Wishlist Drawer */}
+      <WishlistDrawer
+        isOpen={isWishlistOpen}
+        onClose={() => setIsWishlistOpen(false)}
+      />
 
       {/* Login Modal */}
       <LoginModal
         isOpen={isLoginOpen}
-        setLoggedIn={setLoggedIn}
+        // setLoggedIn={setLoggedIn}
         loggedIn={loggedIn}
         onClose={() => {
           setIsLoginOpen(false);

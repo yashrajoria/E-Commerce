@@ -27,39 +27,59 @@ import {
   Shield,
   User,
 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function AccountPage() {
   const [activeTab, setActiveTab] = useState("profile");
-  const { user } = useUser();
-
+  const { user, loading } = useUser();
   const [profile, setProfile] = useState({
-    name: user?.name || "",
-    email: user?.email || "",
-    phone: user?.phone_number || "",
+    name: "",
+    email: "",
+    phone_number: "",
   });
 
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const params = new URLSearchParams(window.location.search);
-  const tab = params.get("tab");
+  const searchParams = useSearchParams();
   useEffect(() => {
+    setProfile({
+      name: user?.name,
+      email: user?.email,
+      phone_number: user?.phone_number,
+    });
+    const tab = searchParams.get("tab");
     if (tab) {
       setActiveTab(tab);
     }
-  }, [tab]);
+  }, [searchParams, user]);
 
-  const updateUserProfile = async (data: any) => {
+  console.log("Phone", user?.phone_number);
+
+  const updateUserProfile = async (data: typeof profile) => {
     try {
-      console.log(data);
-      const name = data?.name;
-      const response = await updateUserData(name);
+      // Compare each field with original user data, include only changed fields
+      const updates: Partial<typeof profile> = {};
+
+      if (data.name !== user?.name) updates.name = data.name;
+      if (data.email !== user?.email) updates.email = data.email;
+      if (data.phone_number !== user?.phone_number)
+        updates.phone_number = data.phone_number;
+
+      // If no changes, avoid API call
+      if (Object.keys(updates).length === 0) {
+        console.log("No changes detected, skipping update");
+        return;
+      }
+
+      const response = await updateUserData(updates);
       console.log("Profile updated successfully:", response.data);
     } catch (error) {
       console.error("Error updating profile:", error);
     }
   };
+
   const { showError } = useToast();
   const handleChangePassword = async (
     oldPassword: string,
@@ -83,8 +103,16 @@ export default function AccountPage() {
       showError("Error updating password");
     }
   };
-
-  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+        <p className="ml-3 text-lg text-muted-foreground">
+          Loading user profile...
+        </p>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen">
       <Header />
@@ -120,12 +148,12 @@ export default function AccountPage() {
                   </div>
                   <div>
                     <span className="text-white/60">Total Orders</span>
-                    <p className="font-medium">{user?.totalOrders}</p>
+                    <p className="font-medium">{user?.totalOrders || 0}</p>
                   </div>
                   <div>
                     <span className="text-white/60">Total Spent</span>
                     <p className="font-medium">
-                      ${user?.totalSpent?.toFixed(2)}
+                      ${user?.totalSpent?.toFixed(2) || 0}
                     </p>
                   </div>
                 </div>
@@ -218,13 +246,15 @@ export default function AccountPage() {
                       />
                     </div>
                     <div className="grid gap-4">
-                      <Label htmlFor="phone">Phone</Label>
+                      <Label htmlFor="phone_number">Phone</Label>
                       <Input
-                        id="phone"
-                        defaultValue="+1 (555) 123-4567"
-                        value={profile.phone}
+                        id="phone_number"
+                        value={profile.phone_number}
                         onChange={(e) =>
-                          setProfile({ ...profile, phone: e.target.value })
+                          setProfile({
+                            ...profile,
+                            phone_number: e.target.value,
+                          })
                         }
                       />
                     </div>

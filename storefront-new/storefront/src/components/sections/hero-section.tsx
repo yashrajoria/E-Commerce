@@ -5,8 +5,15 @@ import { motion } from "framer-motion";
 import { ArrowRight, Zap, Shield, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { useProducts } from "@/hooks/useProducts";
 
 export function HeroSection() {
+  const { data: productsData = [], isLoading, error } = useProducts(3, 6, true);
+  const products = Array.isArray(productsData)
+    ? productsData
+    : productsData?.products || [];
+
   return (
     <section className="relative min-h-[80vh] overflow-hidden">
       {/* Animated Background */}
@@ -37,66 +44,41 @@ export function HeroSection() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <Badge className="mb-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                <Zap className="w-3 h-3 mr-1" />
-                Super Sale: Up to 70% Off
-              </Badge>
-            </motion.div>
+            <Badge className="mb-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+              <Zap className="w-3 h-3 mr-1" />
+              Super Sale: Up to 70% Off
+            </Badge>
 
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              <h1 className="text-5xl lg:text-7xl font-bold leading-tight">
-                Everything
-                <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 bg-clip-text text-transparent">
-                  You Need
-                </span>
-                in One Place
-              </h1>
-            </motion.div>
+            <h1 className="text-5xl lg:text-7xl font-bold leading-tight">
+              Everything
+              <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 bg-clip-text text-transparent">
+                You Need
+              </span>
+              in One Place
+            </h1>
 
-            <motion.p
-              className="text-xl text-muted-foreground leading-relaxed max-w-lg"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-            >
+            <p className="text-xl text-muted-foreground leading-relaxed max-w-lg">
               Discover millions of products from trusted brands. Fast delivery,
               secure payments, and unbeatable prices await you.
-            </motion.p>
+            </p>
 
-            <motion.div
-              className="flex flex-wrap gap-4"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8 }}
-            >
-              <Button
-                size="lg"
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-              >
-                Shop Now
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+            <div className="flex flex-wrap gap-4">
+              <Link href="/products">
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
+                  Shop Now
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
               <Button variant="outline" size="lg">
                 Browse Categories
               </Button>
-            </motion.div>
+            </div>
 
             {/* Features */}
-            <motion.div
-              className="flex flex-wrap gap-8 pt-8"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1 }}
-            >
+            <div className="flex flex-wrap gap-8 pt-8">
               {[
                 { icon: Truck, text: "Free Shipping" },
                 { icon: Shield, text: "Secure Payment" },
@@ -111,7 +93,7 @@ export function HeroSection() {
                   <span className="text-sm">{feature.text}</span>
                 </motion.div>
               ))}
-            </motion.div>
+            </div>
           </motion.div>
 
           {/* Right Content - Floating Product Cards */}
@@ -122,70 +104,51 @@ export function HeroSection() {
             transition={{ duration: 0.8 }}
           >
             {/* Floating Cards */}
-            {[
-              {
-                image:
-                  "https://images.pexels.com/photos/3394650/pexels-photo-3394650.jpeg?auto=compress&cs=tinysrgb&w=300",
-                title: "Wireless Headphones",
-                price: "$79.99",
-                position: "top-12 left-8",
-                delay: 0.2,
-              },
-              {
-                image:
-                  "https://images.pexels.com/photos/393047/pexels-photo-393047.jpeg?auto=compress&cs=tinysrgb&w=300",
-                title: "Smart Watch",
-                price: "$199.99",
-                position: "top-32 right-16",
-                delay: 0.4,
-              },
-              {
-                image:
-                  "https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&cs=tinysrgb&w=300",
-                title: "Coffee Maker",
-                price: "$149.99",
-                position: "bottom-32 left-16",
-                delay: 0.6,
-              },
-            ].map((product, index) => (
-              <motion.div
-                key={index}
-                className={`absolute ${product.position} bg-background/80 backdrop-blur-lg rounded-2xl p-4 border shadow-lg`}
-                initial={{ opacity: 0, y: 50, rotate: -10 }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                  rotate: 0,
-                  y: [0, -10, 0],
-                }}
-                transition={{
-                  delay: product.delay,
-                  duration: 0.8,
-                  y: {
-                    duration: 3,
-                    repeat: Infinity,
-                    repeatType: "reverse",
-                  },
-                }}
-                whileHover={{
-                  scale: 1.05,
-                  rotate: 5,
-                  transition: { duration: 0.2 },
-                }}
-              >
-                <img
-                  src={product.image}
-                  alt={product.title}
-                  className="w-20 h-20 object-cover rounded-lg mb-2"
-                />
-                <h3 className="font-medium text-sm">{product.title}</h3>
-                <p className="text-blue-600 font-bold">{product.price}</p>
-              </motion.div>
-            ))}
+            {products.length > 0 && (
+              <div>
+                {products.map((product, index) => (
+                  <motion.div
+                    key={product.id || index}
+                    className="absolute bg-background/80 backdrop-blur-lg rounded-2xl p-4 border shadow-lg"
+                    style={{
+                      top: `${index * 120}px`,
+                      left: `${(index % 2) * 150}px`,
+                    }}
+                    initial={{ opacity: 0, y: 50, rotate: -10 }}
+                    animate={{
+                      opacity: 1,
+                      y: [0, -10, 0],
+                    }}
+                    transition={{
+                      delay: index * 0.2,
+                      duration: 0.8,
+                      y: {
+                        duration: 3,
+                        repeat: Infinity,
+                        repeatType: "reverse",
+                      },
+                    }}
+                    whileHover={{
+                      scale: 1.05,
+                      rotate: 5,
+                      transition: { duration: 0.2 },
+                    }}
+                  >
+                    <img
+                      src={product.images[0]}
+                      alt={product.title}
+                      className="w-20 h-20 object-cover rounded-lg mb-2"
+                    />
+                    <h3 className="font-medium text-sm">{product.title}</h3>
+                    <p className="text-blue-600 font-bold">${product.price}</p>
+                  </motion.div>
+                ))}
+              </div>
+            )}
 
             {/* Central Gradient Orb */}
             <motion.div
-              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full opacity-20 blur-3xl"
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full opacity-20 blur-3xl"
               animate={{
                 scale: [1, 1.2, 1],
                 opacity: [0.2, 0.3, 0.2],
