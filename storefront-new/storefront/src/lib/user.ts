@@ -7,10 +7,10 @@ export const getUserData = async () => {
 };
 
 export const updateUserData = async (data) => {
-  console.log({ data });
-  const response = await axiosInstance.put(API_ROUTES.USER.UPDATE_USER_DATA, {
-    name: data,
-  });
+  const response = await axiosInstance.put(
+    API_ROUTES.USER.UPDATE_USER_DATA,
+    data
+  );
   return response.data;
 };
 

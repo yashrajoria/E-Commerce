@@ -3,12 +3,12 @@ export interface Product {
   name: string;
   price: number;
   originalPrice?: number;
-  image: string;
+  images: string[];
   rating: number;
   reviews: number;
   category: string;
   badge?: string;
-  inStock: boolean;
+  quantity?: number;
 }
 
 export interface Category {
