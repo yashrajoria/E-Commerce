@@ -5,8 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/CartContext";
 import { AnimatePresence, motion } from "framer-motion";
-import { Minus, Plus, ShoppingBagIcon, Trash2, X } from "lucide-react";
+import {
+  Minus,
+  Plus,
+  ShoppingBagIcon,
+  Trash2,
+  Trash2Icon,
+  X,
+} from "lucide-react";
 import Link from "next/link";
+import Image from "next/image"; // FIX: Use Next.js Image for optimization
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -14,7 +22,9 @@ interface CartDrawerProps {
 }
 
 export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
-  const { removeFromCart, cart } = useCart();
+  // FIX: Make sure to destructure updateQuantity from your hook
+  const { cart, addToCart, removeFromCart, updateQuantity, clearCart } =
+    useCart();
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -46,6 +56,14 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   Shopping Cart
                   <Badge className="ml-2">{cart.length}</Badge>
                 </h2>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={clearCart}
+                  className="text-muted-foreground"
+                >
+                  <Trash2Icon className="h-4 w-4" />
+                </Button>
                 <Button variant="ghost" size="icon" onClick={onClose}>
                   <X className="h-5 w-5" />
                 </Button>
@@ -55,34 +73,56 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {cart.map((item) => (
                   <motion.div
-                    key={item.id}
+                    key={item._id}
                     className="flex items-center space-x-4 p-4 rounded-lg border bg-card"
                     layout
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                   >
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-16 h-16 object-cover rounded-md"
-                    />
+                    <div className="relative w-16 h-16 rounded-md overflow-hidden">
+                      <img
+                        src={item.images?.[0] || "/placeholder.png"} // Use placeholder if no image
+                        alt={item.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+
                     <div className="flex-1">
                       <h3 className="font-medium text-sm">{item.name}</h3>
                       <p className="text-lg font-semibold">${item.price}</p>
                     </div>
+
                     <div className="flex items-center space-x-2">
-                      <Button variant="outline" size="icon" className="h-8 w-8">
+                      {/* FIX: Moved onClick to the Button and call updateQuantity */}
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() =>
+                          updateQuantity(item._id, item.quantity - 1)
+                        }
+                      >
                         <Minus className="h-3 w-3" />
                       </Button>
+
                       <span className="w-8 text-center">{item.quantity}</span>
-                      <Button variant="outline" size="icon" className="h-8 w-8">
+
+                      {/* FIX: Moved onClick to the Button and use the correct item */}
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => addToCart({ ...item, quantity: 1 })}
+                      >
                         <Plus className="h-3 w-3" />
                       </Button>
                     </div>
+
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => removeFromCart(item.id)}
+                      onClick={() => removeFromCart(item._id)}
                       className="text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -101,15 +141,13 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 </div>
                 <Separator />
                 <div className="space-y-2">
-                  <Button className="w-full" size="lg">
+                  <Button asChild className="w-full" size="lg">
                     <Link href="/checkout">Checkout</Link>
                   </Button>
-                  <Button variant="outline" className="w-full">
-                    <Link href="/cart">
-                      <div className="flex items-center justify-center space-x-2">
-                        <ShoppingBagIcon className="mr-2 h-4 w-4" />
-                        <span className="text-sm">View Cart</span>
-                      </div>
+                  <Button asChild variant="outline" className="w-full">
+                    <Link href="/cart" className="flex items-center">
+                      <ShoppingBagIcon className="mr-2 h-4 w-4" />
+                      View Cart
                     </Link>
                   </Button>
                 </div>
