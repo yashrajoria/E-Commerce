@@ -24,6 +24,7 @@ import {
   InputOTPSeparator,
   InputOTPSlot,
 } from "../ui/input-otp";
+import { useUser } from "@/context/UserContext";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -34,8 +35,8 @@ interface LoginModalProps {
 
 export function LoginModal({
   isOpen,
-  setLoggedIn,
-  loggedIn,
+  // setLoggedIn,
+  // loggedIn,
   onClose,
 }: LoginModalProps) {
   const [showPassword, setShowPassword] = useState(false);
@@ -47,7 +48,7 @@ export function LoginModal({
   const { showError, showSuccess } = useToast();
   const [otpValue, setOtpValue] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const { refetchUser } = useUser(); // ✅ Consume new function
   useEffect(() => {
     if (!isOpen) {
       // setEmail("");
@@ -73,9 +74,12 @@ export function LoginModal({
     try {
       if (isLogin) {
         const data = await loginUser(email, password);
+        await refetchUser();
         console.log("Login success:", data);
         setLoading(false);
-        setLoggedIn(true);
+        // setLoggedIn(true);
+        localStorage.setItem("isLoggedIn", "true");
+        showSuccess("Logged in successfully!");
         onClose(); // Login modal close
       } else {
         const data = await registerUser(email, password, fullName);
@@ -92,7 +96,8 @@ export function LoginModal({
     } catch (error: any) {
       setLoading(false);
       console.error("Auth error:", error?.response?.data || error.message);
-
+      console.log(error);
+      showError("Authentication failed. Please try again.");
       if (error?.response?.data?.error == "Email not verified") {
         showError("The email is not verified. Please check your inbox.");
       }

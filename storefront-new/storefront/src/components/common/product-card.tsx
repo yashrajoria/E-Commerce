@@ -5,7 +5,24 @@ import { motion } from "framer-motion";
 import { Star, Heart, ShoppingCart, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Product } from "@/lib/types";
+import { Product } from "@/lib/types"; // Make sure your type definition is here
+import Image from "next/image";
+import { useCart } from "@/context/CartContext";
+
+// Ensure your Product type in "@/lib/types" includes these fields for full functionality
+interface Product {
+  id: string | number;
+  name: string;
+  images: string[];
+  category: string;
+  price: number;
+  originalPrice?: number;
+  rating: number;
+  reviews: number;
+  badge?: string;
+  description?: string;
+  stock: number; // Use 'stock' for available inventory
+}
 
 interface ProductCardProps {
   product: Product;
@@ -13,27 +30,40 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
+  const { addToCart } = useCart();
+
+  // Reusable handler to add the correct product to the cart
+  const handleAddToCart = (e: React.MouseEvent) => {
+    // Stop the click from propagating to parent elements (like a navigation link)
+    e.stopPropagation();
+    addToCart({
+      ...product,
+      quantity: 1,
+    });
+  };
+
   if (viewMode === "list") {
+    // --- LIST VIEW ---
     return (
       <motion.div
-        className="flex bg-card border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+        className="flex w-full bg-card border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
         whileHover={{ y: -2 }}
-        transition={{ duration: 0.2 }}
       >
-        <div className="w-48 h-48 flex-shrink-0 relative overflow-hidden">
+        <div className="relative w-48 h-48 flex-shrink-0">
           <img
-            src={product.image}
+            src={product.images[0]}
             alt={product.name}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 30vw, 12rem"
           />
           {product.badge && (
-            <Badge className="absolute top-2 left-2 bg-red-500 text-white">
+            <Badge className="absolute top-2 left-2 z-10 bg-red-500 text-white">
               {product.badge}
             </Badge>
           )}
         </div>
-
-        <div className="flex-1 p-6 flex flex-col justify-between">
+        <div className="flex flex-1 flex-col justify-between p-6">
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-muted-foreground">
@@ -47,16 +77,14 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
                 </span>
               </div>
             </div>
-
             <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
-            <p className="text-muted-foreground text-sm mb-4">
-              High-quality product with excellent features and great value for
-              money.
+            {/* FIX: Use dynamic description */}
+            <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+              {product.description || "A high-quality and valuable product."}
             </p>
           </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
+          <div className="flex items-center justify-between mt-auto">
+            <div className="flex items-baseline space-x-2">
               <span className="text-2xl font-bold">${product.price}</span>
               {product.originalPrice && (
                 <span className="text-sm text-muted-foreground line-through">
@@ -64,7 +92,6 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
                 </span>
               )}
             </div>
-
             <div className="flex items-center space-x-2">
               <Button variant="outline" size="icon">
                 <Heart className="h-4 w-4" />
@@ -72,8 +99,8 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
               <Button variant="outline" size="icon">
                 <Eye className="h-4 w-4" />
               </Button>
-              <Button>
-                <ShoppingCart className="h-4 w-4 mr-2" />
+              {/* FIX: Corrected typo and added handler */}
+              <Button size="sm" onClick={handleAddToCart}>
                 Add to Cart
               </Button>
             </div>
@@ -83,34 +110,29 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
     );
   }
 
+  // --- GRID VIEW (Default) ---
   return (
     <motion.div
       className="group cursor-pointer"
       whileHover={{ y: -5 }}
       transition={{ duration: 0.2 }}
     >
-      <div className="bg-card border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+      <div className="bg-card border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300">
         <div className="relative aspect-square overflow-hidden">
-          <motion.img
-            src={product.image}
+          {/* FIX: Use Next.js Image component for performance */}
+          <img
+            src={product.images[0]}
             alt={product.name}
-            className="w-full h-full object-cover"
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.3 }}
+            fill
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
           />
-
           {product.badge && (
-            <Badge className="absolute top-4 left-4 bg-red-500 text-white">
+            <Badge className="absolute top-4 left-4 z-10 bg-red-500 text-white">
               {product.badge}
             </Badge>
           )}
-
-          <motion.div
-            className="absolute top-4 right-4 flex flex-col space-y-2 opacity-0 group-hover:opacity-100"
-            initial={{ opacity: 0, x: 20 }}
-            whileHover={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3 }}
-          >
+          <div className="absolute top-4 right-4 z-10 flex flex-col space-y-2 opacity-0 transition-all duration-300 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0">
             <Button
               variant="secondary"
               size="icon"
@@ -125,20 +147,18 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
             >
               <Eye className="h-4 w-4" />
             </Button>
-          </motion.div>
-
-          <motion.div
-            className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center"
-            initial={{ opacity: 0 }}
-            whileHover={{ opacity: 1 }}
-          >
-            <Button className="bg-white text-black hover:bg-gray-100">
+          </div>
+          <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+            {/* FIX: Added missing onClick handler */}
+            <Button
+              className="bg-white text-black hover:bg-gray-200"
+              onClick={handleAddToCart}
+            >
               <ShoppingCart className="h-4 w-4 mr-2" />
               Quick Add
             </Button>
-          </motion.div>
+          </div>
         </div>
-
         <div className="p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-muted-foreground">
@@ -152,11 +172,11 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
               </span>
             </div>
           </div>
-
-          <h3 className="font-semibold mb-3 line-clamp-2">{product.name}</h3>
-
+          <h3 className="font-semibold mb-3 line-clamp-2 h-12">
+            {product.name}
+          </h3>
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-baseline space-x-2">
               <span className="text-xl font-bold">${product.price}</span>
               {product.originalPrice && (
                 <span className="text-sm text-muted-foreground line-through">
@@ -164,10 +184,20 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
                 </span>
               )}
             </div>
-            <Button size="sm">Add to Cart</Button>
+            {/* FIX: Corrected typo and added handler */}
+            <Button size="sm" onClick={handleAddToCart}>
+              Add to Cart
+            </Button>
           </div>
-
-          {!product.inStock && (
+          {/* FIX: Changed logic to check for 'quantity' */}
+          {product.quantity > 0 ? (
+            <Badge
+              variant="secondary"
+              className="mt-2 text-green-700 border-green-200 bg-green-50"
+            >
+              In Stock
+            </Badge>
+          ) : (
             <Badge variant="destructive" className="mt-2">
               Out of Stock
             </Badge>
