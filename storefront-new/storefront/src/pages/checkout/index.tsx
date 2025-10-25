@@ -38,22 +38,11 @@ export default function CheckoutPage() {
   ];
   const { cart } = useCart();
   const { showSuccess } = useToast();
-  const body = {
-    // Map over the cart to create an array of item objects
-    items: cart.map((item) => ({
-      product_id: item._id,
-      quantity: item.quantity,
-    })),
-  };
 
-  console.log(body);
-  // return;
-
-  // return;
   const completeOrder = async () => {
-    //Call to checkout API or process the order
-    await axios
-      .post(
+    try {
+      // 1️⃣ Add items to cart (This part looks correct)
+      const addResponse = await axios.post(
         "http://localhost:8080/cart/add",
         {
           items: cart.map((item) => ({
@@ -61,26 +50,102 @@ export default function CheckoutPage() {
             quantity: item.quantity,
           })),
         },
-        {
-          withCredentials: true,
-        }
-      )
-      .then(async (response) => {
-        console.log("Order placed successfully:", response.status);
-        if (response.status === 200) {
-          const data = await axios.post(
-            "http://localhost:8080/cart/checkout",
-            {},
-            {
-              withCredentials: true,
+        { withCredentials: true }
+      );
+
+      if (addResponse.status !== 200) {
+        console.error("Failed to add items to cart.");
+        // showError("Failed to update cart. Please try again.");
+        return;
+      }
+
+      console.log("Items added/updated in cart.");
+
+      // 2️⃣ Checkout (This part is correct)
+      const checkoutResponse = await axios.post(
+        "http://localhost:8080/cart/checkout",
+        {},
+        { withCredentials: true }
+      );
+
+      console.log("Checkout response:", checkoutResponse.data);
+
+      if (checkoutResponse.status !== 200 || !checkoutResponse.data.order_id) {
+        console.error("No order ID returned from checkout.");
+        // showError("Failed to initiate checkout. Please try again.");
+        return;
+      }
+
+      const orderId = checkoutResponse.data.order_id;
+      console.log("Checkout initiated, polling with Order ID:", orderId);
+      // showLoading("Waiting for payment link..."); // Show a spinner
+
+      // 3️⃣ Polling (This section is fixed)
+
+      const pollForPaymentUrl = async (orderId) => {
+        // Create a long-polling mechanism
+        const maxAttempts = 20; // Poll for 20 * 5s = 100 seconds
+        let attempts = 0;
+
+        return new Promise((resolve, reject) => {
+          const interval = setInterval(async () => {
+            if (attempts >= maxAttempts) {
+              clearInterval(interval);
+              reject(
+                new Error("Timeout: Payment link took too long to generate.")
+              );
+              return;
             }
-          );
-          if (data.status === 200) {
-            showSuccess("Order completed successfully!");
-          }
-        }
-      });
+
+            try {
+              // FIX 1: Use GET, not POST, for the status check
+              const response = await axios.get(
+                `http://localhost:8080/payment/status/by-order/${orderId}`,
+                { withCredentials: true }
+              );
+
+              console.log("Polling response:", response.data);
+              const { status, checkout_url } = response.data;
+
+              // FIX 2: Check for "URL_READY", not "completed"
+              // "URL_READY" is the status our consumer sets when the URL is available.
+              if (status === "URL_READY" && checkout_url) {
+                clearInterval(interval);
+                console.log("Payment URL received:", checkout_url);
+                resolve(checkout_url); // Stop polling and return the URL
+              } else if (status === "FAILED") {
+                clearInterval(interval);
+                reject(new Error("Payment failed during processing."));
+              } else {
+                // Status is "PENDING" or "PROCESSING", just keep polling
+                console.log(`Status is ${status}, polling again...`);
+                attempts++;
+              }
+            } catch (err) {
+              console.error("Polling error:", err);
+              attempts++; // Still count as an attempt
+            }
+          }, 5000); // Poll every 5 seconds
+        });
+      };
+
+      // Start polling and wait for the result
+      const checkoutUrl = await pollForPaymentUrl(orderId);
+
+      // FIX 3: Redirect the user to the Stripe URL
+      if (checkoutUrl) {
+        // hideLoading(); // Hide spinner
+        showSuccess("Redirecting to payment...");
+
+        window.location.href = checkoutUrl; // <-- The most important part
+      }
+    } catch (error) {
+      console.error("Error completing order:", error);
+      // hideLoading(); // Hide spinner
+      // showError(error.message || "Something went wrong during order processing.");
+    }
   };
+
   const subtotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
