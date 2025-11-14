@@ -30,3 +30,13 @@ export const logoutUser = async () => {
   const response = await axiosInstance.post(API_ROUTES.AUTH.LOGOUT);
   return response.data;
 };
+
+export const checkAuthStatus = async () => {
+  try {
+    const response = await axiosInstance.get(API_ROUTES.AUTH.STATUS);
+    return response.data;
+  } catch (error) {
+    console.log(error);
+    return { authenticated: false };
+  }
+};
