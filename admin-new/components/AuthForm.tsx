@@ -76,7 +76,7 @@ const AuthForm = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const res = await axios.post("/api/auth/sign-up", {
+      const res = await axios.post("http://localhost:8080/auth/auth/register", {
         ...signupData,
         role: "admin",
       });
