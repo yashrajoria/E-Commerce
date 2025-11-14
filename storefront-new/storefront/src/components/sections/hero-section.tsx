@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useProducts } from "@/hooks/useProducts";
 
 export function HeroSection() {
-  const { data: productsData = [], isLoading, error } = useProducts(3, 6, true);
+  const { data: productsData = [], isLoading, error } = useProducts(3, 1, true);
   const products = Array.isArray(productsData)
     ? productsData
     : productsData?.products || [];
@@ -135,7 +135,9 @@ export function HeroSection() {
                     }}
                   >
                     <img
-                      src={product.images[0]}
+                      src={
+                        product?.images[0] ||"/"
+                      }
                       alt={product.title}
                       className="w-20 h-20 object-cover rounded-lg mb-2"
                     />
