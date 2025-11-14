@@ -29,7 +29,7 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
   const getCategoryName = (categoryId: string) => {
-    const category = categories?.find((cat) => cat._id === categoryId);
+    const category = categories?.find((cat) => cat.id === categoryId);
     return category?.name || categoryId;
   };
 
@@ -89,7 +89,7 @@ const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
 
             <div className="absolute top-3 left-3">
               <Badge variant="secondary" className="bg-white text-black">
-                {getCategoryName(product.category)}
+                {getCategoryName(product.category_ids[0])}
               </Badge>
             </div>
 
