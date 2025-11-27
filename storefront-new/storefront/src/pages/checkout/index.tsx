@@ -2,7 +2,6 @@
 
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -13,29 +12,37 @@ import axios from "axios";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
-  Calendar,
   Check,
-  CreditCard,
   Lock,
   Mail,
   MapPin,
   Package,
   Phone,
   Truck,
-  User,
+  User
 } from "lucide-react";
 import { useState } from "react";
 
 export default function CheckoutPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [shippingMethod, setShippingMethod] = useState("standard");
-  const [paymentMethod, setPaymentMethod] = useState("card");
-
+  const [shippingDetails, setShippingDetails] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    country: "",
+  });
   const steps = [
     { id: 1, title: "Shipping", icon: Truck },
-    { id: 2, title: "Payment", icon: CreditCard },
-    { id: 3, title: "Review", icon: Package },
+    { id: 2, title: "Review", icon: Package },
   ];
+
+  console.log("Shipping Details:", shippingDetails);
   const { cart } = useCart();
   const { showSuccess } = useToast();
 
@@ -137,7 +144,7 @@ export default function CheckoutPage() {
         // hideLoading(); // Hide spinner
         showSuccess("Redirecting to payment...");
 
-        window.location.href = checkoutUrl; // <-- The most important part
+        window.location.href = checkoutUrl;
       }
     } catch (error) {
       console.error("Error completing order:", error);
@@ -258,6 +265,13 @@ export default function CheckoutPage() {
                           id="firstName"
                           placeholder="Enter first name"
                           className="pl-12 h-12"
+                          value={shippingDetails.firstName}
+                          onChange={(e) =>
+                            setShippingDetails({
+                              ...shippingDetails,
+                              firstName: e.target.value,
+                            })
+                          }
                         />
                       </div>
                     </div>
@@ -271,6 +285,13 @@ export default function CheckoutPage() {
                           id="lastName"
                           placeholder="Enter last name"
                           className="pl-12 h-12"
+                          value={shippingDetails.lastName}
+                          onChange={(e) =>
+                            setShippingDetails({
+                              ...shippingDetails,
+                              lastName: e.target.value,
+                            })
+                          }
                         />
                       </div>
                     </div>
@@ -287,6 +308,13 @@ export default function CheckoutPage() {
                         type="email"
                         placeholder="Enter email address"
                         className="pl-12 h-12"
+                        value={shippingDetails.email}
+                        onChange={(e) =>
+                          setShippingDetails({
+                            ...shippingDetails,
+                            email: e.target.value,
+                          })
+                        }
                       />
                     </div>
                   </div>
@@ -301,6 +329,13 @@ export default function CheckoutPage() {
                         id="phone"
                         placeholder="Enter phone number"
                         className="pl-12 h-12"
+                        value={shippingDetails.phone}
+                        onChange={(e) =>
+                          setShippingDetails({
+                            ...shippingDetails,
+                            phone: e.target.value,
+                          })
+                        }
                       />
                     </div>
                   </div>
@@ -315,6 +350,13 @@ export default function CheckoutPage() {
                         id="address"
                         placeholder="Enter street address"
                         className="pl-12 h-12"
+                        value={shippingDetails.address}
+                        onChange={(e) =>
+                          setShippingDetails({
+                            ...shippingDetails,
+                            address: e.target.value,
+                          })
+                        }
                       />
                     </div>
                   </div>
@@ -328,6 +370,13 @@ export default function CheckoutPage() {
                         id="city"
                         placeholder="Enter city"
                         className="mt-2 h-12"
+                        value={shippingDetails.city}
+                        onChange={(e) =>
+                          setShippingDetails({
+                            ...shippingDetails,
+                            city: e.target.value,
+                          })
+                        }
                       />
                     </div>
                     <div>
@@ -338,6 +387,13 @@ export default function CheckoutPage() {
                         id="state"
                         placeholder="Enter state"
                         className="mt-2 h-12"
+                        value={shippingDetails.state}
+                        onChange={(e) =>
+                          setShippingDetails({
+                            ...shippingDetails,
+                            state: e.target.value,
+                          })
+                        }
                       />
                     </div>
                     <div>
@@ -348,6 +404,13 @@ export default function CheckoutPage() {
                         id="zip"
                         placeholder="Enter ZIP"
                         className="mt-2 h-12"
+                        value={shippingDetails.zipCode}
+                        onChange={(e) =>
+                          setShippingDetails({
+                            ...shippingDetails,
+                            zipCode: e.target.value,
+                          })
+                        }
                       />
                     </div>
                   </div>
@@ -402,119 +465,10 @@ export default function CheckoutPage() {
                 </motion.div>
               )}
 
-              {/* Step 2: Payment Information */}
+            
+
+              {/* Step 2: Review Order */}
               {currentStep === 2 && (
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-6 relative z-10"
-                >
-                  <div className="flex items-center space-x-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-                      <CreditCard className="h-5 w-5 text-white" />
-                    </div>
-                    <h2 className="text-2xl font-bold">Payment Information</h2>
-                  </div>
-
-                  {/* Payment Methods */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">
-                      Payment Method
-                    </h3>
-                    <RadioGroup
-                      value={paymentMethod}
-                      onValueChange={setPaymentMethod}
-                    >
-                      <div className="space-y-3">
-                        <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50">
-                          <RadioGroupItem value="card" id="card" />
-                          <Label
-                            htmlFor="card"
-                            className="flex-1 cursor-pointer"
-                          >
-                            <div className="flex items-center space-x-3">
-                              <CreditCard className="h-5 w-5" />
-                              <span>Credit/Debit Card</span>
-                            </div>
-                          </Label>
-                        </div>
-                      </div>
-                    </RadioGroup>
-                  </div>
-
-                  {/* Card Details */}
-                  <div className="space-y-4">
-                    <div>
-                      <Label
-                        htmlFor="cardNumber"
-                        className="text-sm font-medium"
-                      >
-                        Card Number
-                      </Label>
-                      <div className="relative mt-2">
-                        <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                        <Input
-                          id="cardNumber"
-                          placeholder="1234 5678 9012 3456"
-                          className="pl-12 h-12"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="expiry" className="text-sm font-medium">
-                          Expiry Date
-                        </Label>
-                        <div className="relative mt-2">
-                          <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                          <Input
-                            id="expiry"
-                            placeholder="MM/YY"
-                            className="pl-12 h-12"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="cvv" className="text-sm font-medium">
-                          CVV
-                        </Label>
-                        <div className="relative mt-2">
-                          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                          <Input
-                            id="cvv"
-                            placeholder="123"
-                            className="pl-12 h-12"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="cardName" className="text-sm font-medium">
-                        Cardholder Name
-                      </Label>
-                      <Input
-                        id="cardName"
-                        placeholder="Enter cardholder name"
-                        className="mt-2 h-12"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Billing Address */}
-                  <div className="flex items-center space-x-2">
-                    <Checkbox id="sameAddress" />
-                    <Label htmlFor="sameAddress" className="text-sm">
-                      Billing address same as shipping address
-                    </Label>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Step 3: Review Order */}
-              {currentStep === 3 && (
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -557,23 +511,15 @@ export default function CheckoutPage() {
                   <div className="p-4 bg-muted/50 rounded-lg">
                     <h4 className="font-medium mb-2">Shipping Information</h4>
                     <p className="text-sm text-muted-foreground">
-                      John Doe
+                      {shippingDetails.firstName} {shippingDetails.lastName}
                       <br />
-                      123 Main Street
+                      {shippingDetails.address}
                       <br />
-                      New York, NY 10001
+                      {shippingDetails.city}, {shippingDetails.state} {shippingDetails.zipCode}
                     </p>
                   </div>
 
-                  {/* Payment Info Summary */}
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    <h4 className="font-medium mb-2">Payment Method</h4>
-                    <p className="text-sm text-muted-foreground">
-                      •••• •••• •••• 3456
-                      <br />
-                      Expires 12/25
-                    </p>
-                  </div>
+                 
                 </motion.div>
               )}
 
@@ -589,7 +535,7 @@ export default function CheckoutPage() {
                 <Button
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                   onClick={() => {
-                    if (currentStep < 3) {
+                    if (currentStep < 2) {
                       setCurrentStep(currentStep + 1);
                     } else {
                       // Handle order placement
@@ -597,7 +543,7 @@ export default function CheckoutPage() {
                     }
                   }}
                 >
-                  {currentStep === 3 ? "Place Order" : "Continue"}
+                  {currentStep === 2 ? "Place Order" : "Continue"}
                 </Button>
               </div>
             </motion.div>
