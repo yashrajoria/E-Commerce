@@ -8,7 +8,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/hooks/use-toast";
-import axios from "axios";
+import { API_ROUTES } from "@/pages/api/constants/apiRoutes";
+import { axiosInstance } from "@/utils/axiosInstance";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -21,7 +22,7 @@ import {
   Truck,
   User
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function CheckoutPage() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -42,22 +43,48 @@ export default function CheckoutPage() {
     { id: 2, title: "Review", icon: Package },
   ];
 
-  console.log("Shipping Details:", shippingDetails);
   const { cart } = useCart();
-  const { showSuccess } = useToast();
+  const { showError, showSuccess } = useToast();
+  const pollIntervalRef = useRef<number | null>(null);
+  const formatGBP = (value?: number) =>
+    new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: "GBP",
+    }).format(value ?? 0);
+
+  const validateShippingDetails = () => {
+    const requiredFields = [
+      "firstName",
+      "lastName",
+      "email",
+      "phone",
+      "address",
+      "city",
+      "state",
+      "zipCode",
+    ] as const;
+    return requiredFields.every((field) => shippingDetails[field].trim().length > 0);
+  };
 
   const completeOrder = async () => {
     try {
+      if (cart.length === 0) {
+        showError("Your cart is empty.");
+        return;
+      }
+      if (!validateShippingDetails()) {
+        showError("Please complete all shipping details.");
+        return;
+      }
       // 1️⃣ Add items to cart (This part looks correct)
-      const addResponse = await axios.post(
-        "http://localhost:8080/cart/add",
+      const addResponse = await axiosInstance.post(
+        API_ROUTES.CART.ADD,
         {
           items: cart.map((item) => ({
-            product_id: item._id,
+            product_id: item.id,
             quantity: item.quantity,
           })),
-        },
-        { withCredentials: true }
+        }
       );
 
       if (addResponse.status !== 200) {
@@ -66,16 +93,8 @@ export default function CheckoutPage() {
         return;
       }
 
-      console.log("Items added/updated in cart.");
-
       // 2️⃣ Checkout (This part is correct)
-      const checkoutResponse = await axios.post(
-        "http://localhost:8080/cart/checkout",
-        {},
-        { withCredentials: true }
-      );
-
-      console.log("Checkout response:", checkoutResponse.data);
+      const checkoutResponse = await axiosInstance.post(API_ROUTES.CART.CHECKOUT, {});
 
       if (checkoutResponse.status !== 200 || !checkoutResponse.data.order_id) {
         console.error("No order ID returned from checkout.");
@@ -84,20 +103,22 @@ export default function CheckoutPage() {
       }
 
       const orderId = checkoutResponse.data.order_id;
-      console.log("Checkout initiated, polling with Order ID:", orderId);
       // showLoading("Waiting for payment link..."); // Show a spinner
 
       // 3️⃣ Polling (This section is fixed)
 
-      const pollForPaymentUrl = async (orderId) => {
+      const pollForPaymentUrl = async (orderId: string) => {
         // Create a long-polling mechanism
         const maxAttempts = 20; // Poll for 20 * 5s = 100 seconds
         let attempts = 0;
 
         return new Promise((resolve, reject) => {
-          const interval = setInterval(async () => {
+          pollIntervalRef.current = window.setInterval(async () => {
             if (attempts >= maxAttempts) {
-              clearInterval(interval);
+              if (pollIntervalRef.current !== null) {
+                window.clearInterval(pollIntervalRef.current);
+                pollIntervalRef.current = null;
+              }
               reject(
                 new Error("Timeout: Payment link took too long to generate.")
               );
@@ -106,26 +127,28 @@ export default function CheckoutPage() {
 
             try {
               // FIX 1: Use GET, not POST, for the status check
-              const response = await axios.get(
-                `http://localhost:8080/payment/status/by-order/${orderId}`,
-                { withCredentials: true }
+              const response = await axiosInstance.get(
+                API_ROUTES.PAYMENT.STATUS_BY_ORDER(orderId)
               );
 
-              console.log("Polling response:", response.data);
               const { status, checkout_url } = response.data;
 
               // FIX 2: Check for "URL_READY", not "completed"
               // "URL_READY" is the status our consumer sets when the URL is available.
               if (status === "URL_READY" && checkout_url) {
-                clearInterval(interval);
-                console.log("Payment URL received:", checkout_url);
+                if (pollIntervalRef.current !== null) {
+                  window.clearInterval(pollIntervalRef.current);
+                  pollIntervalRef.current = null;
+                }
                 resolve(checkout_url); // Stop polling and return the URL
               } else if (status === "FAILED") {
-                clearInterval(interval);
+                if (pollIntervalRef.current !== null) {
+                  window.clearInterval(pollIntervalRef.current);
+                  pollIntervalRef.current = null;
+                }
                 reject(new Error("Payment failed during processing."));
               } else {
                 // Status is "PENDING" or "PROCESSING", just keep polling
-                console.log(`Status is ${status}, polling again...`);
                 attempts++;
               }
             } catch (err) {
@@ -152,6 +175,13 @@ export default function CheckoutPage() {
       // showError(error.message || "Something went wrong during order processing.");
     }
   };
+  useEffect(() => {
+    return () => {
+      if (pollIntervalRef.current !== null) {
+        window.clearInterval(pollIntervalRef.current);
+      }
+    };
+  }, []);
 
   const subtotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -438,7 +468,9 @@ export default function CheckoutPage() {
                                   5-7 business days
                                 </p>
                               </div>
-                              <p className="font-medium">$5.99</p>
+                              <p className="font-medium">
+                                {formatGBP(5.99)}
+                              </p>
                             </div>
                           </Label>
                         </div>
@@ -455,7 +487,9 @@ export default function CheckoutPage() {
                                   2-3 business days
                                 </p>
                               </div>
-                              <p className="font-medium">$15.99</p>
+                              <p className="font-medium">
+                                {formatGBP(15.99)}
+                              </p>
                             </div>
                           </Label>
                         </div>
@@ -490,7 +524,7 @@ export default function CheckoutPage() {
                         className="flex items-center space-x-4 p-4 border rounded-lg"
                       >
                         <img
-                          src={item.image}
+                          src={item.images?.[0] || "/placeholder.png"}
                           alt={item.name}
                           className="w-16 h-16 object-cover rounded-lg"
                         />
@@ -501,7 +535,7 @@ export default function CheckoutPage() {
                           </p>
                         </div>
                         <p className="font-medium">
-                          ${(item.price * item.quantity).toFixed(2)}
+                          {formatGBP(item.price * item.quantity)}
                         </p>
                       </div>
                     ))}
@@ -536,6 +570,10 @@ export default function CheckoutPage() {
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                   onClick={() => {
                     if (currentStep < 2) {
+                      if (!validateShippingDetails()) {
+                        showError("Please complete all shipping details.");
+                        return;
+                      }
                       setCurrentStep(currentStep + 1);
                     } else {
                       // Handle order placement
@@ -568,7 +606,7 @@ export default function CheckoutPage() {
                   {cart.map((item) => (
                     <div key={item.id} className="flex items-center space-x-3">
                       <img
-                        src={item.images[0]}
+                        src={item.images?.[0] || "/placeholder.png"}
                         alt={item.name}
                         className="w-12 h-12 object-cover rounded-lg"
                       />
@@ -579,7 +617,7 @@ export default function CheckoutPage() {
                         </p>
                       </div>
                       <p className="font-medium text-sm">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        {formatGBP(item.price * item.quantity)}
                       </p>
                     </div>
                   ))}
@@ -591,20 +629,20 @@ export default function CheckoutPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
                     <span>Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>{formatGBP(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Shipping</span>
-                    <span>${shipping.toFixed(2)}</span>
+                    <span>{formatGBP(shipping)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Tax</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span>{formatGBP(tax)}</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span className="text-blue-600">${total.toFixed(2)}</span>
+                    <span className="text-blue-600">{formatGBP(total)}</span>
                   </div>
                 </div>
 
