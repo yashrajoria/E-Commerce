@@ -18,7 +18,6 @@ export const updatePassword = async (
   oldPassword: string,
   newPassword: string
 ) => {
-  console.log("Updating password:", oldPassword, newPassword);
   const response = await axiosInstance.post(API_ROUTES.USER.UPDATE_PASSWORD, {
     old_password: oldPassword,
     new_password: newPassword,
@@ -36,7 +35,6 @@ export const checkAuthStatus = async () => {
     const response = await axiosInstance.get(API_ROUTES.AUTH.STATUS);
     return response.data;
   } catch (error) {
-    console.log(error);
     return { authenticated: false };
   }
 };
