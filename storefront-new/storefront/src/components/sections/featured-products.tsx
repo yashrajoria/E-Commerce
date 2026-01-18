@@ -7,11 +7,30 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 // import { featuredProducts } from "@/lib/data";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { useProducts } from "@/hooks/useProducts";
 
 export function FeaturedProducts() {
-  const { data: products = [], isLoading, error } = useProducts(4, 1, true);
+  const { data, isLoading, error } = useProducts(4, 1, true);
+  const products = data?.products ?? [];
   const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, hasWishlistItem } = useWishlist();
+  const formatGBP = (value?: number) =>
+    new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: "GBP",
+    }).format(value ?? 0);
+  if (isLoading || error) {
+    return (
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <p className="text-muted-foreground">
+            Unable to load featured products right now.
+          </p>
+        </div>
+      </section>
+    );
+  }
   return (
     <section className="py-16">
       <div className="container mx-auto px-4">
@@ -29,7 +48,7 @@ export function FeaturedProducts() {
 
         {/* Masonry Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products?.products?.map((product, index) => (
+          {products.map((product, index) => (
             <motion.div
               key={product.id}
               className={`group relative ${
@@ -48,7 +67,7 @@ export function FeaturedProducts() {
                   } overflow-hidden`}
                 >
                   <motion.img
-                    src={product.images[0]}
+                    src={product.images?.[0] || "/placeholder.png"}
                     alt={product.name}
                     className="w-full h-full object-cover"
                     whileHover={{ scale: 1.05 }}
@@ -74,6 +93,11 @@ export function FeaturedProducts() {
                       variant="secondary"
                       size="icon"
                       className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm"
+                      onClick={() =>
+                        hasWishlistItem(product.id)
+                          ? removeFromWishlist(product.id)
+                          : addToWishlist(product)
+                      }
                     >
                       <Heart className="h-4 w-4" />
                     </Button>
@@ -81,6 +105,7 @@ export function FeaturedProducts() {
                       variant="secondary"
                       size="icon"
                       className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm"
+                      onClick={() => addToCart({ ...product, quantity: 1 })}
                     >
                       <ShoppingCart className="h-4 w-4" />
                     </Button>
@@ -114,11 +139,11 @@ export function FeaturedProducts() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <span className="text-2xl font-bold">
-                        ${product.price}
+                        {formatGBP(product.price)}
                       </span>
                       {product.originalPrice && (
                         <span className="text-sm text-muted-foreground line-through">
-                          ${product.originalPrice}
+                          {formatGBP(product.originalPrice)}
                         </span>
                       )}
                     </div>
@@ -136,12 +161,16 @@ export function FeaturedProducts() {
                     </Button>
                   </div>
 
-                  {product.quantity >= 0 && (
+                  {typeof product.quantity === "number" && (
                     <Badge
-                      variant="default"
-                      className="mt-2 bg-green-600 text-white"
+                      variant={product.quantity > 0 ? "default" : "destructive"}
+                      className={
+                        product.quantity > 0
+                          ? "mt-2 bg-green-600 text-white"
+                          : "mt-2"
+                      }
                     >
-                      In Stock
+                      {product.quantity > 0 ? "In Stock" : "Out of Stock"}
                     </Badge>
                   )}
                 </div>
