@@ -2,9 +2,11 @@
 
 import React, { useEffect, useState, Suspense } from "react";
 // import { useSearchParams } from 'next/navigation'; // Removed for compatibility
-import axios from "axios";
+import { API_ROUTES } from "@/pages/api/constants/apiRoutes";
+import { axiosInstance } from "@/utils/axiosInstance";
 import { CheckCircle, XCircle, Loader, ShoppingBag } from "lucide-react";
 import Link from "next/link";
+import { useCart } from "@/context/CartContext";
 // import Link from 'next/link'; // Removed for compatibility
 
 // A simple component to show a loading spinner
@@ -19,6 +21,7 @@ const LoadingSpinner = () => (
 
 // The main component that renders based on status
 const PaymentSuccessContent = () => {
+  const { clearCart } = useCart();
   const [status, setStatus] = useState("loading");
   const [message, setMessage] = useState("");
   const [sessionId, setSessionId] = useState(null);
@@ -45,12 +48,10 @@ const PaymentSuccessContent = () => {
     // 2. Define the verification function
     const verifyPayment = async () => {
       try {
-        console.log("Verifying session:", sessionId);
-
         // 3. Call your Go backend to verify the session
         // This is a NEW endpoint you will need to create in your payment-service
-        const response = await axios.post(
-          "http://localhost:8080/payment/verify-payment",
+        const response = await axiosInstance.post(
+          API_ROUTES.PAYMENT.VERIFY,
           { session_id: sessionId, payment_id: sessionId },
           { withCredentials: true } // Use if your Go backend needs cookies
         );
@@ -73,6 +74,12 @@ const PaymentSuccessContent = () => {
 
     verifyPayment();
   }, [sessionId]); // Run this effect only when sessionId changes
+  useEffect(() => {
+    // Only clear the cart if the status is actually success
+    if (status === "success") {
+      clearCart();
+    }
+  }, [status]);
 
   // 4. Render UI based on the verification status
   if (status === "loading") {
