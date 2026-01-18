@@ -36,8 +36,6 @@ const getStatusColor = (Status: string) => {
 
 export function OrderHistory() {
   const data = useUserOrders();
-  console.log({ data });
-  console.log((data?.orders?.orders ?? []).map((order) => order.ID));
   const ordersData = data?.orders?.orders ?? [];
 
   // return;
