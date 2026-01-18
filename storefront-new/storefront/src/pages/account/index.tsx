@@ -45,17 +45,15 @@ export default function AccountPage() {
   const searchParams = useSearchParams();
   useEffect(() => {
     setProfile({
-      name: user?.name,
-      email: user?.email,
-      phone_number: user?.phone_number,
+      name: user?.name ?? "",
+      email: user?.email ?? "",
+      phone_number: user?.phone_number ?? "",
     });
     const tab = searchParams.get("tab");
     if (tab) {
       setActiveTab(tab);
     }
   }, [searchParams, user]);
-
-  console.log("Phone", user?.phone_number);
 
   const updateUserProfile = async (data: typeof profile) => {
     try {
@@ -69,12 +67,10 @@ export default function AccountPage() {
 
       // If no changes, avoid API call
       if (Object.keys(updates).length === 0) {
-        console.log("No changes detected, skipping update");
         return;
       }
 
-      const response = await updateUserData(updates);
-      console.log("Profile updated successfully:", response.data);
+      await updateUserData(updates);
     } catch (error) {
       console.error("Error updating profile:", error);
     }
@@ -95,8 +91,7 @@ export default function AccountPage() {
       return;
     }
     try {
-      const response = await updatePassword(oldPassword, newPassword);
-      console.log("Password changed successfully:", response.data);
+      await updatePassword(oldPassword, newPassword);
       // Optionally clear password inputs here
     } catch (err) {
       console.error(err);
@@ -241,7 +236,7 @@ export default function AccountPage() {
                       <Input
                         id="email"
                         type="email"
-                        defaultValue={user?.email}
+                        value={profile.email}
                         readOnly
                       />
                     </div>
