@@ -14,6 +14,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { MegaMenu } from "./mega-menu";
 import { useUser } from "@/context/UserContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { WishlistDrawer } from "../common/wishlist-drawer";
 
 export function Header() {
@@ -31,6 +32,7 @@ export function Header() {
   useEffect(() => setMounted(true), []);
   if (!mounted) return null;
   const { cart } = useCart();
+  const { wishlist } = useWishlist();
   const { user, loading } = useUser(); // NEW
   const loggedIn = !!user; // Derived status
 
@@ -88,7 +90,7 @@ export function Header() {
               >
                 <Heart className="h-5 w-5 " />
                 <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
-                  0
+                  {wishlist.length}
                 </Badge>
               </Button>
 
