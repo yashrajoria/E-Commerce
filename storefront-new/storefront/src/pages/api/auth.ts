@@ -2,7 +2,6 @@ import { axiosInstance } from "@/utils/axiosInstance";
 import { API_ROUTES } from "./constants/apiRoutes";
 
 export const loginUser = async (email: string, password: string) => {
-  console.log(email, password);
   const response = await axiosInstance.post(API_ROUTES.AUTH.LOGIN, {
     email,
     password,
@@ -25,7 +24,6 @@ export const registerUser = async (
 };
 
 export const verifyEmail = async (email: string, code: string) => {
-  console.log(email, code);
   try {
     const response = await axiosInstance.post(API_ROUTES.AUTH.VERIFY_EMAIL, {
       email,
@@ -33,6 +31,6 @@ export const verifyEmail = async (email: string, code: string) => {
     });
     return response.data;
   } catch (err) {
-    console.log(err);
+    throw err;
   }
 };
