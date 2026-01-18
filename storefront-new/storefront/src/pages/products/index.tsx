@@ -21,7 +21,7 @@ import { categories } from "@/lib/data";
 import { motion } from "framer-motion";
 import { Filter, Grid, List, Search } from "lucide-react";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react"; // Imported useEffect
+import { useEffect, useMemo, useState } from "react"; // Imported useEffect
 
 export default function SearchPage() {
   const router = useRouter();
@@ -32,17 +32,50 @@ export default function SearchPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showFilters, setShowFilters] = useState(false);
   const [productCount, setProductCount] = useState(12);
+  const formatGBP = (value?: number) =>
+    new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: "GBP",
+    }).format(value ?? 0);
 
   // Set page from URL query on initial load
   const [page, setPage] = useState(Number(router.query.page) || 1);
 
-  const {
-    data: products = [],
-    isLoading,
-    error,
-  } = useProducts(productCount, page);
+  const { data, isLoading, error } = useProducts(productCount, page);
+  const products = data?.products ?? [];
 
-  console.log(products);
+  const filteredProducts = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    let list = products.filter((product) => {
+      const matchesQuery =
+        query.length === 0 ||
+        product.name.toLowerCase().includes(query) ||
+        product.category.toLowerCase().includes(query);
+      const matchesCategory =
+        selectedCategory.length === 0 || product.category === selectedCategory;
+      const matchesPrice =
+        product.price >= priceRange[0] && product.price <= priceRange[1];
+      return matchesQuery && matchesCategory && matchesPrice;
+    });
+
+    switch (sortBy) {
+      case "price-low":
+        list = [...list].sort((a, b) => a.price - b.price);
+        break;
+      case "price-high":
+        list = [...list].sort((a, b) => b.price - a.price);
+        break;
+      case "rating":
+        list = [...list].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+        break;
+      default:
+        break;
+    }
+
+    return list;
+  }, [products, searchQuery, selectedCategory, priceRange, sortBy]);
+
+  const totalPages = data?.meta?.totalPages ?? 1;
   // Effect to update state if URL changes (e.g., browser back/forward)
   useEffect(() => {
     if (router.query.page) {
@@ -51,8 +84,8 @@ export default function SearchPage() {
   }, [router.query.page]);
 
   const handlePageChange = (newPage: number) => {
-    // Prevent going to page 0 or below
-    if (newPage < 1) return;
+    // Prevent going to page 0 or below or beyond total pages
+    if (newPage < 1 || newPage > totalPages) return;
 
     setPage(newPage);
     router.push(
@@ -61,7 +94,7 @@ export default function SearchPage() {
         query: { ...router.query, page: newPage },
       },
       undefined,
-      { shallow: true }
+      { shallow: true },
     );
   };
 
@@ -123,7 +156,7 @@ export default function SearchPage() {
                 className="cursor-pointer"
                 onClick={() => setPriceRange([0, 500])}
               >
-                Price: ${priceRange[0]} - ${priceRange[1]} ×
+                Price: {formatGBP(priceRange[0])} - {formatGBP(priceRange[1])} ×
               </Badge>
             )}
           </div>
@@ -131,7 +164,7 @@ export default function SearchPage() {
           {/* Results Info & Controls */}
           <div className="flex items-center justify-between">
             <p className="text-muted-foreground">
-              {products?.products?.length} results found
+              {filteredProducts.length} results found
               {searchQuery && ` for "${searchQuery}"`}
             </p>
             <div className="flex items-center space-x-4">
@@ -206,7 +239,7 @@ export default function SearchPage() {
               <p>Loading products...</p>
             ) : error ? (
               <p>Error loading products.</p>
-            ) : products?.products?.length === 0 ? (
+            ) : filteredProducts.length === 0 ? (
               <motion.div
                 className="text-center py-16"
                 initial={{ opacity: 0 }}
@@ -232,7 +265,7 @@ export default function SearchPage() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
               >
-                {products?.products?.map((product, index) => (
+                {filteredProducts.map((product, index) => (
                   <motion.div
                     key={product.id}
                     initial={{ opacity: 0, y: 30 }}
@@ -247,25 +280,58 @@ export default function SearchPage() {
           </div>
         </div>
 
-        {/* --- PAGINATION FIX --- */}
         <Pagination className="mt-8">
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious
                 onClick={() => handlePageChange(page - 1)}
-                // Optionally disable the button on the first page
                 className={page <= 1 ? "pointer-events-none opacity-50" : ""}
               />
             </PaginationItem>
-            {/* This part should be rendered dynamically based on total pages */}
+            {page > 2 && (
+              <PaginationItem>
+                <PaginationLink onClick={() => handlePageChange(1)}>
+                  1
+                </PaginationLink>
+              </PaginationItem>
+            )}
+            {page > 3 && (
+              <PaginationItem>
+                <PaginationEllipsis />
+              </PaginationItem>
+            )}
+            {Array.from(
+              { length: Math.min(totalPages, page + 1) - Math.max(1, page - 1) + 1 },
+              (_, index) => Math.max(1, page - 1) + index
+            ).map((pageNumber) => (
+              <PaginationItem key={pageNumber}>
+                <PaginationLink
+                  isActive={pageNumber === page}
+                  onClick={() => handlePageChange(pageNumber)}
+                >
+                  {pageNumber}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            {page < totalPages - 2 && (
+              <PaginationItem>
+                <PaginationEllipsis />
+              </PaginationItem>
+            )}
+            {page < totalPages - 1 && (
+              <PaginationItem>
+                <PaginationLink onClick={() => handlePageChange(totalPages)}>
+                  {totalPages}
+                </PaginationLink>
+              </PaginationItem>
+            )}
             <PaginationItem>
-              <PaginationLink isActive>{page}</PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationNext onClick={() => handlePageChange(page + 1)} />
+              <PaginationNext
+                onClick={() => handlePageChange(page + 1)}
+                className={
+                  page >= totalPages ? "pointer-events-none opacity-50" : ""
+                }
+              />
             </PaginationItem>
           </PaginationContent>
         </Pagination>
@@ -275,3 +341,4 @@ export default function SearchPage() {
     </div>
   );
 }
+
