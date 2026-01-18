@@ -16,7 +16,6 @@ interface Order {
  */
 export const getOrders = async (): Promise<Order[]> => {
   // Calling /orders will typically return orders for the user attached to the JWT
-  console.log("HELOOOOOOOOOOOOOO", API_ROUTES.ORDERS.ALL);
   const response = await axiosInstance.get(API_ROUTES.ORDERS.ALL);
   return response.data;
 };
