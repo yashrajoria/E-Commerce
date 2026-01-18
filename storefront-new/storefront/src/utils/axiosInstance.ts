@@ -3,7 +3,9 @@ import { API_ROUTES } from "@/pages/api/constants/apiRoutes";
 
 // Create the Axios instance with base configuration
 export const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
+  baseURL:
+    process.env.NEXT_PUBLIC_API_BASE_URL ??
+    process.env.NEXT_PUBLIC_BASE_URL,
   withCredentials: true, // This is crucial for sending cookies
 });
 
