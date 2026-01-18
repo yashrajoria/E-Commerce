@@ -122,17 +122,14 @@ AccountDropdownProps) {
   ];
 
   const handleLogout = async () => {
-    const response = await logoutUser();
-    console.log(response);
+    await logoutUser();
     // setLoggedIn(false);
     if (signOut) {
       signOut();
     }
 
-    localStorage.removeItem("isLoggedIn");
     router.push("/");
     onClose();
-    console.log("Logged out");
   };
 
   return (
