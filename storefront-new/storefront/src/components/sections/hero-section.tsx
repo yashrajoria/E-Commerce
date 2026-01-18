@@ -9,10 +9,13 @@ import Link from "next/link";
 import { useProducts } from "@/hooks/useProducts";
 
 export function HeroSection() {
-  const { data: productsData = [], isLoading, error } = useProducts(3, 1, true);
-  const products = Array.isArray(productsData)
-    ? productsData
-    : productsData?.products || [];
+  const { data, isLoading, error } = useProducts(3, 1, true);
+  const products = data?.products ?? [];
+  const formatGBP = (value?: number) =>
+    new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: "GBP",
+    }).format(value ?? 0);
 
   return (
     <section className="relative min-h-[80vh] overflow-hidden">
@@ -135,14 +138,14 @@ export function HeroSection() {
                     }}
                   >
                     <img
-                      src={
-                        product?.images[0] ||"/"
-                      }
-                      alt={product.title}
+                      src={product.images?.[0] || "/placeholder.png"}
+                      alt={product.name}
                       className="w-20 h-20 object-cover rounded-lg mb-2"
                     />
-                    <h3 className="font-medium text-sm">{product.title}</h3>
-                    <p className="text-blue-600 font-bold">${product.price}</p>
+                    <h3 className="font-medium text-sm">{product.name}</h3>
+                    <p className="text-blue-600 font-bold">
+                      {formatGBP(product.price)}
+                    </p>
                   </motion.div>
                 ))}
               </div>
