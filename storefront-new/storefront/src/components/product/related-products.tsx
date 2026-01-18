@@ -15,6 +15,11 @@ export function RelatedProducts({ currentProductId }: RelatedProductsProps) {
   const relatedProducts = featuredProducts
     .filter((p) => p.id !== currentProductId)
     .slice(0, 4);
+  const formatGBP = (value?: number) =>
+    new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: "GBP",
+    }).format(value ?? 0);
 
   return (
     <section className="mt-16">
@@ -38,7 +43,7 @@ export function RelatedProducts({ currentProductId }: RelatedProductsProps) {
               <div className="bg-card border rounded-2xl overflow-hidden shadow-sm">
                 <div className="relative aspect-square overflow-hidden">
                   <motion.img
-                    src={product.image}
+                    src={product.image || "/placeholder.png"}
                     alt={product.name}
                     className="w-full h-full object-cover"
                     whileHover={{ scale: 1.05 }}
@@ -77,10 +82,12 @@ export function RelatedProducts({ currentProductId }: RelatedProductsProps) {
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-1">
-                      <span className="font-bold">${product.price}</span>
+                      <span className="font-bold">
+                        {formatGBP(product.price)}
+                      </span>
                       {product.originalPrice && (
                         <span className="text-xs text-muted-foreground line-through">
-                          ${product.originalPrice}
+                          {formatGBP(product.originalPrice)}
                         </span>
                       )}
                     </div>
