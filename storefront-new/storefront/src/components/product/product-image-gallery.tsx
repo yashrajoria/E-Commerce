@@ -13,6 +13,14 @@ export function ProductImageGallery({ images }: ProductImageGalleryProps) {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
 
+  if (!images.length) {
+    return (
+      <div className="space-y-4">
+        <div className="relative aspect-square overflow-hidden rounded-2xl bg-muted" />
+      </div>
+    );
+  }
+
   const nextImage = () => {
     setSelectedImage((prev) => (prev + 1) % images.length);
   };
