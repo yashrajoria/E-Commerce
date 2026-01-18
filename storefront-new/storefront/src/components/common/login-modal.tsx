@@ -2,17 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  X,
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  Shield,
-  Badge,
-  CheckCircle,
-} from "lucide-react";
+import { X, Mail, Lock, Eye, EyeOff, Shield, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -48,55 +40,56 @@ export function LoginModal({
   const { showError, showSuccess } = useToast();
   const [otpValue, setOtpValue] = useState("");
   const [loading, setLoading] = useState(false);
-  const { refetchUser } = useUser(); // ✅ Consume new function
+  const [pendingLogin, setPendingLogin] = useState<{
+    email: string;
+    password: string;
+  } | null>(null);
+  const { refetchUser } = useUser();
   useEffect(() => {
-    if (!isOpen) {
+    if (isLogin && !isOtp) {
+      onCloseOtp();
+    }
+    if (!isOpen && !isOtp) {
       // setEmail("");
       setPassword("");
       setShowPassword(false);
       setIsLogin(true);
     }
-
     // Perform login or signup action
-  }, [isOpen]);
+  }, [isLogin, isOpen]);
   const onCloseOtp = () => {
     setIsOtp(false);
+    setPendingLogin(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    if (email == "" || password == "") {
+    if (email === "" || password === "" || (!isLogin && fullName === "")) {
       showError("Please fill all the fields");
       setLoading(false);
       return;
     }
     try {
       if (isLogin) {
-        const data = await loginUser(email, password);
+        await loginUser(email, password);
         await refetchUser();
-        console.log("Login success:", data);
         setLoading(false);
         // setLoggedIn(true);
-        localStorage.setItem("isLoggedIn", "true");
         showSuccess("Logged in successfully!");
         onClose(); // Login modal close
       } else {
-        const data = await registerUser(email, password, fullName);
-        console.log("Register success:", data);
+        await registerUser(email, password, fullName);
 
-        // Simulate delay before switching to OTP modal
-        setTimeout(() => {
-          setLoading(false);
-          onClose(); // Close login modal
-          setIsOtp(true); // Open OTP modal
-        }, 1000);
+        setLoading(false);
+        setPendingLogin({ email, password });
+        setIsOtp(true); // Open OTP modal
+        onClose(); // Close login modal
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       setLoading(false);
       console.error("Auth error:", error?.response?.data || error.message);
-      console.log(error);
       showError("Authentication failed. Please try again.");
       if (error?.response?.data?.error == "Email not verified") {
         showError("The email is not verified. Please check your inbox.");
@@ -107,13 +100,25 @@ export function LoginModal({
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    console.log(email, otpValue);
-    const data = await verifyEmail(email, otpValue);
-    console.log("Login success:", data);
-
-    setLoading(false);
-    showSuccess("Email verified successfully!");
-    onClose();
+    try {
+      await verifyEmail(email, otpValue);
+      if (pendingLogin) {
+        await loginUser(pendingLogin.email, pendingLogin.password);
+        await refetchUser();
+      } else {
+        await refetchUser();
+      }
+      setLoading(false);
+      showSuccess("Email verified successfully!");
+      onCloseOtp();
+    } catch (error: any) {
+      setLoading(false);
+      console.error(
+        "OTP verify error:",
+        error?.response?.data || error.message,
+      );
+      showError("OTP verification failed. Please try again.");
+    }
   };
 
   return (
@@ -375,7 +380,7 @@ export function LoginModal({
                     Verify Your Email
                   </h2>
                   <p className="text-muted-foreground text-sm">
-                    We&post;ve sent a 6-digit verification code to
+                    We&apos;ve sent a 6-digit verification code to
                   </p>
                   <Badge className="mt-2">{email}</Badge>
                 </div>
@@ -425,7 +430,7 @@ export function LoginModal({
 
                   <Button
                     onClick={handleOtpSubmit}
-                    className="w-full h-12 p-0 h-auto text-blue-600 hover:text-blue-700 font-semibold"
+                    className="w-full h-12 p-0 text-blue-600 hover:text-blue-700 font-semibold"
                     disabled={loading || otpValue.length !== 6}
                   >
                     {loading ? (
@@ -440,7 +445,7 @@ export function LoginModal({
 
                   <div className="text-center">
                     <p className="text-sm text-muted-foreground mb-2">
-                      Didn&post;t receive the code?
+                      Didn&apos;t receive the code?
                     </p>
                     <Button
                       variant="link"
