@@ -28,6 +28,30 @@ const processQueue = (error: Error | null, token: string | null = null) => {
   failedQueue = [];
 };
 
+// Add request interceptor to include user ID from cookies
+axiosInstance.interceptors.request.use(
+  (config) => {
+    // Try to get user ID from localStorage or cookies
+    if (typeof window !== 'undefined') {
+      const userDataStr = localStorage.getItem('userData');
+      if (userDataStr) {
+        try {
+          const userData = JSON.parse(userDataStr);
+          if (userData.id) {
+            config.headers['X-User-ID'] = userData.id;
+          }
+        } catch (e) {
+          console.error('Failed to parse user data:', e);
+        }
+      }
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 // Add the response interceptor
 axiosInstance.interceptors.response.use(
   (response) => {
@@ -39,6 +63,18 @@ axiosInstance.interceptors.response.use(
 
     // Check if the error is 401 (Unauthorized) and we haven't already retried
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // For protected routes, dispatch logout event immediately
+      const isProtectedRoute = 
+        originalRequest.url?.includes('/cart') ||
+        originalRequest.url?.includes('/orders') ||
+        originalRequest.url?.includes('/profile');
+
+      if (isProtectedRoute) {
+        console.error("Unauthorized access to protected route, logging out.");
+        window.dispatchEvent(new Event("logout"));
+        return Promise.reject(error);
+      }
+
       if (isRefreshing) {
         // If a refresh is already in progress, queue this request
         return new Promise(function (resolve, reject) {

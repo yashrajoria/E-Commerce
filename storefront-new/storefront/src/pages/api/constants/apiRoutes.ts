@@ -8,6 +8,7 @@ export const API_ROUTES = {
     LOGIN: `${BASE_URL}/auth/login`,
     REGISTER: `${BASE_URL}/auth/register`,
     VERIFY_EMAIL: `${BASE_URL}/auth/verify-email`,
+    RESEND_VERIFICATION: `${BASE_URL}/auth/resend-verification`,
     LOGOUT: `${BASE_URL}/auth/logout`,
     STATUS: `${BASE_URL}/auth/status`,
   },
