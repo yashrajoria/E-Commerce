@@ -9,6 +9,9 @@ export const API_ROUTES = {
     REGISTER: `${BASE_URL}/auth/register`,
     VERIFY_EMAIL: `${BASE_URL}/auth/verify-email`,
     RESEND_VERIFICATION: `${BASE_URL}/auth/resend-verification`,
+    REFRESH: `${BASE_URL}/auth/refresh`,
+    REQUEST_PASSWORD_RESET: `${BASE_URL}/auth/request-password-reset`,
+    RESET_PASSWORD: `${BASE_URL}/auth/reset-password`,
     LOGOUT: `${BASE_URL}/auth/logout`,
     STATUS: `${BASE_URL}/auth/status`,
   },
@@ -25,8 +28,6 @@ export const API_ROUTES = {
 
   CATEGORIES: {
     ALL: `${BASE_URL}/categories/`,
-    // !TODO
-    // BY_ID: (id: string) => `${BASE_URL}/categories/${id}`,
   },
 
   ORDERS: {

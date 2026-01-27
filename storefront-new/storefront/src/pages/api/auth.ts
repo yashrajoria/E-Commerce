@@ -25,26 +25,31 @@ export const registerUser = async (
 };
 
 export const verifyEmail = async (email: string, code: string) => {
-  try {
-    const response = await axiosInstance.post(API_ROUTES.AUTH.VERIFY_EMAIL, {
-      email,
-      code,
-    });
-    return response.data;
-  } catch (err) {
-    throw err;
-  }
+  const response = await axiosInstance.post(API_ROUTES.AUTH.VERIFY_EMAIL, {
+    email,
+    code,
+  });
+  return response.data;
 };
 
 export const resendVerificationEmail = async (email: string) => {
-  try {
-    const response = await axiosInstance.post(API_ROUTES.AUTH.RESEND_VERIFICATION, {
-      email,
-    });
-    return response.data;
-  } catch (err) {
-    throw err;
-  }
+  const response = await axiosInstance.post(API_ROUTES.AUTH.RESEND_VERIFICATION, { email });
+  return response.data;
+};
+
+export const requestPasswordReset = async (email: string) => {
+  const response = await axiosInstance.post(API_ROUTES.AUTH.REQUEST_PASSWORD_RESET, { email });
+  return response.data;
+};
+
+export const resetPassword = async (email: string, code: string, newPassword: string) => {
+  const response = await axiosInstance.post(API_ROUTES.AUTH.RESET_PASSWORD, { email, code, new_password: newPassword });
+  return response.data;
+};
+
+export const refreshTokens = async () => {
+  const response = await axiosInstance.post(API_ROUTES.AUTH.REFRESH);
+  return response.data;
 };
 
 // Password validation helper
@@ -75,8 +80,7 @@ export const validatePassword = (password: string): PasswordValidation => {
   }
 
   const isValid = errors.length === 0;
-  
-  // Calculate strength
+
   if (isValid) {
     if (password.length >= 12 && /[!@#$%^&*(),.?":{}|<>]/.test(password)) {
       strength = 'strong';

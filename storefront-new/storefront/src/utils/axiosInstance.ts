@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "axios";
 import { API_ROUTES } from "@/pages/api/constants/apiRoutes";
+import { refreshTokens } from "@/pages/api/auth";
 
 // Create the Axios instance with base configuration
 export const axiosInstance = axios.create({
@@ -9,109 +10,83 @@ export const axiosInstance = axios.create({
   withCredentials: true, // This is crucial for sending cookies
 });
 
-// A flag to prevent multiple, simultaneous refresh requests
 let isRefreshing = false;
-// A queue to hold requests that failed due to an expired token while a refresh is in progress
-let failedQueue: {
-  resolve: (value: any) => void;
-  reject: (reason?: any) => void;
-}[] = [];
+let failedQueue: Array<{ resolve: (v?: any) => void; reject: (r?: any) => void }> = [];
 
-const processQueue = (error: Error | null, token: string | null = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
+const processQueue = (error: any = null) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error) reject(error);
+    else resolve();
   });
   failedQueue = [];
 };
 
-// Add request interceptor to include user ID from cookies
 axiosInstance.interceptors.request.use(
   (config) => {
-    // Try to get user ID from localStorage or cookies
-    if (typeof window !== 'undefined') {
-      const userDataStr = localStorage.getItem('userData');
+    if (typeof window !== "undefined") {
+      const userDataStr = localStorage.getItem("userData");
       if (userDataStr) {
         try {
           const userData = JSON.parse(userDataStr);
           if (userData.id) {
-            config.headers['X-User-ID'] = userData.id;
+            config.headers = config.headers ?? {};
+            config.headers["X-User-ID"] = userData.id;
           }
         } catch (e) {
-          console.error('Failed to parse user data:', e);
+          console.error("Failed to parse user data:", e);
         }
       }
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Add the response interceptor
 axiosInstance.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   async (error: AxiosError) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const originalRequest = error.config as any;
+    const originalRequest: any = error.config;
 
-    // Check if the error is 401 (Unauthorized) and we haven't already retried
     if (error.response?.status === 401 && !originalRequest._retry) {
-      // For protected routes, dispatch logout event immediately
-      const isProtectedRoute = 
+      // If it's a protected route, trigger logout immediately
+      const isProtectedRoute =
         originalRequest.url?.includes('/cart') ||
         originalRequest.url?.includes('/orders') ||
         originalRequest.url?.includes('/profile');
 
       if (isProtectedRoute) {
-        console.error("Unauthorized access to protected route, logging out.");
-        window.dispatchEvent(new Event("logout"));
+        window.dispatchEvent(new Event('logout'));
         return Promise.reject(error);
       }
 
       if (isRefreshing) {
-        // If a refresh is already in progress, queue this request
         return new Promise(function (resolve, reject) {
           failedQueue.push({ resolve, reject });
-        }).then(() => {
-          // Retry the original request once the token has been refreshed
-          return axiosInstance(originalRequest);
-        });
+        })
+          .then(() => axiosInstance(originalRequest))
+          .catch((err) => Promise.reject(err));
       }
 
       originalRequest._retry = true;
       isRefreshing = true;
 
-      try {
-        // Attempt to refresh the tokens by calling the refresh endpoint
-        // await axiosInstance.post(API_ROUTES.AUTH.REFRESH);
-
-        // Process the queue of failed requests, retrying them with the new token
-        processQueue(null);
-
-        // Retry the original request that initiated the refresh
-        return axiosInstance(originalRequest);
-      } catch (refreshError) {
-        processQueue(refreshError, null);
-
-        // If the refresh token is also invalid, the refresh attempt will fail.
-        // Dispatch a global 'logout' event for the UserContext to catch.
-        console.error("Session expired, logging out.");
-        window.dispatchEvent(new Event("logout"));
-
-        return Promise.reject(refreshError);
-      } finally {
-        isRefreshing = false;
-      }
+      return new Promise(async (resolve, reject) => {
+        try {
+          await refreshTokens();
+          processQueue();
+          resolve(axiosInstance(originalRequest));
+        } catch (err) {
+          processQueue(err);
+          window.dispatchEvent(new Event('logout'));
+          reject(err);
+        } finally {
+          isRefreshing = false;
+        }
+      });
     }
 
-    // For any other errors, just return the promise rejection
     return Promise.reject(error);
   }
 );
+
+export default axiosInstance;
