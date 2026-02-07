@@ -37,16 +37,29 @@ export default function ProductImageUpload({
 }: ProductImageUploadProps) {
   const sensors = useSensors(useSensor(PointerSensor));
 
-  const handleFileUpload = (files: FileList | null) => {
-    if (!files) return;
+  const validateFile = (file) => {
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+    const maxSize = 5 * 1024 * 1024; // 5MB
 
-    const newImages: ImageItem[] = Array.from(files).map((file) => ({
-      id: crypto.randomUUID(),
-      file,
-      url: URL.createObjectURL(file),
-    }));
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Invalid file type. Only JPEG, PNG, and GIF are allowed.");
+      return false;
+    }
 
-    setImages([...images, ...newImages]);
+    if (file.size > maxSize) {
+      toast.error("File size exceeds the 5MB limit.");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleFileUpload = (files) => {
+    const validFiles = Array.from(files).filter(validateFile);
+    if (validFiles.length > 0) {
+      // Process valid files
+      setImages(validFiles);
+    }
   };
 
   const handleRemove = (id: string) => {
