@@ -8,6 +8,7 @@ import { useWishlist } from "@/context/WishlistContext";
 import { AnimatePresence, motion } from "framer-motion";
 import { HeartOff, ShoppingBagIcon, X } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -66,11 +67,15 @@ export function WishlistDrawer({ isOpen, onClose }: CartDrawerProps) {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                     >
-                      <img
-                        src={item.images?.[0] || "/placeholder.png"}
-                        alt={item.name}
-                        className="w-16 h-16 object-cover rounded-md"
-                      />
+                      <div className="relative w-16 h-16 rounded-md overflow-hidden">
+                        <Image
+                          src={item.images?.[0] || "/icons8-image-100.png"}
+                          alt={item.name}
+                          fill
+                          sizes="64px"
+                          className="object-cover"
+                        />
+                      </div>
                       <div className="flex-1">
                         <h3 className="font-medium text-sm">{item.name}</h3>
                         <p className="text-lg font-semibold">${item.price}</p>
@@ -114,7 +119,11 @@ export function WishlistDrawer({ isOpen, onClose }: CartDrawerProps) {
                       </div>
                     </Link>
                   </Button>
-                  <Button variant="ghost" className="w-full" onClick={clearWishlist}>
+                  <Button
+                    variant="ghost"
+                    className="w-full"
+                    onClick={clearWishlist}
+                  >
                     Clear Wishlist
                   </Button>
                 </div>
