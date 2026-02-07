@@ -8,6 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ImageIcon } from "lucide-react";
+import DOMPurify from "dompurify";
 
 export default function CSVPreviewTable({ csvData }) {
   return (
@@ -34,13 +35,16 @@ export default function CSVPreviewTable({ csvData }) {
             {csvData.map((product, index) => (
               <TableRow key={index}>
                 <TableCell className="font-medium">{index + 1}</TableCell>
-                <TableCell>{product.Name}</TableCell>
+                <TableCell>{DOMPurify.sanitize(product.Name)}</TableCell>
                 <TableCell>
                   {product.ImageURL ? (
                     <div className="h-12 w-12 rounded-md overflow-hidden border border-gray-200 dark:border-gray-800">
                       <img
-                        src={product.ImageURL || "/placeholder.svg"}
-                        alt={product.Name}
+                        src={
+                          DOMPurify.sanitize(product.ImageURL) ||
+                          "/placeholder.svg"
+                        }
+                        alt={DOMPurify.sanitize(product.Name)}
                         className="h-full w-full object-cover"
                       />
                     </div>
@@ -50,10 +54,10 @@ export default function CSVPreviewTable({ csvData }) {
                     </div>
                   )}
                 </TableCell>
-                <TableCell>${product.price}</TableCell>
-                <TableCell>{product.Quantity}</TableCell>
+                <TableCell>${DOMPurify.sanitize(product.price)}</TableCell>
+                <TableCell>{DOMPurify.sanitize(product.Quantity)}</TableCell>
                 <TableCell className="max-w-[200px] truncate">
-                  {product.Description}
+                  {DOMPurify.sanitize(product.Description)}
                 </TableCell>
               </TableRow>
             ))}
