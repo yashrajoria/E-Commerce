@@ -1,16 +1,13 @@
 import axios, { AxiosError } from "axios";
 import { API_ROUTES } from "@/pages/api/constants/apiRoutes";
+import { refreshTokens } from "@/pages/api/auth";
 
 // Create the Axios instance with base configuration
 export const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api",
-  withCredentials: true, // crucial for sending cookies
-});
-
-// Plain axios client for refresh calls (no interceptors)
-const refreshClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api",
-  withCredentials: true,
+  baseURL:
+    process.env.NEXT_PUBLIC_API_BASE_URL ??
+    process.env.NEXT_PUBLIC_BASE_URL,
+  withCredentials: true, // This is crucial for sending cookies
 });
 
 // A flag to prevent multiple, simultaneous refresh requests
@@ -21,6 +18,10 @@ let failedQueue: Array<{
   reject: (reason?: unknown) => void;
 }> = [];
 
+const processQueue = (error: any = null) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error) reject(error);
+    else resolve();
 const processQueue = (error: Error | null) => {
   failedQueue.forEach((prom) => {
     if (error) {
@@ -32,53 +33,73 @@ const processQueue = (error: Error | null) => {
   failedQueue = [];
 };
 
-// Add request interceptor (reserved for future request customization)
 axiosInstance.interceptors.request.use(
-  (config) => config,
-  (error) => Promise.reject(error),
+  (config) => {
+    if (typeof window !== "undefined") {
+      const userDataStr = localStorage.getItem("userData");
+      if (userDataStr) {
+        try {
+          const userData = JSON.parse(userDataStr);
+          if (userData.id) {
+            config.headers = config.headers ?? {};
+            config.headers["X-User-ID"] = userData.id;
+          }
+        } catch (e) {
+          console.error("Failed to parse user data:", e);
+        }
+      }
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
 );
 
-// Add the response interceptor
 axiosInstance.interceptors.response.use(
   (response) => response,
+  (response) => response,
   async (error: AxiosError) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const originalRequest = (error.config as any) || {};
+    const originalRequest: any = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // If it's a protected route, trigger logout immediately
+      const isProtectedRoute =
+        originalRequest.url?.includes('/cart') ||
+        originalRequest.url?.includes('/orders') ||
+        originalRequest.url?.includes('/profile');
+
+      if (isProtectedRoute) {
+        window.dispatchEvent(new Event('logout'));
+        return Promise.reject(error);
+      }
+
       if (isRefreshing) {
-        // Queue the request while refresh in progress
         return new Promise(function (resolve, reject) {
           failedQueue.push({ resolve, reject });
-        }).then(() => {
-          return axiosInstance(originalRequest);
-        });
+        })
+          .then(() => axiosInstance(originalRequest))
+          .catch((err) => Promise.reject(err));
       }
 
       originalRequest._retry = true;
       isRefreshing = true;
 
-      try {
-        // Use plain refreshClient (no interceptors) so refresh doesn't loop
-        await refreshClient.post(API_ROUTES.AUTH.REFRESH_TOKEN);
-
-        // Refresh succeeded; resolve queued requests
-        processQueue(null);
-
-        // Retry the original request
-        return axiosInstance(originalRequest);
-      } catch (refreshError) {
-        processQueue(refreshError as Error);
-
-        console.error("Session expired, logging out.");
-        window.dispatchEvent(new Event("logout"));
-
-        return Promise.reject(refreshError);
-      } finally {
-        isRefreshing = false;
-      }
+      return new Promise(async (resolve, reject) => {
+        try {
+          await refreshTokens();
+          processQueue();
+          resolve(axiosInstance(originalRequest));
+        } catch (err) {
+          processQueue(err);
+          window.dispatchEvent(new Event('logout'));
+          reject(err);
+        } finally {
+          isRefreshing = false;
+        }
+      });
     }
 
     return Promise.reject(error);
   },
 );
+
+export default axiosInstance;
