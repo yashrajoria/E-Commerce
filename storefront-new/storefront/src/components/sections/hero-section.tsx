@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { useProducts } from "@/hooks/useProducts";
+import Image from "next/image";
 
 export function HeroSection() {
   const { data, isLoading, error } = useProducts(3, 1, true);
@@ -137,10 +138,12 @@ export function HeroSection() {
                       transition: { duration: 0.2 },
                     }}
                   >
-                    <img
-                      src={product.images?.[0] || "/placeholder.png"}
+                    <Image
+                      src={product.images?.[0] || "/icons8-image-100.png"}
                       alt={product.name}
-                      className="w-20 h-20 object-cover rounded-lg mb-2"
+                      width={80}
+                      height={80}
+                      className="rounded-lg mb-2 object-cover"
                     />
                     <h3 className="font-medium text-sm">{product.name}</h3>
                     <p className="text-blue-600 font-bold">
