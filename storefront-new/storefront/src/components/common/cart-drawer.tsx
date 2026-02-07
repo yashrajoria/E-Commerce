@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -91,10 +92,12 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     animate={{ opacity: 1, y: 0 }}
                   >
                     <div className="relative w-16 h-16 rounded-md overflow-hidden">
-                      <img
-                        src={item.images?.[0] || "/placeholder.png"} // Use placeholder if no image
+                      <Image
+                        src={item.images?.[0] || "/icons8-image-100.png"}
                         alt={item.name}
-                        className="h-full w-full object-cover"
+                        fill
+                        sizes="64px"
+                        className="object-cover"
                       />
                     </div>
 
@@ -147,9 +150,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               <div className="p-4 border-t space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold">Total:</span>
-                  <span className="text-2xl font-bold">
-                    {formatGBP(total)}
-                  </span>
+                  <span className="text-2xl font-bold">{formatGBP(total)}</span>
                 </div>
                 <Separator />
                 <div className="space-y-2">
