@@ -5,10 +5,17 @@ import { motion } from "framer-motion";
 import { Heart, ShoppingCart, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { featuredProducts } from "@/lib/data";
+import { useWishlist } from "@/context/WishlistContext";
+import Image from "next/image";
 
 export function WishlistItems() {
-  const wishlistItems = featuredProducts.slice(0, 4);
+  const { wishlist, removeFromWishlist } = useWishlist();
+  const wishlistItems = wishlist;
+  const formatGBP = (value?: number) =>
+    new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: "GBP",
+    }).format(value ?? 0);
 
   return (
     <motion.div
@@ -32,15 +39,18 @@ export function WishlistItems() {
             transition={{ delay: index * 0.1, duration: 0.5 }}
           >
             <div className="relative aspect-square overflow-hidden">
-              <img
-                src={item.image}
+              <Image
+                src={item.images?.[0] || "/icons8-image-100.png"}
                 alt={item.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                fill
+                sizes="(max-width: 768px) 50vw, 25vw"
+                className="object-cover transition-transform duration-300 group-hover:scale-105"
               />
               <Button
                 variant="ghost"
                 size="icon"
                 className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm hover:bg-white"
+                onClick={() => removeFromWishlist(item.id)}
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -55,10 +65,10 @@ export function WishlistItems() {
               <h3 className="font-semibold mb-2 line-clamp-2">{item.name}</h3>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-2">
-                  <span className="font-bold">${item.price}</span>
+                  <span className="font-bold">{formatGBP(item.price)}</span>
                   {item.originalPrice && (
                     <span className="text-sm text-muted-foreground line-through">
-                      ${item.originalPrice}
+                      {formatGBP(item.originalPrice)}
                     </span>
                   )}
                 </div>
