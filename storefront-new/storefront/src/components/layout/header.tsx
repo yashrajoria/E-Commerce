@@ -27,14 +27,14 @@ export function Header() {
   // const [loggedIn, setLoggedIn] = useState(false);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  // console.log(loggedIn);
+  const { cart } = useCart();
+  const { wishlist } = useWishlist();
+  const { user } = useUser();
+  const loggedIn = !!user; // Derived status
+
   // When mounted on client, now we can show the UI
   useEffect(() => setMounted(true), []);
   if (!mounted) return null;
-  const { cart } = useCart();
-  const { wishlist } = useWishlist();
-  const { user, loading } = useUser(); // NEW
-  const loggedIn = !!user; // Derived status
 
   return (
     <>
