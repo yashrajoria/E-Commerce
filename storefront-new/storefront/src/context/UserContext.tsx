@@ -12,8 +12,11 @@ interface User {
   id: string;
   email: string;
   name: string;
+  avatar?: string;
   phone_number?: string;
   created_at: string;
+  totalOrders?: number;
+  totalSpent?: number;
   role: string;
 }
 
@@ -48,27 +51,16 @@ export function UserProvider({ children }: UserProviderProps) {
         const userData: User = await getUserData();
         setUser(userData);
         setIsAuthenticated(true);
-        
-        // Store user data in localStorage for axios interceptor to use
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('userData', JSON.stringify(userData));
-        }
       } else {
         // Not authenticated
         setUser(null);
         setIsAuthenticated(false);
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('userData');
-        }
       }
     } catch (err) {
       console.error("[UserContext] Failed to fetch user:", err);
       // If any error occurs, treat as not authenticated
       setUser(null);
       setIsAuthenticated(false);
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('userData');
-      }
     } finally {
       setLoading(false);
     }
@@ -84,9 +76,6 @@ export function UserProvider({ children }: UserProviderProps) {
       // Always clear the frontend state and localStorage
       setUser(null);
       setIsAuthenticated(false);
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('userData');
-      }
     }
   }, []);
 
@@ -98,12 +87,8 @@ export function UserProvider({ children }: UserProviderProps) {
   // Handle forced logouts from Axios interceptor
   useEffect(() => {
     const handleForcedLogout = () => {
-      console.log("[UserContext] Forced logout event received.");
       setUser(null);
       setIsAuthenticated(false);
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('userData');
-      }
     };
 
     window.addEventListener("logout", handleForcedLogout);
