@@ -9,6 +9,7 @@ import type { Product } from "@/lib/types";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import Link from "next/link";
+import Image from "next/image";
 
 interface ProductCardProps {
   product: Product;
@@ -23,7 +24,7 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
       style: "currency",
       currency: "GBP",
     }).format(value ?? 0);
-  const primaryImage = product.images?.[0] || "/placeholder.png";
+  const primaryImage = product.images?.[0] || "/icons8-image-100.png";
 
   // Reusable handler to add the correct product to the cart
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -52,11 +53,12 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
         whileHover={{ y: -2 }}
       >
         <div className="relative w-48 h-48 flex-shrink-0">
-          <img
+          <Image
             src={primaryImage}
             alt={product.name}
-            className="h-full w-full object-cover"
+            fill
             sizes="(max-width: 768px) 30vw, 12rem"
+            className="object-cover"
           />
           {product.badge && (
             <Badge className="absolute top-2 left-2 z-10 bg-red-500 text-white">
@@ -97,7 +99,11 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
               )}
             </div>
             <div className="flex items-center space-x-2">
-              <Button variant="outline" size="icon" onClick={handleWishlistToggle}>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleWishlistToggle}
+              >
                 <Heart className="h-4 w-4" />
               </Button>
               <Button variant="outline" size="icon">
@@ -123,11 +129,12 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
     >
       <div className="bg-card border rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300">
         <div className="relative aspect-square overflow-hidden">
-          <img
+          <Image
             src={primaryImage}
             alt={product.name}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            fill
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
           {product.badge && (
             <Badge className="absolute top-4 left-4 z-10 bg-red-500 text-white">
