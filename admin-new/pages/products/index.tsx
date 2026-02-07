@@ -92,7 +92,7 @@ const Products = () => {
       },
     },
   };
-  const productsCount = products?.length || 0;
+  const productsCount = meta?.total || 0;
 
   const handleViewModeChange = (mode: "grid" | "list") => {
     setViewMode(mode);

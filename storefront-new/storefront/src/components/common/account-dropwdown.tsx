@@ -122,17 +122,14 @@ AccountDropdownProps) {
   ];
 
   const handleLogout = async () => {
-    const response = await logoutUser();
-    console.log(response);
+    await logoutUser();
     // setLoggedIn(false);
     if (signOut) {
       signOut();
     }
 
-    localStorage.removeItem("isLoggedIn");
     router.push("/");
     onClose();
-    console.log("Logged out");
   };
 
   return (
@@ -290,10 +287,12 @@ AccountDropdownProps) {
                 <div className="text-center pt-2">
                   <p className="text-xs text-muted-foreground">
                     Member Since{" "}
-                    {new Date(user?.created_at).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                    })}
+                    {user?.created_at
+                      ? new Date(user.created_at).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                        })
+                      : "—"}
                   </p>
                 </div>
               </div>

@@ -2,20 +2,18 @@
 
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/hooks/use-toast";
-import axios from "axios";
+import { API_ROUTES } from "@/pages/api/constants/apiRoutes";
+import { axiosInstance } from "@/utils/axiosInstance";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
-  Calendar,
   Check,
-  CreditCard,
   Lock,
   Mail,
   MapPin,
@@ -24,66 +22,177 @@ import {
   Truck,
   User,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import Head from "next/head";
 
 export default function CheckoutPage() {
   const [currentStep, setCurrentStep] = useState(1);
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const [shippingMethod, setShippingMethod] = useState("standard");
-  const [paymentMethod, setPaymentMethod] = useState("card");
-
+  const [shippingDetails, setShippingDetails] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    country: "",
+  });
   const steps = [
     { id: 1, title: "Shipping", icon: Truck },
-    { id: 2, title: "Payment", icon: CreditCard },
-    { id: 3, title: "Review", icon: Package },
+    { id: 2, title: "Review", icon: Package },
   ];
+
   const { cart } = useCart();
-  const { showSuccess } = useToast();
-  const body = {
-    // Map over the cart to create an array of item objects
-    items: cart.map((item) => ({
-      product_id: item._id,
-      quantity: item.quantity,
-    })),
+  const { showError, showSuccess } = useToast();
+  const pollIntervalRef = useRef<number | null>(null);
+  const formatGBP = (value?: number) =>
+    new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: "GBP",
+    }).format(value ?? 0);
+
+  const validateShippingDetails = () => {
+    const requiredFields = [
+      "firstName",
+      "lastName",
+      "email",
+      "phone",
+      "address",
+      "city",
+      "state",
+      "zipCode",
+    ] as const;
+    return requiredFields.every(
+      (field) => shippingDetails[field].trim().length > 0,
+    );
   };
 
-  console.log(body);
-  // return;
-
-  // return;
   const completeOrder = async () => {
-    //Call to checkout API or process the order
-    await axios
-      .post(
-        "http://localhost:8080/cart/add",
-        {
-          items: cart.map((item) => ({
-            product_id: item._id,
-            quantity: item.quantity,
-          })),
-        },
-        {
-          withCredentials: true,
-        }
-      )
-      .then(async (response) => {
-        console.log("Order placed successfully:", response.status);
-        if (response.status === 200) {
-          const data = await axios.post(
-            "http://localhost:8080/cart/checkout",
-            {},
-            {
-              withCredentials: true,
-            }
-          );
-          if (data.status === 200) {
-            showSuccess("Order completed successfully!");
-          }
-        }
+    try {
+      if (cart.length === 0) {
+        showError("Your cart is empty.");
+        return;
+      }
+      if (!validateShippingDetails()) {
+        showError("Please complete all shipping details.");
+        return;
+      }
+      // 1️⃣ Add items to cart (This part looks correct)
+      const addResponse = await axiosInstance.post(API_ROUTES.CART.ADD, {
+        items: cart.map((item) => ({
+          product_id: item.id,
+          quantity: item.quantity,
+        })),
       });
+
+      if (addResponse.status !== 200) {
+        console.error("Failed to add items to cart.");
+        // showError("Failed to update cart. Please try again.");
+        return;
+      }
+
+      // 2️⃣ Checkout (This part is correct)
+      const checkoutResponse = await axiosInstance.post(
+        API_ROUTES.CART.CHECKOUT,
+        {},
+      );
+
+      if (checkoutResponse.status !== 200 || !checkoutResponse.data.order_id) {
+        console.error("No order ID returned from checkout.");
+        // showError("Failed to initiate checkout. Please try again.");
+        return;
+      }
+
+      const orderId = checkoutResponse.data.order_id;
+      // showLoading("Waiting for payment link..."); // Show a spinner
+
+      // 3️⃣ Polling (This section is fixed)
+
+      const pollForPaymentUrl = async (
+        orderId: string,
+      ): Promise<string | null> => {
+        // Create a long-polling mechanism
+        const maxAttempts = 20; // Poll for 20 * 5s = 100 seconds
+        let attempts = 0;
+
+        return new Promise<string | null>((resolve, reject) => {
+          pollIntervalRef.current = window.setInterval(async () => {
+            if (attempts >= maxAttempts) {
+              if (pollIntervalRef.current !== null) {
+                window.clearInterval(pollIntervalRef.current);
+                pollIntervalRef.current = null;
+              }
+              reject(
+                new Error("Timeout: Payment link took too long to generate."),
+              );
+              return;
+            }
+
+            try {
+              // FIX 1: Use GET, not POST, for the status check
+              const response = await axiosInstance.get(
+                API_ROUTES.PAYMENT.STATUS_BY_ORDER(orderId),
+              );
+
+              const { status, checkout_url } = response.data;
+
+              // FIX 2: Check for "URL_READY", not "completed"
+              // "URL_READY" is the status our consumer sets when the URL is available.
+              if (status === "URL_READY" && checkout_url) {
+                if (pollIntervalRef.current !== null) {
+                  window.clearInterval(pollIntervalRef.current);
+                  pollIntervalRef.current = null;
+                }
+                resolve(checkout_url); // Stop polling and return the URL
+              } else if (status === "FAILED") {
+                if (pollIntervalRef.current !== null) {
+                  window.clearInterval(pollIntervalRef.current);
+                  pollIntervalRef.current = null;
+                }
+                reject(new Error("Payment failed during processing."));
+              } else {
+                // Status is "PENDING" or "PROCESSING", just keep polling
+                attempts++;
+              }
+            } catch (err) {
+              console.error("Polling error:", err);
+              attempts++; // Still count as an attempt
+            }
+          }, 5000); // Poll every 5 seconds
+        });
+      };
+
+      // Start polling and wait for the result
+      const checkoutUrl = await pollForPaymentUrl(orderId);
+
+      // FIX 3: Redirect the user to the Stripe URL
+      if (checkoutUrl) {
+        // hideLoading(); // Hide spinner
+        showSuccess("Redirecting to payment...");
+
+        window.location.href = checkoutUrl;
+      }
+    } catch (error) {
+      console.error("Error completing order:", error);
+      // hideLoading(); // Hide spinner
+      // showError(error.message || "Something went wrong during order processing.");
+    }
   };
+  useEffect(() => {
+    return () => {
+      if (pollIntervalRef.current !== null) {
+        window.clearInterval(pollIntervalRef.current);
+      }
+    };
+  }, []);
+
   const subtotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
-    0
+    0,
   );
   const shipping = shippingMethod === "express" ? 15.99 : 5.99;
   const tax = subtotal * 0.08;
@@ -91,6 +200,20 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Head>
+        <title>Storefront | Checkout</title>
+        <meta
+          name="description"
+          content="Complete your order with secure checkout."
+        />
+        <link rel="canonical" href={`${siteUrl}/checkout`} />
+        <meta property="og:title" content="Storefront | Checkout" />
+        <meta
+          property="og:description"
+          content="Complete your order with secure checkout."
+        />
+        <meta property="og:url" content={`${siteUrl}/checkout`} />
+      </Head>
       <Header />
 
       <main className="container mx-auto px-4 py-8">
@@ -193,6 +316,13 @@ export default function CheckoutPage() {
                           id="firstName"
                           placeholder="Enter first name"
                           className="pl-12 h-12"
+                          value={shippingDetails.firstName}
+                          onChange={(e) =>
+                            setShippingDetails({
+                              ...shippingDetails,
+                              firstName: e.target.value,
+                            })
+                          }
                         />
                       </div>
                     </div>
@@ -206,6 +336,13 @@ export default function CheckoutPage() {
                           id="lastName"
                           placeholder="Enter last name"
                           className="pl-12 h-12"
+                          value={shippingDetails.lastName}
+                          onChange={(e) =>
+                            setShippingDetails({
+                              ...shippingDetails,
+                              lastName: e.target.value,
+                            })
+                          }
                         />
                       </div>
                     </div>
@@ -222,6 +359,13 @@ export default function CheckoutPage() {
                         type="email"
                         placeholder="Enter email address"
                         className="pl-12 h-12"
+                        value={shippingDetails.email}
+                        onChange={(e) =>
+                          setShippingDetails({
+                            ...shippingDetails,
+                            email: e.target.value,
+                          })
+                        }
                       />
                     </div>
                   </div>
@@ -236,6 +380,13 @@ export default function CheckoutPage() {
                         id="phone"
                         placeholder="Enter phone number"
                         className="pl-12 h-12"
+                        value={shippingDetails.phone}
+                        onChange={(e) =>
+                          setShippingDetails({
+                            ...shippingDetails,
+                            phone: e.target.value,
+                          })
+                        }
                       />
                     </div>
                   </div>
@@ -250,6 +401,13 @@ export default function CheckoutPage() {
                         id="address"
                         placeholder="Enter street address"
                         className="pl-12 h-12"
+                        value={shippingDetails.address}
+                        onChange={(e) =>
+                          setShippingDetails({
+                            ...shippingDetails,
+                            address: e.target.value,
+                          })
+                        }
                       />
                     </div>
                   </div>
@@ -263,6 +421,13 @@ export default function CheckoutPage() {
                         id="city"
                         placeholder="Enter city"
                         className="mt-2 h-12"
+                        value={shippingDetails.city}
+                        onChange={(e) =>
+                          setShippingDetails({
+                            ...shippingDetails,
+                            city: e.target.value,
+                          })
+                        }
                       />
                     </div>
                     <div>
@@ -273,6 +438,13 @@ export default function CheckoutPage() {
                         id="state"
                         placeholder="Enter state"
                         className="mt-2 h-12"
+                        value={shippingDetails.state}
+                        onChange={(e) =>
+                          setShippingDetails({
+                            ...shippingDetails,
+                            state: e.target.value,
+                          })
+                        }
                       />
                     </div>
                     <div>
@@ -283,6 +455,13 @@ export default function CheckoutPage() {
                         id="zip"
                         placeholder="Enter ZIP"
                         className="mt-2 h-12"
+                        value={shippingDetails.zipCode}
+                        onChange={(e) =>
+                          setShippingDetails({
+                            ...shippingDetails,
+                            zipCode: e.target.value,
+                          })
+                        }
                       />
                     </div>
                   </div>
@@ -310,7 +489,7 @@ export default function CheckoutPage() {
                                   5-7 business days
                                 </p>
                               </div>
-                              <p className="font-medium">$5.99</p>
+                              <p className="font-medium">{formatGBP(5.99)}</p>
                             </div>
                           </Label>
                         </div>
@@ -327,7 +506,7 @@ export default function CheckoutPage() {
                                   2-3 business days
                                 </p>
                               </div>
-                              <p className="font-medium">$15.99</p>
+                              <p className="font-medium">{formatGBP(15.99)}</p>
                             </div>
                           </Label>
                         </div>
@@ -337,119 +516,8 @@ export default function CheckoutPage() {
                 </motion.div>
               )}
 
-              {/* Step 2: Payment Information */}
+              {/* Step 2: Review Order */}
               {currentStep === 2 && (
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-6 relative z-10"
-                >
-                  <div className="flex items-center space-x-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-                      <CreditCard className="h-5 w-5 text-white" />
-                    </div>
-                    <h2 className="text-2xl font-bold">Payment Information</h2>
-                  </div>
-
-                  {/* Payment Methods */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">
-                      Payment Method
-                    </h3>
-                    <RadioGroup
-                      value={paymentMethod}
-                      onValueChange={setPaymentMethod}
-                    >
-                      <div className="space-y-3">
-                        <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50">
-                          <RadioGroupItem value="card" id="card" />
-                          <Label
-                            htmlFor="card"
-                            className="flex-1 cursor-pointer"
-                          >
-                            <div className="flex items-center space-x-3">
-                              <CreditCard className="h-5 w-5" />
-                              <span>Credit/Debit Card</span>
-                            </div>
-                          </Label>
-                        </div>
-                      </div>
-                    </RadioGroup>
-                  </div>
-
-                  {/* Card Details */}
-                  <div className="space-y-4">
-                    <div>
-                      <Label
-                        htmlFor="cardNumber"
-                        className="text-sm font-medium"
-                      >
-                        Card Number
-                      </Label>
-                      <div className="relative mt-2">
-                        <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                        <Input
-                          id="cardNumber"
-                          placeholder="1234 5678 9012 3456"
-                          className="pl-12 h-12"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="expiry" className="text-sm font-medium">
-                          Expiry Date
-                        </Label>
-                        <div className="relative mt-2">
-                          <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                          <Input
-                            id="expiry"
-                            placeholder="MM/YY"
-                            className="pl-12 h-12"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="cvv" className="text-sm font-medium">
-                          CVV
-                        </Label>
-                        <div className="relative mt-2">
-                          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                          <Input
-                            id="cvv"
-                            placeholder="123"
-                            className="pl-12 h-12"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="cardName" className="text-sm font-medium">
-                        Cardholder Name
-                      </Label>
-                      <Input
-                        id="cardName"
-                        placeholder="Enter cardholder name"
-                        className="mt-2 h-12"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Billing Address */}
-                  <div className="flex items-center space-x-2">
-                    <Checkbox id="sameAddress" />
-                    <Label htmlFor="sameAddress" className="text-sm">
-                      Billing address same as shipping address
-                    </Label>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Step 3: Review Order */}
-              {currentStep === 3 && (
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -470,11 +538,15 @@ export default function CheckoutPage() {
                         key={item.id}
                         className="flex items-center space-x-4 p-4 border rounded-lg"
                       >
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-16 h-16 object-cover rounded-lg"
-                        />
+                        <div className="relative w-16 h-16 rounded-lg overflow-hidden">
+                          <Image
+                            src={item.images?.[0] || "/icons8-image-100.png"}
+                            alt={item.name}
+                            fill
+                            sizes="64px"
+                            className="object-cover"
+                          />
+                        </div>
                         <div className="flex-1">
                           <h4 className="font-medium">{item.name}</h4>
                           <p className="text-sm text-muted-foreground">
@@ -482,7 +554,7 @@ export default function CheckoutPage() {
                           </p>
                         </div>
                         <p className="font-medium">
-                          ${(item.price * item.quantity).toFixed(2)}
+                          {formatGBP(item.price * item.quantity)}
                         </p>
                       </div>
                     ))}
@@ -492,21 +564,12 @@ export default function CheckoutPage() {
                   <div className="p-4 bg-muted/50 rounded-lg">
                     <h4 className="font-medium mb-2">Shipping Information</h4>
                     <p className="text-sm text-muted-foreground">
-                      John Doe
+                      {shippingDetails.firstName} {shippingDetails.lastName}
                       <br />
-                      123 Main Street
+                      {shippingDetails.address}
                       <br />
-                      New York, NY 10001
-                    </p>
-                  </div>
-
-                  {/* Payment Info Summary */}
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    <h4 className="font-medium mb-2">Payment Method</h4>
-                    <p className="text-sm text-muted-foreground">
-                      •••• •••• •••• 3456
-                      <br />
-                      Expires 12/25
+                      {shippingDetails.city}, {shippingDetails.state}{" "}
+                      {shippingDetails.zipCode}
                     </p>
                   </div>
                 </motion.div>
@@ -524,7 +587,11 @@ export default function CheckoutPage() {
                 <Button
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                   onClick={() => {
-                    if (currentStep < 3) {
+                    if (currentStep < 2) {
+                      if (!validateShippingDetails()) {
+                        showError("Please complete all shipping details.");
+                        return;
+                      }
                       setCurrentStep(currentStep + 1);
                     } else {
                       // Handle order placement
@@ -532,7 +599,7 @@ export default function CheckoutPage() {
                     }
                   }}
                 >
-                  {currentStep === 3 ? "Place Order" : "Continue"}
+                  {currentStep === 2 ? "Place Order" : "Continue"}
                 </Button>
               </div>
             </motion.div>
@@ -541,7 +608,7 @@ export default function CheckoutPage() {
           {/* Order Summary Sidebar */}
           <div className="lg:col-span-1">
             <motion.div
-              className="bg-background/95 backdrop-blur-xl rounded-3xl border border-border/50 shadow-2xl p-6 sticky top-8 relative overflow-hidden"
+              className="bg-background/95 backdrop-blur-xl rounded-3xl border border-border/50 shadow-2xl p-6 sticky top-8 overflow-hidden"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
@@ -556,11 +623,15 @@ export default function CheckoutPage() {
                 <div className="space-y-4 mb-6">
                   {cart.map((item) => (
                     <div key={item.id} className="flex items-center space-x-3">
-                      <img
-                        src={item.images[0]}
-                        alt={item.name}
-                        className="w-12 h-12 object-cover rounded-lg"
-                      />
+                      <div className="relative w-12 h-12 rounded-lg overflow-hidden">
+                        <Image
+                          src={item.images?.[0] || "/icons8-image-100.png"}
+                          alt={item.name}
+                          fill
+                          sizes="48px"
+                          className="object-cover"
+                        />
+                      </div>
                       <div className="flex-1">
                         <h4 className="font-medium text-sm">{item.name}</h4>
                         <p className="text-xs text-muted-foreground">
@@ -568,7 +639,7 @@ export default function CheckoutPage() {
                         </p>
                       </div>
                       <p className="font-medium text-sm">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        {formatGBP(item.price * item.quantity)}
                       </p>
                     </div>
                   ))}
@@ -580,20 +651,20 @@ export default function CheckoutPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
                     <span>Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>{formatGBP(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Shipping</span>
-                    <span>${shipping.toFixed(2)}</span>
+                    <span>{formatGBP(shipping)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Tax</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span>{formatGBP(tax)}</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span className="text-blue-600">${total.toFixed(2)}</span>
+                    <span className="text-blue-600">{formatGBP(total)}</span>
                   </div>
                 </div>
 

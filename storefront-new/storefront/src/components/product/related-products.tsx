@@ -4,17 +4,27 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Star, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { featuredProducts } from "@/lib/data";
+import { useProducts } from "@/hooks/useProducts";
+import Image from "next/image";
 
 interface RelatedProductsProps {
   currentProductId: string;
 }
 
 export function RelatedProducts({ currentProductId }: RelatedProductsProps) {
-  // Filter out current product and get related ones
-  const relatedProducts = featuredProducts
+  const { data, isLoading, error } = useProducts(8, 1, true);
+  const relatedProducts = (data?.products ?? [])
     .filter((p) => p.id !== currentProductId)
     .slice(0, 4);
+  const formatGBP = (value?: number) =>
+    new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: "GBP",
+    }).format(value ?? 0);
+
+  if (isLoading || error || relatedProducts.length === 0) {
+    return null;
+  }
 
   return (
     <section className="mt-16">
@@ -37,12 +47,12 @@ export function RelatedProducts({ currentProductId }: RelatedProductsProps) {
             >
               <div className="bg-card border rounded-2xl overflow-hidden shadow-sm">
                 <div className="relative aspect-square overflow-hidden">
-                  <motion.img
-                    src={product.image}
+                  <Image
+                    src={product.images?.[0] || "/icons8-image-100.png"}
                     alt={product.name}
-                    className="w-full h-full object-cover"
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.3 }}
+                    fill
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
                   />
 
                   <motion.div
@@ -77,10 +87,12 @@ export function RelatedProducts({ currentProductId }: RelatedProductsProps) {
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-1">
-                      <span className="font-bold">${product.price}</span>
+                      <span className="font-bold">
+                        {formatGBP(product.price)}
+                      </span>
                       {product.originalPrice && (
                         <span className="text-xs text-muted-foreground line-through">
-                          ${product.originalPrice}
+                          {formatGBP(product.originalPrice)}
                         </span>
                       )}
                     </div>

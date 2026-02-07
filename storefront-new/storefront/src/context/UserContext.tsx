@@ -1,4 +1,4 @@
-import { getUserData, logoutUser } from "@/lib/user";
+import { getUserData, logoutUser, checkAuthStatus } from "@/lib/user";
 import {
   createContext,
   useContext,
@@ -12,16 +12,20 @@ interface User {
   id: string;
   email: string;
   name: string;
+  avatar?: string;
   phone_number?: string;
   created_at: string;
+  totalOrders?: number;
+  totalSpent?: number;
   role: string;
 }
 
 interface UserContextType {
   user: User | null;
   loading: boolean;
-  refetchUser: () => void;
-  signOut: () => void;
+  isAuthenticated: boolean;
+  refetchUser: () => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -32,17 +36,32 @@ interface UserProviderProps {
 
 export function UserProvider({ children }: UserProviderProps) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true); // Always start in a loading state
+  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const fetchUser = useCallback(async () => {
+    setLoading(true);
+
     try {
-      const userData: User = await getUserData();
-      setUser(userData);
+      // First check authentication status
+      const authStatus = await checkAuthStatus();
+
+      if (authStatus.authenticated) {
+        // If authenticated, fetch full user data
+        const userData: User = await getUserData();
+        setUser(userData);
+        setIsAuthenticated(true);
+      } else {
+        // Not authenticated
+        setUser(null);
+        setIsAuthenticated(false);
+      }
     } catch (err) {
-      // If fetching the user fails, it means they are not logged in.
+      console.error("[UserContext] Failed to fetch user:", err);
+      // If any error occurs, treat as not authenticated
       setUser(null);
+      setIsAuthenticated(false);
     } finally {
-      // Always stop loading after the first attempt
       setLoading(false);
     }
   }, []);
@@ -54,33 +73,38 @@ export function UserProvider({ children }: UserProviderProps) {
     } catch (error) {
       console.error("[UserContext] Logout API call failed:", error);
     } finally {
-      // Always clear the frontend state
+      // Always clear the frontend state and localStorage
       setUser(null);
+      setIsAuthenticated(false);
     }
   }, []);
 
-  // On initial application load, always try to fetch the user.
-  // The presence of valid cookies will determine if this succeeds or fails.
+  // On initial application load, fetch the user
   useEffect(() => {
     fetchUser();
   }, [fetchUser]);
 
-  // Add an event listener to handle forced logouts from the Axios interceptor
+  // Handle forced logouts from Axios interceptor
   useEffect(() => {
     const handleForcedLogout = () => {
-      console.log("Forced logout event received.");
-      signOut();
+      setUser(null);
+      setIsAuthenticated(false);
     };
 
     window.addEventListener("logout", handleForcedLogout);
 
-    // Cleanup the event listener when the component unmounts
     return () => {
       window.removeEventListener("logout", handleForcedLogout);
     };
-  }, [signOut]);
+  }, []);
 
-  const value = { user, loading, refetchUser: fetchUser, signOut };
+  const value = {
+    user,
+    loading,
+    isAuthenticated,
+    refetchUser: fetchUser,
+    signOut,
+  };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }

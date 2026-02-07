@@ -10,11 +10,11 @@ import Image from "next/image";
 
 const getStatusIcon = (Status: string) => {
   switch (Status) {
-    case "paid":
+    case "delivered":
       return <CheckCircle className="h-4 w-4 text-green-500" />;
     case "shipped":
       return <Truck className="h-4 w-4 text-blue-500" />;
-    case "processing":
+    case "pending":
       return <Clock className="h-4 w-4 text-yellow-500" />;
     default:
       return <Package className="h-4 w-4 text-gray-500" />;
@@ -23,11 +23,11 @@ const getStatusIcon = (Status: string) => {
 
 const getStatusColor = (Status: string) => {
   switch (Status) {
-    case "paid":
+    case "delivered":
       return "bg-green-500";
     case "shipped":
       return "bg-blue-500";
-    case "processing":
+    case "pending":
       return "bg-yellow-500";
     default:
       return "bg-gray-500";
@@ -36,9 +36,7 @@ const getStatusColor = (Status: string) => {
 
 export function OrderHistory() {
   const data = useUserOrders();
-  console.log({ data });
-  console.log((data?.orders?.orders ?? []).map((order) => order.ID));
-  const ordersData = data?.orders?.orders ?? [];
+  const ordersData = data?.orders ?? [];
 
   // return;
   return (
@@ -55,7 +53,7 @@ export function OrderHistory() {
 
       {ordersData.map((order, index) => (
         <motion.div
-          key={order.ID}
+          key={order.id}
           className="bg-card border rounded-lg p-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -63,33 +61,30 @@ export function OrderHistory() {
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
-              <h3 className="font-semibold">{order.OrderNumber}</h3>
-              <Badge className={getStatusColor(order.Status)}>
-                {getStatusIcon(order.Status)}
-                <span className="ml-1 capitalize">{order.Status}</span>
+              <h3 className="font-semibold">{order.id}</h3>
+              <Badge className={getStatusColor(order.status)}>
+                {getStatusIcon(order.status)}
+                <span className="ml-1 capitalize">{order.status}</span>
               </Badge>
             </div>
             <div className="text-right">
-              <p className="font-semibold">${order.Amount.toFixed(2)}</p>
+              <p className="font-semibold">${order.total.toFixed(2)}</p>
               <p className="text-sm text-muted-foreground">
-                {/* {new Date(order.date).toLocaleDateString()} */}
-                {new Date(order.CompletedAt).toLocaleDateString()}
+                {new Date(order.date).toLocaleDateString()}
               </p>
             </div>
           </div>
 
           <div className="space-y-3">
-            {order.OrderItems.map((item, itemIndex) => (
+            {order.items.map((item, itemIndex) => (
               <div key={itemIndex} className="flex items-center space-x-4">
-                <Image
-                  src={item.image}
-                  alt={item.name}
-                  className="w-12 h-12 object-cover rounded-lg"
-                />
+                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-sm">
+                  {item.product_id}
+                </div>
                 <div className="flex-1">
-                  <p className="font-medium">{item.name}</p>
+                  <p className="font-medium">Product ID: {item.product_id}</p>
                   <p className="text-sm text-muted-foreground">
-                    Qty: {item.Quantity} × ${item.Price}
+                    Qty: {item.quantity}
                   </p>
                 </div>
               </div>

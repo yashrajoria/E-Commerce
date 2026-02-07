@@ -5,8 +5,8 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import * as LucideIcons from "lucide-react";
-import { categories } from "@/lib/data";
 import { useCategories } from "@/hooks/useCategories";
+import Image from "next/image";
 
 export function CategoriesSection() {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -79,7 +79,12 @@ export function CategoriesSection() {
         >
           {categories.map((category, index) => {
             const IconComponent =
-              (LucideIcons as any)[category.icon] || LucideIcons.Package;
+              (
+                LucideIcons as unknown as Record<
+                  string,
+                  React.ComponentType<{ className?: string }>
+                >
+              )[category.icon] || LucideIcons.Package;
 
             return (
               <motion.div
@@ -92,13 +97,15 @@ export function CategoriesSection() {
               >
                 <div className="relative w-32 h-40 rounded-2xl overflow-hidden bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border">
                   {/* Category Image */}
-                  <motion.img
-                    src={category.image}
-                    alt={category.name}
-                    className="w-full h-24 object-cover"
-                    whileHover={{ scale: 1.1 }}
-                    transition={{ duration: 0.3 }}
-                  />
+                  <div className="relative w-full h-24">
+                    <Image
+                      src={category.image}
+                      alt={category.name}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 8rem"
+                      className="object-cover transition-transform duration-300 group-hover:scale-110"
+                    />
+                  </div>
 
                   {/* Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />

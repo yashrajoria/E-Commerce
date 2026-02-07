@@ -27,11 +27,13 @@ import {
   Shield,
   User,
 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import Head from "next/head";
 
 export default function AccountPage() {
   const [activeTab, setActiveTab] = useState("profile");
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const { user, loading } = useUser();
   const [profile, setProfile] = useState({
     name: "",
@@ -42,20 +44,19 @@ export default function AccountPage() {
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const searchParams = useSearchParams();
+  const router = useRouter();
   useEffect(() => {
     setProfile({
-      name: user?.name,
-      email: user?.email,
-      phone_number: user?.phone_number,
+      name: user?.name ?? "",
+      email: user?.email ?? "",
+      phone_number: user?.phone_number ?? "",
     });
-    const tab = searchParams.get("tab");
+    const tabQuery = router.query.tab;
+    const tab = Array.isArray(tabQuery) ? tabQuery[0] : tabQuery;
     if (tab) {
       setActiveTab(tab);
     }
-  }, [searchParams, user]);
-
-  console.log("Phone", user?.phone_number);
+  }, [router.query.tab, user]);
 
   const updateUserProfile = async (data: typeof profile) => {
     try {
@@ -69,12 +70,10 @@ export default function AccountPage() {
 
       // If no changes, avoid API call
       if (Object.keys(updates).length === 0) {
-        console.log("No changes detected, skipping update");
         return;
       }
 
-      const response = await updateUserData(updates);
-      console.log("Profile updated successfully:", response.data);
+      await updateUserData(updates);
     } catch (error) {
       console.error("Error updating profile:", error);
     }
@@ -84,7 +83,7 @@ export default function AccountPage() {
   const handleChangePassword = async (
     oldPassword: string,
     newPassword: string,
-    confirmPassword: string
+    confirmPassword: string,
   ) => {
     if (newPassword !== confirmPassword) {
       alert("New password and confirm password do not match");
@@ -95,8 +94,7 @@ export default function AccountPage() {
       return;
     }
     try {
-      const response = await updatePassword(oldPassword, newPassword);
-      console.log("Password changed successfully:", response.data);
+      await updatePassword(oldPassword, newPassword);
       // Optionally clear password inputs here
     } catch (err) {
       console.error(err);
@@ -106,6 +104,20 @@ export default function AccountPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
+        <Head>
+          <title>Storefront | Account</title>
+          <meta
+            name="description"
+            content="Manage your profile, orders, and preferences."
+          />
+          <link rel="canonical" href={`${siteUrl}/account`} />
+          <meta property="og:title" content="Storefront | Account" />
+          <meta
+            property="og:description"
+            content="Manage your profile, orders, and preferences."
+          />
+          <meta property="og:url" content={`${siteUrl}/account`} />
+        </Head>
         <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
         <p className="ml-3 text-lg text-muted-foreground">
           Loading user profile...
@@ -115,6 +127,20 @@ export default function AccountPage() {
   }
   return (
     <div className="min-h-screen">
+      <Head>
+        <title>Storefront | Account</title>
+        <meta
+          name="description"
+          content="Manage your profile, orders, and preferences."
+        />
+        <link rel="canonical" href={`${siteUrl}/account`} />
+        <meta property="og:title" content="Storefront | Account" />
+        <meta
+          property="og:description"
+          content="Manage your profile, orders, and preferences."
+        />
+        <meta property="og:url" content={`${siteUrl}/account`} />
+      </Head>
       <Header />
 
       <main className="container mx-auto px-4 py-8">
@@ -140,10 +166,15 @@ export default function AccountPage() {
                   <div>
                     <span className="text-white/60">Member since</span>
                     <p className="font-medium">
-                      {new Date(user?.created_at).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                      })}
+                      {user?.created_at
+                        ? new Date(user.created_at).toLocaleDateString(
+                            "en-US",
+                            {
+                              year: "numeric",
+                              month: "long",
+                            },
+                          )
+                        : "—"}
                     </p>
                   </div>
                   <div>
@@ -241,7 +272,7 @@ export default function AccountPage() {
                       <Input
                         id="email"
                         type="email"
-                        defaultValue={user?.email}
+                        value={profile.email}
                         readOnly
                       />
                     </div>
@@ -301,7 +332,7 @@ export default function AccountPage() {
                         handleChangePassword(
                           password,
                           newPassword,
-                          confirmPassword
+                          confirmPassword,
                         )
                       }
                     >

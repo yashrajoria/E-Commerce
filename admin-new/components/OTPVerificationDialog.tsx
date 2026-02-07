@@ -57,7 +57,6 @@ const OTPVerificationDialog = ({
         }
       );
 
-      console.log(res);
       setIsVerified(true);
       toast.success("OTP verified successfully");
     } catch (error) {

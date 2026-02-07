@@ -7,12 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { useProducts } from "@/hooks/useProducts";
+import Image from "next/image";
 
 export function HeroSection() {
-  const { data: productsData = [], isLoading, error } = useProducts(3, 6, true);
-  const products = Array.isArray(productsData)
-    ? productsData
-    : productsData?.products || [];
+  const { data, isLoading, error } = useProducts(3, 1, true);
+  const products = data?.products ?? [];
+  const formatGBP = (value?: number) =>
+    new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: "GBP",
+    }).format(value ?? 0);
 
   return (
     <section className="relative min-h-[80vh] overflow-hidden">
@@ -66,7 +70,7 @@ export function HeroSection() {
               <Link href="/products">
                 <Button
                   size="lg"
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  className="text-white cursor-pointer bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                 >
                   Shop Now
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -134,13 +138,17 @@ export function HeroSection() {
                       transition: { duration: 0.2 },
                     }}
                   >
-                    <img
-                      src={product.images[0]}
-                      alt={product.title}
-                      className="w-20 h-20 object-cover rounded-lg mb-2"
+                    <Image
+                      src={product.images?.[0] || "/icons8-image-100.png"}
+                      alt={product.name}
+                      width={80}
+                      height={80}
+                      className="rounded-lg mb-2 object-cover"
                     />
-                    <h3 className="font-medium text-sm">{product.title}</h3>
-                    <p className="text-blue-600 font-bold">${product.price}</p>
+                    <h3 className="font-medium text-sm">{product.name}</h3>
+                    <p className="text-blue-600 font-bold">
+                      {formatGBP(product.price)}
+                    </p>
                   </motion.div>
                 ))}
               </div>

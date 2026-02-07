@@ -13,7 +13,6 @@ export interface Category {
 
 const fetchCategories = async (): Promise<Category[]> => {
   const response = await axiosInstance.get(API_ROUTES.CATEGORIES.ALL);
-  console.log(response);
   return response.data;
 };
 

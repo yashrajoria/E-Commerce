@@ -2,28 +2,13 @@
 
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  X,
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  Shield,
-  CheckCircle,
-  RefreshCw,
-} from "lucide-react";
+import { X, Mail, Lock, Eye, EyeOff, Shield, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import {
-  loginUser,
-  registerUser,
-  verifyEmail,
-  resendVerificationEmail,
-  validatePassword,
-} from "@/lib/auth";
+import { loginUser, registerUser, verifyEmail } from "@/pages/api/auth";
 import { useToast } from "@/hooks/use-toast";
 import {
   InputOTP,
@@ -32,16 +17,20 @@ import {
   InputOTPSlot,
 } from "../ui/input-otp";
 import { useUser } from "@/context/UserContext";
-import { PasswordStrengthIndicator } from "./PasswordStrengthIndicator";
 
 interface LoginModalProps {
   isOpen: boolean;
-  setLoggedIn?: (value: boolean) => void;
-  loggedIn?: boolean;
+  setLoggedIn: (value: boolean) => void;
+  loggedIn: boolean;
   onClose: () => void;
 }
 
-export function LoginModal({ isOpen, onClose }: LoginModalProps) {
+export function LoginModal({
+  isOpen,
+  // setLoggedIn,
+  // loggedIn,
+  onClose,
+}: LoginModalProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
@@ -51,24 +40,23 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const { showError, showSuccess } = useToast();
   const [otpValue, setOtpValue] = useState("");
   const [loading, setLoading] = useState(false);
-  const [resendLoading, setResendLoading] = useState(false);
   const [pendingLogin, setPendingLogin] = useState<{
     email: string;
     password: string;
   } | null>(null);
   const { refetchUser } = useUser();
-
   useEffect(() => {
     if (isLogin && !isOtp) {
       onCloseOtp();
     }
     if (!isOpen && !isOtp) {
+      // setEmail("");
       setPassword("");
       setShowPassword(false);
       setIsLogin(true);
     }
+    // Perform login or signup action
   }, [isLogin, isOpen]);
-
   const onCloseOtp = () => {
     setIsOtp(false);
     setPendingLogin(null);
@@ -77,54 +65,34 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     if (email === "" || password === "" || (!isLogin && fullName === "")) {
       showError("Please fill all the fields");
       setLoading(false);
       return;
     }
-
-    // Validate password on registration
-    if (!isLogin) {
-      const validation = validatePassword(password);
-      if (!validation.isValid) {
-        showError("Password does not meet security requirements");
-        setLoading(false);
-        return;
-      }
-    }
-
     try {
       if (isLogin) {
         await loginUser(email, password);
         await refetchUser();
         setLoading(false);
+        // setLoggedIn(true);
         showSuccess("Logged in successfully!");
-        onClose();
+        onClose(); // Login modal close
       } else {
         await registerUser(email, password, fullName);
+
         setLoading(false);
         setPendingLogin({ email, password });
-        setIsOtp(true);
-        onClose();
+        setIsOtp(true); // Open OTP modal
+        onClose(); // Close login modal
       }
-    } catch (error: unknown) {
-      const err = error as {
-        response?: { data?: { error?: string } };
-        message?: string;
-      };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       setLoading(false);
-      console.error("Auth error:", err?.response?.data || err?.message);
-      showError(
-        err?.response?.data?.error ||
-          "Authentication failed. Please try again.",
-      );
-
-      if (err?.response?.data?.error === "Email not verified") {
+      console.error("Auth error:", error?.response?.data || error.message);
+      showError("Authentication failed. Please try again.");
+      if (error?.response?.data?.error == "Email not verified") {
         showError("The email is not verified. Please check your inbox.");
-        setPendingLogin({ email, password });
-        setIsOtp(true);
-        onClose();
       }
     }
   };
@@ -143,38 +111,13 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
       setLoading(false);
       showSuccess("Email verified successfully!");
       onCloseOtp();
-    } catch (error: unknown) {
-      const err = error as {
-        response?: { data?: { error?: string } };
-        message?: string;
-      };
+    } catch (error: any) {
       setLoading(false);
-      console.error("OTP verify error:", err?.response?.data || err?.message);
-      showError(
-        err?.response?.data?.error ||
-          "OTP verification failed. Please try again.",
+      console.error(
+        "OTP verify error:",
+        error?.response?.data || error.message,
       );
-    }
-  };
-
-  const handleResendCode = async () => {
-    setResendLoading(true);
-    try {
-      await resendVerificationEmail(email);
-      showSuccess("Verification code resent successfully!");
-      setOtpValue("");
-    } catch (error: unknown) {
-      const err = error as {
-        response?: { data?: { error?: string } };
-        message?: string;
-      };
-      console.error("Auth error:", err?.response?.data || err?.message);
-      showError(
-        err?.response?.data?.error ||
-          "Failed to resend code. Please try again.",
-      );
-    } finally {
-      setResendLoading(false);
+      showError("OTP verification failed. Please try again.");
     }
   };
 
@@ -183,6 +126,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
       <AnimatePresence>
         {isOpen && (
           <>
+            {/* Backdrop */}
             <motion.div
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
               initial={{ opacity: 0 }}
@@ -190,6 +134,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
               exit={{ opacity: 0 }}
               onClick={onClose}
             >
+              {/* Modal */}
               <motion.div
                 className="bg-background/95 backdrop-blur-xl rounded-3xl border border-border/50 shadow-2xl w-full max-w-md p-8 relative overflow-hidden"
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -197,8 +142,10 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
                 onClick={(e) => e.stopPropagation()}
               >
+                {/* Gradient Background */}
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-teal-500/5 pointer-events-none" />
 
+                {/* Close Button */}
                 <Button
                   variant="ghost"
                   size="icon"
@@ -208,6 +155,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                   <X className="h-5 w-5" />
                 </Button>
 
+                {/* Header */}
                 <div className="text-center mb-8 relative z-10">
                   <motion.div
                     className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center"
@@ -227,6 +175,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                   </p>
                 </div>
 
+                {/* Social Login */}
                 <div className="space-y-3 mb-6 relative z-10">
                   <Button
                     variant="outline"
@@ -256,6 +205,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                   </div>
                 </div>
 
+                {/* Form */}
                 <form
                   className="space-y-5 relative z-10"
                   onSubmit={handleSubmit}
@@ -306,7 +256,9 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                         placeholder="Enter your password"
                         className="pl-12 h-12"
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                        }}
                       />
                       <Button
                         type="button"
@@ -322,11 +274,11 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                         )}
                       </Button>
                     </div>
-
-                    {/* Password Strength Indicator for Registration */}
-                    {!isLogin && (
-                      <PasswordStrengthIndicator password={password} />
-                    )}
+                    {/* {errors.password && (
+                      <p className="text-xs text-red-500 mt-1">
+                        {errors.password}
+                      </p>
+                    )} */}
                   </div>
 
                   {isLogin && (
@@ -361,6 +313,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                   </Button>
                 </form>
 
+                {/* Toggle */}
                 <div className="text-center mt-6 relative z-10">
                   <span className="text-muted-foreground">
                     {isLogin
@@ -370,7 +323,10 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                   <Button
                     variant="link"
                     className="p-0 h-auto text-blue-600 hover:text-blue-700 font-semibold"
-                    onClick={() => setIsLogin(!isLogin)}
+                    onClick={() => {
+                      setIsLogin(!isLogin);
+                      // setErrors({});
+                    }}
                   >
                     {isLogin ? "Sign up" : "Sign in"}
                   </Button>
@@ -399,6 +355,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
                 onClick={(e) => e.stopPropagation()}
               >
+                {/* Gradient Background */}
                 <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-blue-500/5 to-purple-500/5 pointer-events-none" />
 
                 <Button
@@ -433,7 +390,11 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                     <InputOTP
                       maxLength={6}
                       value={otpValue}
-                      onChange={(value) => setOtpValue(value)}
+                      onChange={(value) => {
+                        setOtpValue(value);
+                        // if (errors.otp)
+                        //   setErrors((prev) => ({ ...prev, otp: "" }));
+                      }}
                     >
                       <InputOTPGroup>
                         <InputOTPSlot
@@ -469,7 +430,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
                   <Button
                     onClick={handleOtpSubmit}
-                    className="w-full h-12 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                    className="w-full h-12 p-0 text-blue-600 hover:text-blue-700 font-semibold"
                     disabled={loading || otpValue.length !== 6}
                   >
                     {loading ? (
@@ -488,18 +449,9 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                     </p>
                     <Button
                       variant="link"
-                      className="p-0 h-auto text-blue-600 hover:text-blue-700 font-semibold"
-                      onClick={handleResendCode}
-                      disabled={resendLoading}
+                      className="p-0 h-auto text-blue-600 hover:text-blue-700"
                     >
-                      {resendLoading ? (
-                        <div className="flex items-center space-x-2">
-                          <RefreshCw className="h-4 w-4 animate-spin" />
-                          <span>Sending...</span>
-                        </div>
-                      ) : (
-                        "Resend Code"
-                      )}
+                      Resend Code
                     </Button>
                   </div>
                 </div>

@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -23,55 +21,73 @@ import { Footer } from "@/components/layout/footer";
 import { ProductImageGallery } from "@/components/product/product-image-gallery";
 import { ProductReviews } from "@/components/product/product-reviews";
 import { RelatedProducts } from "@/components/product/related-products";
-import { featuredProducts } from "@/lib/data";
 import { useCart } from "@/context/CartContext";
+import { useProductById } from "@/hooks/useProducts";
+import { useRouter } from "next/router";
+import Head from "next/head";
 
-export async function generateStaticParams() {
-  return featuredProducts.map((product) => ({
-    id: product.id.toString(),
-  }));
-}
-
-export default function ProductPage({ params }: { params: { id: string } }) {
+export default function ProductPage() {
   const [quantity, setQuantity] = useState(1);
-  const [selectedSize, setSelectedSize] = useState("M");
-  const [selectedColor, setSelectedColor] = useState("Black");
-  // Mock product data - in real app, fetch by params.id
+
+  const router = useRouter();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const id = Array.isArray(router.query.id)
+    ? router.query.id[0]
+    : router.query.id;
+  const { data: product, isLoading, error } = useProductById(id);
+  const rating = product?.rating ?? 0;
+  const images = (product?.images ?? []).filter(Boolean);
+  const formatGBP = (value?: number) =>
+    new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: "GBP",
+    }).format(value ?? 0);
 
   const { addToCart } = useCart();
   const handleAddToCart = () => {
-    console.log("first");
+    if (!product || !id) return;
     addToCart({
-      _id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image,
+      ...product,
+      id: String(id),
+      images: product?.images ?? [],
       quantity,
-      size: selectedSize,
-      color: selectedColor,
+      // size: selectedSize,
+      // color: selectedColor,
     });
   };
-  const product = featuredProducts[0];
-  const sizes = ["XS", "S", "M", "L", "XL", "XXL"];
-  const colors = ["Black", "White", "Navy", "Gray"];
+  if (!router.isReady || isLoading) {
+    return <div className="min-h-screen">Loading...</div>;
+  }
 
-  const features = [
-    { icon: Truck, title: "Free Shipping", description: "On orders over $50" },
-    {
-      icon: RotateCcw,
-      title: "Easy Returns",
-      description: "30-day return policy",
-    },
-    {
-      icon: Shield,
-      title: "Secure Payment",
-      description: "100% secure checkout",
-    },
-    { icon: Award, title: "Quality Guarantee", description: "2-year warranty" },
-  ];
+  if (error || !product) {
+    return <div className="min-h-screen">Failed to load product.</div>;
+  }
 
   return (
     <div className="min-h-screen">
+      <Head>
+        <title>{product.name} | Storefront</title>
+        <meta
+          name="description"
+          content={
+            product.description ||
+            `Buy ${product.name} at the best price with fast delivery.`
+          }
+        />
+        <link rel="canonical" href={`${siteUrl}/products/${id}`} />
+        <meta property="og:title" content={`${product.name} | Storefront`} />
+        <meta
+          property="og:description"
+          content={
+            product.description ||
+            `Buy ${product.name} at the best price with fast delivery.`
+          }
+        />
+        {product.images?.[0] && (
+          <meta property="og:image" content={product.images[0]} />
+        )}
+        <meta property="og:url" content={`${siteUrl}/products/${id}`} />
+      </Head>
       <Header />
 
       <main className="container mx-auto px-4 py-8">
@@ -82,9 +98,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <ProductImageGallery
-              images={[product.image, product.image, product.image]}
-            />
+            <ProductImageGallery images={images} />
           </motion.div>
 
           {/* Product Info */}
@@ -96,47 +110,49 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           >
             {/* Breadcrumb */}
             <div className="text-sm text-muted-foreground">
-              Home / {product.category} / {product.name}
+              Home / {product?.category} / {product?.name}
             </div>
 
             {/* Product Title & Rating */}
             <div>
-              <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
+              <h1 className="text-3xl font-bold mb-2">{product?.name}</h1>
               <div className="flex items-center space-x-4 mb-4">
                 <div className="flex items-center space-x-1">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
                       className={`h-4 w-4 ${
-                        i < Math.floor(product.rating)
+                        i < Math.floor(rating)
                           ? "fill-yellow-400 text-yellow-400"
                           : "text-gray-300"
                       }`}
                     />
                   ))}
-                  <span className="font-medium">{product.rating}</span>
+                  <span className="font-medium">{rating}</span>
                 </div>
                 <span className="text-muted-foreground">
-                  ({product.reviews} reviews)
+                  ({product?.reviews} reviews)
                 </span>
-                <Badge variant="secondary">{product.badge}</Badge>
+                <Badge variant="secondary">{product?.badge}</Badge>
               </div>
             </div>
 
             {/* Price */}
             <div className="flex items-center space-x-4">
-              <span className="text-3xl font-bold">${product.price}</span>
-              {product.originalPrice && (
+              <span className="text-3xl font-bold">
+                {formatGBP(product?.price)}
+              </span>
+              {product?.originalPrice && (
                 <span className="text-xl text-muted-foreground line-through">
-                  ${product.originalPrice}
+                  {formatGBP(product?.originalPrice)}
                 </span>
               )}
-              {product.originalPrice && (
+              {product?.originalPrice && (
                 <Badge className="bg-red-500">
                   {Math.round(
-                    ((product.originalPrice - product.price) /
-                      product.originalPrice) *
-                      100
+                    ((product?.originalPrice - product?.price) /
+                      product?.originalPrice) *
+                      100,
                   )}
                   % OFF
                 </Badge>
@@ -145,57 +161,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
             {/* Product Description */}
             <p className="text-muted-foreground leading-relaxed">
-              Experience premium quality with our {product.name}. Designed for
-              comfort and style, this product combines innovative technology
-              with timeless design. Perfect for everyday use and special
-              occasions alike.
+              {product?.description ||
+                "This is a detailed description of the product, highlighting its features, benefits, and usage."}
             </p>
-
-            {/* Size Selection */}
-            <div>
-              <h3 className="font-semibold mb-3">Size</h3>
-              <div className="flex flex-wrap gap-2">
-                {sizes.map((size) => (
-                  <Button
-                    key={size}
-                    variant={selectedSize === size ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedSize(size)}
-                    className="w-12 h-12"
-                  >
-                    {size}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            {/* Color Selection */}
-            <div>
-              <h3 className="font-semibold mb-3">Color: {selectedColor}</h3>
-              <div className="flex space-x-2">
-                {colors.map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => setSelectedColor(color)}
-                    className={`w-8 h-8 rounded-full border-2 ${
-                      selectedColor === color
-                        ? "border-primary"
-                        : "border-gray-300"
-                    }`}
-                    style={{
-                      backgroundColor:
-                        color.toLowerCase() === "white"
-                          ? "#ffffff"
-                          : color.toLowerCase() === "black"
-                          ? "#000000"
-                          : color.toLowerCase() === "navy"
-                          ? "#1e3a8a"
-                          : "#6b7280",
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
 
             {/* Quantity & Add to Cart */}
             <div className="flex items-center space-x-4">
@@ -220,7 +188,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
               <Button size="lg" className="flex-1" onClick={handleAddToCart}>
                 <ShoppingCart className="h-4 w-4 mr-2" />
-                Add to Cartss
+                Add to Cart
               </Button>
 
               <Button variant="outline" size="icon">
@@ -230,21 +198,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               <Button variant="outline" size="icon">
                 <Share2 className="h-4 w-4" />
               </Button>
-            </div>
-
-            {/* Features */}
-            <div className="grid grid-cols-2 gap-4 pt-6">
-              {features.map((feature, index) => (
-                <div key={index} className="flex items-center space-x-3">
-                  <feature.icon className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-medium text-sm">{feature.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {feature.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
             </div>
           </motion.div>
         </div>
@@ -268,7 +221,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               <div className="prose max-w-none">
                 <h3>Product Description</h3>
                 <p>
-                  Our {product.name} represents the perfect blend of
+                  Our {product?.name} represents the perfect blend of
                   functionality and style. Crafted with premium materials and
                   attention to detail, this product is designed to exceed your
                   expectations.
@@ -295,7 +248,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                     </div>
                     <div className="flex justify-between">
                       <span>Model:</span>
-                      <span>SS-{product.id}</span>
+                      <span>SS-{product?.id}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Weight:</span>
@@ -324,7 +277,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             </TabsContent>
 
             <TabsContent value="reviews" className="mt-6">
-              <ProductReviews productId={product.id} />
+              <ProductReviews productId={product?.id} />
             </TabsContent>
 
             <TabsContent value="shipping" className="mt-6">
@@ -350,7 +303,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         </motion.div>
 
         {/* Related Products */}
-        <RelatedProducts currentProductId={product.id} />
+        <RelatedProducts currentProductId={product?.id} />
       </main>
 
       <Footer />

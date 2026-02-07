@@ -14,7 +14,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image"; // FIX: Use Next.js Image for optimization
+import Image from "next/image";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -25,6 +25,18 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   // FIX: Make sure to destructure updateQuantity from your hook
   const { cart, addToCart, removeFromCart, updateQuantity, clearCart } =
     useCart();
+  const formatGBP = (value?: number) =>
+    new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: "GBP",
+    }).format(value ?? 0);
+  const handleUpdateQuantity = (id: string | number, newQuantity: number) => {
+    if (newQuantity <= 0) {
+      removeFromCart(id);
+      return;
+    }
+    updateQuantity(id, newQuantity);
+  };
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -73,24 +85,27 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {cart.map((item) => (
                   <motion.div
-                    key={item._id}
+                    key={item.id}
                     className="flex items-center space-x-4 p-4 rounded-lg border bg-card"
                     layout
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                   >
                     <div className="relative w-16 h-16 rounded-md overflow-hidden">
-                      <img
-                        src={item.images?.[0] || "/placeholder.png"} // Use placeholder if no image
+                      <Image
+                        src={item.images?.[0] || "/icons8-image-100.png"}
                         alt={item.name}
                         fill
+                        sizes="64px"
                         className="object-cover"
                       />
                     </div>
 
                     <div className="flex-1">
                       <h3 className="font-medium text-sm">{item.name}</h3>
-                      <p className="text-lg font-semibold">${item.price}</p>
+                      <p className="text-lg font-semibold">
+                        {formatGBP(item.price)}
+                      </p>
                     </div>
 
                     <div className="flex items-center space-x-2">
@@ -100,7 +115,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         size="icon"
                         className="h-8 w-8"
                         onClick={() =>
-                          updateQuantity(item._id, item.quantity - 1)
+                          handleUpdateQuantity(item.id, item.quantity - 1)
                         }
                       >
                         <Minus className="h-3 w-3" />
@@ -122,7 +137,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => removeFromCart(item._id)}
+                      onClick={() => removeFromCart(item.id)}
                       className="text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -135,9 +150,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               <div className="p-4 border-t space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold">Total:</span>
-                  <span className="text-2xl font-bold">
-                    ${total.toFixed(2)}
-                  </span>
+                  <span className="text-2xl font-bold">{formatGBP(total)}</span>
                 </div>
                 <Separator />
                 <div className="space-y-2">

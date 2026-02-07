@@ -5,20 +5,17 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
+import type { Product } from "@/lib/types";
 
-export interface CartItem {
-  _id: number | string;
-  name: string;
-  price: number;
-  image?: string;
+export interface CartItem extends Product {
   quantity: number;
-  // color?: string;
 }
 
 interface CartContextType {
   cart: CartItem[];
   addToCart: (item: CartItem) => void;
-  updateQuantity: (_id: number | string, quantity: number) => void;
+  removeFromCart: (id: string | number) => void;
+  updateQuantity: (id: number | string, quantity: number) => void;
   clearCart: () => void;
 }
 
@@ -32,7 +29,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (typeof window !== "undefined") {
       const storedCart = localStorage.getItem("cart");
       if (storedCart) {
-        setCart(JSON.parse(storedCart));
+        const parsed = JSON.parse(storedCart) as Array<
+          CartItem & { _id?: string | number; image?: string }
+        >;
+        const normalized = parsed.map((item) => ({
+          ...item,
+          id: item.id ?? item._id,
+          images: item.images?.length ? item.images : item.image ? [item.image] : [],
+        }));
+        setCart(normalized);
       }
     }
   }, []);
@@ -44,34 +49,30 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [cart]);
 
-  const findItemIndex = (currentCart: CartItem[], _id: number | string) => {
-    console.log(currentCart, _id);
-    return currentCart.findIndex((item) => item._id === _id);
+  const findItemIndex = (currentCart: CartItem[], id: number | string) => {
+    return currentCart.findIndex((item) => item.id === id);
   };
 
   const addToCart = (itemToAdd: CartItem) => {
-    console.log({ itemToAdd });
     setCart((prevCart) => {
-      const newCart = [...prevCart];
-      console.log(itemToAdd._id);
-
       // FIX: Use the robust helper to find an existing item
-      const existingItemIndex = findItemIndex(newCart, itemToAdd._id);
-      console.log(existingItemIndex);
+      const existingItemIndex = findItemIndex(prevCart, itemToAdd.id);
       if (existingItemIndex !== -1) {
         // If item exists, update its quantity
-        newCart[existingItemIndex].quantity += itemToAdd.quantity;
-      } else {
-        // If item does not exist, add it to the cart
-        newCart.push(itemToAdd);
+        return prevCart.map((item, index) =>
+          index === existingItemIndex
+            ? { ...item, quantity: item.quantity + itemToAdd.quantity }
+            : item
+        );
       }
-      return newCart;
+      // If item does not exist, add it to the cart
+      return [...prevCart, itemToAdd];
     });
   };
 
-  const removeFromCart = (_id: number | string) => {
+  const removeFromCart = (id: number | string) => {
     setCart((prevCart) => {
-      const itemIndex = findItemIndex(prevCart, _id);
+      const itemIndex = findItemIndex(prevCart, id);
       // FIX: Use the robust helper to find the item
       if (itemIndex === -1) return prevCart; // Item not found, do nothing
 
@@ -81,19 +82,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const updateQuantity = (_id: number | string, quantity: number) => {
+  const updateQuantity = (id: number | string, quantity: number) => {
     if (quantity <= 0) {
       return;
     }
 
     setCart((prevCart) => {
-      const newCart = [...prevCart];
       // FIX: Use the robust helper to find the item to update
-      const itemIndex = findItemIndex(newCart, _id);
-      if (itemIndex !== -1) {
-        newCart[itemIndex].quantity = quantity;
+      const itemIndex = findItemIndex(prevCart, id);
+      if (itemIndex === -1) {
+        return prevCart;
       }
-      return newCart;
+      return prevCart.map((item, index) =>
+        index === itemIndex ? { ...item, quantity } : item
+      );
     });
   };
 
