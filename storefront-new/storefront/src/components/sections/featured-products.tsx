@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useProducts } from "@/hooks/useProducts";
+import Image from "next/image";
 
 export function FeaturedProducts() {
   const { data, isLoading, error } = useProducts(4, 1, true);
@@ -66,12 +67,16 @@ export function FeaturedProducts() {
                     index === 0 ? "h-80" : "h-64"
                   } overflow-hidden`}
                 >
-                  <motion.img
-                    src={product.images?.[0] || "/placeholder.png"}
+                  <Image
+                    src={product.images?.[0] || "/icons8-image-100.png"}
                     alt={product.name}
-                    className="w-full h-full object-cover"
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.3 }}
+                    fill
+                    sizes={
+                      index === 0
+                        ? "(max-width: 768px) 100vw, 66vw"
+                        : "(max-width: 768px) 100vw, 33vw"
+                    }
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
                   />
 
                   {/* Badge */}
