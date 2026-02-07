@@ -42,7 +42,7 @@ const DashboardSidebar = () => {
       {/* Logo */}
       <div className="p-4 border-b border-white/10 flex items-center justify-between h-16">
         {!collapsed && (
-          <div className="font-bold text-lg text-gradient">Admin Pro</div>
+          <div className="font-bold text-lg text-gradient">ShopSwift Admin</div>
         )}
         <Button
           variant="ghost"

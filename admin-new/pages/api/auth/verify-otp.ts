@@ -14,7 +14,7 @@ export default async function handler(
 
   try {
     const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_NEW_API_URL}user/auth/verify-email`,
+      `${process.env.NEXT_PUBLIC_NEW_API_URL}auth/auth/verify-email`,
       req.body,
       {
         headers: {

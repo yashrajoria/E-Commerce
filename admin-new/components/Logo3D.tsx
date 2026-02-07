@@ -127,7 +127,7 @@ const Logo3D = () => {
 
       {/* Text */}
       <h2 className="mt-4 text-2xl font-bold tracking-tight text-gradient">
-        Admin Pro
+        ShopSwift Admin
       </h2>
     </div>
   );
