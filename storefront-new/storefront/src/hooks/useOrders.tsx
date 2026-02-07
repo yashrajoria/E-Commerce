@@ -3,11 +3,11 @@ import { getOrders } from "@/lib/order"; // Import the API function
 import { useUser } from "@/context/UserContext"; // To check if the user is loaded/logged in
 
 interface Order {
-  ID: string;
+  id: string;
   date: string;
   total: number;
   status: "pending" | "shipped" | "delivered" | "cancelled";
-  items: any[];
+  items: Array<{ product_id: string; quantity: number }>;
 }
 
 interface UseOrdersResult {
