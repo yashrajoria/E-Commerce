@@ -8,7 +8,7 @@ import {
 } from "react";
 import type { Product } from "@/lib/types";
 
-export interface WishlistItem extends Product {}
+export type WishlistItem = Product;
 
 interface WishlistContextType {
   wishlist: WishlistItem[];
@@ -18,7 +18,9 @@ interface WishlistContextType {
   hasWishlistItem: (id: string | number) => boolean;
 }
 
-const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
+const WishlistContext = createContext<WishlistContextType | undefined>(
+  undefined,
+);
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
@@ -35,7 +37,11 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       const normalized = parsed.map((item) => ({
         ...item,
         id: item.id ?? item._id,
-        images: item.images?.length ? item.images : item.image ? [item.image] : [],
+        images: item.images?.length
+          ? item.images
+          : item.image
+            ? [item.image]
+            : [],
       }));
       setWishlist(normalized);
     }
@@ -65,7 +71,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   };
 
   const hasWishlistItem = useMemo(() => {
-    const ids = new Set(wishlist.map((item) => item.id));
+    const ids = new Set<string | number>(wishlist.map((item) => item.id));
     return (id: string | number) => ids.has(id);
   }, [wishlist]);
 

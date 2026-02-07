@@ -1,5 +1,5 @@
 import { axiosInstance } from "@/utils/axiosInstance";
-import { API_ROUTES } from "./constants/apiRoutes";
+import { API_ROUTES } from "@/pages/api/constants/apiRoutes";
 
 export const loginUser = async (email: string, password: string) => {
   const response = await axiosInstance.post(API_ROUTES.AUTH.LOGIN, {
@@ -13,7 +13,7 @@ export const loginUser = async (email: string, password: string) => {
 export const registerUser = async (
   email: string,
   password: string,
-  fullName: string
+  fullName: string,
 ) => {
   const response = await axiosInstance.post(API_ROUTES.AUTH.REGISTER, {
     email,
@@ -33,17 +33,31 @@ export const verifyEmail = async (email: string, code: string) => {
 };
 
 export const resendVerificationEmail = async (email: string) => {
-  const response = await axiosInstance.post(API_ROUTES.AUTH.RESEND_VERIFICATION, { email });
+  const response = await axiosInstance.post(
+    API_ROUTES.AUTH.RESEND_VERIFICATION,
+    { email },
+  );
   return response.data;
 };
 
 export const requestPasswordReset = async (email: string) => {
-  const response = await axiosInstance.post(API_ROUTES.AUTH.REQUEST_PASSWORD_RESET, { email });
+  const response = await axiosInstance.post(
+    API_ROUTES.AUTH.REQUEST_PASSWORD_RESET,
+    { email },
+  );
   return response.data;
 };
 
-export const resetPassword = async (email: string, code: string, newPassword: string) => {
-  const response = await axiosInstance.post(API_ROUTES.AUTH.RESET_PASSWORD, { email, code, new_password: newPassword });
+export const resetPassword = async (
+  email: string,
+  code: string,
+  newPassword: string,
+) => {
+  const response = await axiosInstance.post(API_ROUTES.AUTH.RESET_PASSWORD, {
+    email,
+    code,
+    new_password: newPassword,
+  });
   return response.data;
 };
 
@@ -56,36 +70,36 @@ export const refreshTokens = async () => {
 export interface PasswordValidation {
   isValid: boolean;
   errors: string[];
-  strength: 'weak' | 'medium' | 'strong';
+  strength: "weak" | "medium" | "strong";
 }
 
 export const validatePassword = (password: string): PasswordValidation => {
   const errors: string[] = [];
-  let strength: 'weak' | 'medium' | 'strong' = 'weak';
+  let strength: "weak" | "medium" | "strong" = "weak";
 
   if (password.length < 8) {
-    errors.push('Password must be at least 8 characters long');
+    errors.push("Password must be at least 8 characters long");
   }
   if (!/[A-Z]/.test(password)) {
-    errors.push('Password must contain at least one uppercase letter');
+    errors.push("Password must contain at least one uppercase letter");
   }
   if (!/[a-z]/.test(password)) {
-    errors.push('Password must contain at least one lowercase letter');
+    errors.push("Password must contain at least one lowercase letter");
   }
   if (!/[0-9]/.test(password)) {
-    errors.push('Password must contain at least one number');
+    errors.push("Password must contain at least one number");
   }
   if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-    errors.push('Password must contain at least one special character');
+    errors.push("Password must contain at least one special character");
   }
 
   const isValid = errors.length === 0;
 
   if (isValid) {
     if (password.length >= 12 && /[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      strength = 'strong';
+      strength = "strong";
     } else if (password.length >= 10) {
-      strength = 'medium';
+      strength = "medium";
     }
   }
 

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";
-import { validatePassword, type PasswordValidation } from "@/pages/api/auth";
+import { validatePassword, type PasswordValidation } from "@/lib/auth";
 
 interface PasswordStrengthIndicatorProps {
   password: string;
@@ -14,7 +14,7 @@ export function PasswordStrengthIndicator({
   showRequirements = true,
 }: PasswordStrengthIndicatorProps) {
   const validation: PasswordValidation = validatePassword(password);
-  
+
   const getStrengthColor = () => {
     if (!password) return "bg-gray-200";
     if (validation.strength === "strong") return "bg-green-500";
@@ -41,7 +41,10 @@ export function PasswordStrengthIndicator({
     { text: "One uppercase letter", met: /[A-Z]/.test(password) },
     { text: "One lowercase letter", met: /[a-z]/.test(password) },
     { text: "One number", met: /[0-9]/.test(password) },
-    { text: "One special character", met: /[!@#$%^&*(),.?":{}|<>]/.test(password) },
+    {
+      text: "One special character",
+      met: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+    },
   ];
 
   if (!password) return null;
@@ -51,13 +54,19 @@ export function PasswordStrengthIndicator({
       {/* Strength Bar */}
       <div className="space-y-1">
         <div className="flex justify-between items-center">
-          <span className="text-xs text-muted-foreground">Password Strength</span>
+          <span className="text-xs text-muted-foreground">
+            Password Strength
+          </span>
           {password && (
-            <span className={`text-xs font-medium ${
-              validation.strength === "strong" ? "text-green-600" :
-              validation.strength === "medium" ? "text-yellow-600" :
-              "text-red-600"
-            }`}>
+            <span
+              className={`text-xs font-medium ${
+                validation.strength === "strong"
+                  ? "text-green-600"
+                  : validation.strength === "medium"
+                    ? "text-yellow-600"
+                    : "text-red-600"
+              }`}
+            >
               {getStrengthLabel()}
             </span>
           )}
@@ -80,7 +89,9 @@ export function PasswordStrengthIndicator({
               ) : (
                 <XCircle className="h-3.5 w-3.5 text-gray-400" />
               )}
-              <span className={req.met ? "text-green-600" : "text-muted-foreground"}>
+              <span
+                className={req.met ? "text-green-600" : "text-muted-foreground"}
+              >
                 {req.text}
               </span>
             </div>

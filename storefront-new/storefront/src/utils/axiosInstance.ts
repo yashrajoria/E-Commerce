@@ -10,13 +10,25 @@ export const axiosInstance = axios.create({
   withCredentials: true, // This is crucial for sending cookies
 });
 
+// A flag to prevent multiple, simultaneous refresh requests
 let isRefreshing = false;
-let failedQueue: Array<{ resolve: (v?: any) => void; reject: (r?: any) => void }> = [];
+// A queue to hold requests that failed due to an expired token while a refresh is in progress
+let failedQueue: Array<{
+  resolve: (value?: unknown) => void;
+  reject: (reason?: unknown) => void;
+}> = [];
 
 const processQueue = (error: any = null) => {
   failedQueue.forEach(({ resolve, reject }) => {
     if (error) reject(error);
     else resolve();
+const processQueue = (error: Error | null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve();
+    }
   });
   failedQueue = [];
 };
@@ -43,6 +55,7 @@ axiosInstance.interceptors.request.use(
 );
 
 axiosInstance.interceptors.response.use(
+  (response) => response,
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest: any = error.config;
@@ -86,7 +99,7 @@ axiosInstance.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default axiosInstance;

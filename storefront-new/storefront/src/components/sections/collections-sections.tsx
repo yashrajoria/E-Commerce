@@ -1,12 +1,77 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { collections } from "@/lib/data";
+import { useProducts } from "@/hooks/useProducts";
+import { useCategories } from "@/hooks/useCategories";
+import Image from "next/image";
+
+interface CollectionViewModel {
+  id: string;
+  title: string;
+  subtitle: string;
+  image: string;
+  products: Array<{ id: string | number }>;
+  layout: "large" | "medium" | "small";
+}
 
 export function CollectionsSection() {
+  const { data: productsData, isLoading, error } = useProducts(12, 1, false);
+  const { data: categoriesData = [] } = useCategories();
+  const products = productsData?.products ?? [];
+
+  const collections = useMemo<CollectionViewModel[]>(() => {
+    if (!products.length) return [];
+    const grouped = new Map<string, typeof products>();
+    products.forEach((product) => {
+      const key = product.category || "Other";
+      if (!grouped.has(key)) grouped.set(key, []);
+      grouped.get(key)?.push(product);
+    });
+
+    const preferredOrder = categoriesData.map((category) => category.name);
+    const orderedCategories = preferredOrder.length
+      ? preferredOrder.filter((name) => grouped.has(name))
+      : Array.from(grouped.keys());
+
+    return orderedCategories.slice(0, 3).map((name, index) => {
+      const items = grouped.get(name) ?? [];
+      const image = items[0]?.images?.[0] || "/icons8-image-100.png";
+      return {
+        id: name.toLowerCase().replace(/\s+/g, "-"),
+        title: name,
+        subtitle: `Top picks in ${name}`,
+        image,
+        products: items,
+        layout: index === 0 ? "large" : "medium",
+      };
+    });
+  }, [products, categoriesData]);
+
+  if (isLoading) {
+    return (
+      <section className="py-16 bg-gradient-to-br from-muted/30 to-background">
+        <div className="container mx-auto px-4">
+          <p className="text-muted-foreground">Loading collections...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (error || collections.length === 0) {
+    return (
+      <section className="py-16 bg-gradient-to-br from-muted/30 to-background">
+        <div className="container mx-auto px-4">
+          <p className="text-muted-foreground">
+            Unable to load collections right now.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-16 bg-gradient-to-br from-muted/30 to-background">
       <div className="container mx-auto px-4">
@@ -44,12 +109,16 @@ export function CollectionsSection() {
                 }`}
               >
                 {/* Background Image */}
-                <motion.img
+                <Image
                   src={collection.image}
                   alt={collection.title}
-                  className="w-full h-full object-cover"
-                  whileHover={{ scale: 1.1 }}
-                  transition={{ duration: 0.6 }}
+                  fill
+                  sizes={
+                    collection.layout === "large"
+                      ? "(max-width: 1024px) 100vw, 66vw"
+                      : "(max-width: 1024px) 100vw, 33vw"
+                  }
+                  className="object-cover transition-transform duration-300 group-hover:scale-110"
                 />
 
                 {/* Gradient Overlay */}

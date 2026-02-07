@@ -7,7 +7,7 @@ interface Order {
   date: string;
   total: number;
   status: "pending" | "shipped" | "delivered" | "cancelled";
-  items: any[];
+  items: Array<{ product_id: string; quantity: number }>;
 }
 
 /**

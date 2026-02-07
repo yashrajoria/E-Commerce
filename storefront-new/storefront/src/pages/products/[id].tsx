@@ -24,11 +24,13 @@ import { RelatedProducts } from "@/components/product/related-products";
 import { useCart } from "@/context/CartContext";
 import { useProductById } from "@/hooks/useProducts";
 import { useRouter } from "next/router";
+import Head from "next/head";
 
 export default function ProductPage() {
   const [quantity, setQuantity] = useState(1);
 
   const router = useRouter();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const id = Array.isArray(router.query.id)
     ? router.query.id[0]
     : router.query.id;
@@ -46,7 +48,7 @@ export default function ProductPage() {
     if (!product || !id) return;
     addToCart({
       ...product,
-      id: id as string | number,
+      id: String(id),
       images: product?.images ?? [],
       quantity,
       // size: selectedSize,
@@ -63,6 +65,29 @@ export default function ProductPage() {
 
   return (
     <div className="min-h-screen">
+      <Head>
+        <title>{product.name} | Storefront</title>
+        <meta
+          name="description"
+          content={
+            product.description ||
+            `Buy ${product.name} at the best price with fast delivery.`
+          }
+        />
+        <link rel="canonical" href={`${siteUrl}/products/${id}`} />
+        <meta property="og:title" content={`${product.name} | Storefront`} />
+        <meta
+          property="og:description"
+          content={
+            product.description ||
+            `Buy ${product.name} at the best price with fast delivery.`
+          }
+        />
+        {product.images?.[0] && (
+          <meta property="og:image" content={product.images[0]} />
+        )}
+        <meta property="og:url" content={`${siteUrl}/products/${id}`} />
+      </Head>
       <Header />
 
       <main className="container mx-auto px-4 py-8">

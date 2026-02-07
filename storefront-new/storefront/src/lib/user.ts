@@ -6,17 +6,17 @@ export const getUserData = async () => {
   return response.data;
 };
 
-export const updateUserData = async (data) => {
+export const updateUserData = async (data: Record<string, unknown>) => {
   const response = await axiosInstance.put(
     API_ROUTES.USER.UPDATE_USER_DATA,
-    data
+    data,
   );
   return response.data;
 };
 
 export const updatePassword = async (
   oldPassword: string,
-  newPassword: string
+  newPassword: string,
 ) => {
   const response = await axiosInstance.post(API_ROUTES.USER.UPDATE_PASSWORD, {
     old_password: oldPassword,
@@ -34,7 +34,9 @@ export const checkAuthStatus = async () => {
   try {
     const response = await axiosInstance.get(API_ROUTES.AUTH.STATUS);
     return response.data;
-  } catch (error) {
+  } catch (error: unknown) {
+    // Treat any error (including 401) as not authenticated
+    // Don't trigger logout event; let interceptor handle it on subsequent requests
     return { authenticated: false };
   }
 };

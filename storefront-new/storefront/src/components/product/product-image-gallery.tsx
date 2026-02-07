@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 interface ProductImageGalleryProps {
   images: string[];
@@ -33,18 +34,24 @@ export function ProductImageGallery({ images }: ProductImageGalleryProps) {
     <div className="space-y-4">
       {/* Main Image */}
       <div className="relative aspect-square overflow-hidden rounded-2xl bg-muted">
-        <motion.img
+        <motion.div
           key={selectedImage}
-          src={images[selectedImage]}
-          alt="Product"
-          className={`w-full h-full object-cover cursor-zoom-in transition-transform duration-300 ${
-            isZoomed ? "scale-150" : "scale-100"
-          }`}
+          className="absolute inset-0"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
           onClick={() => setIsZoomed(!isZoomed)}
-        />
+        >
+          <Image
+            src={images[selectedImage]}
+            alt="Product"
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className={`object-cover cursor-zoom-in transition-transform duration-300 ${
+              isZoomed ? "scale-150" : "scale-100"
+            }`}
+          />
+        </motion.div>
 
         {/* Navigation Arrows */}
         {images.length > 1 && (
@@ -109,9 +116,11 @@ export function ProductImageGallery({ images }: ProductImageGalleryProps) {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <img
+              <Image
                 src={image}
                 alt={`Product ${index + 1}`}
+                width={80}
+                height={80}
                 className="w-full h-full object-cover"
               />
             </motion.button>

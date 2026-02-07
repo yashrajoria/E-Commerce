@@ -1,8 +1,4 @@
-const BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ??
-  process.env.NEXT_PUBLIC_BASE_URL ??
-  "";
-
+// Routes are relative paths; axios baseURL handles the base (e.g., /api)
 export const API_ROUTES = {
   AUTH: {
     LOGIN: `${BASE_URL}/auth/login`,
@@ -16,14 +12,14 @@ export const API_ROUTES = {
     STATUS: `${BASE_URL}/auth/status`,
   },
   USER: {
-    PROFILE: `${BASE_URL}/users/profile/`,
-    UPDATE_PASSWORD: `${BASE_URL}/users/change-password`,
-    UPDATE_USER_DATA: `${BASE_URL}/users/profile`,
+    PROFILE: "users/profile/",
+    UPDATE_PASSWORD: "users/change-password",
+    UPDATE_USER_DATA: "users/profile",
   },
 
   PRODUCTS: {
-    ALL: `${BASE_URL}/products`,
-    BY_ID: (id: string) => `${BASE_URL}/products/${id}`,
+    ALL: "products",
+    BY_ID: (id: string) => `products/${id}`,
   },
 
   CATEGORIES: {
@@ -31,15 +27,15 @@ export const API_ROUTES = {
   },
 
   ORDERS: {
-    ALL: `${BASE_URL}/orders`,
-    BY_ID: (id: string) => `${BASE_URL}/orders/${id}`,
+    ALL: "orders",
+    BY_ID: (id: string) => `orders/${id}`,
   },
   CART: {
-    ADD: `${BASE_URL}/cart/add`,
-    CHECKOUT: `${BASE_URL}/cart/checkout`,
+    ADD: "cart/add",
+    CHECKOUT: "cart/checkout",
   },
   PAYMENT: {
-    STATUS_BY_ORDER: (id: string) => `${BASE_URL}/payment/status/by-order/${id}`,
-    VERIFY: `${BASE_URL}/payment/verify-payment`,
+    STATUS_BY_ORDER: (id: string) => `payment/status/by-order/${id}`,
+    VERIFY: "payment/verify-payment",
   },
 };

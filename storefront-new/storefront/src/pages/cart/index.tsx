@@ -19,9 +19,12 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import Image from "next/image";
+import Head from "next/head";
 
 export default function CartPage() {
   const { cart: cartItems, updateQuantity, removeFromCart } = useCart();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
   const formatGBP = (value?: number) =>
@@ -45,7 +48,7 @@ export default function CartPage() {
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
-    0
+    0,
   );
   const discount = appliedPromo === "SAVE10" ? subtotal * 0.1 : 0;
   const shipping = subtotal > 50 ? 0 : 9.99;
@@ -55,6 +58,20 @@ export default function CartPage() {
   if (cartItems.length === 0) {
     return (
       <div className="min-h-screen">
+        <Head>
+          <title>Storefront | Cart</title>
+          <meta
+            name="description"
+            content="Review items in your cart and proceed to checkout."
+          />
+          <link rel="canonical" href={`${siteUrl}/cart`} />
+          <meta property="og:title" content="Storefront | Cart" />
+          <meta
+            property="og:description"
+            content="Review items in your cart and proceed to checkout."
+          />
+          <meta property="og:url" content={`${siteUrl}/cart`} />
+        </Head>
         <Header />
         <main className="container mx-auto px-4 py-16">
           <motion.div
@@ -65,9 +82,9 @@ export default function CartPage() {
           >
             <ShoppingBag className="h-24 w-24 mx-auto text-muted-foreground mb-6" />
             <h1 className="text-2xl font-bold mb-4">Your cart is empty</h1>
-              <p className="text-muted-foreground mb-8">
-                Looks like you haven't added anything to your cart yet.
-              </p>
+            <p className="text-muted-foreground mb-8">
+              Looks like you haven&apos;t added anything to your cart yet.
+            </p>
             <Button size="lg">Continue Shopping</Button>
           </motion.div>
         </main>
@@ -78,6 +95,20 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen">
+      <Head>
+        <title>Storefront | Cart</title>
+        <meta
+          name="description"
+          content="Review items in your cart and proceed to checkout."
+        />
+        <link rel="canonical" href={`${siteUrl}/cart`} />
+        <meta property="og:title" content="Storefront | Cart" />
+        <meta
+          property="og:description"
+          content="Review items in your cart and proceed to checkout."
+        />
+        <meta property="og:url" content={`${siteUrl}/cart`} />
+      </Head>
       <Header />
 
       <main className="container mx-auto px-4 py-8">
@@ -105,11 +136,15 @@ export default function CartPage() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1, duration: 0.5 }}
                 >
-                  <img
-                    src={item.images?.[0] || "/placeholder.png"}
-                    alt={item.name}
-                    className="w-24 h-24 object-cover rounded-lg"
-                  />
+                  <div className="relative w-24 h-24 rounded-lg overflow-hidden">
+                    <Image
+                      src={item.images?.[0] || "/icons8-image-100.png"}
+                      alt={item.name}
+                      fill
+                      sizes="96px"
+                      className="object-cover"
+                    />
+                  </div>
 
                   <div className="flex-1">
                     <h3 className="font-semibold mb-1">{item.name}</h3>
@@ -117,9 +152,7 @@ export default function CartPage() {
                       {item.category}
                     </p>
                     <div className="flex items-center space-x-2">
-                      <span className="font-bold">
-                        {formatGBP(item.price)}
-                      </span>
+                      <span className="font-bold">{formatGBP(item.price)}</span>
                       {item.originalPrice && (
                         <span className="text-sm text-muted-foreground line-through">
                           {formatGBP(item.originalPrice)}
@@ -255,8 +288,7 @@ export default function CartPage() {
                     <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400">
                       <Truck className="h-4 w-4" />
                       <span className="text-sm">
-                        Add {formatGBP(50 - subtotal)} more for free
-                        shipping!
+                        Add {formatGBP(50 - subtotal)} more for free shipping!
                       </span>
                     </div>
                   </div>

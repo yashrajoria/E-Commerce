@@ -2,13 +2,28 @@
 
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Mail, Lock, Eye, EyeOff, Shield, CheckCircle, RefreshCw } from "lucide-react";
+import {
+  X,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  Shield,
+  CheckCircle,
+  RefreshCw,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { loginUser, registerUser, verifyEmail, resendVerificationEmail, validatePassword } from "@/pages/api/auth";
+import {
+  loginUser,
+  registerUser,
+  verifyEmail,
+  resendVerificationEmail,
+  validatePassword,
+} from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import {
   InputOTP,
@@ -21,15 +36,12 @@ import { PasswordStrengthIndicator } from "./PasswordStrengthIndicator";
 
 interface LoginModalProps {
   isOpen: boolean;
-  setLoggedIn: (value: boolean) => void;
-  loggedIn: boolean;
+  setLoggedIn?: (value: boolean) => void;
+  loggedIn?: boolean;
   onClose: () => void;
 }
 
-export function LoginModal({
-  isOpen,
-  onClose,
-}: LoginModalProps) {
+export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
@@ -45,7 +57,7 @@ export function LoginModal({
     password: string;
   } | null>(null);
   const { refetchUser } = useUser();
-  
+
   useEffect(() => {
     if (isLogin && !isOtp) {
       onCloseOtp();
@@ -56,7 +68,7 @@ export function LoginModal({
       setIsLogin(true);
     }
   }, [isLogin, isOpen]);
-  
+
   const onCloseOtp = () => {
     setIsOtp(false);
     setPendingLogin(null);
@@ -65,7 +77,7 @@ export function LoginModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     if (email === "" || password === "" || (!isLogin && fullName === "")) {
       showError("Please fill all the fields");
       setLoading(false);
@@ -81,7 +93,7 @@ export function LoginModal({
         return;
       }
     }
-    
+
     try {
       if (isLogin) {
         await loginUser(email, password);
@@ -96,12 +108,19 @@ export function LoginModal({
         setIsOtp(true);
         onClose();
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as {
+        response?: { data?: { error?: string } };
+        message?: string;
+      };
       setLoading(false);
-      console.error("Auth error:", error?.response?.data || error.message);
-      showError(error?.response?.data?.error || "Authentication failed. Please try again.");
-      
-      if (error?.response?.data?.error === "Email not verified") {
+      console.error("Auth error:", err?.response?.data || err?.message);
+      showError(
+        err?.response?.data?.error ||
+          "Authentication failed. Please try again.",
+      );
+
+      if (err?.response?.data?.error === "Email not verified") {
         showError("The email is not verified. Please check your inbox.");
         setPendingLogin({ email, password });
         setIsOtp(true);
@@ -124,10 +143,17 @@ export function LoginModal({
       setLoading(false);
       showSuccess("Email verified successfully!");
       onCloseOtp();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as {
+        response?: { data?: { error?: string } };
+        message?: string;
+      };
       setLoading(false);
-      console.error("OTP verify error:", error?.response?.data || error.message);
-      showError(error?.response?.data?.error || "OTP verification failed. Please try again.");
+      console.error("OTP verify error:", err?.response?.data || err?.message);
+      showError(
+        err?.response?.data?.error ||
+          "OTP verification failed. Please try again.",
+      );
     }
   };
 
@@ -137,9 +163,16 @@ export function LoginModal({
       await resendVerificationEmail(email);
       showSuccess("Verification code resent successfully!");
       setOtpValue("");
-    } catch (error: any) {
-      console.error("Resend error:", error?.response?.data || error.message);
-      showError(error?.response?.data?.error || "Failed to resend code. Please try again.");
+    } catch (error: unknown) {
+      const err = error as {
+        response?: { data?: { error?: string } };
+        message?: string;
+      };
+      console.error("Auth error:", err?.response?.data || err?.message);
+      showError(
+        err?.response?.data?.error ||
+          "Failed to resend code. Please try again.",
+      );
     } finally {
       setResendLoading(false);
     }
@@ -165,7 +198,7 @@ export function LoginModal({
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-teal-500/5 pointer-events-none" />
-                
+
                 <Button
                   variant="ghost"
                   size="icon"
@@ -223,7 +256,10 @@ export function LoginModal({
                   </div>
                 </div>
 
-                <form className="space-y-5 relative z-10" onSubmit={handleSubmit}>
+                <form
+                  className="space-y-5 relative z-10"
+                  onSubmit={handleSubmit}
+                >
                   {!isLogin && (
                     <div>
                       <Label htmlFor="fullName" className="text-sm font-medium">
@@ -279,17 +315,26 @@ export function LoginModal({
                         className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 hover:bg-muted/50"
                         onClick={() => setShowPassword(!showPassword)}
                       >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
                       </Button>
                     </div>
-                    
+
                     {/* Password Strength Indicator for Registration */}
-                    {!isLogin && <PasswordStrengthIndicator password={password} />}
+                    {!isLogin && (
+                      <PasswordStrengthIndicator password={password} />
+                    )}
                   </div>
 
                   {isLogin && (
                     <div className="text-right">
-                      <Button variant="link" className="p-0 h-auto text-blue-600 hover:text-blue-700">
+                      <Button
+                        variant="link"
+                        className="p-0 h-auto text-blue-600 hover:text-blue-700"
+                      >
                         Forgot password?
                       </Button>
                     </div>
@@ -304,7 +349,9 @@ export function LoginModal({
                     {loading ? (
                       <div className="flex items-center space-x-2">
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        <span>{isLogin ? "Signing in..." : "Creating account..."}</span>
+                        <span>
+                          {isLogin ? "Signing in..." : "Creating account..."}
+                        </span>
                       </div>
                     ) : isLogin ? (
                       "Sign In"
@@ -316,7 +363,9 @@ export function LoginModal({
 
                 <div className="text-center mt-6 relative z-10">
                   <span className="text-muted-foreground">
-                    {isLogin ? "Don't have an account? " : "Already have an account? "}
+                    {isLogin
+                      ? "Don't have an account? "
+                      : "Already have an account? "}
                   </span>
                   <Button
                     variant="link"
@@ -351,7 +400,7 @@ export function LoginModal({
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-blue-500/5 to-purple-500/5 pointer-events-none" />
-                
+
                 <Button
                   variant="ghost"
                   size="icon"
@@ -387,15 +436,33 @@ export function LoginModal({
                       onChange={(value) => setOtpValue(value)}
                     >
                       <InputOTPGroup>
-                        <InputOTPSlot index={0} className="w-12 h-12 text-lg border-2" />
-                        <InputOTPSlot index={1} className="w-12 h-12 text-lg border-2" />
-                        <InputOTPSlot index={2} className="w-12 h-12 text-lg border-2" />
+                        <InputOTPSlot
+                          index={0}
+                          className="w-12 h-12 text-lg border-2"
+                        />
+                        <InputOTPSlot
+                          index={1}
+                          className="w-12 h-12 text-lg border-2"
+                        />
+                        <InputOTPSlot
+                          index={2}
+                          className="w-12 h-12 text-lg border-2"
+                        />
                       </InputOTPGroup>
                       <InputOTPSeparator />
                       <InputOTPGroup>
-                        <InputOTPSlot index={3} className="w-12 h-12 text-lg border-2" />
-                        <InputOTPSlot index={4} className="w-12 h-12 text-lg border-2" />
-                        <InputOTPSlot index={5} className="w-12 h-12 text-lg border-2" />
+                        <InputOTPSlot
+                          index={3}
+                          className="w-12 h-12 text-lg border-2"
+                        />
+                        <InputOTPSlot
+                          index={4}
+                          className="w-12 h-12 text-lg border-2"
+                        />
+                        <InputOTPSlot
+                          index={5}
+                          className="w-12 h-12 text-lg border-2"
+                        />
                       </InputOTPGroup>
                     </InputOTP>
                   </div>

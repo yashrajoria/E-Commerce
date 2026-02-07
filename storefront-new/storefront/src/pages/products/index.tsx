@@ -17,21 +17,24 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { useProducts } from "@/hooks/useProducts";
-import { categories } from "@/lib/data";
 import { motion } from "framer-motion";
 import { Filter, Grid, List, Search } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react"; // Imported useEffect
+import Head from "next/head";
+import { useCategories } from "@/hooks/useCategories";
 
 export default function SearchPage() {
   const router = useRouter();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [priceRange, setPriceRange] = useState([0, 500]);
+  const [priceRange, setPriceRange] = useState([0, 500000]);
   const [sortBy, setSortBy] = useState("relevance");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showFilters, setShowFilters] = useState(false);
   const [productCount, setProductCount] = useState(12);
+  const { data: categories = [] } = useCategories();
   const formatGBP = (value?: number) =>
     new Intl.NumberFormat("en-GB", {
       style: "currency",
@@ -43,18 +46,44 @@ export default function SearchPage() {
 
   const { data, isLoading, error } = useProducts(productCount, page);
   const products = data?.products ?? [];
+  console.log(products);
 
+  // If backend returns prices in minor units (pence/cents), detect and adjust
+  // the UI price range to a sensible default based on loaded products.
+  useEffect(() => {
+    if (products.length && priceRange[0] === 0 && priceRange[1] === 500) {
+      const maxRaw = Math.max(...products.map((p) => p.price ?? 0));
+      const max = maxRaw > 1000 ? Math.ceil(maxRaw / 100) : Math.ceil(maxRaw);
+      setPriceRange([0, Math.max(500, max)]);
+    }
+  }, [products]);
   const filteredProducts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     let list = products.filter((product) => {
+      // Normalize price: if prices are returned in minor units (e.g. pence),
+      // convert to major units for UI comparisons.
+      const productPrice =
+        typeof product.price === "number" && product.price > 1000
+          ? product.price / 100
+          : product.price;
+
       const matchesQuery =
         query.length === 0 ||
-        product.name.toLowerCase().includes(query) ||
-        product.category.toLowerCase().includes(query);
+        (product.name && product.name.toLowerCase().includes(query)) ||
+        (typeof product.category === "string" &&
+          product.category.toLowerCase().includes(query));
+
       const matchesCategory =
-        selectedCategory.length === 0 || product.category === selectedCategory;
+        selectedCategory.length === 0 ||
+        (typeof product.category === "string"
+          ? product.category === selectedCategory
+          : product.category?.name === selectedCategory);
+
       const matchesPrice =
-        product.price >= priceRange[0] && product.price <= priceRange[1];
+        (typeof productPrice === "number" ? productPrice : 0) >=
+          priceRange[0] &&
+        (typeof productPrice === "number" ? productPrice : 0) <= priceRange[1];
+
       return matchesQuery && matchesCategory && matchesPrice;
     });
 
@@ -74,6 +103,8 @@ export default function SearchPage() {
 
     return list;
   }, [products, searchQuery, selectedCategory, priceRange, sortBy]);
+
+  console.log(filteredProducts);
 
   const totalPages = data?.meta?.totalPages ?? 1;
   // Effect to update state if URL changes (e.g., browser back/forward)
@@ -100,6 +131,20 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen">
+      <Head>
+        <title>Storefront | Products</title>
+        <meta
+          name="description"
+          content="Browse our latest products, filter by category, and find the best deals."
+        />
+        <link rel="canonical" href={`${siteUrl}/products`} />
+        <meta property="og:title" content="Storefront | Products" />
+        <meta
+          property="og:description"
+          content="Browse our latest products, filter by category, and find the best deals."
+        />
+        <meta property="og:url" content={`${siteUrl}/products`} />
+      </Head>
       <Header />
 
       <main className="container mx-auto px-4 py-8">
@@ -150,11 +195,11 @@ export default function SearchPage() {
                 Category: {selectedCategory} ×
               </Badge>
             )}
-            {(priceRange[0] > 0 || priceRange[1] < 500) && (
+            {(priceRange[0] > 0 || priceRange[1] < 500000) && (
               <Badge
                 variant="secondary"
                 className="cursor-pointer"
-                onClick={() => setPriceRange([0, 500])}
+                onClick={() => setPriceRange([0, 500000])}
               >
                 Price: {formatGBP(priceRange[0])} - {formatGBP(priceRange[1])} ×
               </Badge>
@@ -301,8 +346,11 @@ export default function SearchPage() {
               </PaginationItem>
             )}
             {Array.from(
-              { length: Math.min(totalPages, page + 1) - Math.max(1, page - 1) + 1 },
-              (_, index) => Math.max(1, page - 1) + index
+              {
+                length:
+                  Math.min(totalPages, page + 1) - Math.max(1, page - 1) + 1,
+              },
+              (_, index) => Math.max(1, page - 1) + index,
             ).map((pageNumber) => (
               <PaginationItem key={pageNumber}>
                 <PaginationLink
@@ -341,4 +389,3 @@ export default function SearchPage() {
     </div>
   );
 }
-
