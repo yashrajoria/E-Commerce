@@ -7,6 +7,7 @@ import { axiosInstance } from "@/utils/axiosInstance";
 import { CheckCircle, XCircle, Loader, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import Head from "next/head";
 // import Link from 'next/link'; // Removed for compatibility
 
 // A simple component to show a loading spinner
@@ -24,7 +25,7 @@ const PaymentSuccessContent = () => {
   const { clearCart } = useCart();
   const [status, setStatus] = useState("loading");
   const [message, setMessage] = useState("");
-  const [sessionId, setSessionId] = useState(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   // 1. Get the session_id from the URL query parameters using browser APIs
   useEffect(() => {
@@ -53,7 +54,7 @@ const PaymentSuccessContent = () => {
         const response = await axiosInstance.post(
           API_ROUTES.PAYMENT.VERIFY,
           { session_id: sessionId, payment_id: sessionId },
-          { withCredentials: true } // Use if your Go backend needs cookies
+          { withCredentials: true }, // Use if your Go backend needs cookies
         );
 
         if (response.data.status === "paid") {
@@ -64,10 +65,10 @@ const PaymentSuccessContent = () => {
           setMessage(response.data.message || "Payment verification failed.");
         }
       } catch (err) {
-        console.error("Verification error:", err);
         setStatus("error");
+        const e = err as { response?: { data?: { error?: string } } };
         setMessage(
-          err.response?.data?.error || "An error occurred during verification."
+          e.response?.data?.error || "An error occurred during verification.",
         );
       }
     };
@@ -133,8 +134,23 @@ const PaymentSuccessContent = () => {
 // Next.js page component
 // We use <Suspense> because useSearchParams() requires it.
 export default function PaymentSuccessPage() {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <Head>
+        <title>Storefront | Payment Status</title>
+        <meta
+          name="description"
+          content="View your payment status and order confirmation."
+        />
+        <link rel="canonical" href={`${siteUrl}/payment/success`} />
+        <meta property="og:title" content="Storefront | Payment Status" />
+        <meta
+          property="og:description"
+          content="View your payment status and order confirmation."
+        />
+        <meta property="og:url" content={`${siteUrl}/payment/success`} />
+      </Head>
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-xl p-8">
         {/* We can use Suspense as a good React practice for client components */}
         <Suspense fallback={<LoadingSpinner />}>

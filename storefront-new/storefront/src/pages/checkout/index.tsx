@@ -20,12 +20,15 @@ import {
   Package,
   Phone,
   Truck,
-  User
+  User,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import Head from "next/head";
 
 export default function CheckoutPage() {
   const [currentStep, setCurrentStep] = useState(1);
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const [shippingMethod, setShippingMethod] = useState("standard");
   const [shippingDetails, setShippingDetails] = useState({
     firstName: "",
@@ -63,7 +66,9 @@ export default function CheckoutPage() {
       "state",
       "zipCode",
     ] as const;
-    return requiredFields.every((field) => shippingDetails[field].trim().length > 0);
+    return requiredFields.every(
+      (field) => shippingDetails[field].trim().length > 0,
+    );
   };
 
   const completeOrder = async () => {
@@ -77,15 +82,12 @@ export default function CheckoutPage() {
         return;
       }
       // 1️⃣ Add items to cart (This part looks correct)
-      const addResponse = await axiosInstance.post(
-        API_ROUTES.CART.ADD,
-        {
-          items: cart.map((item) => ({
-            product_id: item.id,
-            quantity: item.quantity,
-          })),
-        }
-      );
+      const addResponse = await axiosInstance.post(API_ROUTES.CART.ADD, {
+        items: cart.map((item) => ({
+          product_id: item.id,
+          quantity: item.quantity,
+        })),
+      });
 
       if (addResponse.status !== 200) {
         console.error("Failed to add items to cart.");
@@ -94,7 +96,10 @@ export default function CheckoutPage() {
       }
 
       // 2️⃣ Checkout (This part is correct)
-      const checkoutResponse = await axiosInstance.post(API_ROUTES.CART.CHECKOUT, {});
+      const checkoutResponse = await axiosInstance.post(
+        API_ROUTES.CART.CHECKOUT,
+        {},
+      );
 
       if (checkoutResponse.status !== 200 || !checkoutResponse.data.order_id) {
         console.error("No order ID returned from checkout.");
@@ -107,12 +112,14 @@ export default function CheckoutPage() {
 
       // 3️⃣ Polling (This section is fixed)
 
-      const pollForPaymentUrl = async (orderId: string) => {
+      const pollForPaymentUrl = async (
+        orderId: string,
+      ): Promise<string | null> => {
         // Create a long-polling mechanism
         const maxAttempts = 20; // Poll for 20 * 5s = 100 seconds
         let attempts = 0;
 
-        return new Promise((resolve, reject) => {
+        return new Promise<string | null>((resolve, reject) => {
           pollIntervalRef.current = window.setInterval(async () => {
             if (attempts >= maxAttempts) {
               if (pollIntervalRef.current !== null) {
@@ -120,7 +127,7 @@ export default function CheckoutPage() {
                 pollIntervalRef.current = null;
               }
               reject(
-                new Error("Timeout: Payment link took too long to generate.")
+                new Error("Timeout: Payment link took too long to generate."),
               );
               return;
             }
@@ -128,7 +135,7 @@ export default function CheckoutPage() {
             try {
               // FIX 1: Use GET, not POST, for the status check
               const response = await axiosInstance.get(
-                API_ROUTES.PAYMENT.STATUS_BY_ORDER(orderId)
+                API_ROUTES.PAYMENT.STATUS_BY_ORDER(orderId),
               );
 
               const { status, checkout_url } = response.data;
@@ -185,7 +192,7 @@ export default function CheckoutPage() {
 
   const subtotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
-    0
+    0,
   );
   const shipping = shippingMethod === "express" ? 15.99 : 5.99;
   const tax = subtotal * 0.08;
@@ -193,6 +200,20 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Head>
+        <title>Storefront | Checkout</title>
+        <meta
+          name="description"
+          content="Complete your order with secure checkout."
+        />
+        <link rel="canonical" href={`${siteUrl}/checkout`} />
+        <meta property="og:title" content="Storefront | Checkout" />
+        <meta
+          property="og:description"
+          content="Complete your order with secure checkout."
+        />
+        <meta property="og:url" content={`${siteUrl}/checkout`} />
+      </Head>
       <Header />
 
       <main className="container mx-auto px-4 py-8">
@@ -468,9 +489,7 @@ export default function CheckoutPage() {
                                   5-7 business days
                                 </p>
                               </div>
-                              <p className="font-medium">
-                                {formatGBP(5.99)}
-                              </p>
+                              <p className="font-medium">{formatGBP(5.99)}</p>
                             </div>
                           </Label>
                         </div>
@@ -487,9 +506,7 @@ export default function CheckoutPage() {
                                   2-3 business days
                                 </p>
                               </div>
-                              <p className="font-medium">
-                                {formatGBP(15.99)}
-                              </p>
+                              <p className="font-medium">{formatGBP(15.99)}</p>
                             </div>
                           </Label>
                         </div>
@@ -498,8 +515,6 @@ export default function CheckoutPage() {
                   </div>
                 </motion.div>
               )}
-
-            
 
               {/* Step 2: Review Order */}
               {currentStep === 2 && (
@@ -523,11 +538,15 @@ export default function CheckoutPage() {
                         key={item.id}
                         className="flex items-center space-x-4 p-4 border rounded-lg"
                       >
-                        <img
-                          src={item.images?.[0] || "/placeholder.png"}
-                          alt={item.name}
-                          className="w-16 h-16 object-cover rounded-lg"
-                        />
+                        <div className="relative w-16 h-16 rounded-lg overflow-hidden">
+                          <Image
+                            src={item.images?.[0] || "/icons8-image-100.png"}
+                            alt={item.name}
+                            fill
+                            sizes="64px"
+                            className="object-cover"
+                          />
+                        </div>
                         <div className="flex-1">
                           <h4 className="font-medium">{item.name}</h4>
                           <p className="text-sm text-muted-foreground">
@@ -549,11 +568,10 @@ export default function CheckoutPage() {
                       <br />
                       {shippingDetails.address}
                       <br />
-                      {shippingDetails.city}, {shippingDetails.state} {shippingDetails.zipCode}
+                      {shippingDetails.city}, {shippingDetails.state}{" "}
+                      {shippingDetails.zipCode}
                     </p>
                   </div>
-
-                 
                 </motion.div>
               )}
 
@@ -590,7 +608,7 @@ export default function CheckoutPage() {
           {/* Order Summary Sidebar */}
           <div className="lg:col-span-1">
             <motion.div
-              className="bg-background/95 backdrop-blur-xl rounded-3xl border border-border/50 shadow-2xl p-6 sticky top-8 relative overflow-hidden"
+              className="bg-background/95 backdrop-blur-xl rounded-3xl border border-border/50 shadow-2xl p-6 sticky top-8 overflow-hidden"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
@@ -605,11 +623,15 @@ export default function CheckoutPage() {
                 <div className="space-y-4 mb-6">
                   {cart.map((item) => (
                     <div key={item.id} className="flex items-center space-x-3">
-                      <img
-                        src={item.images?.[0] || "/placeholder.png"}
-                        alt={item.name}
-                        className="w-12 h-12 object-cover rounded-lg"
-                      />
+                      <div className="relative w-12 h-12 rounded-lg overflow-hidden">
+                        <Image
+                          src={item.images?.[0] || "/icons8-image-100.png"}
+                          alt={item.name}
+                          fill
+                          sizes="48px"
+                          className="object-cover"
+                        />
+                      </div>
                       <div className="flex-1">
                         <h4 className="font-medium text-sm">{item.name}</h4>
                         <p className="text-xs text-muted-foreground">
