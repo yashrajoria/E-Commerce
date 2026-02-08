@@ -3,7 +3,7 @@ import axios from "axios";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method not allowed" });
@@ -14,14 +14,14 @@ export default async function handler(
 
   try {
     const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_NEW_API_URL}auth/auth/verify-email`,
+      `${process.env.NEXT_PUBLIC_NEW_API_URL}auth/verify-email`,
       req.body,
       {
         headers: {
           "Content-Type": "application/json",
           Cookie: req.headers.cookie || "",
         },
-      }
+      },
     );
 
     return res.status(response.status).json(response.data);
