@@ -135,7 +135,7 @@ async function handleGetProducts(req: NextApiRequest, res: NextApiResponse) {
     const query = req.query;
     const page = query.page || 1;
     const perPage = query.perPage || 10;
-    const response = await axios.get(`${API_URL}products`, {
+    const response = await axios.get(`http://localhost:8080/products`, {
       headers: {
         "Content-Type": "application/json",
         Cookie: cookie || "",
@@ -146,6 +146,7 @@ async function handleGetProducts(req: NextApiRequest, res: NextApiResponse) {
       },
       withCredentials: true,
     });
+
     return res.status(response.status).json(response.data);
   } catch (err) {
     console.error("Error fetching products:", err);
