@@ -11,10 +11,11 @@ export const config = {
   },
 };
 
-const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
+const API_URL = process.env.NEW_API_URL; // Use server-side environment variable
 
 const parseForm = (
-  req: NextApiRequest
+  req: NextApiRequest,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<{ fields: any; files: any }> => {
   const form = formidable({ keepExtensions: true });
   return new Promise((resolve, reject) => {
@@ -33,14 +34,19 @@ const extractTokenFromCookie = (req: NextApiRequest): string | undefined => {
 };
 
 const proxyRequest = async (config: AxiosRequestConfig, cookie?: string) => {
-  return axios({
-    ...config,
-    headers: {
-      ...config.headers,
-      Cookie: cookie || "",
-    },
-    withCredentials: true,
-  });
+  try {
+    const response = await axios({
+      ...config,
+      headers: {
+        ...config.headers,
+        Authorization: cookie ? `Bearer ${cookie}` : undefined,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Proxy request failed:", error);
+    throw new Error("Failed to fetch data from the server.");
+  }
 };
 
 async function handleCreateProduct(req: NextApiRequest, res: NextApiResponse) {
@@ -105,17 +111,18 @@ async function handleCreateProduct(req: NextApiRequest, res: NextApiResponse) {
             Cookie: tokenCookie,
           },
           withCredentials: true,
-        }
+        },
       );
 
       return res.status(response.status).json({
         message: "Product created successfully",
         product: response.data,
       });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (uploadErr: any) {
       console.error(
         "Upload failed:",
-        uploadErr?.response?.data || uploadErr.message
+        uploadErr?.response?.data || uploadErr.message,
       );
       return res.status(500).json({ message: "Error uploading product" });
     }
@@ -130,7 +137,7 @@ async function handleGetProducts(req: NextApiRequest, res: NextApiResponse) {
     const query = req.query;
     const page = query.page || 1;
     const perPage = query.perPage || 10;
-    const response = await axios.get(`${API_URL}products`, {
+    const response = await axios.get(`http://localhost:8080/products`, {
       headers: {
         "Content-Type": "application/json",
         Cookie: cookie || "",
@@ -141,6 +148,7 @@ async function handleGetProducts(req: NextApiRequest, res: NextApiResponse) {
       },
       withCredentials: true,
     });
+
     return res.status(response.status).json(response.data);
   } catch (err) {
     console.error("Error fetching products:", err);
@@ -165,7 +173,7 @@ async function handleBulkUpload(req: NextApiRequest, res: NextApiResponse) {
       data: formData,
       headers: formData.getHeaders(),
     },
-    cookie
+    cookie,
   );
 
   res.status(response.status).json(response.data);
@@ -173,7 +181,7 @@ async function handleBulkUpload(req: NextApiRequest, res: NextApiResponse) {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   try {
     if (req.method === "POST" && req.query.isBulk === "1") {

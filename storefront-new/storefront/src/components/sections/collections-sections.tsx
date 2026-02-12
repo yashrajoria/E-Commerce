@@ -2,19 +2,19 @@
 
 import React, { useMemo } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
 import Image from "next/image";
+import Link from "next/link";
 
 interface CollectionViewModel {
   id: string;
   title: string;
   subtitle: string;
   image: string;
-  products: Array<{ id: string | number }>;
-  layout: "large" | "medium" | "small";
+  productCount: number;
+  layout: "large" | "medium";
 }
 
 export function CollectionsSection() {
@@ -24,27 +24,27 @@ export function CollectionsSection() {
 
   const collections = useMemo<CollectionViewModel[]>(() => {
     if (!products.length) return [];
-    const grouped = new Map<string, typeof products>();
+    const grouped = new Map<string, number>();
     products.forEach((product) => {
       const key = product.category || "Other";
-      if (!grouped.has(key)) grouped.set(key, []);
-      grouped.get(key)?.push(product);
+      grouped.set(key, (grouped.get(key) ?? 0) + 1);
     });
 
-    const preferredOrder = categoriesData.map((category) => category.name);
+    const preferredOrder = categoriesData.map((c) => c.name);
     const orderedCategories = preferredOrder.length
       ? preferredOrder.filter((name) => grouped.has(name))
       : Array.from(grouped.keys());
 
     return orderedCategories.slice(0, 3).map((name, index) => {
-      const items = grouped.get(name) ?? [];
-      const image = items[0]?.images?.[0] || "/icons8-image-100.png";
+      const count = grouped.get(name) ?? 0;
+      const firstProduct = products.find((p) => p.category === name);
+      const image = firstProduct?.images?.[0] || "/icons8-image-100.png";
       return {
         id: name.toLowerCase().replace(/\s+/g, "-"),
         title: name,
         subtitle: `Top picks in ${name}`,
         image,
-        products: items,
+        productCount: count,
         layout: index === 0 ? "large" : "medium",
       };
     });
@@ -52,114 +52,110 @@ export function CollectionsSection() {
 
   if (isLoading) {
     return (
-      <section className="py-16 bg-gradient-to-br from-muted/30 to-background">
-        <div className="container mx-auto px-4">
-          <p className="text-muted-foreground">Loading collections...</p>
+      <section className="py-16 lg:py-20">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div className="lg:col-span-2 lg:row-span-2 h-96 lg:h-[480px] bg-muted/40 rounded-2xl animate-pulse" />
+            <div className="h-56 bg-muted/40 rounded-2xl animate-pulse" />
+            <div className="h-56 bg-muted/40 rounded-2xl animate-pulse" />
+          </div>
         </div>
       </section>
     );
   }
 
-  if (error || collections.length === 0) {
-    return (
-      <section className="py-16 bg-gradient-to-br from-muted/30 to-background">
-        <div className="container mx-auto px-4">
-          <p className="text-muted-foreground">
-            Unable to load collections right now.
-          </p>
-        </div>
-      </section>
-    );
-  }
+  if (error || collections.length === 0) return null;
 
   return (
-    <section className="py-16 bg-gradient-to-br from-muted/30 to-background">
-      <div className="container mx-auto px-4">
+    <section className="py-16 lg:py-20 relative">
+      <div className="container mx-auto px-4 lg:px-8">
+        {/* Header */}
         <motion.div
           className="text-center mb-12"
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
         >
-          <h2 className="text-4xl font-bold mb-4">Curated Collections</h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Discover our carefully curated collections designed for your
-            lifestyle
+          <span className="inline-flex items-center gap-1.5 text-sm font-medium text-rose-600 dark:text-rose-400 tracking-wide uppercase mb-3">
+            <Sparkles className="h-3.5 w-3.5" />
+            Curated for You
+          </span>
+          <h2 className="text-3xl lg:text-4xl font-bold tracking-tight mb-3">
+            Explore Collections
+          </h2>
+          <p className="text-muted-foreground max-w-lg mx-auto">
+            Thoughtfully grouped selections designed around your lifestyle
           </p>
         </motion.div>
 
         {/* Collections Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {collections.map((collection, index) => (
             <motion.div
               key={collection.id}
-              className={`group relative cursor-pointer ${
+              className={`group relative ${
                 collection.layout === "large"
                   ? "lg:col-span-2 lg:row-span-2"
                   : ""
               }`}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.2, duration: 0.6 }}
-              whileHover={{ scale: 1.02 }}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.12, duration: 0.5 }}
             >
-              <div
-                className={`relative overflow-hidden rounded-3xl ${
-                  collection.layout === "large" ? "h-96 lg:h-full" : "h-80"
-                }`}
-              >
-                {/* Background Image */}
-                <Image
-                  src={collection.image}
-                  alt={collection.title}
-                  fill
-                  sizes={
+              <Link href={`/products?category=${collection.title}`}>
+                <div
+                  className={`relative overflow-hidden rounded-2xl cursor-pointer ${
                     collection.layout === "large"
-                      ? "(max-width: 1024px) 100vw, 66vw"
-                      : "(max-width: 1024px) 100vw, 33vw"
-                  }
-                  className="object-cover transition-transform duration-300 group-hover:scale-110"
-                />
-
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-
-                {/* Glassmorphism Content */}
-                <motion.div
-                  className="absolute bottom-0 left-0 right-0 p-8"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.3, duration: 0.5 }}
+                      ? "h-80 lg:h-full min-h-[320px]"
+                      : "h-64"
+                  }`}
                 >
-                  <div className="backdrop-blur-sm bg-white/10 rounded-2xl p-6 border border-white/20">
+                  {/* Image */}
+                  <Image
+                    src={collection.image}
+                    alt={collection.title}
+                    fill
+                    sizes={
+                      collection.layout === "large"
+                        ? "(max-width: 1024px) 100vw, 66vw"
+                        : "(max-width: 1024px) 100vw, 33vw"
+                    }
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+
+                  {/* Gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-black/5 transition-opacity duration-300" />
+
+                  {/* Content */}
+                  <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8">
+                    <span className="inline-block text-xs font-medium bg-white/15 text-white/80 backdrop-blur-sm px-3 py-1 rounded-full mb-3">
+                      {collection.productCount} products
+                    </span>
                     <h3
-                      className={`font-bold text-white mb-2 ${
-                        collection.layout === "large" ? "text-3xl" : "text-xl"
+                      className={`font-bold text-white mb-1 ${
+                        collection.layout === "large"
+                          ? "text-2xl lg:text-3xl"
+                          : "text-xl"
                       }`}
                     >
                       {collection.title}
                     </h3>
-                    <p className="text-white/80 mb-4">{collection.subtitle}</p>
+                    <p className="text-white/70 text-sm mb-4">
+                      {collection.subtitle}
+                    </p>
 
-                    {/* Product Count */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/60 text-sm">
-                        {collection.products.length} products
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-white hover:text-white hover:bg-white/20 p-2"
-                      >
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <span className="inline-flex items-center gap-1.5 text-sm font-medium text-white group-hover:gap-2.5 transition-all duration-300">
+                      Shop Now
+                      <ArrowRight className="h-4 w-4" />
+                    </span>
                   </div>
-                </motion.div>
 
-                {/* Hover Effect */}
-                <motion.div className="absolute inset-0 bg-gradient-to-t from-blue-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </div>
+                  {/* Violet hover wash */}
+                  <div className="absolute inset-0 bg-rose-600/0 group-hover:bg-rose-600/10 transition-colors duration-500" />
+                </div>
+              </Link>
             </motion.div>
           ))}
         </div>

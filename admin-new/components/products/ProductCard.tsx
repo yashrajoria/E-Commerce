@@ -4,11 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Package, Edit } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface Product {
   _id: string;
   name: string;
   category: string;
+  category_ids?: string[];
   price: number;
   quantity: number;
   status: string;
@@ -18,6 +20,7 @@ interface Product {
 
 interface Category {
   _id: string;
+  id?: string;
   name: string;
 }
 
@@ -29,7 +32,9 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
   const getCategoryName = (categoryId: string) => {
-    const category = categories?.find((cat) => cat.id === categoryId);
+    const category = categories?.find(
+      (cat) => cat._id === categoryId || cat.id === categoryId,
+    );
     return category?.name || categoryId;
   };
 
@@ -80,7 +85,7 @@ const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
         <CardContent className="p-0">
           <div className="relative h-48 bg-gradient-to-br from-accent/20 to-accent/10 overflow-hidden">
             <motion.div variants={imageVariants} className="h-full w-full">
-              <img
+              <Image
                 src={product?.images?.[0] || "/placeholder.svg"}
                 alt={product?.name}
                 className="h-full w-full object-cover transition-transform duration-300"
@@ -89,7 +94,7 @@ const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
 
             <div className="absolute top-3 left-3">
               <Badge variant="secondary" className="bg-white text-black">
-                {getCategoryName(product.category_ids[0])}
+                {getCategoryName(product.category_ids?.[0] || product.category)}
               </Badge>
             </div>
 

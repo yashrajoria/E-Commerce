@@ -36,7 +36,7 @@ const AuthForm = () => {
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement>,
-    form: "signin" | "signup"
+    form: "signin" | "signup",
   ) => {
     const { name, value } = e.target;
     if (form === "signin") {
@@ -51,15 +51,14 @@ const AuthForm = () => {
     setIsLoading(true);
     try {
       const res = await axios.post(
-        "/api/auth/sign-in",
+        "http://localhost:8080/auth/login",
         {
           ...signinData,
           role: "admin",
         },
         {
           headers: { "Content-Type": "application/json" },
-          withCredentials: true,
-        }
+        },
       );
       toast.success("Successfully signed in");
       if (res.status === 200) router.push("/dashboard");
@@ -76,7 +75,7 @@ const AuthForm = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const res = await axios.post("http://localhost:8080/auth/auth/register", {
+      const res = await axios.post("http://localhost:8080/auth/register", {
         ...signupData,
         role: "admin",
       });

@@ -33,7 +33,9 @@ export const OrdersFilters = ({
       <div className="flex gap-2">
         <Select
           value={filter.status}
-          onValueChange={(value) => onFilterChange({ status: value })}
+          onValueChange={(value) =>
+            onFilterChange({ status: value as OrdersFilter["status"] })
+          }
         >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Filter by status" />

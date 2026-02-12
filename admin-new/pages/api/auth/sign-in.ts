@@ -3,7 +3,7 @@ import axios from "axios";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method not allowed" });
@@ -19,7 +19,7 @@ export default async function handler(
           Cookie: req.headers.cookie || "",
         },
         withCredentials: true,
-      }
+      },
     );
 
     const setCookieHeader = response.headers["set-cookie"];
@@ -28,10 +28,11 @@ export default async function handler(
     }
 
     return res.status(response.status).json(response.data);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error(
       "🔴 Auth proxy error:",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     return res
       .status(error.response?.status || 500)

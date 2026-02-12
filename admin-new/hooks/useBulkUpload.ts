@@ -2,16 +2,28 @@ import { useState } from "react";
 import Papa from "papaparse";
 import axios from "axios";
 import { toast } from "sonner";
+import { z } from "zod";
+
+const productSchema = z.object({
+  name: z.string(),
+  price: z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid price format"),
+  quantity: z.string().regex(/^\d+$/, "Quantity must be a number"),
+  is_featured: z.string().optional(),
+  categories: z.string(),
+  description: z.string().optional(),
+  imageurl: z.string().url("Invalid URL format"),
+});
 
 export function useBulkUpload() {
-  const [csvData, setCsvData] = useState([]);
-  const [bulkFile, setBulkFile] = useState(null);
+  const [csvData, setCsvData] = useState<Record<string, string>[]>([]);
+  const [bulkFile, setBulkFile] = useState<File | null>(null);
   const [isBulk, setIsBulk] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [validationResult, setValidationResult] = useState(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [validationResult, setValidationResult] = useState<any>(null);
 
-  const handleFileUpload = (event) => {
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -22,11 +34,11 @@ export function useBulkUpload() {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
-        setCsvData(results.data);
+        setCsvData(results.data as Record<string, string>[]);
         setIsBulk(true);
         setBulkFile(file);
         toast.success(
-          `CSV file loaded successfully! ${results.data.length} rows found.`
+          `CSV file loaded successfully! ${results.data.length} rows found.`,
         );
       },
       error: (err) => {
@@ -36,79 +48,92 @@ export function useBulkUpload() {
     });
   };
 
-  const validateBulkUpload = async () => {
-    if (!bulkFile) {
-      toast.error("Please upload a CSV file first");
-      return null;
-    }
+  // const validateBulkUpload = async () => {
+  //   if (!bulkFile) {
+  //     toast.error("Please upload a CSV file first");
+  //     return null;
+  //   }
 
-    setIsValidating(true);
+  //   setIsValidating(true);
 
-    try {
-      const formData = new FormData();
-      formData.append("file", bulkFile);
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append("file", bulkFile);
 
-      const res = await axios.post(
-        "http://localhost:8080/products/bulk/validate",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-          withCredentials: true,
+  //     const res = await axios.post(
+  //       "http://localhost:8080/products/bulk/validate",
+  //       formData,
+  //       {
+  //         headers: { "Content-Type": "multipart/form-data" },
+  //         withCredentials: true,
+  //       },
+  //     );
+
+  //     const validation = res.data;
+  //     setValidationResult(validation);
+
+  //     // Show validation summary
+  //     if (validation.errors && validation.errors.length > 0) {
+  //       toast.error(
+  //         `Found ${validation.errors.length} errors. Please fix them before importing.`,
+  //         { duration: 5000 },
+  //       );
+  //       return validation;
+  //     }
+
+  //     if (validation.warnings && validation.warnings.length > 0) {
+  //       toast.warning(
+  //         `Found ${validation.warnings.length} warnings. Products will be created but some issues were detected.`,
+  //         { duration: 5000 },
+  //       );
+  //     }
+
+  //     if (
+  //       validation.missing_categories &&
+  //       validation.missing_categories.length > 0
+  //     ) {
+  //       toast.info(
+  //         `${
+  //           validation.missing_categories.length
+  //         } new categories will be created: ${validation.missing_categories.join(
+  //           ", ",
+  //         )}`,
+  //         { duration: 5000 },
+  //       );
+  //     }
+
+  //     if (validation.duplicate_skus && validation.duplicate_skus.length > 0) {
+  //       toast.warning(
+  //         `${validation.duplicate_skus.length} products with duplicate SKUs will be skipped.`,
+  //         { duration: 5000 },
+  //       );
+  //     }
+
+  //     toast.success(
+  //       `Validation complete! ${validation.valid_products} products ready to import.`,
+  //     );
+
+  //     return validation;
+  //   } catch (err) {
+  //     console.error("Validation Error:", err);
+  //     toast.error(err.response?.data?.error || "Error validating CSV file");
+  //     return null;
+  //   } finally {
+  //     setIsValidating(false);
+  //   }
+  // };
+
+  const validateBulkUpload = (data?: Record<string, string>[]) => {
+    return (data || csvData)
+      .map((row: Record<string, string>, index: number) => {
+        try {
+          return productSchema.parse(row);
+        } catch (error) {
+          console.error(`Validation error in row ${index + 1}:`, error);
+          return null;
         }
-      );
-
-      const validation = res.data;
-      setValidationResult(validation);
-
-      // Show validation summary
-      if (validation.errors && validation.errors.length > 0) {
-        toast.error(
-          `Found ${validation.errors.length} errors. Please fix them before importing.`,
-          { duration: 5000 }
-        );
-        return validation;
-      }
-
-      if (validation.warnings && validation.warnings.length > 0) {
-        toast.warning(
-          `Found ${validation.warnings.length} warnings. Products will be created but some issues were detected.`,
-          { duration: 5000 }
-        );
-      }
-
-      if (
-        validation.missing_categories &&
-        validation.missing_categories.length > 0
-      ) {
-        toast.info(
-          `${
-            validation.missing_categories.length
-          } new categories will be created: ${validation.missing_categories.join(
-            ", "
-          )}`,
-          { duration: 5000 }
-        );
-      }
-
-      if (validation.duplicate_skus && validation.duplicate_skus.length > 0) {
-        toast.warning(
-          `${validation.duplicate_skus.length} products with duplicate SKUs will be skipped.`,
-          { duration: 5000 }
-        );
-      }
-
-      toast.success(
-        `Validation complete! ${validation.valid_products} products ready to import.`
-      );
-
-      return validation;
-    } catch (err) {
-      console.error("Validation Error:", err);
-      toast.error(err.response?.data?.error || "Error validating CSV file");
-      return null;
-    } finally {
-      setIsValidating(false);
-    }
+      })
+      .filter(Boolean);
   };
 
   const handleBulkUpload = async (autoCreateCategories = true) => {
@@ -137,13 +162,13 @@ export function useBulkUpload() {
     ) {
       const confirmed = window.confirm(
         `The following categories don't exist:\n${validation.missing_categories.join(
-          ", "
-        )}\n\nDo you want to create them?`
+          ", ",
+        )}\n\nDo you want to create them?`,
       );
 
       if (!confirmed) {
         toast.info(
-          "Import cancelled. Please update your CSV or create categories manually."
+          "Import cancelled. Please update your CSV or create categories manually.",
         );
         return;
       }
@@ -162,7 +187,7 @@ export function useBulkUpload() {
         {
           headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true,
-        }
+        },
       );
 
       const result = res.data;
@@ -170,14 +195,14 @@ export function useBulkUpload() {
       if (result.inserted_count > 0) {
         toast.success(
           `Successfully imported ${result.inserted_count} products!`,
-          { duration: 5000 }
+          { duration: 5000 },
         );
       }
 
       if (result.errors && result.errors.length > 0) {
         toast.warning(
           `${result.errors.length} products failed to import. Check console for details.`,
-          { duration: 5000 }
+          { duration: 5000 },
         );
         console.error("Import errors:", result.errors);
       }
@@ -189,7 +214,8 @@ export function useBulkUpload() {
       setValidationResult(null);
     } catch (err) {
       console.error("Upload Error:", err);
-      toast.error(err.response?.data?.error || "Error uploading products");
+      const axiosErr = err as { response?: { data?: { error?: string } } };
+      toast.error(axiosErr.response?.data?.error || "Error uploading products");
     } finally {
       setIsUploading(false);
     }
@@ -258,6 +284,20 @@ export function useBulkUpload() {
     setValidationResult(null);
   };
 
+  const handleUpload = async (file: File) => {
+    try {
+      const response = await axios.post("/api/upload", file);
+      toast.success("File uploaded successfully!");
+      return response.data;
+    } catch (error) {
+      console.error("Upload failed:", error);
+      const axiosErr = error as { response?: { data?: { message?: string } } };
+      toast.error(
+        axiosErr.response?.data?.message || "An error occurred during upload.",
+      );
+    }
+  };
+
   return {
     // Functions
     handleFileUpload,
@@ -265,6 +305,7 @@ export function useBulkUpload() {
     handleBulkUpload,
     downloadSampleCSV,
     resetUpload,
+    handleUpload,
 
     // State
     csvData,

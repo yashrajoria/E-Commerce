@@ -21,17 +21,22 @@ import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import Image from "next/image";
 import Head from "next/head";
+import { useRouter } from "next/navigation";
 
 export default function CartPage() {
   const { cart: cartItems, updateQuantity, removeFromCart } = useCart();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
+  const [promoMessage, setPromoMessage] = useState<string | null>(null);
+  const router = useRouter();
+
   const formatGBP = (value?: number) =>
     new Intl.NumberFormat("en-GB", {
       style: "currency",
       currency: "GBP",
     }).format(value ?? 0);
+
   const handleUpdateQuantity = (id: string, newQuantity: number) => {
     if (newQuantity <= 0) {
       removeFromCart(id);
@@ -43,6 +48,10 @@ export default function CartPage() {
   const applyPromoCode = () => {
     if (promoCode.toLowerCase() === "save10") {
       setAppliedPromo("SAVE10");
+      setPromoMessage("Promo code applied successfully!");
+    } else {
+      setAppliedPromo(null);
+      setPromoMessage("Invalid promo code. Please try again.");
     }
   };
 
@@ -85,7 +94,9 @@ export default function CartPage() {
             <p className="text-muted-foreground mb-8">
               Looks like you haven&apos;t added anything to your cart yet.
             </p>
-            <Button size="lg">Continue Shopping</Button>
+            <Link href="/products">
+              <Button size="lg">Continue Shopping</Button>
+            </Link>
           </motion.div>
         </main>
         <Footer />
@@ -118,7 +129,7 @@ export default function CartPage() {
           transition={{ duration: 0.6 }}
         >
           <div className="flex items-center space-x-4 mb-8">
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" onClick={() => router.back()}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <h1 className="text-3xl font-bold">Shopping Cart</h1>
@@ -126,7 +137,6 @@ export default function CartPage() {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Cart Items */}
             <div className="lg:col-span-2 space-y-4">
               {cartItems.map((item, index) => (
                 <motion.div
@@ -212,7 +222,6 @@ export default function CartPage() {
               ))}
             </div>
 
-            {/* Order Summary */}
             <motion.div
               className="lg:col-span-1"
               initial={{ opacity: 0, x: 30 }}
@@ -222,7 +231,6 @@ export default function CartPage() {
               <div className="bg-card border rounded-lg p-6 sticky top-8">
                 <h2 className="text-xl font-bold mb-6">Order Summary</h2>
 
-                {/* Promo Code */}
                 <div className="mb-6">
                   <div className="flex space-x-2 mb-2">
                     <Input
@@ -234,16 +242,19 @@ export default function CartPage() {
                       <Tag className="h-4 w-4" />
                     </Button>
                   </div>
-                  {appliedPromo && (
-                    <Badge className="bg-green-500">
-                      {appliedPromo} applied!
-                    </Badge>
+                  {promoMessage && (
+                    <p
+                      className={`text-sm ${
+                        appliedPromo ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
+                      {promoMessage}
+                    </p>
                   )}
                 </div>
 
                 <Separator className="mb-4" />
 
-                {/* Price Breakdown */}
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
@@ -282,10 +293,9 @@ export default function CartPage() {
                   <span>{formatGBP(total)}</span>
                 </div>
 
-                {/* Free Shipping Notice */}
                 {shipping > 0 && (
-                  <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-6">
-                    <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400">
+                  <div className="bg-rose-50 dark:bg-rose-950 border border-rose-200 dark:border-rose-800 rounded-lg p-3 mb-6">
+                    <div className="flex items-center space-x-2 text-rose-600 dark:text-rose-400">
                       <Truck className="h-4 w-4" />
                       <span className="text-sm">
                         Add {formatGBP(50 - subtotal)} more for free shipping!
@@ -294,17 +304,24 @@ export default function CartPage() {
                   </div>
                 )}
 
-                <Button size="lg" className="w-full mb-3">
-                  <Link href="/checkout/">
-                    <div className="flex items-center justify-center space-x-2">
-                      <span>Proceed to Checkout</span>
-                    </div>
-                  </Link>
-                </Button>
+                <Link href="/checkout" passHref>
+                  <Button
+                    size="lg"
+                    className="w-full mb-3 rounded-full bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 shadow-lg shadow-rose-500/20"
+                  >
+                    Proceed to Checkout
+                  </Button>
+                </Link>
 
-                <Button variant="outline" size="lg" className="w-full">
-                  Continue Shopping
-                </Button>
+                <Link href="/products" passHref>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full rounded-full"
+                  >
+                    Continue Shopping
+                  </Button>
+                </Link>
               </div>
             </motion.div>
           </div>

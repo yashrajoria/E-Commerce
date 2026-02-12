@@ -118,7 +118,7 @@ export default function AccountPage() {
           />
           <meta property="og:url" content={`${siteUrl}/account`} />
         </Head>
-        <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-rose-200 border-t-rose-600 rounded-full animate-spin"></div>
         <p className="ml-3 text-lg text-muted-foreground">
           Loading user profile...
         </p>
@@ -150,7 +150,7 @@ export default function AccountPage() {
           transition={{ duration: 0.6 }}
         >
           {/* Profile Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 mb-8 text-white">
+          <div className="bg-gradient-to-r from-rose-600 to-amber-500 rounded-2xl p-8 mb-8 text-white">
             <div className="flex items-center space-x-6">
               <Avatar className="w-24 h-24 border-4 border-white/20">
                 <AvatarImage src={user?.avatar} />

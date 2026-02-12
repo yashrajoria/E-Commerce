@@ -7,9 +7,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ImageIcon } from "lucide-react";
+import Image from "next/image";
 
-export default function CSVPreviewTable({ csvData }) {
+export default function CSVPreviewTable({ csvData }: { csvData: any[] }) {
   return (
     <div className="rounded-lg border overflow-hidden">
       <div className="bg-gray-50 dark:bg-gray-800/50 p-4 border-b">
@@ -38,7 +40,7 @@ export default function CSVPreviewTable({ csvData }) {
                 <TableCell>
                   {product.ImageURL ? (
                     <div className="h-12 w-12 rounded-md overflow-hidden border border-gray-200 dark:border-gray-800">
-                      <img
+                      <Image
                         src={product.ImageURL || "/placeholder.svg"}
                         alt={product.Name}
                         className="h-full w-full object-cover"
