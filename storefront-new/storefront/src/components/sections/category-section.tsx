@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import * as LucideIcons from "lucide-react";
@@ -10,61 +10,67 @@ import Image from "next/image";
 
 export function CategoriesSection() {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll();
-  const y = useTransform(scrollYProgress, [0, 1], [0, -50]);
-
-  const scrollLeft = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: -300, behavior: "smooth" });
-    }
-  };
-
-  const scrollRight = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: 300, behavior: "smooth" });
-    }
-  };
-
   const { data: categories = [], isLoading, error } = useCategories();
 
-  if (isLoading) return <div>Loading categories...</div>;
-  if (error) return <div>Error loading categories</div>;
+  const scroll = (direction: "left" | "right") => {
+    scrollRef.current?.scrollBy({
+      left: direction === "left" ? -320 : 320,
+      behavior: "smooth",
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <section className="py-16 lg:py-20">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="flex gap-5 overflow-hidden">
+            {Array.from({ length: 6 }, (_, i) => (
+              <div
+                key={i}
+                className="flex-shrink-0 w-44 h-56 bg-muted/40 rounded-2xl animate-pulse"
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) return null;
 
   return (
-    <section className="py-16 bg-gradient-to-br from-background to-muted/20 relative overflow-hidden">
-      {/* Parallax Background */}
-      <motion.div className="absolute inset-0 opacity-30" style={{ y }}>
-        <div className="absolute top-20 left-20 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-20 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl" />
-      </motion.div>
-
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="flex items-center justify-between mb-8">
+    <section className="py-16 lg:py-20 relative overflow-hidden">
+      <div className="container mx-auto px-4 lg:px-8">
+        {/* Header */}
+        <div className="flex items-end justify-between mb-10">
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
           >
-            <h2 className="text-3xl font-bold">Shop by Category</h2>
-            <p className="text-muted-foreground">
-              Explore our wide range of product categories
-            </p>
+            <span className="text-sm font-medium text-rose-600 dark:text-rose-400 tracking-wide uppercase mb-2 block">
+              Browse
+            </span>
+            <h2 className="text-3xl lg:text-4xl font-bold tracking-tight">
+              Shop by Category
+            </h2>
           </motion.div>
 
-          <div className="flex space-x-2">
+          <div className="hidden md:flex gap-2">
             <Button
               variant="outline"
               size="icon"
-              onClick={scrollLeft}
-              className="hidden md:flex"
+              onClick={() => scroll("left")}
+              className="h-10 w-10 rounded-full border-border/60"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
               size="icon"
-              onClick={scrollRight}
-              className="hidden md:flex"
+              onClick={() => scroll("right")}
+              className="h-10 w-10 rounded-full border-border/60"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -72,68 +78,64 @@ export function CategoriesSection() {
         </div>
 
         {/* Scrollable Categories */}
-        <div
-          ref={scrollRef}
-          className="flex space-x-6 overflow-x-auto scrollbar-hide pb-4"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-        >
-          {categories.map((category, index) => {
-            const IconComponent =
-              (
-                LucideIcons as unknown as Record<
-                  string,
-                  React.ComponentType<{ className?: string }>
-                >
-              )[category.icon] || LucideIcons.Package;
+        <div className="relative -mx-4 px-4">
+          <div
+            ref={scrollRef}
+            className="flex gap-5 overflow-x-auto scrollbar-hide pb-2"
+          >
+            {categories.map((category, index) => {
+              const IconComponent =
+                (
+                  LucideIcons as unknown as Record<
+                    string,
+                    React.ComponentType<{ className?: string }>
+                  >
+                )[category.icon] || LucideIcons.Package;
 
-            return (
-              <motion.div
-                key={category.id}
-                className="flex-shrink-0 group cursor-pointer"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1, duration: 0.5 }}
-                whileHover={{ y: -5 }}
-              >
-                <div className="relative w-32 h-40 rounded-2xl overflow-hidden bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border">
-                  {/* Category Image */}
-                  <div className="relative w-full h-24">
+              return (
+                <motion.div
+                  key={category.id}
+                  className="flex-shrink-0 group cursor-pointer"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.06, duration: 0.4 }}
+                >
+                  <div className="relative w-44 h-56 rounded-2xl overflow-hidden premium-card border border-border/40">
+                    {/* Full image background */}
                     <Image
                       src={category.image}
                       alt={category.name}
                       fill
-                      sizes="(max-width: 768px) 50vw, 8rem"
-                      className="object-cover transition-transform duration-300 group-hover:scale-110"
+                      sizes="11rem"
+                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                     />
+
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+
+                    {/* Icon badge */}
+                    <div className="absolute top-3 right-3 h-8 w-8 rounded-lg glass flex items-center justify-center">
+                      <IconComponent className="h-4 w-4 text-white" />
+                    </div>
+
+                    {/* Content */}
+                    <div className="absolute bottom-0 left-0 right-0 p-4">
+                      <h3 className="font-semibold text-white text-sm leading-tight mb-0.5">
+                        {category.name}
+                      </h3>
+                      <p className="text-white/70 text-xs">
+                        {category.productCount}+ items
+                      </p>
+                    </div>
                   </div>
+                </motion.div>
+              );
+            })}
+          </div>
 
-                  {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-
-                  {/* Icon */}
-                  <div className="absolute top-2 right-2 w-8 h-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                    <IconComponent className="h-4 w-4 text-white" />
-                  </div>
-
-                  {/* Content */}
-                  <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <h3 className="font-semibold text-white text-sm mb-1">
-                      {category.name}
-                    </h3>
-                    <p className="text-white/80 text-xs">
-                      {category.productCount}+ items
-                    </p>
-                  </div>
-
-                  {/* Hover Effect */}
-                  <motion.div
-                    className="absolute inset-0 bg-blue-500/0 group-hover:bg-blue-500/10 transition-colors duration-300"
-                    whileHover={{ backgroundColor: "rgba(59, 130, 246, 0.1)" }}
-                  />
-                </div>
-              </motion.div>
-            );
-          })}
+          {/* Fade edge indicator on mobile */}
+          <div className="absolute top-0 right-0 bottom-0 w-12 bg-gradient-to-l from-background to-transparent pointer-events-none md:hidden" />
         </div>
       </div>
     </section>
