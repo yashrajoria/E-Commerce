@@ -227,7 +227,7 @@ export default function CheckoutPage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold text-gradient-premium">
               Checkout
             </h1>
             <p className="text-muted-foreground">Complete your purchase</p>
@@ -241,7 +241,7 @@ export default function CheckoutPage() {
               <motion.div
                 className={`flex items-center justify-center w-12 h-12 rounded-full border-2 ${
                   currentStep >= step.id
-                    ? "bg-gradient-to-r from-blue-600 to-purple-600 border-blue-600 text-white"
+                    ? "bg-gradient-to-r from-rose-600 to-amber-500 border-rose-600 text-white"
                     : "border-muted bg-background text-muted-foreground"
                 }`}
                 whileHover={{ scale: 1.05 }}
@@ -267,7 +267,7 @@ export default function CheckoutPage() {
               {index < steps.length - 1 && (
                 <div
                   className={`w-16 h-0.5 mx-4 ${
-                    currentStep > step.id ? "bg-blue-600" : "bg-muted"
+                    currentStep > step.id ? "bg-rose-600" : "bg-muted"
                   }`}
                 />
               )}
@@ -285,7 +285,7 @@ export default function CheckoutPage() {
               transition={{ duration: 0.6 }}
             >
               {/* Gradient Background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-teal-500/5 pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 via-amber-500/5 to-rose-500/5 pointer-events-none" />
 
               {/* Step 1: Shipping Information */}
               {currentStep === 1 && (
@@ -296,7 +296,7 @@ export default function CheckoutPage() {
                   className="space-y-6 relative z-10"
                 >
                   <div className="flex items-center space-x-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-600 to-amber-500 flex items-center justify-center">
                       <Truck className="h-5 w-5 text-white" />
                     </div>
                     <h2 className="text-2xl font-bold">Shipping Information</h2>
@@ -525,7 +525,7 @@ export default function CheckoutPage() {
                   className="space-y-6 relative z-10"
                 >
                   <div className="flex items-center space-x-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-600 to-amber-500 flex items-center justify-center">
                       <Package className="h-5 w-5 text-white" />
                     </div>
                     <h2 className="text-2xl font-bold">Review Your Order</h2>
@@ -585,7 +585,7 @@ export default function CheckoutPage() {
                   Previous
                 </Button>
                 <Button
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  className="bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 rounded-full shadow-lg shadow-rose-500/20"
                   onClick={() => {
                     if (currentStep < 2) {
                       if (!validateShippingDetails()) {
@@ -613,8 +613,7 @@ export default function CheckoutPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              {/* Gradient Background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-teal-500/5 pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 via-amber-500/5 to-rose-500/5 pointer-events-none" />
 
               <div className="relative z-10">
                 <h3 className="text-xl font-bold mb-6">Order Summary</h3>
@@ -664,7 +663,7 @@ export default function CheckoutPage() {
                   <Separator />
                   <div className="flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span className="text-blue-600">{formatGBP(total)}</span>
+                    <span className="text-rose-600">{formatGBP(total)}</span>
                   </div>
                 </div>
 
