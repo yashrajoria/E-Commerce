@@ -4,7 +4,7 @@ import {
   Star,
   Heart,
   Share2,
-  ShoppingCart,
+  ShoppingBag,
   Minus,
   Plus,
   Truck,
@@ -25,18 +25,25 @@ import { useCart } from "@/context/CartContext";
 import { useProductById } from "@/hooks/useProducts";
 import { useRouter } from "next/router";
 import Head from "next/head";
+import { useWishlist } from "@/context/WishlistContext";
+import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
 
 export default function ProductPage() {
   const [quantity, setQuantity] = useState(1);
-
   const router = useRouter();
+  const { toast } = useToast();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const id = Array.isArray(router.query.id)
     ? router.query.id[0]
     : router.query.id;
   const { data: product, isLoading, error } = useProductById(id);
+  const { addToWishlist, removeFromWishlist, hasWishlistItem } = useWishlist();
+
   const rating = product?.rating ?? 0;
   const images = (product?.images ?? []).filter(Boolean);
+  const isWishlisted = hasWishlistItem(product?.id);
+
   const formatGBP = (value?: number) =>
     new Intl.NumberFormat("en-GB", {
       style: "currency",
@@ -44,6 +51,7 @@ export default function ProductPage() {
     }).format(value ?? 0);
 
   const { addToCart } = useCart();
+
   const handleAddToCart = () => {
     if (!product || !id) return;
     addToCart({
@@ -51,10 +59,47 @@ export default function ProductPage() {
       id: String(id),
       images: product?.images ?? [],
       quantity,
-      // size: selectedSize,
-      // color: selectedColor,
+    });
+    toast({
+      title: "Added to cart",
+      description: `${product.name} has been added to your cart.`,
     });
   };
+
+  const handleWishlistToggle = () => {
+    if (!product) return;
+    if (isWishlisted) {
+      removeFromWishlist(product.id);
+      toast({
+        title: "Removed from wishlist",
+        description: `${product.name} has been removed from your wishlist.`,
+      });
+    } else {
+      addToWishlist(product);
+      toast({
+        title: "Added to wishlist",
+        description: `${product.name} has been added to your wishlist.`,
+      });
+    }
+  };
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator
+        .share({
+          title: product?.name,
+          text: `Check out this product: ${product?.name}`,
+          url: window.location.href,
+        })
+        .catch((error) => console.error("Error sharing", error));
+    } else {
+      toast({
+        title: "Share",
+        description: "Web Share API is not supported in your browser.",
+      });
+    }
+  };
+
   if (!router.isReady || isLoading) {
     return <div className="min-h-screen">Loading...</div>;
   }
@@ -90,9 +135,8 @@ export default function ProductPage() {
       </Head>
       <Header />
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-2 gap-12">
-          {/* Product Images */}
+      <main className="container mx-auto px-4 lg:px-8 py-10">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -101,19 +145,22 @@ export default function ProductPage() {
             <ProductImageGallery images={images} />
           </motion.div>
 
-          {/* Product Info */}
           <motion.div
             className="space-y-6"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            {/* Breadcrumb */}
             <div className="text-sm text-muted-foreground">
-              Home / {product?.category} / {product?.name}
+              <span className="hover:text-rose-600 cursor-pointer">Home</span>
+              <span className="mx-2">/</span>
+              <span className="hover:text-rose-600 cursor-pointer">
+                {product?.category}
+              </span>
+              <span className="mx-2">/</span>
+              <span>{product?.name}</span>
             </div>
 
-            {/* Product Title & Rating */}
             <div>
               <h1 className="text-3xl font-bold mb-2">{product?.name}</h1>
               <div className="flex items-center space-x-4 mb-4">
@@ -122,7 +169,7 @@ export default function ProductPage() {
                     <Star
                       key={i}
                       className={`h-4 w-4 ${
-                        i < Math.floor(rating)
+                        i < rating
                           ? "fill-yellow-400 text-yellow-400"
                           : "text-gray-300"
                       }`}
@@ -137,7 +184,6 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* Price */}
             <div className="flex items-center space-x-4">
               <span className="text-3xl font-bold">
                 {formatGBP(product?.price)}
@@ -159,13 +205,11 @@ export default function ProductPage() {
               )}
             </div>
 
-            {/* Product Description */}
             <p className="text-muted-foreground leading-relaxed">
               {product?.description ||
                 "This is a detailed description of the product, highlighting its features, benefits, and usage."}
             </p>
 
-            {/* Quantity & Add to Cart */}
             <div className="flex items-center space-x-4">
               <div className="flex items-center border rounded-lg">
                 <Button
@@ -176,7 +220,12 @@ export default function ProductPage() {
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
-                <span className="px-4 py-2 font-medium">{quantity}</span>
+                <Input
+                  type="number"
+                  className="w-16 text-center border-0"
+                  value={quantity}
+                  onChange={(e) => setQuantity(parseInt(e.target.value))}
+                />
                 <Button
                   variant="ghost"
                   size="icon"
@@ -186,23 +235,40 @@ export default function ProductPage() {
                 </Button>
               </div>
 
-              <Button size="lg" className="flex-1" onClick={handleAddToCart}>
-                <ShoppingCart className="h-4 w-4 mr-2" />
-                Add to Cart
+              <Button
+                size="lg"
+                className="flex-1 rounded-full bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 shadow-lg shadow-rose-500/20"
+                onClick={handleAddToCart}
+              >
+                <ShoppingBag className="h-4 w-4 mr-2" />
+                Add to Bag
               </Button>
 
-              <Button variant="outline" size="icon">
-                <Heart className="h-4 w-4" />
+              <Button
+                variant="outline"
+                size="icon"
+                className="rounded-full"
+                onClick={handleWishlistToggle}
+              >
+                <Heart
+                  className={`h-4 w-4 ${
+                    isWishlisted ? "fill-red-500 text-red-500" : ""
+                  }`}
+                />
               </Button>
 
-              <Button variant="outline" size="icon">
+              <Button
+                variant="outline"
+                size="icon"
+                className="rounded-full"
+                onClick={handleShare}
+              >
                 <Share2 className="h-4 w-4" />
               </Button>
             </div>
           </motion.div>
         </div>
 
-        {/* Product Details Tabs */}
         <motion.div
           className="mt-16"
           initial={{ opacity: 0, y: 50 }}
@@ -302,7 +368,6 @@ export default function ProductPage() {
           </Tabs>
         </motion.div>
 
-        {/* Related Products */}
         <RelatedProducts currentProductId={product?.id} />
       </main>
 
