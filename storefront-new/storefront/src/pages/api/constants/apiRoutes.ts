@@ -1,15 +1,14 @@
-// Routes are relative paths; axios baseURL handles the base (e.g., /api)
 export const API_ROUTES = {
   AUTH: {
-    LOGIN: `${BASE_URL}/auth/login`,
-    REGISTER: `${BASE_URL}/auth/register`,
-    VERIFY_EMAIL: `${BASE_URL}/auth/verify-email`,
-    RESEND_VERIFICATION: `${BASE_URL}/auth/resend-verification`,
-    REFRESH: `${BASE_URL}/auth/refresh`,
-    REQUEST_PASSWORD_RESET: `${BASE_URL}/auth/request-password-reset`,
-    RESET_PASSWORD: `${BASE_URL}/auth/reset-password`,
-    LOGOUT: `${BASE_URL}/auth/logout`,
-    STATUS: `${BASE_URL}/auth/status`,
+    LOGIN: `/auth/login`,
+    REGISTER: `/auth/register`,
+    VERIFY_EMAIL: `/auth/verify-email`,
+    RESEND_VERIFICATION: `/auth/resend-verification`,
+    REFRESH: `/auth/refresh`,
+    REQUEST_PASSWORD_RESET: `/auth/request-password-reset`,
+    RESET_PASSWORD: `/auth/reset-password`,
+    LOGOUT: `/auth/logout`,
+    STATUS: `/auth/status`,
   },
   USER: {
     PROFILE: "users/profile/",
@@ -23,7 +22,7 @@ export const API_ROUTES = {
   },
 
   CATEGORIES: {
-    ALL: `${BASE_URL}/categories/`,
+    ALL: `/categories/`,
   },
 
   ORDERS: {
