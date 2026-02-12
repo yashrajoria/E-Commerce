@@ -1,26 +1,23 @@
-"use client";
-
-import React, { useEffect, useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Plus,
-  Search,
-  Edit,
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-  MoreHorizontal,
-  Filter,
-  Download,
-  Image as ImageIcon,
-} from "lucide-react";
+/**
+ * Premium Categories Page
+ */
+import PageLayout, { pageItem } from "@/components/layout/PageLayout";
+import StatsCard from "@/components/ui/stats-card";
+import EmptyState from "@/components/ui/empty-state";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -30,755 +27,416 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import Head from "next/head";
-import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { useCategories } from "@/hooks/useCategory";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Edit,
+  FolderTree,
+  Grid3X3,
+  Layers,
+  Plus,
+  Search,
+  Trash2,
+} from "lucide-react";
+import { useState, useMemo } from "react";
+import axios from "axios";
+import { toast } from "sonner";
 
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  parentId: string | null;
-  parentName?: string;
-  image: string;
-  isActive: boolean;
-  productCount: number;
-  createdAt: string;
-  updatedAt: string;
-}
+const ITEMS_PER_PAGE = 10;
 
-export default function AdminCategoriesPage() {
-  const { categories: cat, loading: categoriesLoading } = useCategories();
-  const [categories, setCategories] = useState<Category[]>([]);
+const Categories = () => {
+  const { categories, loading } = useCategories();
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
-    null
-  );
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [editCategoryName, setEditCategoryName] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [selectedCategory, setSelectedCategory] = useState<any>(null);
 
-  console.log(cat);
-  const [formData, setFormData] = useState({
-    name: "",
-    slug: "",
-    description: "",
-    parentId: "",
-    image: "",
-    isActive: true,
-  });
-
-  const itemsPerPage = 10;
-
-  // Filtered
   const filteredCategories = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    if (!q) return categories;
-    return cat.filter(
-      (category) =>
-        category.name.toLowerCase().includes(q) ||
-        category.slug.toLowerCase().includes(q)
-    );
+    if (!categories) return [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let result = [...categories] as any[];
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter((c) => c.name?.toLowerCase().includes(q));
+    }
+    return result;
   }, [categories, searchQuery]);
 
-  // Ensure currentPage is valid when filteredCategories changes
-  useEffect(() => {
-    const totalPages = Math.max(
-      1,
-      Math.ceil(filteredCategories.length / itemsPerPage)
-    );
-    if (currentPage > totalPages) setCurrentPage(1);
-  }, [filteredCategories, currentPage]);
-
-  // Paginated
-  const paginatedCategories = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return filteredCategories.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredCategories, currentPage]);
-
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredCategories.length / itemsPerPage)
+  const totalPages = Math.ceil(filteredCategories.length / ITEMS_PER_PAGE);
+  const paginatedCategories = filteredCategories.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
   );
 
-  // Analytics
-  const analytics = useMemo(() => {
-    const total = categories.length;
-    const active = categories.filter((c) => c.isActive).length;
-    const inactive = total - active;
-    return { total, active, inactive };
-  }, [categories]);
-
-  // Auto-generate slug from name
-  const generateSlug = (name: string) =>
-    name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
-
-  const handleNameChange = (name: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      name,
-      slug: generateSlug(name),
-    }));
-  };
-
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      slug: "",
-      description: "",
-      parentId: "",
-      image: "",
-      isActive: true,
-    });
-  };
-
-  const handleAdd = () => {
-    resetForm();
-    setSelectedCategory(null);
-    setIsAddModalOpen(true);
-  };
-
-  const handleEdit = (category: Category) => {
-    setSelectedCategory(category);
-    setFormData({
-      name: category.name,
-      slug: category.slug,
-      description: category.description || "",
-      parentId: category.parentId || "",
-      image: category.image || "",
-      isActive: category.isActive,
-    });
-    setIsEditModalOpen(true);
-  };
-
-  const handleDelete = (category: Category) => {
-    setSelectedCategory(category);
-    setIsDeleteModalOpen(true);
-  };
-
-  const handleSubmit = () => {
-    if (!formData.name || !formData.slug) {
-      // simple client-side validation
-      return;
-    }
-
-    if (selectedCategory) {
-      // Update existing category
-      setCategories((prev) =>
-        prev.map((cat) =>
-          cat.id === selectedCategory.id
-            ? {
-                ...cat,
-                ...formData,
-                parentName:
-                  formData.parentId !== ""
-                    ? prev.find((c) => c.id === formData.parentId)?.name
-                    : undefined,
-                updatedAt: new Date().toISOString().split("T")[0],
-              }
-            : cat
-        )
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    try {
+      await axios.post(
+        "/api/categories",
+        { name: newCategoryName },
+        { withCredentials: true },
       );
-      setIsEditModalOpen(false);
-    } else {
-      // Add new category
-      const newCategory: Category = {
-        id: Date.now().toString(),
-        ...formData,
-        parentName: formData.parentId
-          ? categories.find((c) => c.id === formData.parentId)?.name
-          : undefined,
-        productCount: 0,
-        createdAt: new Date().toISOString().split("T")[0],
-        updatedAt: new Date().toISOString().split("T")[0],
-      };
-      setCategories((prev) => [...prev, newCategory]);
-      setIsAddModalOpen(false);
+      toast.success("Category created successfully!");
+      setNewCategoryName("");
+      setIsAddOpen(false);
+      window.location.reload();
+    } catch {
+      toast.error("Failed to create category");
     }
-    resetForm();
-    setSelectedCategory(null);
   };
 
-  const confirmDelete = () => {
-    if (selectedCategory) {
-      // soft-delete recommended in real backend — here we remove for demo
-      setCategories((prev) =>
-        prev.filter((cat) => cat.id !== selectedCategory.id)
+  const handleEditCategory = async () => {
+    if (!editCategoryName.trim() || !selectedCategory) return;
+    try {
+      await axios.put(
+        `/api/categories/${selectedCategory.id}`,
+        { name: editCategoryName },
+        { withCredentials: true },
       );
-      setIsDeleteModalOpen(false);
-      setSelectedCategory(null);
+      toast.success("Category updated successfully!");
+      setIsEditOpen(false);
+      window.location.reload();
+    } catch {
+      toast.error("Failed to update category");
     }
   };
 
-  const toggleStatus = (categoryId: string) => {
-    setCategories((prev) =>
-      prev.map((cat) =>
-        cat.id === categoryId ? { ...cat, isActive: !cat.isActive } : cat
-      )
-    );
-  };
-
-  const parentCategories = categories.filter((cat) => !cat.parentId);
-
-  // Pagination: generate page numbers centered around current page
-  const getPageNumbers = () => {
-    const maxButtons = 5;
-    const pages = [];
-
-    let start = Math.max(1, currentPage - Math.floor(maxButtons / 2));
-    let end = start + maxButtons - 1;
-    if (end > totalPages) {
-      end = totalPages;
-      start = Math.max(1, end - maxButtons + 1);
+  const handleDeleteCategory = async () => {
+    if (!selectedCategory) return;
+    try {
+      await axios.delete(`/api/categories/${selectedCategory.id}`, {
+        withCredentials: true,
+      });
+      toast.success("Category deleted successfully!");
+      setIsDeleteOpen(false);
+      window.location.reload();
+    } catch {
+      toast.error("Failed to delete category");
     }
-
-    for (let i = start; i <= end; i++) pages.push(i);
-    return pages;
   };
 
-  // Dialog close helper
-  const closeAllModals = () => {
-    setIsAddModalOpen(false);
-    setIsEditModalOpen(false);
-    setIsDeleteModalOpen(false);
-    setSelectedCategory(null);
-    resetForm();
-  };
-  useEffect(() => {
-    if (cat) {
-      // Normalize backend fields
-      const normalized = cat.map((c) => ({
-        ...c,
-        createdAt: c.created_at || c.createdAt,
-        updatedAt: c.updated_at || c.updatedAt,
-        parentId: c.parent_id || c.parentId || "",
-        parentName: c.parent_name || c.parentName,
-        isActive: c.isActive ?? true, // default active
-        productCount: c.productCount ?? 0,
-      }));
-      setCategories(normalized);
-    }
-  }, [cat]);
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <Head>
-        <title>Categories</title>
-      </Head>
-      <DashboardSidebar />
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <motion.div
-          className="mb-8"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Category Management
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                Manage your product categories and organization
-              </p>
-            </div>
+    <PageLayout
+      title="Categories"
+      breadcrumbs={[{ label: "Categories" }]}
+      headerActions={
+        <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+          <DialogTrigger asChild>
             <Button
-              onClick={handleAdd}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-              aria-label="Add Category"
+              size="sm"
+              className="gap-2 text-xs gradient-purple text-white hover:opacity-90 rounded-xl h-8 border-0"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus size={13} />
               Add Category
             </Button>
-          </div>
-
-          {/* Analytics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <Card className="border-0 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Total Categories
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-blue-600">
-                    {analytics.total}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <Card className="border-0 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Active Categories
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-green-600">
-                    {analytics.active}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <Card className="border-0 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Inactive Categories
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-orange-600">
-                    {analytics.inactive}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </div>
-
-          {/* Search and Filters */}
-          <div className="flex items-center justify-between gap-4">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Search categories..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="pl-10"
-                aria-label="Search categories"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                <Filter className="h-4 w-4 mr-2" />
-                Filter
-              </Button>
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Categories Table */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <Card className="border-0 shadow-lg">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-b">
-                  <TableHead className="font-semibold">Category</TableHead>
-                  <TableHead className="font-semibold">Slug</TableHead>
-                  <TableHead className="font-semibold">Parent</TableHead>
-                  <TableHead className="font-semibold">Status</TableHead>
-                  <TableHead className="font-semibold">Products</TableHead>
-                  <TableHead className="font-semibold">Updated</TableHead>
-                  <TableHead className="font-semibold text-right">
-                    Actions
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <AnimatePresence>
-                  {paginatedCategories.map((category, index) => (
-                    <motion.tr
-                      key={category.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ delay: index * 0.03 }}
-                      className="group hover:bg-muted/50 transition-colors"
-                    >
-                      <TableCell>
-                        <div className="flex items-center space-x-3">
-                          {category.parentId && (
-                            <div className="w-px h-10 border ml-4" /> // vertical line for hierarchy
-                          )}
-                          <div className="w-10 h-10 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                            {category.image ? (
-                              <img
-                                src={category.image}
-                                alt={category.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <ImageIcon className="h-4 w-4 text-muted-foreground m-auto" />
-                            )}
-                          </div>
-                          <div>
-                            <div className="font-medium">{category.name}</div>
-                            {category.description && (
-                              <div className="text-sm text-muted-foreground line-clamp-1">
-                                {category.description}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <code className="text-xs bg-muted px-2 py-1 rounded">
-                          {category.slug}
-                        </code>
-                      </TableCell>
-                      <TableCell>
-                        {category.parentName ? (
-                          <Badge
-                            variant="outline"
-                            className="px-2 py-1 bg-gray-800  text-white border-0 rounded-xl"
-                          >
-                            {category.parentName}
-                          </Badge>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <Switch
-                            checked={category.isActive}
-                            onCheckedChange={() => toggleStatus(category.id)}
-                            className={`data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-gray-400`}
-                          />
-                          <Badge
-                            variant="outline"
-                            className={
-                              category.isActive
-                                ? "border-0 text-white bg-green-700 "
-                                : "border-0 bg-red-700 text-white"
-                            }
-                          >
-                            {category.isActive ? "Active" : "Inactive"}
-                          </Badge>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="font-medium">
-                          {category.productCount.toLocaleString()}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm text-muted-foreground">
-                          {category.updatedAt
-                            ? new Date(category.updatedAt).toLocaleDateString()
-                            : "—"}
-                        </div>
-                      </TableCell>
-
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              aria-label="Category actions"
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={() => handleEdit(category)}
-                            >
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleDelete(category)}
-                              className="text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </motion.tr>
-                  ))}
-                </AnimatePresence>
-              </TableBody>
-            </Table>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between px-6 py-4 border-t">
-                <div className="text-sm text-muted-foreground">
-                  Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-                  {Math.min(
-                    currentPage * itemsPerPage,
-                    filteredCategories.length
-                  )}{" "}
-                  of {filteredCategories.length} categories
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    aria-label="Previous page"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    Previous
-                  </Button>
-
-                  <div className="flex items-center space-x-1">
-                    {getPageNumbers().map((pageNum) => (
-                      <Button
-                        key={pageNum}
-                        variant={
-                          currentPage === pageNum ? "default" : "outline"
-                        }
-                        size="sm"
-                        onClick={() => setCurrentPage(pageNum)}
-                        className="w-8 h-8 p-0"
-                        aria-current={
-                          currentPage === pageNum ? "page" : undefined
-                        }
-                      >
-                        {pageNum}
-                      </Button>
-                    ))}
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      setCurrentPage((p) => Math.min(totalPages, p + 1))
-                    }
-                    disabled={currentPage === totalPages}
-                    aria-label="Next page"
-                  >
-                    Next
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
-          </Card>
-        </motion.div>
-      </div>
-
-      {/* Add/Edit Category Modal */}
-      <Dialog
-        open={isAddModalOpen || isEditModalOpen}
-        onOpenChange={(open) => {
-          if (!open) closeAllModals();
-        }}
-      >
-        <DialogContent className="max-w-2xl rounded-2xl shadow-2xl bg-card p-6 backdrop-blur-sm border border-border">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-semibold">
-              {selectedCategory ? "Edit Category" : "Add New Category"}
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-6 py-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="name">Category Name *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => handleNameChange(e.target.value)}
-                  placeholder="Enter category name"
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="slug">Slug *</Label>
-                <Input
-                  id="slug"
-                  value={formData.slug}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, slug: e.target.value }))
-                  }
-                  placeholder="category-slug"
-                  className="mt-1"
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    description: e.target.value,
-                  }))
-                }
-                placeholder="Enter category description"
-                className="mt-1"
-                rows={3}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="parent">Parent Category</Label>
-              <Select
-                value={formData.parentId || "none"}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    parentId: value === "none" ? "" : value, // store empty when "No Parent"
-                  }))
-                }
-              >
-                <SelectTrigger
-                  className="mt-1"
-                  aria-label="Parent category select"
-                >
-                  <SelectValue placeholder="Select parent category (optional)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No Parent</SelectItem>
-                  {parentCategories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="image">Category Image</Label>
-              <div className="mt-1 space-y-2">
-                <Input
-                  id="image"
-                  value={formData.image}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, image: e.target.value }))
-                  }
-                  placeholder="Enter image URL"
-                />
-                {formData.image && (
-                  <div className="w-20 h-20 rounded-lg overflow-hidden bg-muted">
-                    <img
-                      src={formData.image}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="active"
-                checked={formData.isActive}
-                onCheckedChange={(checked) =>
-                  setFormData((prev) => ({ ...prev, isActive: checked }))
-                }
-              />
-              <Label htmlFor="active">Active Category</Label>
-            </div>
-          </div>
-
-          <div className="flex justify-end space-x-2 pt-4 border-t">
-            <Button variant="outline" onClick={() => closeAllModals()}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-            >
-              {selectedCategory ? "Update Category" : "Create Category"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation (simple inline modal using DialogContent trick) */}
-      {isDeleteModalOpen && selectedCategory && (
-        <Dialog
-          open
-          onOpenChange={(open) => !open && setIsDeleteModalOpen(false)}
-        >
-          <DialogContent className="max-w-md">
+          </DialogTrigger>
+          <DialogContent className="glass-effect-strong border-white/[0.08]">
             <DialogHeader>
-              <DialogTitle>Delete Category</DialogTitle>
+              <DialogTitle className="text-gradient">New Category</DialogTitle>
+              <DialogDescription>
+                Create a new product category
+              </DialogDescription>
             </DialogHeader>
-            <div className="py-2">
-              <p>
-                Are you sure you want to delete{" "}
-                <strong>{selectedCategory.name}</strong>? This action cannot be
-                undone.
-              </p>
-              {selectedCategory.productCount > 0 && (
-                <div className="mt-2 p-2 bg-orange-50 dark:bg-orange-950/20 rounded border border-orange-200 dark:border-orange-800">
-                  <strong>Warning:</strong> This category contains{" "}
-                  {selectedCategory.productCount} products.
-                </div>
-              )}
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label className="text-sm">Category Name</Label>
+                <Input
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="Enter category name"
+                  className="bg-white/[0.04] border-white/[0.08] rounded-xl"
+                />
+              </div>
             </div>
-            <div className="flex justify-end space-x-2 mt-4">
+            <DialogFooter>
               <Button
                 variant="outline"
-                onClick={() => setIsDeleteModalOpen(false)}
+                onClick={() => setIsAddOpen(false)}
+                className="rounded-xl border-white/[0.08]"
               >
                 Cancel
               </Button>
               <Button
-                onClick={confirmDelete}
-                className="bg-destructive hover:bg-destructive/90"
+                onClick={handleAddCategory}
+                className="gradient-purple text-white border-0 rounded-xl"
               >
-                Delete
+                Create
               </Button>
-            </div>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
+      }
+    >
+      {/* KPI Stats */}
+      <motion.section
+        variants={pageItem}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+      >
+        <StatsCard
+          title="Total Categories"
+          value={categories?.length || 0}
+          icon={FolderTree}
+          trend={{ value: 2.3, label: "vs last month" }}
+          gradient="gradient-purple"
+          glowClass="glow-purple"
+        />
+        <StatsCard
+          title="Active"
+          value={categories?.length || 0}
+          icon={Layers}
+          gradient="gradient-emerald"
+          glowClass="glow-emerald"
+        />
+        <StatsCard
+          title="Products Linked"
+          value="—"
+          icon={Grid3X3}
+          gradient="gradient-blue"
+        />
+        <StatsCard
+          title="Empty Categories"
+          value={0}
+          icon={FolderTree}
+          gradient="gradient-amber"
+        />
+      </motion.section>
+
+      {/* Search */}
+      <motion.section variants={pageItem}>
+        <div className="glass-effect rounded-xl p-4">
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
+              placeholder="Search categories..."
+              className="pl-10 bg-white/[0.04] border-white/[0.08] rounded-xl h-9"
+            />
+          </div>
+        </div>
+      </motion.section>
+
+      {/* Table */}
+      <AnimatePresence mode="wait">
+        {loading ? (
+          <motion.section
+            key="loading"
+            variants={pageItem}
+            className="flex items-center justify-center py-16"
+          >
+            <LoadingSpinner />
+          </motion.section>
+        ) : paginatedCategories.length === 0 ? (
+          <motion.section key="empty" variants={pageItem}>
+            <div className="glass-effect rounded-xl">
+              <EmptyState
+                icon={FolderTree}
+                title="No categories found"
+                description={
+                  searchQuery
+                    ? "Try a different search term"
+                    : "Create your first category to organize products"
+                }
+                actionLabel="Add Category"
+                onAction={() => setIsAddOpen(true)}
+              />
+            </div>
+          </motion.section>
+        ) : (
+          <motion.section key="table" variants={pageItem}>
+            <Card className="glass-effect overflow-hidden border-white/[0.06]">
+              <CardContent className="p-0 overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-white/[0.04]">
+                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
+                        Name
+                      </TableHead>
+                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
+                        ID
+                      </TableHead>
+                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground text-right">
+                        Actions
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                    {paginatedCategories.map((cat: any, index: number) => (
+                      <motion.tr
+                        key={cat.id || index}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.04 }}
+                        className="border-white/[0.04] hover:bg-white/[0.02] transition-colors"
+                      >
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-lg gradient-purple flex items-center justify-center">
+                              <FolderTree className="h-4 w-4 text-white" />
+                            </div>
+                            <span className="font-medium text-sm">
+                              {cat.name}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-xs font-mono text-muted-foreground">
+                            {cat.id}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8 hover:bg-white/[0.06] rounded-lg"
+                              onClick={() => {
+                                setSelectedCategory(cat);
+                                setEditCategoryName(cat.name);
+                                setIsEditOpen(true);
+                              }}
+                            >
+                              <Edit className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8 hover:bg-red-500/10 text-red-400 rounded-lg"
+                              onClick={() => {
+                                setSelectedCategory(cat);
+                                setIsDeleteOpen(true);
+                              }}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </motion.tr>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </motion.section>
+        )}
+      </AnimatePresence>
+
+      {/* Pagination */}
+      {!loading && totalPages > 1 && (
+        <motion.section variants={pageItem} className="flex justify-center">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  className={`rounded-xl ${currentPage === 1 ? "pointer-events-none opacity-50" : ""}`}
+                />
+              </PaginationItem>
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <PaginationItem key={i + 1}>
+                  <PaginationLink
+                    isActive={currentPage === i + 1}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`rounded-xl ${currentPage === i + 1 ? "gradient-purple text-white border-0" : ""}`}
+                  >
+                    {i + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
+                  className={`rounded-xl ${currentPage === totalPages ? "pointer-events-none opacity-50" : ""}`}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </motion.section>
       )}
-    </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="glass-effect-strong border-white/[0.08]">
+          <DialogHeader>
+            <DialogTitle className="text-gradient">Edit Category</DialogTitle>
+            <DialogDescription>Update category name</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label className="text-sm">Category Name</Label>
+              <Input
+                value={editCategoryName}
+                onChange={(e) => setEditCategoryName(e.target.value)}
+                className="bg-white/[0.04] border-white/[0.08] rounded-xl"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditOpen(false)}
+              className="rounded-xl border-white/[0.08]"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleEditCategory}
+              className="gradient-purple text-white border-0 rounded-xl"
+            >
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+        <DialogContent className="glass-effect-strong border-white/[0.08]">
+          <DialogHeader>
+            <DialogTitle className="text-red-400">Delete Category</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete &quot;{selectedCategory?.name}
+              &quot;? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteOpen(false)}
+              className="rounded-xl border-white/[0.08]"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteCategory}
+              className="rounded-xl"
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </PageLayout>
   );
-}
+};
+
+export default Categories;

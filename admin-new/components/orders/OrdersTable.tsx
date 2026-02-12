@@ -114,7 +114,7 @@ export const OrdersTable = ({
               onClick={() => onRowClick(order.id)}
             >
               <TableCell className="font-medium">
-                {order.OrderNumber || "Order Not Found"}
+                {order.order_number || order.id || "Order Not Found"}
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-3">
@@ -146,21 +146,21 @@ export const OrdersTable = ({
               </TableCell>
               <TableCell>${order?.amount?.toFixed(2)}</TableCell>
               <TableCell>
-                {typeof order.OrderItems === "number"
-                  ? order.OrderItems
-                  : Array.isArray(order.OrderItems)
-                  ? order.OrderItems.length
-                  : ""}
+                {typeof order.items === "number"
+                  ? order.items
+                  : Array.isArray(order.items)
+                    ? order.items.length
+                    : ""}
               </TableCell>
               <TableCell>
                 <Badge
                   variant="outline"
                   className={`flex items-center gap-1 px-2 py-1 capitalize transition-all duration-300 ${getStatusBadgeStyle(
-                    order.status
+                    order.status,
                   )}`}
                 >
-                  {statusIcons[order.Status]}
-                  {order.Status}
+                  {statusIcons[order.status]}
+                  {order.status}
                 </Badge>
               </TableCell>
               <TableCell className="text-right">

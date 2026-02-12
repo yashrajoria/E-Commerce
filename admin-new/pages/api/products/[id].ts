@@ -13,7 +13,7 @@ const extractTokenFromCookies = (cookieHeader: string | undefined): string => {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   const { id } = req.query;
   console.log("ID", id);
@@ -40,7 +40,7 @@ export default async function handler(
         console.log("Fetching product:", `${baseUrl}products/${id}`);
         const response = await axios.get(
           `${baseUrl}products/${id}`,
-          axiosConfig
+          axiosConfig,
         );
         return res.status(response.status).json(response.data);
       }
@@ -55,7 +55,7 @@ export default async function handler(
         const response = await axios.put(
           `${baseUrl}products/${id}`,
           req.body,
-          axiosConfig
+          axiosConfig,
         );
         return res.status(response.status).json(response.data);
       }
@@ -65,7 +65,7 @@ export default async function handler(
         const response = await axios.post(
           `${baseUrl}products/`,
           req.body,
-          axiosConfig
+          axiosConfig,
         );
         return res.status(response.status).json(response.data);
       }
@@ -74,7 +74,7 @@ export default async function handler(
 
         const response = await axios.delete(
           `${baseUrl}products/${id}`,
-          axiosConfig
+          axiosConfig,
         );
         return res.status(response.status).json(response.data);
       }
@@ -85,7 +85,8 @@ export default async function handler(
           .status(405)
           .json({ message: `Method ${req.method} Not Allowed` });
     }
-  } catch (err: string | any) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (err: any) {
     console.error("API error:", err?.response?.data || err.message);
     const status = err?.response?.status || 500;
     const errorData = err?.response?.data || {

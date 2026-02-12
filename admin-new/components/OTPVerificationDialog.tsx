@@ -43,7 +43,7 @@ const OTPVerificationDialog = ({
     setIsVerifying(true);
 
     try {
-      const res = await axios.post(
+      await axios.post(
         "/api/auth/verify-otp",
         {
           email,
@@ -54,7 +54,7 @@ const OTPVerificationDialog = ({
             "Content-Type": "application/json",
           },
           withCredentials: true,
-        }
+        },
       );
 
       setIsVerified(true);
