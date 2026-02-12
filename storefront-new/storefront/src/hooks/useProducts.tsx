@@ -20,7 +20,8 @@ const fetchProducts = async (
 ): Promise<ProductsResponse> => {
   const response = await axiosInstance.get(
     API_ROUTES.PRODUCTS.ALL +
-      `?page=${page}&perPage=${productCount}&is_featured=${isFeatured}`,
+      // `?page=${page}&perPage=${productCount}&is_featured=${isFeatured}`,
+      `?page=${page}&perPage=${productCount}`,
   );
 
   const data = response.data as {
