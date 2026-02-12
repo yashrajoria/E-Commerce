@@ -11,10 +11,10 @@ export const config = {
   },
 };
 
-const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
+const API_URL = process.env.NEW_API_URL; // Use server-side environment variable
 
 const parseForm = (
-  req: NextApiRequest
+  req: NextApiRequest,
 ): Promise<{ fields: any; files: any }> => {
   const form = formidable({ keepExtensions: true });
   return new Promise((resolve, reject) => {
@@ -33,14 +33,19 @@ const extractTokenFromCookie = (req: NextApiRequest): string | undefined => {
 };
 
 const proxyRequest = async (config: AxiosRequestConfig, cookie?: string) => {
-  return axios({
-    ...config,
-    headers: {
-      ...config.headers,
-      Cookie: cookie || "",
-    },
-    withCredentials: true,
-  });
+  try {
+    const response = await axios({
+      ...config,
+      headers: {
+        ...config.headers,
+        Authorization: cookie ? `Bearer ${cookie}` : undefined,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Proxy request failed:", error);
+    throw new Error("Failed to fetch data from the server.");
+  }
 };
 
 async function handleCreateProduct(req: NextApiRequest, res: NextApiResponse) {
@@ -105,7 +110,7 @@ async function handleCreateProduct(req: NextApiRequest, res: NextApiResponse) {
             Cookie: tokenCookie,
           },
           withCredentials: true,
-        }
+        },
       );
 
       return res.status(response.status).json({
@@ -115,7 +120,7 @@ async function handleCreateProduct(req: NextApiRequest, res: NextApiResponse) {
     } catch (uploadErr: any) {
       console.error(
         "Upload failed:",
-        uploadErr?.response?.data || uploadErr.message
+        uploadErr?.response?.data || uploadErr.message,
       );
       return res.status(500).json({ message: "Error uploading product" });
     }
@@ -165,7 +170,7 @@ async function handleBulkUpload(req: NextApiRequest, res: NextApiResponse) {
       data: formData,
       headers: formData.getHeaders(),
     },
-    cookie
+    cookie,
   );
 
   res.status(response.status).json(response.data);
@@ -173,7 +178,7 @@ async function handleBulkUpload(req: NextApiRequest, res: NextApiResponse) {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   try {
     if (req.method === "POST" && req.query.isBulk === "1") {

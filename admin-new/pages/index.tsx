@@ -1,17 +1,63 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import AuthForm from "@/components/AuthForm";
 import BackgroundElements from "@/components/BackgroundElements";
 import Logo3D from "@/components/Logo3D";
 import { motion } from "framer-motion";
 import { ChevronRight, ShieldCheck, Zap, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { z } from "zod";
 
 const Index = () => {
   const [mounted, setMounted] = useState(false);
 
+  // Define a schema for feature validation
+  const featureSchema = z.object({
+    title: z.string(),
+    description: z.string(),
+    icon: z.any(), // Adjust this if you have a stricter type for icons
+  });
+
+  // Predefined features array
+  const features = useMemo(
+    () => [
+      {
+        title: "Real-time Analytics",
+        description: "Monitor performance with live dashboards and reports",
+        icon: BarChart3,
+      },
+      {
+        title: "Advanced Security",
+        description: "Enterprise-grade protection for your sensitive data",
+        icon: ShieldCheck,
+      },
+      {
+        title: "Lightning Fast",
+        description: "Optimized performance for smooth admin experience",
+        icon: Zap,
+      },
+    ],
+    [],
+  );
+
+  // Validate features data
+  const validatedFeatures = features
+    .map((feature) => {
+      try {
+        return featureSchema.parse(feature);
+      } catch (error) {
+        console.error("Invalid feature data:", error);
+        return null; // Skip invalid features
+      }
+    })
+    .filter(Boolean);
+
   // This ensures that animations trigger after the component mounts
   useEffect(() => {
-    setMounted(true);
+    let isMounted = true;
+    if (isMounted) setMounted(true);
+    return () => {
+      isMounted = false; // Cleanup to prevent memory leaks
+    };
   }, []);
 
   // Animation variants
@@ -30,24 +76,6 @@ const Index = () => {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0 },
   };
-
-  const features = [
-    {
-      title: "Real-time Analytics",
-      description: "Monitor performance with live dashboards and reports",
-      icon: BarChart3,
-    },
-    {
-      title: "Advanced Security",
-      description: "Enterprise-grade protection for your sensitive data",
-      icon: ShieldCheck,
-    },
-    {
-      title: "Lightning Fast",
-      description: "Optimized performance for smooth admin experience",
-      icon: Zap,
-    },
-  ];
 
   return (
     <div className="min-h-screen w-full flex flex-col">
@@ -132,7 +160,7 @@ const Index = () => {
               animate="show"
             >
               <div className="grid gap-6 mt-8">
-                {features.map((feature, index) => (
+                {validatedFeatures.map((feature, index) => (
                   <motion.div
                     key={index}
                     variants={item}

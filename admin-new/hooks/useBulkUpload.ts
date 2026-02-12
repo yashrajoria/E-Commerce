@@ -2,6 +2,17 @@ import { useState } from "react";
 import Papa from "papaparse";
 import axios from "axios";
 import { toast } from "sonner";
+import { z } from "zod";
+
+const productSchema = z.object({
+  name: z.string(),
+  price: z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid price format"),
+  quantity: z.string().regex(/^\d+$/, "Quantity must be a number"),
+  is_featured: z.string().optional(),
+  categories: z.string(),
+  description: z.string().optional(),
+  imageurl: z.string().url("Invalid URL format"),
+});
 
 export function useBulkUpload() {
   const [csvData, setCsvData] = useState([]);
@@ -26,7 +37,7 @@ export function useBulkUpload() {
         setIsBulk(true);
         setBulkFile(file);
         toast.success(
-          `CSV file loaded successfully! ${results.data.length} rows found.`
+          `CSV file loaded successfully! ${results.data.length} rows found.`,
         );
       },
       error: (err) => {
@@ -54,7 +65,7 @@ export function useBulkUpload() {
         {
           headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true,
-        }
+        },
       );
 
       const validation = res.data;
@@ -64,7 +75,7 @@ export function useBulkUpload() {
       if (validation.errors && validation.errors.length > 0) {
         toast.error(
           `Found ${validation.errors.length} errors. Please fix them before importing.`,
-          { duration: 5000 }
+          { duration: 5000 },
         );
         return validation;
       }
@@ -72,7 +83,7 @@ export function useBulkUpload() {
       if (validation.warnings && validation.warnings.length > 0) {
         toast.warning(
           `Found ${validation.warnings.length} warnings. Products will be created but some issues were detected.`,
-          { duration: 5000 }
+          { duration: 5000 },
         );
       }
 
@@ -84,21 +95,21 @@ export function useBulkUpload() {
           `${
             validation.missing_categories.length
           } new categories will be created: ${validation.missing_categories.join(
-            ", "
+            ", ",
           )}`,
-          { duration: 5000 }
+          { duration: 5000 },
         );
       }
 
       if (validation.duplicate_skus && validation.duplicate_skus.length > 0) {
         toast.warning(
           `${validation.duplicate_skus.length} products with duplicate SKUs will be skipped.`,
-          { duration: 5000 }
+          { duration: 5000 },
         );
       }
 
       toast.success(
-        `Validation complete! ${validation.valid_products} products ready to import.`
+        `Validation complete! ${validation.valid_products} products ready to import.`,
       );
 
       return validation;
@@ -109,6 +120,19 @@ export function useBulkUpload() {
     } finally {
       setIsValidating(false);
     }
+  };
+
+  const validateCSVData = (data) => {
+    return data
+      .map((row, index) => {
+        try {
+          return productSchema.parse(row);
+        } catch (error) {
+          console.error(`Validation error in row ${index + 1}:`, error);
+          return null;
+        }
+      })
+      .filter(Boolean);
   };
 
   const handleBulkUpload = async (autoCreateCategories = true) => {
@@ -137,13 +161,13 @@ export function useBulkUpload() {
     ) {
       const confirmed = window.confirm(
         `The following categories don't exist:\n${validation.missing_categories.join(
-          ", "
-        )}\n\nDo you want to create them?`
+          ", ",
+        )}\n\nDo you want to create them?`,
       );
 
       if (!confirmed) {
         toast.info(
-          "Import cancelled. Please update your CSV or create categories manually."
+          "Import cancelled. Please update your CSV or create categories manually.",
         );
         return;
       }
@@ -162,7 +186,7 @@ export function useBulkUpload() {
         {
           headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true,
-        }
+        },
       );
 
       const result = res.data;
@@ -170,14 +194,14 @@ export function useBulkUpload() {
       if (result.inserted_count > 0) {
         toast.success(
           `Successfully imported ${result.inserted_count} products!`,
-          { duration: 5000 }
+          { duration: 5000 },
         );
       }
 
       if (result.errors && result.errors.length > 0) {
         toast.warning(
           `${result.errors.length} products failed to import. Check console for details.`,
-          { duration: 5000 }
+          { duration: 5000 },
         );
         console.error("Import errors:", result.errors);
       }
@@ -258,6 +282,19 @@ export function useBulkUpload() {
     setValidationResult(null);
   };
 
+  const handleUpload = async (file) => {
+    try {
+      const response = await axios.post("/api/upload", file);
+      toast.success("File uploaded successfully!");
+      return response.data;
+    } catch (error) {
+      console.error("Upload failed:", error);
+      toast.error(
+        error.response?.data?.message || "An error occurred during upload.",
+      );
+    }
+  };
+
   return {
     // Functions
     handleFileUpload,
@@ -265,6 +302,7 @@ export function useBulkUpload() {
     handleBulkUpload,
     downloadSampleCSV,
     resetUpload,
+    handleUpload,
 
     // State
     csvData,
