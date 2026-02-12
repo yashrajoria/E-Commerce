@@ -51,14 +51,13 @@ const AuthForm = () => {
     setIsLoading(true);
     try {
       const res = await axios.post(
-        "/api/auth/sign-in",
+        "http://localhost:8080/auth/login",
         {
           ...signinData,
           role: "admin",
         },
         {
           headers: { "Content-Type": "application/json" },
-          withCredentials: true,
         },
       );
       toast.success("Successfully signed in");

@@ -1,12 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
   Table,
@@ -23,55 +17,47 @@ import {
   FileSpreadsheet,
   Upload,
   X,
+  AlertCircle,
+  Loader2,
+  Sparkles,
 } from "lucide-react";
 
 type BulkUploadProps = {
-  csvData: [];
+  csvData: any[];
   handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  downloadSampleCSV: () => void;
-  csvFile: File | null;
-  handleBulkUpload: () => void;
-  isSubmitting: boolean;
-  setCsvData: (data: []) => void;
-  setCsvFile: (file: File | null) => void;
+  validateBulkUpload: () => void;
+  confirmBulkUpload: () => void;
+  isBulk: boolean;
+  isValidating: boolean;
+  isUploading: boolean;
+  validationResult: any;
 };
 
 const BulkUpload = ({
   csvData,
   handleFileUpload,
-  downloadSampleCSV,
-  csvFile,
-  handleBulkUpload,
-  isSubmitting,
-  setCsvData,
-  setCsvFile,
+  validateBulkUpload,
+  confirmBulkUpload,
+  isBulk,
+  isValidating,
+  isUploading,
+  validationResult,
 }: BulkUploadProps) => {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.1,
-      },
+      transition: { staggerChildren: 0.08, delayChildren: 0.05 },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 12 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: {
-        duration: 0.5,
-        ease: "easeOut",
-      },
+      transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] },
     },
-  };
-
-  const clearData = () => {
-    setCsvData([]);
-    setCsvFile(null);
   };
 
   return (
@@ -79,57 +65,78 @@ const BulkUpload = ({
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="space-y-6 max-w-6xl mx-auto"
+      className="space-y-6"
     >
-      {/* Header Section */}
-      <motion.div variants={itemVariants} className="text-center space-y-2">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-          Bulk Product Upload
-        </h2>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          Upload multiple products at once using our CSV template. Quick,
-          efficient, and error-free.
-        </p>
-      </motion.div>
-
-      {/* Combined Template & Upload Section */}
+      {/* ── Step 1: Template & Upload ── */}
       <motion.div variants={itemVariants}>
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-50 to-blue-50/50 dark:from-slate-900/50 dark:to-blue-950/30 shadow-xl">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-indigo-500/5" />
-          <CardContent className="relative p-6">
+        <div className="glass-effect rounded-2xl overflow-hidden">
+          {/* Section Header */}
+          <div className="px-6 py-4 border-b border-white/[0.06]">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-xl gradient-purple flex items-center justify-center shadow-lg shadow-purple-500/20">
+                <Upload className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">
+                  Bulk Product Upload
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Upload multiple products at once using our CSV template
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Template Download */}
-              <div className="space-y-4">
+              {/* Template Download Card */}
+              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                    <FileSpreadsheet className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                    <FileSpreadsheet className="h-4 w-4 text-blue-400" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg">CSV Template</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Download our template to format your data
+                    <h4 className="text-sm font-medium text-foreground">
+                      CSV Template
+                    </h4>
+                    <p className="text-xs text-muted-foreground">
+                      Download and fill in your data
                     </p>
                   </div>
                 </div>
                 <Button
-                  onClick={downloadSampleCSV}
                   variant="outline"
-                  className="w-full gap-2 border-blue-200 hover:border-blue-300 hover:bg-blue-50 dark:border-blue-800 dark:hover:border-blue-700 dark:hover:bg-blue-950/50 transition-all duration-200"
+                  className="w-full gap-2 h-10 border-white/[0.08] hover:bg-white/[0.04] rounded-xl text-sm"
+                  onClick={() => {
+                    // Download sample CSV
+                    const csv =
+                      "name,description,price,quantity,categories,imageurl,is_featured\nSample Product,A great product,29.99,100,Electronics,https://example.com/img.jpg,true";
+                    const blob = new Blob([csv], { type: "text/csv" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "product-template.csv";
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
                 >
-                  <Download size={16} />
+                  <Download size={14} />
                   Download Template
                 </Button>
               </div>
 
-              {/* File Upload */}
-              <div className="space-y-4">
+              {/* File Upload Card */}
+              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                    <Upload className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                  <div className="h-8 w-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                    <Upload className="h-4 w-4 text-purple-400" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg">Upload CSV</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <h4 className="text-sm font-medium text-foreground">
+                      Upload CSV
+                    </h4>
+                    <p className="text-xs text-muted-foreground">
                       Select your formatted CSV file
                     </p>
                   </div>
@@ -144,104 +151,109 @@ const BulkUpload = ({
                   />
                   <div
                     className={`
-                    border-2 border-dashed rounded-xl p-6 text-center transition-all duration-300
-                    ${
-                      csvFile
-                        ? "border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-950/30"
-                        : "border-gray-300 hover:border-purple-400 hover:bg-purple-50/50 dark:border-gray-700 dark:hover:border-purple-600 dark:hover:bg-purple-950/30"
-                    }
-                  `}
+                      border border-dashed rounded-xl p-5 text-center transition-all duration-300
+                      ${
+                        isBulk && csvData.length > 0
+                          ? "border-emerald-500/30 bg-emerald-500/[0.03]"
+                          : "border-white/[0.08] hover:border-purple-500/30 hover:bg-purple-500/[0.02]"
+                      }
+                    `}
                   >
-                    {csvFile ? (
+                    {isBulk && csvData.length > 0 ? (
                       <motion.div
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        className="space-y-2"
+                        className="flex items-center justify-center gap-3"
                       >
-                        <CheckCircle className="mx-auto h-8 w-8 text-green-500" />
-                        <p className="text-sm font-medium text-green-700 dark:text-green-300">
-                          {csvFile.name}
-                        </p>
-                        <p className="text-xs text-green-600 dark:text-green-400">
-                          File uploaded successfully
-                        </p>
+                        <CheckCircle className="h-5 w-5 text-emerald-400" />
+                        <div className="text-left">
+                          <p className="text-sm font-medium text-emerald-400">
+                            {csvData.length} products loaded
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Click to replace file
+                          </p>
+                        </div>
                       </motion.div>
                     ) : (
-                      <div className="space-y-2">
-                        <Upload className="mx-auto h-8 w-8 text-muted-foreground group-hover:text-purple-500 transition-colors" />
-                        <p className="text-sm font-medium">
-                          Click to upload CSV
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Drag and drop or browse files
-                        </p>
+                      <div className="flex items-center justify-center gap-3">
+                        <div className="h-9 w-9 rounded-lg bg-white/[0.06] flex items-center justify-center">
+                          <Upload className="h-4 w-4 text-muted-foreground group-hover:text-purple-400 transition-colors" />
+                        </div>
+                        <div className="text-left">
+                          <p className="text-sm font-medium text-foreground">
+                            Click to upload CSV
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Drag and drop or browse
+                          </p>
+                        </div>
                       </div>
                     )}
                   </div>
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </motion.div>
 
-      {/* Data Preview */}
+      {/* ── Step 2: Data Preview ── */}
       <AnimatePresence>
         {csvData.length > 0 && (
           <motion.div
             variants={itemVariants}
             initial="hidden"
             animate="visible"
-            exit={{ opacity: 0, y: -20 }}
+            exit={{ opacity: 0, y: -12 }}
             layout
           >
-            <Card className="border-0 shadow-xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30">
-              <CardHeader className="pb-4">
+            <div className="glass-effect rounded-2xl overflow-hidden">
+              {/* Section Header */}
+              <div className="px-6 py-4 border-b border-white/[0.06]">
                 <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <CardTitle className="flex items-center gap-2">
-                      <div className="p-1.5 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
-                        <FileSpreadsheet className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                      </div>
-                      Data Preview
-                    </CardTitle>
-                    <CardDescription>
-                      Review your products before uploading
-                    </CardDescription>
-                  </div>
                   <div className="flex items-center gap-3">
-                    <Badge
-                      variant="secondary"
-                      className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
-                    >
-                      {csvData.length} products
-                    </Badge>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={clearData}
-                      className="h-8 w-8 p-0 hover:bg-red-100 dark:hover:bg-red-900/30"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+                    <div className="h-9 w-9 rounded-xl gradient-blue flex items-center justify-center shadow-lg shadow-blue-500/20">
+                      <FileSpreadsheet className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-foreground">
+                        Data Preview
+                      </h3>
+                      <p className="text-xs text-muted-foreground">
+                        Review your products before uploading
+                      </p>
+                    </div>
                   </div>
+                  <Badge
+                    variant="secondary"
+                    className="bg-white/[0.06] text-muted-foreground border-white/[0.08] text-xs font-mono"
+                  >
+                    {csvData.length} products
+                  </Badge>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-lg border border-white/50 bg-white/50 dark:border-gray-800 dark:bg-gray-900/50 overflow-hidden">
+              </div>
+
+              {/* Table */}
+              <div className="p-6">
+                <div className="rounded-xl border border-white/[0.06] overflow-hidden">
                   <div className="max-h-80 overflow-auto">
                     <Table>
                       <TableHeader>
-                        <TableRow className="bg-gray-50/50 dark:bg-gray-800/50">
-                          <TableHead className="font-semibold">Name</TableHead>
-                          <TableHead className="font-semibold">
+                        <TableRow className="border-white/[0.06] hover:bg-transparent">
+                          <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                            Name
+                          </TableHead>
+                          <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                             Description
                           </TableHead>
-                          <TableHead className="font-semibold">Price</TableHead>
-                          <TableHead className="font-semibold">
-                            Quantity
+                          <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                            Price
                           </TableHead>
-                          <TableHead className="font-semibold">
+                          <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                            Qty
+                          </TableHead>
+                          <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                             Status
                           </TableHead>
                         </TableRow>
@@ -250,33 +262,29 @@ const BulkUpload = ({
                         {csvData.slice(0, 10).map((product, index) => (
                           <motion.tr
                             key={index}
-                            initial={{ opacity: 0, x: -10 }}
+                            initial={{ opacity: 0, x: -8 }}
                             animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                            className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors"
+                            transition={{ delay: index * 0.03 }}
+                            className="border-white/[0.04] hover:bg-white/[0.02] transition-colors"
                           >
-                            <TableCell className="font-medium">
+                            <TableCell className="text-sm font-medium">
                               {product.name || product.Name || "N/A"}
                             </TableCell>
-                            <TableCell className="max-w-xs truncate">
+                            <TableCell className="text-sm text-muted-foreground max-w-xs truncate">
                               {product.description ||
                                 product.Description ||
                                 "N/A"}
                             </TableCell>
-                            <TableCell className="font-mono">
+                            <TableCell className="text-sm font-mono text-emerald-400">
                               ${product.price || product.Price || "0.00"}
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="text-sm">
                               {product.quantity || product.Quantity || "0"}
                             </TableCell>
                             <TableCell>
                               <Badge
-                                variant={
-                                  product.status === "active"
-                                    ? "default"
-                                    : "secondary"
-                                }
-                                className="text-xs"
+                                variant="secondary"
+                                className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs"
                               >
                                 {product.status || "active"}
                               </Badge>
@@ -289,81 +297,146 @@ const BulkUpload = ({
                 </div>
 
                 {csvData.length > 10 && (
-                  <p className="text-sm text-muted-foreground mt-3 text-center">
+                  <p className="text-xs text-muted-foreground mt-3 text-center">
                     Showing first 10 of {csvData.length} products
                   </p>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Action Section */}
+      {/* ── Validation Result ── */}
+      <AnimatePresence>
+        {validationResult && (
+          <motion.div
+            variants={itemVariants}
+            initial="hidden"
+            animate="visible"
+            exit={{ opacity: 0, y: -12 }}
+            layout
+          >
+            <div
+              className={`glass-effect rounded-2xl overflow-hidden border ${
+                validationResult.success
+                  ? "border-emerald-500/20"
+                  : "border-amber-500/20"
+              }`}
+            >
+              <div className="px-6 py-4 flex items-center gap-3">
+                {validationResult.success ? (
+                  <CheckCircle className="h-5 w-5 text-emerald-400" />
+                ) : (
+                  <AlertCircle className="h-5 w-5 text-amber-400" />
+                )}
+                <div>
+                  <p className="text-sm font-medium">
+                    {validationResult.success
+                      ? "Validation passed! Ready to upload."
+                      : "Some issues found. Please review."}
+                  </p>
+                  {validationResult.message && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {validationResult.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Step 3: Actions ── */}
       <AnimatePresence>
         {csvData.length > 0 && (
           <motion.div
             variants={itemVariants}
             initial="hidden"
             animate="visible"
-            exit={{ opacity: 0, scale: 0.95 }}
+            exit={{ opacity: 0, scale: 0.98 }}
             layout
           >
-            <Card className="border-0 shadow-xl bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30">
-              <CardContent className="p-6">
-                <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-                  <Button
-                    onClick={handleBulkUpload}
-                    disabled={isSubmitting}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 min-w-[200px] h-12"
-                  >
-                    {isSubmitting ? (
-                      <div className="flex items-center gap-2">
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{
-                            duration: 1,
-                            repeat: Infinity,
-                            ease: "linear",
-                          }}
-                        >
-                          <FileSpreadsheet size={16} />
-                        </motion.div>
-                        <span>Processing...</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <Upload size={16} />
-                        <span>Upload {csvData.length} Products</span>
-                      </div>
-                    )}
-                  </Button>
-
+            <div className="glass-effect rounded-2xl p-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  <Sparkles size={14} className="text-purple-400" />
+                  {csvData.length} products ready to process
+                </p>
+                <div className="flex items-center gap-3">
                   <Button
                     variant="outline"
-                    onClick={clearData}
-                    disabled={isSubmitting}
-                    className="border-gray-300 hover:border-red-300 hover:bg-red-50 dark:border-gray-700 dark:hover:border-red-700 dark:hover:bg-red-950/30 min-w-[120px] h-12"
+                    size="sm"
+                    className="border-white/[0.08] hover:bg-white/[0.04] rounded-xl h-9 gap-2"
+                    onClick={() => {
+                      // Clear is handled by re-uploading
+                    }}
+                    disabled={isValidating || isUploading}
                   >
-                    <X size={16} className="mr-2" />
-                    Clear All
+                    <X size={13} />
+                    Clear
                   </Button>
-                </div>
 
-                {isSubmitting && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    className="mt-4 space-y-2"
-                  >
-                    <Progress value={33} className="h-2" />
-                    <p className="text-sm text-center text-muted-foreground">
-                      Uploading products, please wait...
-                    </p>
-                  </motion.div>
-                )}
-              </CardContent>
-            </Card>
+                  {!validationResult?.success && (
+                    <Button
+                      size="sm"
+                      onClick={validateBulkUpload}
+                      disabled={isValidating || isUploading}
+                      className="gradient-blue text-white border-0 rounded-xl h-9 px-5 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all gap-2"
+                    >
+                      {isValidating ? (
+                        <>
+                          <Loader2 size={13} className="animate-spin" />
+                          Validating...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle size={13} />
+                          Validate
+                        </>
+                      )}
+                    </Button>
+                  )}
+
+                  {validationResult?.success && (
+                    <Button
+                      size="sm"
+                      onClick={confirmBulkUpload}
+                      disabled={isUploading}
+                      className="gradient-purple text-white border-0 rounded-xl h-9 px-5 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-all gap-2"
+                    >
+                      {isUploading ? (
+                        <>
+                          <Loader2 size={13} className="animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload size={13} />
+                          Upload {csvData.length} Products
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {(isValidating || isUploading) && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="mt-4 space-y-2"
+                >
+                  <Progress value={isUploading ? 66 : 33} className="h-1.5" />
+                  <p className="text-xs text-center text-muted-foreground">
+                    {isValidating
+                      ? "Validating product data..."
+                      : "Uploading products, please wait..."}
+                  </p>
+                </motion.div>
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

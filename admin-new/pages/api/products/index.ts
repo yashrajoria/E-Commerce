@@ -15,6 +15,7 @@ const API_URL = process.env.NEW_API_URL; // Use server-side environment variable
 
 const parseForm = (
   req: NextApiRequest,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<{ fields: any; files: any }> => {
   const form = formidable({ keepExtensions: true });
   return new Promise((resolve, reject) => {
@@ -117,6 +118,7 @@ async function handleCreateProduct(req: NextApiRequest, res: NextApiResponse) {
         message: "Product created successfully",
         product: response.data,
       });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (uploadErr: any) {
       console.error(
         "Upload failed:",

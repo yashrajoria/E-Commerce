@@ -2,7 +2,7 @@
  * GlassCard – Premium glassmorphism card with optional gradient border
  * Supports hover glow, animated border, and multiple intensity levels
  */
-import { forwardRef, type HTMLAttributes } from "react";
+import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 import { motion, type HTMLMotionProps } from "framer-motion";
 
@@ -44,7 +44,7 @@ export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
       children,
       ...props
     },
-    ref
+    ref,
   ) => {
     return (
       <motion.div
@@ -56,14 +56,14 @@ export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
           hoverGlow && glowMap[glowColor],
           hoverLift && "card-hover",
           "transition-all duration-300",
-          className
+          className,
         )}
         {...props}
       >
         {children}
       </motion.div>
     );
-  }
+  },
 );
 
 GlassCard.displayName = "GlassCard";

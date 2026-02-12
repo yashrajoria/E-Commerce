@@ -7,10 +7,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ImageIcon } from "lucide-react";
-import DOMPurify from "dompurify";
+import Image from "next/image";
 
-export default function CSVPreviewTable({ csvData }) {
+export default function CSVPreviewTable({ csvData }: { csvData: any[] }) {
   return (
     <div className="rounded-lg border overflow-hidden">
       <div className="bg-gray-50 dark:bg-gray-800/50 p-4 border-b">
@@ -35,16 +36,13 @@ export default function CSVPreviewTable({ csvData }) {
             {csvData.map((product, index) => (
               <TableRow key={index}>
                 <TableCell className="font-medium">{index + 1}</TableCell>
-                <TableCell>{DOMPurify.sanitize(product.Name)}</TableCell>
+                <TableCell>{product.Name}</TableCell>
                 <TableCell>
                   {product.ImageURL ? (
                     <div className="h-12 w-12 rounded-md overflow-hidden border border-gray-200 dark:border-gray-800">
-                      <img
-                        src={
-                          DOMPurify.sanitize(product.ImageURL) ||
-                          "/placeholder.svg"
-                        }
-                        alt={DOMPurify.sanitize(product.Name)}
+                      <Image
+                        src={product.ImageURL || "/placeholder.svg"}
+                        alt={product.Name}
                         className="h-full w-full object-cover"
                       />
                     </div>
@@ -54,10 +52,10 @@ export default function CSVPreviewTable({ csvData }) {
                     </div>
                   )}
                 </TableCell>
-                <TableCell>${DOMPurify.sanitize(product.price)}</TableCell>
-                <TableCell>{DOMPurify.sanitize(product.Quantity)}</TableCell>
+                <TableCell>${product.price}</TableCell>
+                <TableCell>{product.Quantity}</TableCell>
                 <TableCell className="max-w-[200px] truncate">
-                  {DOMPurify.sanitize(product.Description)}
+                  {product.Description}
                 </TableCell>
               </TableRow>
             ))}

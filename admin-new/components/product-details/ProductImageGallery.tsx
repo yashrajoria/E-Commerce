@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Eye, ZoomIn } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 interface ProductImageGalleryProps {
   images: string[];
@@ -15,7 +16,7 @@ const ProductImageGallery = ({
   onImageSelect,
 }: ProductImageGalleryProps) => {
   const [activeImage, setActiveImage] = useState<number>(selectedImage);
-  const [isZoomed, setIsZoomed] = useState(false);
+  const [, setIsZoomed] = useState(false);
 
   useEffect(() => {
     setActiveImage(selectedImage);
@@ -33,7 +34,7 @@ const ProductImageGallery = ({
         whileHover={{ scale: 1.02 }}
         transition={{ duration: 0.3 }}
       >
-        <img
+        <Image
           src={safeImage}
           alt="Product"
           className="w-full h-full object-cover"
@@ -83,7 +84,7 @@ const ProductImageGallery = ({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <img
+            <Image
               src={image}
               alt={`Product view ${index + 1}`}
               className="w-full h-full object-cover"

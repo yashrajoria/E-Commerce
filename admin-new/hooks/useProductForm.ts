@@ -30,7 +30,7 @@ export function useProductForm(
   setImagePreview: any,
   setUploadedImages: any,
   images: any,
-  imagePreview: any
+  imagePreview: any,
 ) {
   const form = useForm<z.infer<typeof singleProductSchema>>({
     resolver: zodResolver(singleProductSchema),
@@ -44,12 +44,10 @@ export function useProductForm(
     },
   });
 
-  const onSubmitSingleProduct = async (data) => {
+  const onSubmitSingleProduct = async (
+    data: z.infer<typeof singleProductSchema>,
+  ) => {
     try {
-      // Transform category into array of strings
-      const transformedCategory = data.category.map((cat) => cat.id);
-
-      console.log(transformedCategory); // <-- now you'll see array of strings
       const formData = new FormData();
       formData.append("name", data.name);
       formData.append("category", JSON.stringify(data.category));
@@ -58,7 +56,7 @@ export function useProductForm(
       formData.append("description", data.description || "");
 
       if (images && images.length > 0) {
-        images.forEach((img) => {
+        images.forEach((img: any) => {
           if (img.file instanceof File) {
             formData.append("images", img.file);
           }
@@ -93,12 +91,12 @@ export function useProductForm(
 
   const updateSingleProduct = async (
     productId: string,
-    data: z.infer<typeof singleProductSchema>
+    data: z.infer<typeof singleProductSchema>,
   ) => {
     try {
       // console.log({ data });
       console.log({ productId });
-      const id = productId._id;
+      const id = (productId as any)._id || productId;
       console.log(id);
       const res = await axios.put(`/api/products/${productId}`, data, {
         withCredentials: true,

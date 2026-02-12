@@ -16,9 +16,11 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GripVertical, X } from "lucide-react";
+import Image from "next/image";
 
 interface ImageItem {
   id: string;
@@ -37,7 +39,7 @@ export default function ProductImageUpload({
 }: ProductImageUploadProps) {
   const sensors = useSensors(useSensor(PointerSensor));
 
-  const validateFile = (file) => {
+  const validateFile = (file: File) => {
     const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
     const maxSize = 5 * 1024 * 1024; // 5MB
 
@@ -54,11 +56,16 @@ export default function ProductImageUpload({
     return true;
   };
 
-  const handleFileUpload = (files) => {
-    const validFiles = Array.from(files).filter(validateFile);
+  const handleFileUpload = (files: FileList | null) => {
+    const fileArray = Array.from(files || []);
+    const validFiles = fileArray.filter(validateFile);
     if (validFiles.length > 0) {
-      // Process valid files
-      setImages(validFiles);
+      const newImages = validFiles.map((file) => ({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        file,
+        url: URL.createObjectURL(file),
+      }));
+      setImages([...images, ...newImages]);
     }
   };
 
@@ -66,6 +73,7 @@ export default function ProductImageUpload({
     setImages(images.filter((img) => img.id !== id));
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDragEnd = (event: any) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -171,7 +179,7 @@ function SortableImage({
       >
         <GripVertical className="h-5 w-5" />
       </div>
-      <img
+      <Image
         src={url}
         alt="Uploaded"
         className="w-20 h-20 object-cover rounded-md border border-gray-200 dark:border-gray-700"

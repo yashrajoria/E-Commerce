@@ -1,187 +1,192 @@
-"use client";
-
-import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
-import BulkUpload from "@/components/products/BulkUpload";
+/**
+ * Premium Add Product Page
+ * Matches the glassmorphism design system used across the admin dashboard
+ */
+import PageLayout, { pageItem } from "@/components/layout/PageLayout";
 import ProductInformation from "@/components/products/ProductInformation";
+import BulkUpload from "@/components/products/BulkUpload";
 import { Button } from "@/components/ui/button";
-import { useBulkUpload } from "@/hooks/useBulkUpload";
 import { useProductForm } from "@/hooks/useProductForm";
-import { motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
-
-import { useState } from "react";
+import { useBulkUpload } from "@/hooks/useBulkUpload";
 import { FormProvider } from "react-hook-form";
-/*
-interface Category {
-  _id: string;
-  name: string[];
-}
+import { motion } from "framer-motion";
+import { Package, FileSpreadsheet, ArrowLeft, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
-const fadeIn = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4 },
-  },
-};
-*/
-interface ImageItem {
-  id: string;
-  file: File;
-  url: string;
-}
-
-const AddProduct = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [mode, setMode] = useState<"single" | "bulk">("single");
-  const [csvFile, setCsvFile] = useState<File | null>(null);
-  // const [images, setImages] = useState<ImageItem[]>([]);
-  const [imagePreview, setImagePreview] = useState(null);
-  const [uploadedImages, setUploadedImages] = useState<ImageItem[]>([]);
+const AddProductPage = () => {
+  const [uploadMode, setUploadMode] = useState<"single" | "bulk">("single");
+  const [imagePreview, setImagePreview] = useState<File | null>(null);
+  const [uploadedImages, setUploadedImages] = useState<
+    { file: File; preview: string }[]
+  >([]);
 
   const { form, onSubmitSingleProduct } = useProductForm(
-    // setImages,
     setImagePreview,
     setUploadedImages,
     uploadedImages,
-    imagePreview
+    imagePreview,
   );
 
   const {
-    handleFileUpload,
-    handleBulkUpload,
-    downloadSampleCSV,
     csvData,
+    handleFileUpload,
+    validateBulkUpload,
+    confirmBulkUpload,
     isBulk,
-    bulkFile,
-    setCsvData,
+    isValidating,
+    isUploading,
+    validationResult,
   } = useBulkUpload();
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files) {
-      const newImages = Array.from(files).map((file) => ({
-        id: crypto.randomUUID(),
-        file,
-        url: URL.createObjectURL(file),
-      }));
-      setUploadedImages((prev) => [...prev, ...newImages].slice(0, 5));
-    }
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    const newImages = Array.from(files).map((f) => ({
+      file: f,
+      preview: URL.createObjectURL(f),
+    }));
+    setUploadedImages((prev) => [...prev, ...newImages]);
   };
+
   const removeImage = (index: number) => {
-    setUploadedImages((prev) => {
-      // Revoke the object URL of the image being removed
-      URL.revokeObjectURL(prev[index].url);
-      return prev.filter((_, i) => i !== index);
-    });
+    setUploadedImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   return (
-    <div className="flex min-h-screen w-full">
-      <DashboardSidebar />
-
-      <div className="flex-1">
-        {/* Header */}
-        <motion.header
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="border-b border-white/10 bg-card/30 backdrop-blur-lg sticky top-0 z-10"
+    <PageLayout
+      title="Add Product"
+      breadcrumbs={[
+        { label: "Products", href: "/products" },
+        { label: "Add Product" },
+      ]}
+      headerActions={
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2 text-xs border-white/[0.08] hover:bg-white/[0.04] rounded-xl h-8"
+          asChild
         >
-          <div className="h-16 px-6 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/" className="flex items-center gap-2">
-                  <ArrowLeft size={16} />
-                  Back to Products
-                </Link>
-              </Button>
-              <h1 className="text-xl font-semibold">
-                {mode === "single" ? "Add New Product" : "Bulk Add Products"}
-              </h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant={mode === "single" ? "default" : "outline"}
-                size="sm"
-                className={mode === "single" ? "bg-white text-black" : ""}
-                onClick={() => setMode("single")}
-              >
-                Single Product
-              </Button>
-              <Button
-                variant={mode === "bulk" ? "default" : "outline"}
-                size="sm"
-                className={mode === "bulk" ? "bg-white text-black" : ""}
-                onClick={() => setMode("bulk")}
-              >
-                Bulk Upload
-              </Button>
-            </div>
-          </div>
-        </motion.header>
-
-        {/* Main Content */}
-        <main className="p-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="max-w-6xl mx-auto"
+          <Link href="/products">
+            <ArrowLeft size={13} />
+            Back to Products
+          </Link>
+        </Button>
+      }
+    >
+      {/* Mode Toggle */}
+      <motion.section variants={pageItem}>
+        <div className="glass-effect rounded-2xl p-1.5 inline-flex gap-1">
+          <button
+            onClick={() => setUploadMode("single")}
+            className={`relative flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+              uploadMode === "single"
+                ? "text-white"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
-            {mode === "single" ? (
-              // Single Product Form
-              <FormProvider {...form}>
-                <form
-                  onSubmit={form.handleSubmit(
-                    onSubmitSingleProduct,
-                    (errors) => {
-                      console.log("Validation Errors: ", errors);
-                    }
-                  )}
-                  className="space-y-8"
-                ></form>
-
-                <form
-                  onSubmit={form.handleSubmit(
-                    onSubmitSingleProduct,
-                    (errors) => {
-                      console.log("Validation Errors: ", errors);
-                    }
-                  )}
-                  className="space-y-8"
-                >
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Main Product Information */}
-                    <ProductInformation
-                      handleImageUpload={handleImageUpload}
-                      uploadedImages={uploadedImages}
-                      removeImage={removeImage}
-                      type="create"
-                      // onOpenChange={undefined}
-                    />
-                  </div>
-                </form>
-              </FormProvider>
-            ) : (
-              // Bulk Upload Interface
-              <BulkUpload
-                csvData={csvData}
-                handleFileUpload={handleFileUpload}
-                downloadSampleCSV={downloadSampleCSV}
-                csvFile={csvFile}
-                handleBulkUpload={handleBulkUpload}
-                isSubmitting={isSubmitting}
-                setCsvData={setCsvData}
-                setCsvFile={setCsvFile}
+            {uploadMode === "single" && (
+              <motion.div
+                layoutId="activeTab"
+                className="absolute inset-0 gradient-purple rounded-xl"
+                transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
               />
             )}
-          </motion.div>
-        </main>
-      </div>
-    </div>
+            <span className="relative flex items-center gap-2">
+              <Package size={14} />
+              Single Product
+            </span>
+          </button>
+          <button
+            onClick={() => setUploadMode("bulk")}
+            className={`relative flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+              uploadMode === "bulk"
+                ? "text-white"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {uploadMode === "bulk" && (
+              <motion.div
+                layoutId="activeTab"
+                className="absolute inset-0 gradient-purple rounded-xl"
+                transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+              />
+            )}
+            <span className="relative flex items-center gap-2">
+              <FileSpreadsheet size={14} />
+              Bulk Upload
+            </span>
+          </button>
+        </div>
+      </motion.section>
+
+      {/* Content */}
+      <motion.section variants={pageItem}>
+        {uploadMode === "single" ? (
+          <FormProvider {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmitSingleProduct)}
+              className="space-y-6"
+            >
+              <ProductInformation
+                type="create"
+                handleImageUpload={handleImageUpload}
+                uploadedImages={uploadedImages}
+                removeImage={removeImage}
+              />
+
+              {/* Submit Bar */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="glass-effect rounded-2xl p-4"
+              >
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground flex items-center gap-2">
+                    <Sparkles size={14} className="text-purple-400" />
+                    Fill in the details above to create your product
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="border-white/[0.08] hover:bg-white/[0.04] rounded-xl h-9"
+                      onClick={() => form.reset()}
+                    >
+                      Reset
+                    </Button>
+                    <Button
+                      type="submit"
+                      size="sm"
+                      disabled={form.formState.isSubmitting}
+                      className="gradient-purple text-white border-0 rounded-xl h-9 px-6 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-all"
+                    >
+                      {form.formState.isSubmitting
+                        ? "Creating..."
+                        : "Create Product"}
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            </form>
+          </FormProvider>
+        ) : (
+          <BulkUpload
+            csvData={csvData}
+            handleFileUpload={handleFileUpload}
+            validateBulkUpload={validateBulkUpload}
+            confirmBulkUpload={confirmBulkUpload}
+            isBulk={isBulk}
+            isValidating={isValidating}
+            isUploading={isUploading}
+            validationResult={validationResult}
+          />
+        )}
+      </motion.section>
+    </PageLayout>
   );
 };
 
-export default AddProduct;
+export default AddProductPage;

@@ -4,13 +4,15 @@ import axios from "axios";
 import { toast } from "sonner";
 
 export const useCategories = () => {
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<{ _id: string; name: string }[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get("/api/categories", {
+        const res = await axios.get("http://localhostL:8080/categories", {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
         });
@@ -19,8 +21,8 @@ export const useCategories = () => {
         setCategories(
           res.data.map((cat: any) => ({
             name: cat.name,
-            id: cat._id,
-          }))
+            _id: cat._id,
+          })),
         );
       } catch (error) {
         console.error("Error fetching categories:", error);

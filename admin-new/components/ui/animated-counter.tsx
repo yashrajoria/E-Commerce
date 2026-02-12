@@ -52,7 +52,7 @@ export function AnimatedCounter({
         rafRef.current = requestAnimationFrame(animate);
       }
     },
-    [value, duration]
+    [value, duration],
   );
 
   useEffect(() => {

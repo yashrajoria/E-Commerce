@@ -1,625 +1,375 @@
-"use client";
-
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Bell,
-  Camera,
-  CameraIcon,
-  Lock,
-  Mail,
-  Moon,
-  Phone,
-  Shield,
-  Smartphone,
-  Upload,
-  User,
-} from "lucide-react";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-
-import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+/**
+ * Premium Profile Page
+ */
+import PageLayout, { pageItem } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AdminProfile } from "@/types/admin";
-import jwt from "jsonwebtoken";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import { motion } from "framer-motion";
+import {
+  Camera,
+  Key,
+  Lock,
+  Mail,
+  Phone,
+  Save,
+  Shield,
+  User,
+  Bell,
+  Globe,
+} from "lucide-react";
 import { GetServerSideProps } from "next";
+import { useState } from "react";
 import { toast } from "sonner";
-import { Label } from "@/components/ui/label";
+import jwt from "jsonwebtoken";
 
-const profileSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
-  phone: z.string().optional(),
-  currentPassword: z.string().optional(),
-  newPassword: z
-    .string()
-    .min(6, "Password must be at least 6 characters")
-    .optional(),
-  role: z.enum(["super_admin", "admin", "editor"]),
-  twoFactorEnabled: z.boolean(),
-  notificationPreferences: z.object({
-    email: z.boolean(),
-    push: z.boolean(),
-    desktop: z.boolean(),
-  }),
-  theme: z.enum(["light", "dark", "system"]),
-});
+interface ProfileProps {
+  initialName: string;
+  initialEmail: string;
+}
 
-export default function ProfilePage({
-  name,
-  email,
-}: {
-  name: string;
-  email: string;
-}) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [avatarPreview, setAvatarPreview] = useState("/placeholder-avatar.png");
+const Profile = ({ initialName, initialEmail }: ProfileProps) => {
+  const [name, setName] = useState(initialName || "Admin User");
+  const [email, setEmail] = useState(initialEmail || "admin@example.com");
+  const [phone, setPhone] = useState("+1 (555) 123-4567");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [twoFA, setTwoFA] = useState(false);
+  const [emailNotifs, setEmailNotifs] = useState(true);
+  const [pushNotifs, setPushNotifs] = useState(true);
+  const [marketingNotifs, setMarketingNotifs] = useState(false);
+  const [orderNotifs, setOrderNotifs] = useState(true);
+  const [avatar, setAvatar] = useState<string | null>(null);
 
-  // Mock admin data - replace with actual API call
-  const mockAdmin: AdminProfile = {
-    _id: "admin-123",
-    name: name,
-    email: email,
-    role: "admin",
-    phone: "+1 (555) 123-4567",
-    avatar: "/placeholder-avatar.png",
-    lastLogin: new Date().toISOString(),
-    twoFactorEnabled: true,
-    notificationPreferences: {
-      email: true,
-      push: true,
-      desktop: false,
-    },
-    theme: "system",
-    permissions: ["manage_users", "manage_content", "view_analytics"],
-    createdAt: "2024-01-01T00:00:00Z",
-    updatedAt: "2024-03-15T00:00:00Z",
+  const handleSaveProfile = () => {
+    toast.success("Profile updated successfully!");
   };
 
-  const form = useForm<z.infer<typeof profileSchema>>({
-    resolver: zodResolver(profileSchema),
-    defaultValues: {
-      name: name,
-      email: mockAdmin.email,
-      phone: mockAdmin.phone,
-      role: mockAdmin.role,
-      twoFactorEnabled: mockAdmin.twoFactorEnabled,
-      notificationPreferences: mockAdmin.notificationPreferences,
-      theme: mockAdmin.theme,
-    },
-  });
-
-  const onSubmit = async (data: z.infer<typeof profileSchema>) => {
-    try {
-      setIsLoading(true);
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log("Form data:", data);
-      toast.success("Profile updated successfully");
-    } catch (error) {
-      toast.error("Failed to update profile");
-      console.error(error);
-    } finally {
-      setIsLoading(false);
+  const handleChangePassword = () => {
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords don't match");
+      return;
     }
+    if (newPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+    toast.success("Password changed successfully!");
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
   };
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = () => {
-        if (typeof reader.result === "string") {
-          setAvatarPreview(reader.result);
-        }
-      };
+      reader.onloadend = () => setAvatar(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
 
-  const [activeTab, setActiveTab] = useState("profile");
-
   return (
-    <div className="flex min-h-screen">
-      <DashboardSidebar />
-
-      <div className="flex-1">
-        <header className="border-b border-border/40 /70 backdrop-blur-lg sticky top-0 z-10 shadow-sm">
-          <div className="h-16 px-8 flex items-center justify-between">
-            <h1 className="text-xl font-semibold bg-gradient-to-r from-blue-500 to-teal-400 bg-clip-text text-transparent">
-              Profile Settings
-            </h1>
-            <div className="flex items-center gap-3">
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-teal-200 text-teal-700"
-              >
-                Cancel
-              </Button>
-              <Button
-                size="sm"
-                type="submit"
-                onClick={form.handleSubmit(onSubmit)}
-                className="bg-teal-500"
-                disabled={isLoading}
-              >
-                {isLoading ? "Saving..." : "Save Changes"}
-              </Button>
-            </div>
+    <PageLayout title="Profile" breadcrumbs={[{ label: "Profile" }]}>
+      <motion.section variants={pageItem}>
+        <Tabs defaultValue="profile" className="space-y-6">
+          <div className="glass-effect rounded-xl p-1.5 inline-flex">
+            <TabsList className="bg-transparent gap-1 h-auto p-0">
+              {[
+                { value: "profile", label: "Profile", icon: User },
+                { value: "security", label: "Security", icon: Shield },
+                { value: "notifications", label: "Notifications", icon: Bell },
+              ].map(({ value, label, icon: Icon }) => (
+                <TabsTrigger
+                  key={value}
+                  value={value}
+                  className="data-[state=active]:gradient-purple data-[state=active]:text-white data-[state=active]:border-0 rounded-lg px-4 py-2 text-xs gap-2 transition-all"
+                >
+                  <Icon size={14} />
+                  {label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
           </div>
 
-          <div className="px-8 pb-0">
-            <Tabs
-              value={activeTab}
-              onValueChange={setActiveTab}
-              className="w-full"
-            >
-              <TabsList className="p-0 bg-transparent border-b border-border/40 w-full flex justify-start h-12 space-x-8">
-                <TabsTrigger
-                  value="profile"
-                  className="data-[state=active]:border-b-2 data-[state=active]:text-teal-700 rounded-none border-b-2 border-transparent px-0 pb-3 bg-transparent data-[state=active]:shadow-white shadow-sm"
-                >
-                  Profile
-                </TabsTrigger>
-                <TabsTrigger
-                  value="security"
-                  className="data-[state=active]:border-b-2 data-[state=active]:text-teal-700 rounded-none border-b-2 border-transparent px-0 pb-3 bg-transparent data-[state=active]:shadow-white shadow-sm"
-                >
-                  Security
-                </TabsTrigger>
-                <TabsTrigger
-                  value="notifications"
-                  className="data-[state=active]:border-b-2 data-[state=active]:text-teal-700 rounded-none border-b-2 border-transparent px-0 pb-3 bg-transparent data-[state=active]:shadow-white shadow-sm"
-                >
-                  Notifications
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-        </header>
+          {/* Profile Tab */}
+          <TabsContent value="profile" className="space-y-6 mt-6">
+            {/* Avatar Card */}
+            <Card className="glass-effect border-white/[0.06] overflow-hidden">
+              <CardContent className="p-6">
+                <div className="flex flex-col sm:flex-row items-center gap-6">
+                  <div className="relative group">
+                    <Avatar className="h-24 w-24 border-2 border-white/[0.08]">
+                      <AvatarImage src={avatar || undefined} />
+                      <AvatarFallback className="gradient-purple text-white text-2xl font-bold">
+                        {name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .slice(0, 2)
+                          .toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                      <Camera className="h-6 w-6 text-white" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleAvatarUpload}
+                      />
+                    </label>
+                  </div>
+                  <div className="text-center sm:text-left">
+                    <h3 className="text-xl font-bold text-gradient">{name}</h3>
+                    <p className="text-sm text-muted-foreground">{email}</p>
+                    <Badge
+                      variant="outline"
+                      className="mt-2 bg-purple-400/10 text-purple-400 border-purple-400/20 text-xs"
+                    >
+                      Admin
+                    </Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        <main className="p-8">
-          <div className="max-w-4xl mx-auto">
-            <Form {...form}>
-              <FormItem
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-8"
-              >
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  {/* Profile Tab */}
-                  <TabsContent value="profile" className="mt-0 space-y-6">
-                    <div className=" rounded-xl p-6 shadow-white shadow-md">
-                      <div className="flex flex-col md:flex-row items-start md:items-center gap-6 pb-6 mb-6 border-b border-border/40">
-                        <div className="relative group">
-                          <Avatar className="w-24 h-24 border-4 border-white shadow-lg transition-transform group-hover:scale-105">
-                            <AvatarImage src={avatarPreview} alt={name} />
-                            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xl font-semibold">
-                              {name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")
-                                .toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
+            {/* Personal Info */}
+            <Card className="glass-effect border-white/[0.06]">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <User className="h-5 w-5 text-purple-400" /> Personal
+                  Information
+                </CardTitle>
+                <CardDescription>Update your personal details</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm flex items-center gap-2">
+                      <User className="h-3.5 w-3.5 text-muted-foreground" />
+                      Full Name
+                    </Label>
+                    <Input
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="bg-white/[0.04] border-white/[0.08] rounded-xl h-10"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm flex items-center gap-2">
+                      <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                      Email
+                    </Label>
+                    <Input
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      type="email"
+                      className="bg-white/[0.04] border-white/[0.08] rounded-xl h-10"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm flex items-center gap-2">
+                      <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+                      Phone
+                    </Label>
+                    <Input
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="bg-white/[0.04] border-white/[0.08] rounded-xl h-10"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm flex items-center gap-2">
+                      <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+                      Timezone
+                    </Label>
+                    <Input
+                      value="UTC-5 (Eastern)"
+                      disabled
+                      className="bg-white/[0.04] border-white/[0.08] rounded-xl h-10 opacity-60"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end pt-2">
+                  <Button
+                    onClick={handleSaveProfile}
+                    className="gradient-purple text-white border-0 rounded-xl gap-2"
+                  >
+                    <Save size={14} />
+                    Save Changes
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-                          <div className="absolute -bottom-2 -right-2">
-                            <Label
-                              htmlFor="avatar-upload"
-                              className="cursor-pointer"
-                            >
-                              <div className="w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors">
-                                <Camera size={14} />
-                              </div>
-                              <Input
-                                id="avatar-upload"
-                                type="file"
-                                accept="image/*"
-                                onChange={handleAvatarChange}
-                                className="hidden"
-                              />
-                            </Label>
-                          </div>
-                        </div>
+          {/* Security Tab */}
+          <TabsContent value="security" className="space-y-6 mt-6">
+            <Card className="glass-effect border-white/[0.06]">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Lock className="h-5 w-5 text-purple-400" /> Change Password
+                </CardTitle>
+                <CardDescription>
+                  Update your password to keep your account secure
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-sm">Current Password</Label>
+                  <Input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="bg-white/[0.04] border-white/[0.08] rounded-xl h-10"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm">New Password</Label>
+                    <Input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="bg-white/[0.04] border-white/[0.08] rounded-xl h-10"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm">Confirm Password</Label>
+                    <Input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="bg-white/[0.04] border-white/[0.08] rounded-xl h-10"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end pt-2">
+                  <Button
+                    onClick={handleChangePassword}
+                    className="gradient-purple text-white border-0 rounded-xl gap-2"
+                  >
+                    <Key size={14} />
+                    Update Password
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
-                        <div className="space-y-2 flex-1">
-                          <h2 className="text-xl font-medium">{name}</h2>
-                          <p className="text-muted-foreground">{email}</p>
-                          <div className="inline-flex items-center px-2.5 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                            {mockAdmin.role
-                              .replace("_", " ")
-                              .charAt(0)
-                              .toUpperCase() +
-                              mockAdmin.role.replace("_", " ").slice(1)}
-                          </div>
-                        </div>
-                      </div>
+            <Card className="glass-effect border-white/[0.06]">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-emerald-400" /> Two-Factor
+                  Authentication
+                </CardTitle>
+                <CardDescription>
+                  Add an extra layer of security to your account
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+                  <div>
+                    <p className="font-medium text-sm">Enable 2FA</p>
+                    <p className="text-xs text-muted-foreground">
+                      Require a verification code when signing in
+                    </p>
+                  </div>
+                  <Switch checked={twoFA} onCheckedChange={setTwoFA} />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <FormField
-                          control={form.control}
-                          name="name"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium">
-                                Full Name
-                              </FormLabel>
-                              <FormControl>
-                                <div className="relative">
-                                  <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                  <Input
-                                    className="pl-9 border-border/40 focus:border-teal-300"
-                                    {...field}
-                                  />
-                                </div>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="email"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium">
-                                Email Address
-                              </FormLabel>
-                              <FormControl>
-                                <div className="relative">
-                                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                  <Input
-                                    className="pl-9 border-border/40 focus:border-teal-300"
-                                    {...field}
-                                  />
-                                </div>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="phone"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium">
-                                Phone Number
-                              </FormLabel>
-                              <FormControl>
-                                <div className="relative">
-                                  <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                  <Input
-                                    className="pl-9 border-border/40 focus:border-teal-300"
-                                    {...field}
-                                  />
-                                </div>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="role"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium">
-                                Role
-                              </FormLabel>
-                              <Select
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger className="border-border/40 w-full">
-                                    <SelectValue placeholder="Select a role" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent className="glass-effect">
-                                  <SelectItem value="super_admin">
-                                    Super Admin
-                                  </SelectItem>
-                                  <SelectItem value="admin">Admin</SelectItem>
-                                  <SelectItem value="editor">Editor</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  {/* Security Tab */}
-                  <TabsContent value="security" className="mt-0 space-y-6">
-                    <div className=" rounded-xl p-6 shadow-card border border-border/40">
-                      <div className="mb-6">
-                        <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
-                          <Shield size={18} className="text-teal-500" />
-                          Password & Security
-                        </h3>
-                        <p className="text-muted-foreground text-sm">
-                          Manage your password and security preferences
-                        </p>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <FormField
-                          control={form.control}
-                          name="currentPassword"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium">
-                                Current Password
-                              </FormLabel>
-                              <FormControl>
-                                <div className="relative">
-                                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                  <Input
-                                    type="password"
-                                    className="pl-9 border-border/40 focus:border-teal-300"
-                                    placeholder="••••••••"
-                                    {...field}
-                                  />
-                                </div>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="newPassword"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium">
-                                New Password
-                              </FormLabel>
-                              <FormControl>
-                                <div className="relative">
-                                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                  <Input
-                                    type="password"
-                                    className="pl-9 border-border/40 focus:border-teal-300"
-                                    placeholder="••••••••"
-                                    {...field}
-                                  />
-                                </div>
-                              </FormControl>
-                              <FormDescription className="text-xs">
-                                Must be at least 6 characters
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <Separator className="my-6" />
-
+          {/* Notifications Tab */}
+          <TabsContent value="notifications" className="space-y-6 mt-6">
+            <Card className="glass-effect border-white/[0.06]">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Bell className="h-5 w-5 text-purple-400" /> Notification
+                  Preferences
+                </CardTitle>
+                <CardDescription>
+                  Choose what notifications you receive
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-1">
+                {[
+                  {
+                    label: "Email Notifications",
+                    desc: "Receive email updates about your account",
+                    value: emailNotifs,
+                    setter: setEmailNotifs,
+                  },
+                  {
+                    label: "Push Notifications",
+                    desc: "Receive push notifications in your browser",
+                    value: pushNotifs,
+                    setter: setPushNotifs,
+                  },
+                  {
+                    label: "Order Updates",
+                    desc: "Notifications about new orders and status changes",
+                    value: orderNotifs,
+                    setter: setOrderNotifs,
+                  },
+                  {
+                    label: "Marketing Emails",
+                    desc: "Tips, product updates and promotional content",
+                    value: marketingNotifs,
+                    setter: setMarketingNotifs,
+                  },
+                ].map(({ label, desc, value, setter }, i) => (
+                  <div key={label}>
+                    <div className="flex items-center justify-between p-4 rounded-xl hover:bg-white/[0.02] transition-colors">
                       <div>
-                        <FormField
-                          control={form.control}
-                          name="twoFactorEnabled"
-                          render={({ field }) => (
-                            <div className="flex items-center justify-between py-3 hover:bg-slate-50 px-2 rounded-md transition-colors">
-                              <div className="space-y-0.5">
-                                <div className="text-sm font-medium flex items-center gap-2">
-                                  <Shield className="h-4 w-4 text-teal-500" />
-                                  Two-Factor Authentication
-                                </div>
-                                <FormDescription className="text-xs">
-                                  Add an extra layer of security to your account
-                                </FormDescription>
-                              </div>
-                              <FormControl>
-                                <Switch
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                  className="data-[state=checked]:bg-teal-500"
-                                />
-                              </FormControl>
-                            </div>
-                          )}
-                        />
+                        <p className="font-medium text-sm">{label}</p>
+                        <p className="text-xs text-muted-foreground">{desc}</p>
                       </div>
+                      <Switch checked={value} onCheckedChange={setter} />
                     </div>
-                  </TabsContent>
-
-                  {/* Notifications Tab */}
-                  <TabsContent value="notifications" className="mt-0 space-y-6">
-                    <div className=" rounded-xl p-6 shadow-card border border-border/40">
-                      <div className="mb-6">
-                        <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
-                          <Bell size={18} className="text-teal-500" />
-                          Notification Preferences
-                        </h3>
-                        <p className="text-muted-foreground text-sm">
-                          Customize your notification and display settings
-                        </p>
-                      </div>
-
-                      <div className="space-y-1">
-                        <FormField
-                          control={form.control}
-                          name="notificationPreferences.email"
-                          render={({ field }) => (
-                            <div className="flex items-center justify-between py-3 hover:bg-slate-50 px-2 rounded-md transition-colors">
-                              <div className="space-y-0.5">
-                                <div className="text-sm font-medium flex items-center gap-2">
-                                  <Mail className="h-4 w-4 text-teal-500" />
-                                  Email Notifications
-                                </div>
-                                <FormDescription className="text-xs">
-                                  Receive notifications via email
-                                </FormDescription>
-                              </div>
-                              <FormControl>
-                                <Switch
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                  className="data-[state=checked]:bg-teal-500"
-                                />
-                              </FormControl>
-                            </div>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="notificationPreferences.push"
-                          render={({ field }) => (
-                            <div className="flex items-center justify-between py-3 hover:bg-slate-50 px-2 rounded-md transition-colors">
-                              <div className="space-y-0.5">
-                                <div className="text-sm font-medium flex items-center gap-2">
-                                  <Bell className="h-4 w-4 text-teal-500" />
-                                  Push Notifications
-                                </div>
-                                <FormDescription className="text-xs">
-                                  Receive push notifications in your browser
-                                </FormDescription>
-                              </div>
-                              <FormControl>
-                                <Switch
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                  className="data-[state=checked]:bg-teal-500"
-                                />
-                              </FormControl>
-                            </div>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="notificationPreferences.desktop"
-                          render={({ field }) => (
-                            <div className="flex items-center justify-between py-3 hover:bg-slate-50 px-2 rounded-md transition-colors">
-                              <div className="space-y-0.5">
-                                <div className="text-sm font-medium flex items-center gap-2">
-                                  <Smartphone className="h-4 w-4 text-teal-500" />
-                                  Desktop Notifications
-                                </div>
-                                <FormDescription className="text-xs">
-                                  Receive notifications on your desktop
-                                </FormDescription>
-                              </div>
-                              <FormControl>
-                                <Switch
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                  className="data-[state=checked]:bg-teal-500"
-                                />
-                              </FormControl>
-                            </div>
-                          )}
-                        />
-
-                        <Separator className="my-6" />
-
-                        <FormField
-                          control={form.control}
-                          name="theme"
-                          render={({ field }) => (
-                            <FormItem>
-                              <div className="flex items-center gap-2 mb-2">
-                                <Moon className="h-4 w-4 text-teal-500" />
-                                <FormLabel className="text-sm font-medium">
-                                  Theme Preference
-                                </FormLabel>
-                              </div>
-                              <Select
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger className="border-border/40">
-                                    <SelectValue placeholder="Select a theme" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="light">Light</SelectItem>
-                                  <SelectItem value="dark">Dark</SelectItem>
-                                  <SelectItem value="system">System</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </FormItem>
-            </Form>
-          </div>
-        </main>
-      </div>
-    </div>
+                    {i < 3 && <Separator className="bg-white/[0.04]" />}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </motion.section>
+    </PageLayout>
   );
-}
-
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {
-  const cookie = req.cookies["token"];
-  const token = cookie ? cookie : null;
-  let name: string | null = null;
-  let email: string | null = null;
-  const decoded = token
-    ? jwt.verify(token, process.env.JWT_SECRET as string)
-    : null;
-  if (decoded && typeof decoded === "object" && "name" in decoded) {
-    name = (decoded as { name?: string }).name ?? null;
-    email = (decoded as { username?: string }).username ?? null;
-  }
-
-  if (!decoded) {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: false,
-      },
-    };
-  }
-
-  if (!token) {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: false,
-      },
-    };
-  }
-  return {
-    props: {
-      name,
-      email,
-    },
-  };
 };
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const token = context.req.cookies.token || "";
+  let initialName = "";
+  let initialEmail = "";
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const decoded: any = jwt.decode(token);
+    if (decoded) {
+      initialName = decoded.name || "";
+      initialEmail = decoded.email || "";
+    }
+  } catch {
+    // Token decode failed, use defaults
+  }
+
+  return { props: { initialName, initialEmail } };
+};
+
+export default Profile;

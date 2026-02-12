@@ -38,7 +38,7 @@ export function TrendIndicator({
         isPositive && "text-emerald-400",
         !isPositive && !isNeutral && "text-red-400",
         isNeutral && "text-slate-400",
-        className
+        className,
       )}
     >
       <Icon size={iconSizes[size]} />

@@ -448,6 +448,186 @@ body {
   }
 }
 
+/* ═══════════════════════════════════════════════════
+   LANDING PAGE — PREMIUM EFFECTS
+   ═══════════════════════════════════════════════════ */
+
+/* ── Animated Grid Background ── */
+.landing-grid {
+  background-image:
+    linear-gradient(hsla(263, 70%, 58%, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, hsla(263, 70%, 58%, 0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* ── Glow Dot Grid ── */
+.dot-grid {
+  background-image: radial-gradient(
+    hsla(263, 70%, 58%, 0.15) 1px,
+    transparent 1px
+  );
+  background-size: 30px 30px;
+}
+
+/* ── Gradient Mesh Overlay ── */
+.gradient-mesh {
+  background:
+    radial-gradient(at 10% 20%, hsla(263, 70%, 58%, 0.12) 0px, transparent 50%),
+    radial-gradient(at 90% 10%, hsla(180, 70%, 50%, 0.08) 0px, transparent 50%),
+    radial-gradient(at 40% 80%, hsla(160, 84%, 39%, 0.08) 0px, transparent 50%),
+    radial-gradient(at 80% 70%, hsla(263, 70%, 58%, 0.06) 0px, transparent 50%);
+}
+
+/* ── Spotlight Cursor Effect ── */
+.spotlight {
+  background: radial-gradient(
+    600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    hsla(263, 70%, 58%, 0.06),
+    transparent 40%
+  );
+}
+
+/* ── Button Glow Pulse ── */
+.btn-glow-pulse {
+  box-shadow:
+    0 0 20px hsla(263, 70%, 58%, 0.3),
+    0 0 60px hsla(263, 70%, 58%, 0.1);
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 20px hsla(263, 70%, 58%, 0.3),
+      0 0 60px hsla(263, 70%, 58%, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 30px hsla(263, 70%, 58%, 0.5),
+      0 0 80px hsla(263, 70%, 58%, 0.2);
+  }
+}
+
+/* ── Gradient Border Animation ── */
+.animated-border {
+  position: relative;
+  background: hsla(240, 14%, 7%, 0.6);
+  border-radius: 1rem;
+}
+
+.animated-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    var(--border-angle, 0deg),
+    hsla(263, 70%, 58%, 0.5),
+    transparent 40%,
+    transparent 60%,
+    hsla(160, 84%, 39%, 0.5)
+  );
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  padding: 1px;
+  animation: rotateBorder 4s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes rotateBorder {
+  to {
+    --border-angle: 360deg;
+  }
+}
+
+/* ── Floating Animation ── */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes floatSlow {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-15px) rotate(2deg);
+  }
+  66% {
+    transform: translateY(-8px) rotate(-1deg);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+.animate-float-slow {
+  animation: floatSlow 8s ease-in-out infinite;
+}
+.animate-float-delayed {
+  animation: float 6s ease-in-out 2s infinite;
+}
+
+/* ── Marquee ── */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+/* ── Text Shimmer ── */
+.text-shimmer {
+  background: linear-gradient(
+    110deg,
+    hsl(263, 70%, 65%) 0%,
+    hsl(240, 10%, 96%) 45%,
+    hsl(160, 84%, 50%) 55%,
+    hsl(263, 70%, 65%) 100%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: textShimmer 5s linear infinite;
+}
+
+@keyframes textShimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* ── Noise Texture ── */
+.noise-texture::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+}
+
 /* ── Selection Color ── */
 ::selection {
   background: hsla(263, 70%, 58%, 0.3);
