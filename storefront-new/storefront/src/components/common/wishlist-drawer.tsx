@@ -2,22 +2,26 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { AnimatePresence, motion } from "framer-motion";
-import { HeartOff, ShoppingBagIcon, X } from "lucide-react";
-import Link from "next/link";
+import { Heart, HeartOff, ShoppingBag, X } from "lucide-react";
 import Image from "next/image";
 
-interface CartDrawerProps {
+interface WishlistDrawerProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export function WishlistDrawer({ isOpen, onClose }: CartDrawerProps) {
+export function WishlistDrawer({ isOpen, onClose }: WishlistDrawerProps) {
   const { addToCart } = useCart();
   const { wishlist, removeFromWishlist, clearWishlist } = useWishlist();
+
+  const formatGBP = (value?: number) =>
+    new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: "GBP",
+    }).format(value ?? 0);
 
   return (
     <AnimatePresence>
@@ -25,109 +29,132 @@ export function WishlistDrawer({ isOpen, onClose }: CartDrawerProps) {
         <>
           {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 bg-black/50 z-50"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
           />
 
-          {/* Cart Panel */}
+          {/* Panel */}
           <motion.div
-            className="fixed top-0 right-0 h-full w-96 max-w-[90vw] bg-background/95 backdrop-blur-xl border-l z-50"
-            initial={{ x: 400 }}
+            className="fixed top-0 right-0 h-full w-[420px] max-w-[92vw] bg-background border-l border-border/50 z-50 shadow-2xl"
+            initial={{ x: 440 }}
             animate={{ x: 0 }}
-            exit={{ x: 400 }}
+            exit={{ x: 440 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
             <div className="flex flex-col h-full">
               {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b">
-                <h2 className="text-lg font-semibold flex items-center">
-                  Wishlist
-                  <Badge className="ml-2">{wishlist.length}</Badge>
-                </h2>
-                <Button variant="ghost" size="icon" onClick={onClose}>
-                  <X className="h-5 w-5" />
-                </Button>
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-lg font-semibold tracking-tight">
+                    Wishlist
+                  </h2>
+                  <Badge
+                    variant="secondary"
+                    className="rounded-full text-xs font-medium"
+                  >
+                    {wishlist.length}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-1">
+                  {wishlist.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearWishlist}
+                      className="text-muted-foreground hover:text-destructive text-xs h-8 px-2"
+                    >
+                      Clear all
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={onClose}
+                    className="h-8 w-8 rounded-full"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
 
-              {/* Cart Items */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {/* Items */}
+              <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
                 {wishlist.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    Your wishlist is empty.
-                  </p>
+                  <div className="flex flex-col items-center justify-center h-full text-center">
+                    <Heart className="h-12 w-12 text-muted-foreground/40 mb-4" />
+                    <p className="text-muted-foreground font-medium">
+                      Your wishlist is empty
+                    </p>
+                    <p className="text-sm text-muted-foreground/70 mt-1">
+                      Save items you love for later
+                    </p>
+                  </div>
                 ) : (
                   wishlist.map((item) => (
                     <motion.div
                       key={item.id}
-                      className="flex items-center space-x-4 p-4 rounded-lg border bg-card"
+                      className="flex gap-4 p-3 rounded-xl bg-muted/30 border border-border/30"
                       layout
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, x: 40 }}
                     >
-                      <div className="relative w-16 h-16 rounded-md overflow-hidden">
+                      <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
                         <Image
                           src={item.images?.[0] || "/icons8-image-100.png"}
                           alt={item.name}
                           fill
-                          sizes="64px"
+                          sizes="80px"
                           className="object-cover"
                         />
                       </div>
-                      <div className="flex-1">
-                        <h3 className="font-medium text-sm">{item.name}</h3>
-                        <p className="text-lg font-semibold">${item.price}</p>
+
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-sm leading-snug truncate">
+                          {item.name}
+                        </h3>
+                        <p className="text-base font-semibold mt-1">
+                          {formatGBP(item.price)}
+                        </p>
+
+                        <div className="flex items-center gap-2 mt-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs rounded-full px-3"
+                            onClick={() => {
+                              addToCart({ ...item, quantity: 1 });
+                              removeFromWishlist(item.id);
+                            }}
+                          >
+                            <ShoppingBag className="h-3 w-3 mr-1" />
+                            Add to Bag
+                          </Button>
+                          <button
+                            onClick={() => removeFromWishlist(item.id)}
+                            className="text-muted-foreground hover:text-destructive transition-colors p-1"
+                          >
+                            <HeartOff className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeFromWishlist(item.id)}
-                        className="text-destructive"
-                      >
-                        <HeartOff className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => addToCart({ ...item, quantity: 1 })}
-                      >
-                        Add to Cart
-                      </Button>
                     </motion.div>
                   ))
                 )}
               </div>
 
-              {/* Footer */}
-              <div className="p-4 border-t space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-lg font-semibold">Items:</span>
-                  <span className="text-2xl font-bold">{wishlist.length}</span>
+              {/* Footer — only show item count summary */}
+              {wishlist.length > 0 && (
+                <div className="px-5 py-4 border-t border-border/50">
+                  <p className="text-sm text-muted-foreground text-center">
+                    {wishlist.length} saved{" "}
+                    {wishlist.length === 1 ? "item" : "items"}
+                  </p>
                 </div>
-                <Separator />
-                <div className="space-y-2">
-                  <Button className="w-full" size="lg">
-                    <Link href="/checkout">Checkout</Link>
-                  </Button>
-                  <Button variant="outline" className="w-full">
-                    <Link href="/cart">
-                      <div className="flex items-center justify-center space-x-2">
-                        <ShoppingBagIcon className="mr-2 h-4 w-4" />
-                        <span className="text-sm">View Cart</span>
-                      </div>
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full"
-                    onClick={clearWishlist}
-                  >
-                    Clear Wishlist
-                  </Button>
-                </div>
-              </div>
+              )}
             </div>
           </motion.div>
         </>
