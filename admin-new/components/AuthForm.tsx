@@ -58,7 +58,6 @@ const AuthForm = () => {
         },
         {
           headers: { "Content-Type": "application/json" },
-          // withCredentials: true,
         },
       );
       toast.success("Successfully signed in");
