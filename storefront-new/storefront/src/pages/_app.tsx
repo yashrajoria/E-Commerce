@@ -8,12 +8,12 @@ import { UserProvider } from "@/context/UserContext";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import Head from "next/head";
+import { useState } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
-const queryClient = new QueryClient();
-
 export default function App({ Component, pageProps }: AppProps) {
+  const [queryClient] = useState(() => new QueryClient());
   return (
     <>
       <Head>

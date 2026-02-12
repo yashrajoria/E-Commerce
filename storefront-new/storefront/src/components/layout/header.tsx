@@ -1,11 +1,20 @@
 "use client";
 
 import { useCart } from "@/context/CartContext";
-import { motion } from "framer-motion";
-import { Bell, Heart, Menu, Search, ShoppingCart, User } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Heart,
+  Menu,
+  Moon,
+  Search,
+  ShoppingBag,
+  Sun,
+  User,
+  X,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AccountDropdown } from "../common/account-dropwdown";
 import { CartDrawer } from "../common/cart-drawer";
 import { LoginModal } from "../common/login-modal";
@@ -23,179 +32,225 @@ export function Header() {
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
-  // const [loggedIn, setLoggedIn] = useState(false);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const { cart } = useCart();
   const { wishlist } = useWishlist();
   const { user } = useUser();
-  const loggedIn = !!user; // Derived status
+  const loggedIn = !!user;
 
-  // When mounted on client, now we can show the UI
   useEffect(() => setMounted(true), []);
+
+  // Track scroll for glass header effect
+  useEffect(() => {
+    const onScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  }, [theme, setTheme]);
+
+  // Compute total cart items (sum of quantities)
+  const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
   if (!mounted) return null;
 
   return (
     <>
       <motion.header
-        className="sticky top-0 z-50 w-full border-b "
+        className={`sticky top-0 z-50 w-full transition-all duration-500 ${
+          isScrolled
+            ? "glass border-b border-border/40 shadow-sm"
+            : "bg-background/80 backdrop-blur-md border-b border-transparent"
+        }`}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        transition={{ type: "spring", stiffness: 260, damping: 28 }}
       >
-        <div className="container mx-auto px-4">
-          <div className="flex h-16 items-center justify-between">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="flex h-[72px] items-center justify-between">
             {/* Logo */}
-            <motion.div
-              className="flex items-center space-x-2"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">S</span>
+            <Link href="/" className="flex items-center space-x-3 group">
+              <div className="relative h-9 w-9 rounded-xl bg-gradient-to-br from-rose-600 to-amber-500 flex items-center justify-center shadow-lg shadow-rose-500/20 group-hover:shadow-rose-500/40 transition-shadow duration-300">
+                <span className="text-white font-bold text-sm tracking-tight">
+                  S
+                </span>
               </div>
-              <span className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                <Link href="/" className="hover:underline">
-                  SuperStore
-                </Link>
+              <span className="font-semibold text-xl tracking-tight text-gradient-premium">
+                Storefront
               </span>
-            </motion.div>
+            </Link>
 
-            {/* Desktop Search */}
-            <div className="hidden md:flex flex-1 max-w-2xl mx-8">
-              <div className="relative w-full">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white h-4 w-4" />
+            {/* Desktop Actions */}
+            <div className="hidden md:flex items-center space-x-1">
+              {/* Search */}
+              <div className="relative mr-2">
                 <Input
-                  placeholder="Search products, brands and more..."
-                  className="w-full pl-10 pr-4 h-10 bg-muted/50 text-white placeholder-white border-0 focus-visible:ring-2 focus-visible:ring-blue-500"
+                  placeholder="Search products..."
+                  className="w-[260px] lg:w-[320px] pl-10 pr-4 h-10 rounded-full bg-muted/60 border-transparent focus:border-ring/30 focus:bg-background transition-all duration-300"
                 />
-
-                <Button
-                  size="sm"
-                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8"
-                >
-                  Search
-                </Button>
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               </div>
-            </div>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-4">
+              {/* Wishlist */}
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative hover:bg-muted/50 cursor-pointer"
+                className="relative h-10 w-10 rounded-full hover:bg-muted/60 cursor-pointer transition-colors duration-200"
                 onClick={() => setIsWishlistOpen(true)}
               >
-                <Heart className="h-5 w-5 " />
-                <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
-                  {wishlist.length}
-                </Badge>
+                <Heart className="h-[18px] w-[18px]" />
+                {wishlist.length > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 text-[10px] text-white font-medium flex items-center justify-center shadow-sm">
+                    {wishlist.length}
+                  </span>
+                )}
               </Button>
 
+              {/* Cart */}
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative hover:bg-muted/50 cursor-pointer"
+                className="relative h-10 w-10 rounded-full hover:bg-muted/60 cursor-pointer transition-colors duration-200"
                 onClick={() => setIsCartOpen(true)}
               >
-                <ShoppingCart className="h-5 w-5" />
-                <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
-                  {cart.length}
-                </Badge>
+                <ShoppingBag className="h-[18px] w-[18px]" />
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-gradient-to-r from-rose-600 to-amber-500 text-[10px] text-white font-medium flex items-center justify-center shadow-sm">
+                    {cartItemCount}
+                  </span>
+                )}
               </Button>
 
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hover:bg-muted/50 cursor-pointer"
+              {/* Account */}
+              <div
+                className="relative"
+                onMouseEnter={() => loggedIn && setIsAccountOpen(true)}
+                onMouseLeave={() => loggedIn && setIsAccountOpen(false)}
               >
-                <Bell className="h-5 w-5" />
-              </Button>
-
-              <Button
-                variant="outline"
-                className="hover:bg-muted/50 cursor-pointer"
-                onClick={() =>
-                  loggedIn
-                    ? setIsAccountOpen(!isAccountOpen)
-                    : setIsLoginOpen(true)
-                }
-              >
-                <User className="h-4 w-4 mr-2" />
-                {loggedIn ? "My Account" : "Login"}
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              >
-                <motion.div
-                  animate={{ rotate: theme === "dark" ? 180 : 0 }}
-                  transition={{ duration: 0.3 }}
+                <Button
+                  variant="ghost"
+                  className="h-10 rounded-full px-4 hover:bg-muted/60 cursor-pointer transition-colors duration-200 text-sm font-medium"
+                  onClick={() => !loggedIn && setIsLoginOpen(true)}
                 >
-                  {theme === "dark" ? "☀️" : "🌙"}
-                </motion.div>
+                  <User className="h-[18px] w-[18px] mr-2" />
+                  {loggedIn ? "Account" : "Sign In"}
+                </Button>
+                {loggedIn && (
+                  <AccountDropdown
+                    isOpen={isAccountOpen}
+                    onClose={() => setIsAccountOpen(false)}
+                  />
+                )}
+              </div>
+
+              {/* Theme Toggle */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 rounded-full hover:bg-muted/60 transition-colors duration-200"
+                onClick={toggleTheme}
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={theme}
+                    initial={{ y: -12, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 12, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {theme === "dark" ? (
+                      <Sun className="h-[18px] w-[18px]" />
+                    ) : (
+                      <Moon className="h-[18px] w-[18px]" />
+                    )}
+                  </motion.div>
+                </AnimatePresence>
               </Button>
-              {loggedIn && (
-                <AccountDropdown
-                  isOpen={isAccountOpen}
-                  onClose={() => setIsAccountOpen(false)}
-                  // setLoggedIn={setLoggedIn}
-                />
-              )}
             </div>
 
-            {/* Mobile Menu Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-              onClick={() => setIsMenuOpen(true)}
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
+            {/* Mobile Actions */}
+            <div className="md:hidden flex items-center space-x-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 rounded-full"
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+              >
+                <Search className="h-[18px] w-[18px]" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative h-10 w-10 rounded-full"
+                onClick={() => setIsCartOpen(true)}
+              >
+                <ShoppingBag className="h-[18px] w-[18px]" />
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-gradient-to-r from-rose-600 to-amber-500 text-[10px] text-white font-medium flex items-center justify-center">
+                    {cartItemCount}
+                  </span>
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 rounded-full"
+                onClick={() => setIsMenuOpen(true)}
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
 
-          {/* Mobile Search */}
-          <motion.div
-            className="md:hidden pb-4"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Search products..."
-                className="w-full pl-10 pr-4 h-10 bg-muted/50 border-0"
-              />
-            </div>
-          </motion.div>
+          {/* Mobile Search Overlay */}
+          <AnimatePresence>
+            {isSearchOpen && (
+              <motion.div
+                className="absolute top-0 left-0 w-full glass p-4 md:hidden z-10"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="relative">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search products..."
+                    className="w-full pl-10 pr-10 h-11 rounded-full"
+                    autoFocus
+                  />
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full"
+                    onClick={() => setIsSearchOpen(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.header>
 
-      {/* Mobile Menu */}
       <MegaMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
-
-      {/* Cart Drawer */}
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
-      {/* Wishlist Drawer */}
       <WishlistDrawer
         isOpen={isWishlistOpen}
         onClose={() => setIsWishlistOpen(false)}
       />
-
-      {/* Login Modal */}
       <LoginModal
         isOpen={isLoginOpen}
-        // setLoggedIn={setLoggedIn}
         loggedIn={loggedIn}
         onClose={() => {
           setIsLoginOpen(false);
-          // Close account dropdown if it was open when login modal was triggered
           setIsAccountOpen(false);
         }}
       />

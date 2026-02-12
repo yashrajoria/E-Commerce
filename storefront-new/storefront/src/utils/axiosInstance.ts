@@ -1,12 +1,11 @@
 import axios, { AxiosError } from "axios";
 import { API_ROUTES } from "@/pages/api/constants/apiRoutes";
-import { refreshTokens } from "@/pages/api/auth";
+import { refreshTokens } from "@/lib/auth";
 
 // Create the Axios instance with base configuration
 export const axiosInstance = axios.create({
   baseURL:
-    process.env.NEXT_PUBLIC_API_BASE_URL ??
-    process.env.NEXT_PUBLIC_BASE_URL,
+    process.env.NEXT_PUBLIC_API_BASE_URL ?? process.env.NEXT_PUBLIC_BASE_URL,
   withCredentials: true, // This is crucial for sending cookies
 });
 
@@ -18,10 +17,6 @@ let failedQueue: Array<{
   reject: (reason?: unknown) => void;
 }> = [];
 
-const processQueue = (error: any = null) => {
-  failedQueue.forEach(({ resolve, reject }) => {
-    if (error) reject(error);
-    else resolve();
 const processQueue = (error: Error | null) => {
   failedQueue.forEach((prom) => {
     if (error) {
@@ -33,64 +28,44 @@ const processQueue = (error: Error | null) => {
   failedQueue = [];
 };
 
-axiosInstance.interceptors.request.use(
-  (config) => {
-    if (typeof window !== "undefined") {
-      const userDataStr = localStorage.getItem("userData");
-      if (userDataStr) {
-        try {
-          const userData = JSON.parse(userDataStr);
-          if (userData.id) {
-            config.headers = config.headers ?? {};
-            config.headers["X-User-ID"] = userData.id;
-          }
-        } catch (e) {
-          console.error("Failed to parse user data:", e);
-        }
-      }
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
 axiosInstance.interceptors.response.use(
-  (response) => response,
-  (response) => response,
+  (response) => response, // Pass through successful responses
   async (error: AxiosError) => {
     const originalRequest: any = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
-      // If it's a protected route, trigger logout immediately
+      originalRequest._retry = true;
+
+      // Check if the route is protected
       const isProtectedRoute =
-        originalRequest.url?.includes('/cart') ||
-        originalRequest.url?.includes('/orders') ||
-        originalRequest.url?.includes('/profile');
+        originalRequest.url?.includes("/cart") ||
+        originalRequest.url?.includes("/orders") ||
+        originalRequest.url?.includes("/profile");
 
       if (isProtectedRoute) {
-        window.dispatchEvent(new Event('logout'));
+        window.dispatchEvent(new Event("logout"));
         return Promise.reject(error);
       }
 
+      // Handle token refresh
       if (isRefreshing) {
-        return new Promise(function (resolve, reject) {
+        return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
           .then(() => axiosInstance(originalRequest))
           .catch((err) => Promise.reject(err));
       }
 
-      originalRequest._retry = true;
       isRefreshing = true;
 
       return new Promise(async (resolve, reject) => {
         try {
-          await refreshTokens();
-          processQueue();
-          resolve(axiosInstance(originalRequest));
+          await refreshTokens(); // Refresh the token
+          processQueue(null); // Retry all failed requests
+          resolve(axiosInstance(originalRequest)); // Retry the original request
         } catch (err) {
-          processQueue(err);
-          window.dispatchEvent(new Event('logout'));
+          processQueue(err); // Reject all failed requests
+          window.dispatchEvent(new Event("logout")); // Trigger logout
           reject(err);
         } finally {
           isRefreshing = false;
@@ -101,5 +76,3 @@ axiosInstance.interceptors.response.use(
     return Promise.reject(error);
   },
 );
-
-export default axiosInstance;

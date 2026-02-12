@@ -46,7 +46,6 @@ export default function SearchPage() {
 
   const { data, isLoading, error } = useProducts(productCount, page);
   const products = data?.products ?? [];
-  console.log(products);
 
   // If backend returns prices in minor units (pence/cents), detect and adjust
   // the UI price range to a sensible default based on loaded products.
@@ -56,7 +55,7 @@ export default function SearchPage() {
       const max = maxRaw > 1000 ? Math.ceil(maxRaw / 100) : Math.ceil(maxRaw);
       setPriceRange([0, Math.max(500, max)]);
     }
-  }, [products]);
+  }, [products, priceRange]);
   const filteredProducts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     let list = products.filter((product) => {
@@ -104,8 +103,6 @@ export default function SearchPage() {
     return list;
   }, [products, searchQuery, selectedCategory, priceRange, sortBy]);
 
-  console.log(filteredProducts);
-
   const totalPages = data?.meta?.totalPages ?? 1;
   // Effect to update state if URL changes (e.g., browser back/forward)
   useEffect(() => {
@@ -147,28 +144,28 @@ export default function SearchPage() {
       </Head>
       <Header />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 lg:px-8 py-8">
         {/* Search Header */}
         <motion.div
           className="mb-8"
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.5 }}
         >
-          <div className="flex items-center space-x-4 mb-4">
+          <div className="flex items-center gap-4 mb-6">
             <div className="relative flex-1 max-w-2xl">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-11 h-11 rounded-full border-border/60 bg-muted/30 focus:bg-background"
               />
             </div>
             <Button
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
-              className="md:hidden"
+              className="md:hidden rounded-full"
             >
               <Filter className="h-4 w-4 mr-2" />
               Filters
@@ -180,7 +177,7 @@ export default function SearchPage() {
             {searchQuery && (
               <Badge
                 variant="secondary"
-                className="cursor-pointer"
+                className="cursor-pointer rounded-full"
                 onClick={() => setSearchQuery("")}
               >
                 Search: &quot;{searchQuery}&quot; ×
@@ -189,7 +186,7 @@ export default function SearchPage() {
             {selectedCategory && (
               <Badge
                 variant="secondary"
-                className="cursor-pointer"
+                className="cursor-pointer rounded-full"
                 onClick={() => setSelectedCategory("")}
               >
                 Category: {selectedCategory} ×
@@ -198,7 +195,7 @@ export default function SearchPage() {
             {(priceRange[0] > 0 || priceRange[1] < 500000) && (
               <Badge
                 variant="secondary"
-                className="cursor-pointer"
+                className="cursor-pointer rounded-full"
                 onClick={() => setPriceRange([0, 500000])}
               >
                 Price: {formatGBP(priceRange[0])} - {formatGBP(priceRange[1])} ×
@@ -208,15 +205,15 @@ export default function SearchPage() {
 
           {/* Results Info & Controls */}
           <div className="flex items-center justify-between">
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {filteredProducts.length} results found
               {searchQuery && ` for "${searchQuery}"`}
             </p>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-3">
               <select
                 value={productCount}
                 onChange={(e) => setProductCount(Number(e.target.value))}
-                className="border rounded-md px-3 py-1 text-sm"
+                className="border border-border/60 rounded-lg px-3 py-1.5 text-sm bg-background"
               >
                 <option value="12">12</option>
                 <option value="10">10</option>
@@ -228,7 +225,7 @@ export default function SearchPage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="border rounded-md px-3 py-1 text-sm"
+                className="border border-border/60 rounded-lg px-3 py-1.5 text-sm bg-background"
               >
                 <option value="relevance">Sort by Relevance</option>
                 <option value="price-low">Price: Low to High</option>
@@ -237,12 +234,12 @@ export default function SearchPage() {
                 <option value="newest">Newest First</option>
               </select>
 
-              <div className="flex border rounded-md">
+              <div className="flex border border-border/60 rounded-lg overflow-hidden">
                 <Button
                   variant={viewMode === "grid" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("grid")}
-                  className="rounded-r-none"
+                  className="rounded-none"
                 >
                   <Grid className="h-4 w-4" />
                 </Button>
@@ -250,7 +247,7 @@ export default function SearchPage() {
                   variant={viewMode === "list" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("list")}
-                  className="rounded-l-none"
+                  className="rounded-none"
                 >
                   <List className="h-4 w-4" />
                 </Button>
