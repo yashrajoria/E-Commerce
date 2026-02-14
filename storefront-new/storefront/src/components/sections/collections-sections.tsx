@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
+import type { Product } from "@/lib/types";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
@@ -26,7 +27,7 @@ export function CollectionsSection() {
   const collections = useMemo<CollectionViewModel[]>(() => {
     if (!products.length) return [];
     const grouped = new Map<string, number>();
-    const getCategoryName = (product: any) =>
+    const getCategoryName = (product: Product) =>
       typeof product.category === "string"
         ? product.category
         : (product.category?.name ?? "Other");

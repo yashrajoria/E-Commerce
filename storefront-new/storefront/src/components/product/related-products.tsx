@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import type { Product } from "@/lib/types";
 import { motion } from "framer-motion";
 import { Star, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,7 @@ export function RelatedProducts({ currentProductId }: RelatedProductsProps) {
       currency: "GBP",
     }).format(value ?? 0);
 
-  const getCategoryName = (p: any) =>
+  const getCategoryName = (p: Product) =>
     typeof p.category === "string" ? p.category : (p.category?.name ?? "");
 
   if (isLoading || error || relatedProducts.length === 0) {
