@@ -12,10 +12,14 @@ export const useCategories = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get("http://localhostL:8080/categories", {
-          headers: { "Content-Type": "application/json" },
-          withCredentials: true,
-        });
+        const res = await axios.get(
+          // "https://lawana-indexless-terese.ngrok-free.dev/categories",
+          "http://localhost:8080/categories",
+          {
+            headers: { "Content-Type": "application/json" },
+            withCredentials: true,
+          },
+        );
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setCategories(
