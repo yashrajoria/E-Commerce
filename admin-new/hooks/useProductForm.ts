@@ -24,6 +24,9 @@ const singleProductSchema = z.object({
     .positive("quantity must be a positive number"),
   description: z.string().optional(),
   images: z.array(z.string()).optional(),
+  brand: z.string().optional(),
+  sku: z.string().optional(),
+  is_featured: z.boolean().optional(),
 });
 
 export function useProductForm(
@@ -41,6 +44,9 @@ export function useProductForm(
       quantity: 0,
       description: "",
       images: [],
+      brand: "",
+      sku: "",
+      is_featured: false,
     },
   });
 
@@ -54,6 +60,10 @@ export function useProductForm(
       formData.append("price", data.price.toString());
       formData.append("quantity", data.quantity.toString());
       formData.append("description", data.description || "");
+      if (data.brand) formData.append("brand", data.brand);
+      if (data.sku) formData.append("sku", data.sku);
+      if (typeof data.is_featured !== "undefined")
+        formData.append("is_featured", String(data.is_featured));
 
       if (images && images.length > 0) {
         images.forEach((img: any) => {
