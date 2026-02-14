@@ -16,13 +16,14 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { useCategories } from "@/hooks/useCategories";
 import { useProducts } from "@/hooks/useProducts";
 import { motion } from "framer-motion";
 import { Filter, Grid, List, Search } from "lucide-react";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react"; // Imported useEffect
-import Head from "next/head";
-import { useCategories } from "@/hooks/useCategories";
+import type { Product } from "@/lib/types";
 
 export default function SearchPage() {
   const router = useRouter();
@@ -45,7 +46,10 @@ export default function SearchPage() {
   const [page, setPage] = useState(Number(router.query.page) || 1);
 
   const { data, isLoading, error } = useProducts(productCount, page);
-  const products = data?.products ?? [];
+  const products = useMemo(
+    () => data?.products ?? ([] as Product[]),
+    [data?.products],
+  );
 
   // If backend returns prices in minor units (pence/cents), detect and adjust
   // the UI price range to a sensible default based on loaded products.

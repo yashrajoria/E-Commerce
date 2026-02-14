@@ -7,7 +7,8 @@ export interface Product {
   description?: string;
   rating: number;
   reviews: number;
-  category: string;
+  // Backend may return category as an ID/name string or a populated object
+  category: string | { id?: string; name: string };
   badge?: string;
   quantity?: number;
   inStock?: boolean;

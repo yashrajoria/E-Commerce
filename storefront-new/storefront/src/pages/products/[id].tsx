@@ -1,38 +1,26 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import {
-  Star,
-  Heart,
-  Share2,
-  ShoppingBag,
-  Minus,
-  Plus,
-  Truck,
-  Shield,
-  RotateCcw,
-  Award,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { Header } from "@/components/layout/header";
 import { ProductImageGallery } from "@/components/product/product-image-gallery";
 import { ProductReviews } from "@/components/product/product-reviews";
 import { RelatedProducts } from "@/components/product/related-products";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCart } from "@/context/CartContext";
-import { useProductById } from "@/hooks/useProducts";
-import { useRouter } from "next/router";
-import Head from "next/head";
 import { useWishlist } from "@/context/WishlistContext";
 import { useToast } from "@/hooks/use-toast";
-import { Input } from "@/components/ui/input";
+import { useProductById } from "@/hooks/useProducts";
+import { motion } from "framer-motion";
+import { Heart, Minus, Plus, Share2, ShoppingBag, Star } from "lucide-react";
+import Head from "next/head";
+import { useRouter } from "next/router";
+import { useState } from "react";
 
 export default function ProductPage() {
   const [quantity, setQuantity] = useState(1);
   const router = useRouter();
-  const { toast } = useToast();
+  const { showSuccess, showInfo } = useToast();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const id = Array.isArray(router.query.id)
     ? router.query.id[0]
@@ -42,7 +30,12 @@ export default function ProductPage() {
 
   const rating = product?.rating ?? 0;
   const images = (product?.images ?? []).filter(Boolean);
-  const isWishlisted = hasWishlistItem(product?.id);
+  const categoryName = product
+    ? typeof product.category === "string"
+      ? product.category
+      : product.category?.name
+    : "";
+  const isWishlisted = product ? hasWishlistItem(product.id) : false;
 
   const formatGBP = (value?: number) =>
     new Intl.NumberFormat("en-GB", {
@@ -60,26 +53,17 @@ export default function ProductPage() {
       images: product?.images ?? [],
       quantity,
     });
-    toast({
-      title: "Added to cart",
-      description: `${product.name} has been added to your cart.`,
-    });
+    showSuccess(`${product.name} has been added to your cart.`);
   };
 
   const handleWishlistToggle = () => {
     if (!product) return;
     if (isWishlisted) {
       removeFromWishlist(product.id);
-      toast({
-        title: "Removed from wishlist",
-        description: `${product.name} has been removed from your wishlist.`,
-      });
+      showSuccess(`${product.name} has been removed from your wishlist.`);
     } else {
       addToWishlist(product);
-      toast({
-        title: "Added to wishlist",
-        description: `${product.name} has been added to your wishlist.`,
-      });
+      showSuccess(`${product.name} has been added to your wishlist.`);
     }
   };
 
@@ -93,10 +77,7 @@ export default function ProductPage() {
         })
         .catch((error) => console.error("Error sharing", error));
     } else {
-      toast({
-        title: "Share",
-        description: "Web Share API is not supported in your browser.",
-      });
+      showInfo("Web Share API is not supported in your browser.");
     }
   };
 
@@ -155,7 +136,7 @@ export default function ProductPage() {
               <span className="hover:text-rose-600 cursor-pointer">Home</span>
               <span className="mx-2">/</span>
               <span className="hover:text-rose-600 cursor-pointer">
-                {product?.category}
+                {categoryName}
               </span>
               <span className="mx-2">/</span>
               <span>{product?.name}</span>

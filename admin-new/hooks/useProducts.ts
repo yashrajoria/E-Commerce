@@ -18,7 +18,10 @@ export const useProducts = (query: any) => {
     }[]
   >([]);
   const [loading, setLoading] = useState(true);
-  const [meta, setMeta] = useState({});
+  const [meta, setMeta] = useState<{
+    totalPages?: number;
+    total?: number;
+  }>({ totalPages: 1, total: 0 });
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -30,10 +33,10 @@ export const useProducts = (query: any) => {
               "Content-Type": "application/json",
             },
             withCredentials: true,
-          }
+          },
         );
         setProducts(res?.data?.products);
-        setMeta(res?.data?.meta);
+        setMeta(res?.data?.meta || { totalPages: 1, total: 0 });
       } catch (error) {
         console.error("Error fetching products:", error);
         toast.error("Failed to load products");

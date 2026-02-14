@@ -67,7 +67,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
       setShowPassword(false);
       setIsLogin(true);
     }
-  }, [isLogin, isOpen]);
+  }, [isLogin, isOpen, isOtp]);
 
   const onCloseOtp = () => {
     setIsOtp(false);

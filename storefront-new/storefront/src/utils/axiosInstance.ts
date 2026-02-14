@@ -1,6 +1,5 @@
-import axios, { AxiosError } from "axios";
-import { API_ROUTES } from "@/pages/api/constants/apiRoutes";
 import { refreshTokens } from "@/lib/auth";
+import axios, { AxiosError } from "axios";
 
 // Create the Axios instance with base configuration
 export const axiosInstance = axios.create({
@@ -17,7 +16,8 @@ let failedQueue: Array<{
   reject: (reason?: unknown) => void;
 }> = [];
 
-const processQueue = (error: Error | null) => {
+// Accept `unknown` because `catch` clauses produce `unknown`-typed errors.
+const processQueue = (error: unknown | null) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
@@ -31,6 +31,7 @@ const processQueue = (error: Error | null) => {
 axiosInstance.interceptors.response.use(
   (response) => response, // Pass through successful responses
   async (error: AxiosError) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const originalRequest: any = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {

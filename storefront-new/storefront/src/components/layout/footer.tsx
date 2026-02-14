@@ -1,20 +1,18 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
-import {
-  Mail,
-  Phone,
-  MapPin,
-  Facebook,
-  Twitter,
-  Instagram,
-  Youtube,
-  ArrowRight,
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+import { motion } from "framer-motion";
+import {
+  ArrowRight,
+  Facebook,
+  Instagram,
+  Mail,
+  MapPin,
+  Phone,
+  Twitter,
+  Youtube,
+} from "lucide-react";
 import Link from "next/link";
 
 export function Footer() {
