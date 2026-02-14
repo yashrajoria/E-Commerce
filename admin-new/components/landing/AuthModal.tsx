@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -109,6 +109,10 @@ export default function AuthModal({
     },
     [onClose, initialView],
   );
+
+  useEffect(() => {
+    if (open) setView(initialView);
+  }, [open, initialView]);
 
   const passwordStrength = useMemo(
     () => getPasswordStrength(registerData.password),
