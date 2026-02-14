@@ -1,6 +1,8 @@
 "use client";
 
 import { useCart } from "@/context/CartContext";
+import { useUser } from "@/context/UserContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Heart,
@@ -18,13 +20,10 @@ import { useCallback, useEffect, useState } from "react";
 import { AccountDropdown } from "../common/account-dropwdown";
 import { CartDrawer } from "../common/cart-drawer";
 import { LoginModal } from "../common/login-modal";
-import { Badge } from "../ui/badge";
+import { WishlistDrawer } from "../common/wishlist-drawer";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { MegaMenu } from "./mega-menu";
-import { useUser } from "@/context/UserContext";
-import { useWishlist } from "@/context/WishlistContext";
-import { WishlistDrawer } from "../common/wishlist-drawer";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

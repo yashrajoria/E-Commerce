@@ -48,6 +48,7 @@ const Products = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(PRODUCTS_PER_PAGE);
+  const [showOutOfStock, setShowOutOfStock] = useState(true);
 
   const query = { page: currentPage, perPage, search: searchQuery };
   const { categories, loading: categoriesLoading } = useCategories();
@@ -55,6 +56,12 @@ const Products = () => {
   const totalPages = meta?.totalPages || 1;
   const isLoading = productsLoading || categoriesLoading;
   const productsCount = meta?.total || 0;
+
+  // Client-side filters
+  const handleToggleOutOfStock = () => setShowOutOfStock((s) => !s);
+  const displayedProducts = products.filter((p: { quantity: number }) =>
+    showOutOfStock ? true : p.quantity > 0,
+  );
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -143,6 +150,8 @@ const Products = () => {
             onViewModeChange={setViewMode}
             perPage={perPage}
             onPerPageChange={handlePerPageChange}
+            showOutOfStock={showOutOfStock}
+            onToggleOutOfStock={handleToggleOutOfStock}
           />
         </div>
       </motion.section>
@@ -179,7 +188,7 @@ const Products = () => {
             variants={pageItem}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
           >
-            {products.map((product: { _id: string }, index: number) => (
+            {displayedProducts.map((product, index) => (
               <motion.div
                 key={product._id}
                 initial={{ opacity: 0, y: 20 }}
@@ -222,93 +231,80 @@ const Products = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {products.map(
-                      (
-                        product: {
-                          _id: string;
-                          images?: string[];
-                          name: string;
-                          description?: string;
-                          category: string;
-                          price: number;
-                          quantity: number;
-                        },
-                        index: number,
-                      ) => (
-                        <motion.tr
-                          key={product._id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.04 }}
-                          className="border-white/[0.04] hover:bg-white/[0.02] transition-colors"
-                        >
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <div className="h-10 w-10 rounded-lg bg-white/[0.04] overflow-hidden flex items-center justify-center">
-                                {product.images?.[0] ? (
-                                  <Image
-                                    src={product.images[0]}
-                                    alt={product.name}
-                                    className="h-full w-full object-cover"
-                                  />
-                                ) : (
-                                  <Package
-                                    size={16}
-                                    className="text-muted-foreground"
-                                  />
-                                )}
-                              </div>
-                              <div>
-                                <span className="font-medium text-sm">
-                                  {product.name}
-                                </span>
-                                <p className="text-xs text-muted-foreground truncate max-w-[200px]">
-                                  {product.description}
-                                </p>
-                              </div>
+                    {displayedProducts.map((product, index) => (
+                      <motion.tr
+                        key={product._id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.04 }}
+                        className="border-white/[0.04] hover:bg-white/[0.02] transition-colors"
+                      >
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-lg bg-white/[0.04] overflow-hidden flex items-center justify-center">
+                              {product.images?.[0] ? (
+                                <Image
+                                  src={product.images[0]}
+                                  alt={product.name}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <Package
+                                  size={16}
+                                  className="text-muted-foreground"
+                                />
+                              )}
                             </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant="outline"
-                              className="text-xs border-white/[0.08]"
-                            >
-                              {product.category}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="font-semibold text-sm">
-                            ${product.price?.toFixed(2)}
-                          </TableCell>
-                          <TableCell className="text-sm">
-                            {product.quantity}
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant="outline"
-                              className={
-                                product.quantity >= 1
-                                  ? "bg-emerald-400/10 text-emerald-400 border-emerald-400/20"
-                                  : "bg-amber-400/10 text-amber-400 border-amber-400/20"
-                              }
-                            >
-                              {product.quantity >= 1
-                                ? "In Stock"
-                                : "Out of Stock"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-8 w-8 hover:bg-white/[0.06] rounded-lg"
-                              onClick={() => handleEditProduct(product)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </motion.tr>
-                      ),
-                    )}
+                            <div>
+                              <span className="font-medium text-sm">
+                                {product.name}
+                              </span>
+                              <p className="text-xs text-muted-foreground truncate max-w-[200px]">
+                                {product.description}
+                              </p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className="text-xs border-white/[0.08]"
+                          >
+                            {product.category}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-semibold text-sm">
+                          ${product.price?.toFixed(2)}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {product.quantity}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className={
+                              product.quantity >= 1
+                                ? "bg-emerald-400/10 text-emerald-400 border-emerald-400/20"
+                                : "bg-amber-400/10 text-amber-400 border-amber-400/20"
+                            }
+                          >
+                            {product.quantity >= 1
+                              ? "In Stock"
+                              : "Out of Stock"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 hover:bg-white/[0.06] rounded-lg"
+                            onClick={() => handleEditProduct(product)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </motion.tr>
+                    ))}
                   </TableBody>
                 </Table>
               </CardContent>

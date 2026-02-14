@@ -1,15 +1,15 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
-import { Star, Heart, ShoppingBag, StarHalf } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { Product } from "@/lib/types";
+import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
-import Link from "next/link";
+import type { Product } from "@/lib/types";
+import { motion } from "framer-motion";
+import { Heart, ShoppingBag, Star } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import React from "react";
 
 interface ProductCardProps {
   product: Product;
@@ -27,6 +27,10 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
     }).format(value ?? 0);
 
   const primaryImage = product.images?.[0] || "/icons8-image-100.png";
+  const categoryName =
+    typeof product.category === "string"
+      ? product.category
+      : (product.category?.name ?? "");
   const isWishlisted = hasWishlistItem(product.id);
   const isOutOfStock = product.quantity !== undefined && product.quantity === 0;
 
@@ -88,7 +92,7 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
         <div className="flex flex-1 flex-col justify-between p-5">
           <div>
             <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
-              {product.category}
+              {categoryName}
             </span>
             <Link href={`/products/${product.id}`}>
               <h3 className="font-medium text-[15px] mt-1 line-clamp-2 hover:text-rose-600 dark:hover:text-rose-400 transition-colors">
@@ -220,7 +224,7 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
         <div className="p-4 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
-              {product.category}
+              {categoryName}
             </span>
             <div className="flex items-center gap-0.5">
               <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />

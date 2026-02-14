@@ -159,7 +159,9 @@ export default function CartPage() {
                   <div className="flex-1">
                     <h3 className="font-semibold mb-1">{item.name}</h3>
                     <p className="text-sm text-muted-foreground mb-2">
-                      {item.category}
+                      {typeof item.category === "string"
+                        ? item.category
+                        : item.category?.name}
                     </p>
                     <div className="flex items-center space-x-2">
                       <span className="font-bold">{formatGBP(item.price)}</span>

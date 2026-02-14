@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
+import type { Product } from "@/lib/types";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
@@ -20,13 +21,18 @@ interface CollectionViewModel {
 export function CollectionsSection() {
   const { data: productsData, isLoading, error } = useProducts(12, 1, false);
   const { data: categoriesData = [] } = useCategories();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const products = productsData?.products ?? [];
 
   const collections = useMemo<CollectionViewModel[]>(() => {
     if (!products.length) return [];
     const grouped = new Map<string, number>();
+    const getCategoryName = (product: Product) =>
+      typeof product.category === "string"
+        ? product.category
+        : (product.category?.name ?? "Other");
     products.forEach((product) => {
-      const key = product.category || "Other";
+      const key = getCategoryName(product);
       grouped.set(key, (grouped.get(key) ?? 0) + 1);
     });
 
@@ -37,7 +43,7 @@ export function CollectionsSection() {
 
     return orderedCategories.slice(0, 3).map((name, index) => {
       const count = grouped.get(name) ?? 0;
-      const firstProduct = products.find((p) => p.category === name);
+      const firstProduct = products.find((p) => getCategoryName(p) === name);
       const image = firstProduct?.images?.[0] || "/icons8-image-100.png";
       return {
         id: name.toLowerCase().replace(/\s+/g, "-"),
