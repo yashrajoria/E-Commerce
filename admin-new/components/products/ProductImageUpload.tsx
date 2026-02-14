@@ -180,6 +180,8 @@ function SortableImage({
         <GripVertical className="h-5 w-5" />
       </div>
       <Image
+        width={100}
+        height={100}
         src={url}
         alt="Uploaded"
         className="w-20 h-20 object-cover rounded-md border border-gray-200 dark:border-gray-700"
