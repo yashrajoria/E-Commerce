@@ -30,7 +30,7 @@ export default function ProductPage() {
 
   const rating = product?.rating ?? 0;
   const images = (product?.images ?? []).filter(Boolean);
-  const isWishlisted = hasWishlistItem(product?.id);
+  const isWishlisted = product ? hasWishlistItem(product.id) : false;
 
   const formatGBP = (value?: number) =>
     new Intl.NumberFormat("en-GB", {
