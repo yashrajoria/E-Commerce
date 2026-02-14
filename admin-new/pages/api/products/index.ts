@@ -1,9 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
-import fs from "fs";
-import formidable, { IncomingForm } from "formidable";
-import FormData from "form-data";
 import axios, { type AxiosRequestConfig } from "axios";
+import FormData from "form-data";
+import formidable from "formidable";
+import fs from "fs";
 
 export const config = {
   api: {
@@ -11,7 +11,7 @@ export const config = {
   },
 };
 
-const API_URL = process.env.NEW_API_URL; // Use server-side environment variable
+const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
 
 const parseForm = (
   req: NextApiRequest,
@@ -26,11 +26,11 @@ const parseForm = (
   });
 };
 
-const extractTokenFromCookie = (req: NextApiRequest): string | undefined => {
-  const cookie = req.headers.cookie
+const extractSessionCookie = (req: NextApiRequest): string => {
+  const sessionCookie = req.headers.cookie
     ?.split(";")
-    .find((c) => c.trim().startsWith("token="));
-  return cookie;
+    .find((c) => c.trim().startsWith("__session="));
+  return sessionCookie?.trim() || "";
 };
 
 const proxyRequest = async (config: AxiosRequestConfig, cookie?: string) => {
@@ -39,114 +39,108 @@ const proxyRequest = async (config: AxiosRequestConfig, cookie?: string) => {
       ...config,
       headers: {
         ...config.headers,
-        Authorization: cookie ? `Bearer ${cookie}` : undefined,
+        Cookie: cookie || "",
       },
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.error("Proxy request failed:", error);
-    throw new Error("Failed to fetch data from the server.");
+    throw error;
   }
 };
 
 async function handleCreateProduct(req: NextApiRequest, res: NextApiResponse) {
-  const form = new IncomingForm({ multiples: true });
+  try {
+    const { fields, files } = await parseForm(req);
 
-  form.parse(req, async (err, fields, files) => {
-    if (err) {
-      console.error("Form parsing error:", err);
-      return res.status(500).json({ error: "Error parsing form" });
+    // Extract fields
+    const name = fields.name?.[0];
+    const category = JSON.parse(fields.category?.[0] || "[]");
+    const price = parseFloat(fields.price?.[0] || "0");
+    const quantity = parseInt(fields.quantity?.[0] || "0");
+    const description = fields.description?.[0] || "";
+    const brand = fields.brand?.[0] || "";
+    const sku = fields.sku?.[0] || "";
+    // is_featured may come as string 'true'/'false' or '1'/'0'
+    const rawIsFeatured = fields.is_featured?.[0];
+    const is_featured =
+      rawIsFeatured === undefined
+        ? undefined
+        : /^(1|true|TRUE|True)$/.test(String(rawIsFeatured));
+
+    if (!name || !category.length || isNaN(price)) {
+      return res.status(400).json({ message: "Missing or invalid fields" });
     }
 
-    try {
-      // Extract fields
-      const name = fields.name?.[0];
-      const category = JSON.parse(fields.category?.[0] || "[]");
-      const price = parseFloat(fields.price?.[0] || "0");
-      const quantity = parseInt(fields.quantity?.[0] || "0");
-      const description = fields.description?.[0] || "";
+    // Prepare multipart form data
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("category", JSON.stringify(category));
+    formData.append("price", price.toString());
+    formData.append("quantity", quantity.toString());
+    formData.append("description", description);
+    if (brand) formData.append("brand", brand);
+    if (sku) formData.append("sku", sku);
+    if (typeof is_featured !== "undefined")
+      formData.append("is_featured", String(is_featured));
 
-      if (!name || !category.length || isNaN(price)) {
-        return res.status(400).json({ message: "Missing or invalid fields" });
-      }
-
-      // Prepare multipart form data
-      const formData = new FormData();
-      formData.append("name", name);
-      formData.append("category", JSON.stringify(category));
-      formData.append("price", price.toString());
-      formData.append("quantity", quantity.toString());
-      formData.append("description", description);
-
-      // Handle image files
-      const rawImages = files.images;
-      const imagesArray = Array.isArray(rawImages) ? rawImages : [rawImages];
-      for (const img of imagesArray) {
-        if (img?.filepath) {
-          try {
-            const buffer = await fs.promises.readFile(img.filepath);
-            formData.append("images", buffer, {
-              filename: img.originalFilename || "image.jpg",
-              contentType: img.mimetype || "image/jpeg",
-            });
-          } catch (e) {
-            console.warn("Could not read file:", img.filepath, e);
-          }
+    // Handle image files
+    const rawImages = files.images;
+    const imagesArray = Array.isArray(rawImages) ? rawImages : [rawImages];
+    for (const img of imagesArray) {
+      if (img?.filepath) {
+        try {
+          const buffer = await fs.promises.readFile(img.filepath);
+          formData.append("images", buffer, {
+            filename: img.originalFilename || "image.jpg",
+            contentType: img.mimetype || "image/jpeg",
+          });
+        } catch (e) {
+          console.warn("Could not read file:", img.filepath, e);
         }
       }
-
-      // Forward token cookie
-      const tokenCookie =
-        req.headers.cookie
-          ?.split(";")
-          .find((c) => c.trim().startsWith("token=")) || "";
-
-      // Submit to Go backend
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_NEW_API_URL}products`,
-        formData,
-        {
-          headers: {
-            ...formData.getHeaders(),
-            Cookie: tokenCookie,
-          },
-          withCredentials: true,
-        },
-      );
-
-      return res.status(response.status).json({
-        message: "Product created successfully",
-        product: response.data,
-      });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (uploadErr: any) {
-      console.error(
-        "Upload failed:",
-        uploadErr?.response?.data || uploadErr.message,
-      );
-      return res.status(500).json({ message: "Error uploading product" });
     }
-  });
+
+    // Forward __session cookie
+    const sessionCookie = extractSessionCookie(req);
+
+    // Submit to Go backend
+    const response = await axios.post(`${API_URL}products`, formData, {
+      headers: {
+        ...formData.getHeaders(),
+        Cookie: sessionCookie,
+      },
+    });
+
+    return res.status(response.status).json({
+      message: "Product created successfully",
+      product: response.data,
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (uploadErr: any) {
+    console.log(
+      "Upload failed:",
+      uploadErr?.response?.data || uploadErr.message,
+    );
+    return res.status(500).json({ message: "Error uploading product" });
+  }
 }
 async function handleGetProducts(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const cookie = req.headers.cookie
-      ?.split(";")
-      .find((c) => c.trim().startsWith("token="));
+    const cookie = extractSessionCookie(req);
 
     const query = req.query;
     const page = query.page || 1;
     const perPage = query.perPage || 10;
-    const response = await axios.get(`http://localhost:8080/products`, {
+    const response = await axios.get(`${API_URL}products`, {
       headers: {
         "Content-Type": "application/json",
-        Cookie: cookie || "",
+        Cookie: cookie,
       },
       params: {
         page,
         perPage,
       },
-      withCredentials: true,
     });
 
     return res.status(response.status).json(response.data);
@@ -165,10 +159,11 @@ async function handleBulkUpload(req: NextApiRequest, res: NextApiResponse) {
   const formData = new FormData();
   formData.append("file", fileStream, file.originalFilename || "upload.csv");
 
-  const cookie = extractTokenFromCookie(req);
+  const autoCreate = req.query.auto_create_categories ?? "true";
+  const cookie = extractSessionCookie(req);
   const response = await proxyRequest(
     {
-      url: `${API_URL}products/bulk`,
+      url: `${API_URL}products/bulk?auto_create_categories=${autoCreate}`,
       method: "POST",
       data: formData,
       headers: formData.getHeaders(),
