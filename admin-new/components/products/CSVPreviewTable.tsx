@@ -43,6 +43,8 @@ export default function CSVPreviewTable({ csvData }: { csvData: any[] }) {
                       <Image
                         src={product.ImageURL || "/placeholder.svg"}
                         alt={product.Name}
+                        width={100}
+                        height={100}
                         className="h-full w-full object-cover"
                       />
                     </div>
