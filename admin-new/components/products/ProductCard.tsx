@@ -88,6 +88,8 @@ const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
               <Image
                 src={product?.images?.[0] || "/placeholder.svg"}
                 alt={product?.name}
+                width={100}
+                height={100}
                 className="h-full w-full object-cover transition-transform duration-300"
               />
             </motion.div>
