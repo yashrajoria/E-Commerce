@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useUser } from "@/context/UserContext";
 import { logoutUser } from "@/lib/user";
-import axios from "axios";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Bell,
@@ -160,23 +159,20 @@ AccountDropdownProps) {
               {/* Header Section */}
               <div className="relative p-6 border-b border-border/50">
                 <div className="flex items-center space-x-4">
-                    <div className="relative group">
-                      <Avatar className="h-14 w-14">
-                        <AvatarImage
-                          src="/placeholder-avatar.jpg"
-                          alt="User"
-                        />
-                        <AvatarFallback className="bg-gradient-to-br from-blue-600 to-purple-600 text-white font-semibold text-lg">
-                          {user?.name?.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-blue-500 transition-all duration-300" />
-                      <div className="absolute -bottom-1 -right-1">
-                        <div className="w-5 h-5 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center">
-                          <Crown className="h-3 w-3 text-white" />
-                        </div>
+                  <div className="relative group">
+                    <Avatar className="h-14 w-14">
+                      <AvatarImage src="/placeholder-avatar.jpg" alt="User" />
+                      <AvatarFallback className="bg-gradient-to-br from-blue-600 to-purple-600 text-white font-semibold text-lg">
+                        {user?.name?.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-blue-500 transition-all duration-300" />
+                    <div className="absolute -bottom-1 -right-1">
+                      <div className="w-5 h-5 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center">
+                        <Crown className="h-3 w-3 text-white" />
                       </div>
                     </div>
+                  </div>
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg">{user?.name}</h3>
                     <p className="text-sm text-muted-foreground">

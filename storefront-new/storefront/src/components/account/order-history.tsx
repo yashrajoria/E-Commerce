@@ -1,12 +1,10 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
-import { Package, Truck, CheckCircle, Clock } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useUserOrders } from "@/hooks/useOrders";
-import Image from "next/image";
+import { motion } from "framer-motion";
+import { CheckCircle, Clock, Package, Truck } from "lucide-react";
 
 const getStatusIcon = (Status: string) => {
   switch (Status) {

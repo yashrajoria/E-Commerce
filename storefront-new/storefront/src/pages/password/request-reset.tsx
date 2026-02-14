@@ -18,8 +18,9 @@ export default function RequestPasswordReset() {
     try {
       await requestPasswordReset(email);
       showSuccess("Password reset email sent. Check your inbox.");
-    } catch (err: any) {
-      showError(err?.response?.data?.error || "Failed to send reset email.");
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
+      showError(error?.response?.data?.error || "Failed to send reset email.");
     } finally {
       setLoading(false);
     }
