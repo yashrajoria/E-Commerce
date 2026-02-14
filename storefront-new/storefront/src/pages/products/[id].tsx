@@ -20,7 +20,7 @@ import { useState } from "react";
 export default function ProductPage() {
   const [quantity, setQuantity] = useState(1);
   const router = useRouter();
-  const { toast } = useToast();
+  const { showSuccess, showInfo } = useToast();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const id = Array.isArray(router.query.id)
     ? router.query.id[0]
@@ -48,26 +48,17 @@ export default function ProductPage() {
       images: product?.images ?? [],
       quantity,
     });
-    toast({
-      title: "Added to cart",
-      description: `${product.name} has been added to your cart.`,
-    });
+    showSuccess(`${product.name} has been added to your cart.`);
   };
 
   const handleWishlistToggle = () => {
     if (!product) return;
     if (isWishlisted) {
       removeFromWishlist(product.id);
-      toast({
-        title: "Removed from wishlist",
-        description: `${product.name} has been removed from your wishlist.`,
-      });
+      showSuccess(`${product.name} has been removed from your wishlist.`);
     } else {
       addToWishlist(product);
-      toast({
-        title: "Added to wishlist",
-        description: `${product.name} has been added to your wishlist.`,
-      });
+      showSuccess(`${product.name} has been added to your wishlist.`);
     }
   };
 
@@ -81,10 +72,7 @@ export default function ProductPage() {
         })
         .catch((error) => console.error("Error sharing", error));
     } else {
-      toast({
-        title: "Share",
-        description: "Web Share API is not supported in your browser.",
-      });
+      showInfo("Web Share API is not supported in your browser.");
     }
   };
 
