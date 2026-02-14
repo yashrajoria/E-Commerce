@@ -1,33 +1,21 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import {
-  Star,
-  Heart,
-  Share2,
-  ShoppingBag,
-  Minus,
-  Plus,
-  Truck,
-  Shield,
-  RotateCcw,
-  Award,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { Header } from "@/components/layout/header";
 import { ProductImageGallery } from "@/components/product/product-image-gallery";
 import { ProductReviews } from "@/components/product/product-reviews";
 import { RelatedProducts } from "@/components/product/related-products";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCart } from "@/context/CartContext";
-import { useProductById } from "@/hooks/useProducts";
-import { useRouter } from "next/router";
-import Head from "next/head";
 import { useWishlist } from "@/context/WishlistContext";
 import { useToast } from "@/hooks/use-toast";
-import { Input } from "@/components/ui/input";
+import { useProductById } from "@/hooks/useProducts";
+import { motion } from "framer-motion";
+import { Heart, Minus, Plus, Share2, ShoppingBag, Star } from "lucide-react";
+import Head from "next/head";
+import { useRouter } from "next/router";
+import { useState } from "react";
 
 export default function ProductPage() {
   const [quantity, setQuantity] = useState(1);

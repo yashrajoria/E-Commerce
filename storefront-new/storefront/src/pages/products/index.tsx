@@ -16,13 +16,13 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { useCategories } from "@/hooks/useCategories";
 import { useProducts } from "@/hooks/useProducts";
 import { motion } from "framer-motion";
 import { Filter, Grid, List, Search } from "lucide-react";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react"; // Imported useEffect
-import Head from "next/head";
-import { useCategories } from "@/hooks/useCategories";
 
 export default function SearchPage() {
   const router = useRouter();

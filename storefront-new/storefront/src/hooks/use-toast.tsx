@@ -1,4 +1,3 @@
-// hooks/useToast.ts
 import { toast } from "sonner";
 
 type ToastType = "success" | "error" | "info" | "warning";

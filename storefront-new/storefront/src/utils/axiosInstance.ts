@@ -1,6 +1,5 @@
-import axios, { AxiosError } from "axios";
-import { API_ROUTES } from "@/pages/api/constants/apiRoutes";
 import { refreshTokens } from "@/lib/auth";
+import axios, { AxiosError } from "axios";
 
 // Create the Axios instance with base configuration
 export const axiosInstance = axios.create({
