@@ -1,0 +1,40 @@
+export const API_ROUTES = {
+  AUTH: {
+    LOGIN: `/auth/login`,
+    REGISTER: `/auth/register`,
+    VERIFY_EMAIL: `/auth/verify-email`,
+    RESEND_VERIFICATION: `/auth/resend-verification`,
+    REFRESH: `/auth/refresh`,
+    REQUEST_PASSWORD_RESET: `/auth/request-password-reset`,
+    RESET_PASSWORD: `/auth/reset-password`,
+    LOGOUT: `/auth/logout`,
+    STATUS: `/auth/status`,
+  },
+  USER: {
+    PROFILE: "users/profile/",
+    UPDATE_PASSWORD: "users/change-password",
+    UPDATE_USER_DATA: "users/profile",
+  },
+
+  PRODUCTS: {
+    ALL: "products",
+    BY_ID: (id: string) => `products/${id}`,
+  },
+
+  CATEGORIES: {
+    ALL: `/categories/`,
+  },
+
+  ORDERS: {
+    ALL: "orders",
+    BY_ID: (id: string) => `orders/${id}`,
+  },
+  CART: {
+    ADD: "cart/add",
+    CHECKOUT: "cart/checkout",
+  },
+  PAYMENT: {
+    STATUS_BY_ORDER: (id: string) => `payment/status/by-order/${id}`,
+    VERIFY: "payment/verify-payment",
+  },
+};
