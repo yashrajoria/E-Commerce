@@ -12,9 +12,10 @@ function ErrorFallback({
   error,
   resetErrorBoundary,
 }: {
-  error: Error;
+  error: unknown; // Change the type to match FallbackProps
   resetErrorBoundary: () => void;
 }) {
+  const errorMessage = (error as Error).message; // Explicitly cast error to Error
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-6">
       <div className="glass-effect-strong rounded-2xl p-8 max-w-md w-full text-center border-gradient">
@@ -37,7 +38,7 @@ function ErrorFallback({
           Something went wrong
         </h2>
         <p className="text-sm text-muted-foreground mb-4 break-words">
-          {error.message}
+          {errorMessage}
         </p>
         <button
           onClick={resetErrorBoundary}
