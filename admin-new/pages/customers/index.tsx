@@ -4,8 +4,8 @@
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
 import StatsCard from "@/components/ui/stats-card";
 import EmptyState from "@/components/ui/empty-state";
-import CustomersFilters from "@/components/customers/CustomersFilters";
-import CustomersTable from "@/components/customers/CustomersTable";
+import { CustomersFilters } from "@/components/customers/CustomersFilters";
+import { CustomersTable } from "@/components/customers/CustomersTable";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,7 +40,7 @@ const Customers = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [filter, setFilter] = useState<CustomerFilter>({
-    search: "",
+    search: "", // Ensure search is always a string
     status: "all",
     sortBy: "name",
     sortOrder: "asc",
@@ -206,7 +206,12 @@ const Customers = () => {
       {/* Filters */}
       <motion.section variants={pageItem}>
         <div className="glass-effect rounded-xl p-4">
-          <CustomersFilters filter={filter} setFilter={setFilter} />
+          <CustomersFilters
+            filter={filter}
+            onFilterChange={(updatedFilter) =>
+              setFilter((prevFilter) => ({ ...prevFilter, ...updatedFilter }))
+            }
+          />
         </div>
       </motion.section>
 
@@ -237,7 +242,18 @@ const Customers = () => {
         ) : (
           <motion.section key="table" variants={pageItem}>
             <div className="glass-effect rounded-xl overflow-hidden border border-white/[0.06]">
-              <CustomersTable customers={paginatedCustomers} />
+              <CustomersTable
+                customers={paginatedCustomers}
+                isLoading={loading}
+                filter={filter}
+                onSort={(key) =>
+                  setFilter((prev) => ({
+                    ...prev,
+                    sortBy: key as CustomerFilter["sortBy"], // Explicitly cast key
+                  }))
+                }
+                onCustomerClick={(id) => console.log("Customer clicked:", id)}
+              />
             </div>
           </motion.section>
         )}
