@@ -1,14 +1,12 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
-import { Star, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
 import { Category } from "@/lib/types";
+import { motion } from "framer-motion";
+import { Star } from "lucide-react";
 
 interface SearchFiltersProps {
   categories: Category[];

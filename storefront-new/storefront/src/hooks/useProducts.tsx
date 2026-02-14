@@ -18,10 +18,15 @@ const fetchProducts = async (
   page: number = 1,
   isFeatured: boolean = false,
 ): Promise<ProductsResponse> => {
+  const params = new URLSearchParams({
+    page: String(page),
+    perPage: String(productCount),
+  });
+  // include is_featured param so the API can filter when requested
+  params.append("is_featured", String(isFeatured));
+
   const response = await axiosInstance.get(
-    API_ROUTES.PRODUCTS.ALL +
-      // `?page=${page}&perPage=${productCount}&is_featured=${isFeatured}`,
-      `?page=${page}&perPage=${productCount}`,
+    `${API_ROUTES.PRODUCTS.ALL}?${params.toString()}`,
   );
 
   const data = response.data as {

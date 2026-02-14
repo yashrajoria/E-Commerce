@@ -63,9 +63,9 @@ const ratingDistribution = [
   { stars: 1, count: 1, percentage: 1 },
 ];
 
-export function ProductReviews({ productId }: ProductReviewsProps) {
+export function ProductReviews({}: ProductReviewsProps) {
   const [sortBy, setSortBy] = useState("newest");
-  const [filterRating, setFilterRating] = useState(0);
+  // const [filterRating, setFilterRating] = useState(0);
 
   const averageRating = 4.6;
   const totalReviews = 75;

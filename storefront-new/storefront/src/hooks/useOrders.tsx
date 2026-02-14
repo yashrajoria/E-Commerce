@@ -47,6 +47,7 @@ export const useUserOrders = (): UseOrdersResult => {
       fetchOrders();
       setShouldFetch(false); // Only fetch once initially or when refetch is called
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, userLoading, shouldFetch]);
 
   const refetch = () => setShouldFetch(true);

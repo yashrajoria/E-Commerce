@@ -20,6 +20,7 @@ interface CollectionViewModel {
 export function CollectionsSection() {
   const { data: productsData, isLoading, error } = useProducts(12, 1, false);
   const { data: categoriesData = [] } = useCategories();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const products = productsData?.products ?? [];
 
   const collections = useMemo<CollectionViewModel[]>(() => {

@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { resetPassword } from "@/pages/api/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/router";
+import { resetPassword } from "@/lib/auth";
 
 export default function ResetPassword() {
   const [email, setEmail] = useState("");
@@ -36,17 +36,37 @@ export default function ResetPassword() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <Input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
         </div>
         <div>
           <Label htmlFor="code">Verification Code</Label>
-          <Input id="code" type="text" value={code} onChange={(e) => setCode(e.target.value)} required />
+          <Input
+            id="code"
+            type="text"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            required
+          />
         </div>
         <div>
           <Label htmlFor="newPassword">New Password</Label>
-          <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
+          <Input
+            id="newPassword"
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            required
+          />
         </div>
-        <Button type="submit" disabled={loading}>{loading ? 'Resetting...' : 'Reset password'}</Button>
+        <Button type="submit" disabled={loading}>
+          {loading ? "Resetting..." : "Reset password"}
+        </Button>
       </form>
     </div>
   );
