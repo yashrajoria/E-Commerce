@@ -22,6 +22,9 @@ export function RelatedProducts({ currentProductId }: RelatedProductsProps) {
       currency: "GBP",
     }).format(value ?? 0);
 
+  const getCategoryName = (p: any) =>
+    typeof p.category === "string" ? p.category : (p.category?.name ?? "");
+
   if (isLoading || error || relatedProducts.length === 0) {
     return null;
   }
@@ -73,7 +76,7 @@ export function RelatedProducts({ currentProductId }: RelatedProductsProps) {
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs text-muted-foreground">
-                      {product.category}
+                      {getCategoryName(product)}
                     </span>
                     <div className="flex items-center space-x-1">
                       <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />

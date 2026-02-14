@@ -26,8 +26,12 @@ export function CollectionsSection() {
   const collections = useMemo<CollectionViewModel[]>(() => {
     if (!products.length) return [];
     const grouped = new Map<string, number>();
+    const getCategoryName = (product: any) =>
+      typeof product.category === "string"
+        ? product.category
+        : (product.category?.name ?? "Other");
     products.forEach((product) => {
-      const key = product.category || "Other";
+      const key = getCategoryName(product);
       grouped.set(key, (grouped.get(key) ?? 0) + 1);
     });
 
@@ -38,7 +42,7 @@ export function CollectionsSection() {
 
     return orderedCategories.slice(0, 3).map((name, index) => {
       const count = grouped.get(name) ?? 0;
-      const firstProduct = products.find((p) => p.category === name);
+      const firstProduct = products.find((p) => getCategoryName(p) === name);
       const image = firstProduct?.images?.[0] || "/icons8-image-100.png";
       return {
         id: name.toLowerCase().replace(/\s+/g, "-"),
