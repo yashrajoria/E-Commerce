@@ -1,15 +1,15 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
-import { Star, Heart, ShoppingBag, StarHalf } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { Product } from "@/lib/types";
+import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
-import Link from "next/link";
+import type { Product } from "@/lib/types";
+import { motion } from "framer-motion";
+import { Heart, ShoppingBag, Star } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import React from "react";
 
 interface ProductCardProps {
   product: Product;

@@ -34,7 +34,7 @@ export function AccountDropdown({
 }: // setLoggedIn,
 AccountDropdownProps) {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
-  const { user, loading, signOut } = useUser();
+  const { user, signOut } = useUser();
   // const getAccountStats = async () => {
   //   await axios.get()
   // }
