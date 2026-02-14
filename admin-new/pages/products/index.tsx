@@ -245,6 +245,7 @@ const Products = () => {
                               {product.images?.[0] ? (
                                 <Image
                                   src={product.images[0]}
+                                  width={100}
                                   alt={product.name}
                                   className="h-full w-full object-cover"
                                 />
