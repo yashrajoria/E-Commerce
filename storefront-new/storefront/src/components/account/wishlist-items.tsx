@@ -73,7 +73,9 @@ export function WishlistItems() {
                   )}
                 </div>
                 <span className="text-sm text-muted-foreground">
-                  {item.category}
+                  {typeof item.category === "string"
+                    ? item.category
+                    : item.category?.name}
                 </span>
               </div>
 
