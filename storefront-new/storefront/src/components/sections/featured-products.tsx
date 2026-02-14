@@ -198,7 +198,9 @@ export function FeaturedProducts() {
                   <div className="p-4 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">
-                        {product.category}
+                        {typeof product.category === "string"
+                          ? product.category
+                          : product.category?.name}
                       </span>
                       <ProductRating
                         rating={product.rating}

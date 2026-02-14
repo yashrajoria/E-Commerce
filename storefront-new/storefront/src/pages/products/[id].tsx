@@ -30,6 +30,11 @@ export default function ProductPage() {
 
   const rating = product?.rating ?? 0;
   const images = (product?.images ?? []).filter(Boolean);
+  const categoryName = product
+    ? typeof product.category === "string"
+      ? product.category
+      : product.category?.name
+    : "";
   const isWishlisted = product ? hasWishlistItem(product.id) : false;
 
   const formatGBP = (value?: number) =>
@@ -131,7 +136,7 @@ export default function ProductPage() {
               <span className="hover:text-rose-600 cursor-pointer">Home</span>
               <span className="mx-2">/</span>
               <span className="hover:text-rose-600 cursor-pointer">
-                {product?.category}
+                {categoryName}
               </span>
               <span className="mx-2">/</span>
               <span>{product?.name}</span>
