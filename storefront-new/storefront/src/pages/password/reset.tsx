@@ -23,6 +23,7 @@ export default function ResetPassword() {
       await resetPassword(email, code, newPassword);
       showSuccess("Password reset successful. Please sign in.");
       router.push("/");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       showError(err?.response?.data?.error || "Failed to reset password.");
     } finally {
