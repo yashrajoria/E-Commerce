@@ -92,7 +92,7 @@ export default function ProductPage() {
   return (
     <div className="min-h-screen">
       <Head>
-        <title>{product.name} | Storefront</title>
+        <title>{product.name} | ShopSwift</title>
         <meta
           name="description"
           content={
@@ -101,7 +101,7 @@ export default function ProductPage() {
           }
         />
         <link rel="canonical" href={`${siteUrl}/products/${id}`} />
-        <meta property="og:title" content={`${product.name} | Storefront`} />
+        <meta property="og:title" content={`${product.name} | ShopSwift`} />
         <meta
           property="og:description"
           content={

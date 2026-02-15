@@ -133,13 +133,13 @@ export default function SearchPage() {
   return (
     <div className="min-h-screen">
       <Head>
-        <title>Storefront | Products</title>
+        <title>ShopSwift | Products</title>
         <meta
           name="description"
           content="Browse our latest products, filter by category, and find the best deals."
         />
         <link rel="canonical" href={`${siteUrl}/products`} />
-        <meta property="og:title" content="Storefront | Products" />
+        <meta property="og:title" content="ShopSwift | Products" />
         <meta
           property="og:description"
           content="Browse our latest products, filter by category, and find the best deals."

@@ -81,7 +81,7 @@ export function Header() {
                 </span>
               </div>
               <span className="font-semibold text-xl tracking-tight text-gradient-premium">
-                Storefront
+                ShopSwift
               </span>
             </Link>
 

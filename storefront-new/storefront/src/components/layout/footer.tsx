@@ -93,7 +93,7 @@ export function Footer() {
                 <span className="text-white font-bold text-sm">S</span>
               </div>
               <span className="font-semibold text-xl tracking-tight">
-                Storefront
+                ShopSwift
               </span>
             </Link>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">
@@ -142,7 +142,7 @@ export function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex flex-col md:flex-row items-center gap-2 md:gap-6 text-sm text-muted-foreground">
               <span>
-                &copy; {new Date().getFullYear()} Storefront. All rights
+                &copy; {new Date().getFullYear()} ShopSwift. All rights
                 reserved.
               </span>
               <div className="flex gap-4">

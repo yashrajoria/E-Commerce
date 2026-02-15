@@ -105,13 +105,13 @@ export default function AccountPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Head>
-          <title>Storefront | Account</title>
+          <title>ShopSwift | Account</title>
           <meta
             name="description"
             content="Manage your profile, orders, and preferences."
           />
           <link rel="canonical" href={`${siteUrl}/account`} />
-          <meta property="og:title" content="Storefront | Account" />
+          <meta property="og:title" content="ShopSwift | Account" />
           <meta
             property="og:description"
             content="Manage your profile, orders, and preferences."
@@ -128,13 +128,13 @@ export default function AccountPage() {
   return (
     <div className="min-h-screen">
       <Head>
-        <title>Storefront | Account</title>
+        <title>ShopSwift | Account</title>
         <meta
           name="description"
           content="Manage your profile, orders, and preferences."
         />
         <link rel="canonical" href={`${siteUrl}/account`} />
-        <meta property="og:title" content="Storefront | Account" />
+        <meta property="og:title" content="ShopSwift | Account" />
         <meta
           property="og:description"
           content="Manage your profile, orders, and preferences."

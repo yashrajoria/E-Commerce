@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useEffect, useState, Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 // import { useSearchParams } from 'next/navigation'; // Removed for compatibility
+import { useCart } from "@/context/CartContext";
 import { API_ROUTES } from "@/pages/api/constants/apiRoutes";
 import { axiosInstance } from "@/utils/axiosInstance";
-import { CheckCircle, XCircle, Loader, ShoppingBag } from "lucide-react";
-import Link from "next/link";
-import { useCart } from "@/context/CartContext";
+import { CheckCircle, Loader, ShoppingBag, XCircle } from "lucide-react";
 import Head from "next/head";
+import Link from "next/link";
 // import Link from 'next/link'; // Removed for compatibility
 
 // A simple component to show a loading spinner
@@ -138,13 +138,13 @@ export default function PaymentSuccessPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Head>
-        <title>Storefront | Payment Status</title>
+        <title>ShopSwift | Payment Status</title>
         <meta
           name="description"
           content="View your payment status and order confirmation."
         />
         <link rel="canonical" href={`${siteUrl}/payment/success`} />
-        <meta property="og:title" content="Storefront | Payment Status" />
+        <meta property="og:title" content="ShopSwift | Payment Status" />
         <meta
           property="og:description"
           content="View your payment status and order confirmation."
