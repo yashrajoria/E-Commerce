@@ -1,0 +1,43 @@
+labels:
+  - name: bug
+    color: d73a4a
+    description: Something is not working
+  - name: enhancement
+    color: a2eeef
+    description: New feature or request
+  - name: task
+    color: 0e8a16
+    description: Generic work item
+  - name: documentation
+    color: 0075ca
+    description: Documentation changes
+  - name: area/auth
+    color: 5319e7
+    description: Auth / account related
+  - name: area/cart
+    color: fbca04
+    description: Cart / checkout
+  - name: area/ux
+    color: 006b75
+    description: UX / accessibility
+  - name: priority/P0
+    color: b60205
+    description: Critical / blocker
+  - name: priority/P1
+    color: d93f0b
+    description: High priority
+  - name: priority/P2
+    color: 0e8a16
+    description: Medium priority
+  - name: priority/P3
+    color: c2e0c6
+    description: Low priority
+  - name: estimate/S
+    color: 006b75
+    description: Small
+  - name: estimate/M
+    color: dbab09
+    description: Medium
+  - name: estimate/L
+    color: 5319e7
+    description: Large
