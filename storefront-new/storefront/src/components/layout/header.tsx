@@ -17,7 +17,7 @@ import {
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { AccountDropdown } from "../common/account-dropwdown";
+import { AccountDropdown } from "../common/account-dropdown";
 import { CartDrawer } from "../common/cart-drawer";
 import { LoginModal } from "../common/login-modal";
 import { WishlistDrawer } from "../common/wishlist-drawer";
