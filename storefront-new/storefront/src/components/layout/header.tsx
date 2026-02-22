@@ -85,6 +85,16 @@ export function Header() {
               </span>
             </Link>
 
+            {/* Quick Nav */}
+            <nav className="hidden md:flex md:ml-6 lg:ml-8 items-center gap-4">
+              <Link
+                href="/categories"
+                className="text-sm font-medium text-gray-700 hover:text-gray-900"
+              >
+                Categories
+              </Link>
+            </nav>
+
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center space-x-1">
               {/* Search */}
@@ -256,4 +266,3 @@ export function Header() {
     </>
   );
 }
-
