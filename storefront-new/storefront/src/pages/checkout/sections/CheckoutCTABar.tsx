@@ -54,7 +54,7 @@ export function CheckoutCTABar({
           className={`flex-1 h-13 rounded-xl font-semibold text-base text-white flex items-center justify-center gap-2 transition-all shadow-lg ${
             isProcessing
               ? "bg-neutral-400 cursor-not-allowed"
-              : "bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 shadow-rose-500/25 hover:shadow-xl hover:shadow-rose-500/30 active:scale-[0.98]"
+              : "bg-linear-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 shadow-rose-500/25 hover:shadow-xl hover:shadow-rose-500/30 active:scale-[0.98]"
           }`}
           aria-label={ctaLabel}
         >

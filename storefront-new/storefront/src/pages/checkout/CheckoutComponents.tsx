@@ -30,9 +30,9 @@ export const ProgressDots = ({
             <motion.div
               className={`flex items-center justify-center rounded-full transition-all duration-300 ${
                 isCompleted
-                  ? "w-8 h-8 bg-gradient-to-r from-rose-600 to-amber-500"
+                  ? "w-8 h-8 bg-linear-to-r from-rose-600 to-amber-500"
                   : isCurrent
-                    ? "w-8 h-8 bg-gradient-to-r from-rose-600 to-amber-500 ring-4 ring-rose-500/20"
+                    ? "w-8 h-8 bg-linear-to-r from-rose-600 to-amber-500 ring-4 ring-rose-500/20"
                     : "w-8 h-8 bg-neutral-200 dark:bg-neutral-700"
               }`}
               layout
@@ -55,7 +55,7 @@ export const ProgressDots = ({
               <div
                 className={`w-8 sm:w-12 h-0.5 rounded-full transition-colors duration-300 ${
                   isCompleted
-                    ? "bg-gradient-to-r from-rose-600 to-amber-500"
+                    ? "bg-linear-to-r from-rose-600 to-amber-500"
                     : "bg-neutral-200 dark:bg-neutral-700"
                 }`}
               />

@@ -73,7 +73,7 @@ export function StepReview({
       {/* ── Order items ── */}
       <div className="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm p-6 sm:p-8">
         <div className="flex items-center gap-3 mb-5">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-600 to-amber-500 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-linear-to-br from-rose-600 to-amber-500 flex items-center justify-center">
             <ShoppingBag className="h-5 w-5 text-white" />
           </div>
           <h2 className="text-xl sm:text-2xl font-bold text-gradient-premium">

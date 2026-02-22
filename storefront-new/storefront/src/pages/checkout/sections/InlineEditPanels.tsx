@@ -20,7 +20,7 @@ interface Props {
 }
 
 const saveButtonCls =
-  "bg-gradient-to-r from-rose-600 to-amber-500 text-white rounded-xl h-10";
+  "bg-linear-to-r from-rose-600 to-amber-500 text-white rounded-xl h-10";
 
 export function InlineEditPanels({
   editingSection,
@@ -196,7 +196,7 @@ export function InlineEditPanels({
                     onClick={() => setShippingMethod(opt.id)}
                     className={`w-full text-left rounded-2xl border-2 p-5 transition-all duration-200 min-h-20 ${
                       isSelected
-                        ? "border-rose-500 bg-gradient-to-r from-rose-50 to-amber-50 dark:from-rose-950/30 dark:to-amber-950/20 shadow-md shadow-rose-500/10"
+                        ? "border-rose-500 bg-linear-to-r from-rose-50 to-amber-50 dark:from-rose-950/30 dark:to-amber-950/20 shadow-md shadow-rose-500/10"
                         : "border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900"
                     }`}
                     role="radio"
@@ -214,7 +214,7 @@ export function InlineEditPanels({
                               {opt.label}
                             </p>
                             {opt.badge && (
-                              <span className="px-2 py-0.5 text-xs font-bold bg-gradient-to-r from-rose-600 to-amber-500 text-white rounded-full">
+                              <span className="px-2 py-0.5 text-xs font-bold bg-linear-to-r from-rose-600 to-amber-500 text-white rounded-full">
                                 {opt.badge}
                               </span>
                             )}
