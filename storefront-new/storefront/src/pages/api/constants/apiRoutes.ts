@@ -1,6 +1,7 @@
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ??
-  "https://lawana-indexless-terese.ngrok-free.dev";
+  // "https://lawana-indexless-terese.ngrok-free.dev";
+  "http://localhost:8080";
 
 // small helper to ensure consistent path joining
 const route = (path: string) =>
