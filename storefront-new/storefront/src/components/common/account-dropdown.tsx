@@ -154,7 +154,7 @@ AccountDropdownProps) {
           >
             <div className="bg-background/95 backdrop-blur-xl rounded-2xl border border-border/50 shadow-2xl overflow-hidden">
               {/* Gradient Background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-teal-500/5 pointer-events-none" />
+              <div className="absolute inset-0 bg-linear-to-br from-blue-500/5 via-purple-500/5 to-teal-500/5 pointer-events-none" />
 
               {/* Header Section */}
               <div className="relative p-6 border-b border-border/50">
@@ -162,13 +162,13 @@ AccountDropdownProps) {
                   <div className="relative group">
                     <Avatar className="h-14 w-14">
                       <AvatarImage src="/placeholder-avatar.jpg" alt="User" />
-                      <AvatarFallback className="bg-gradient-to-br from-blue-600 to-purple-600 text-white font-semibold text-lg">
+                      <AvatarFallback className="bg-linear-to-br from-blue-600 to-purple-600 text-white font-semibold text-lg">
                         {user?.name?.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-blue-500 transition-all duration-300" />
                     <div className="absolute -bottom-1 -right-1">
-                      <div className="w-5 h-5 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center">
+                      <div className="w-5 h-5 bg-linear-to-r from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center">
                         <Crown className="h-3 w-3 text-white" />
                       </div>
                     </div>
@@ -181,7 +181,7 @@ AccountDropdownProps) {
                     <div className="flex items-center mt-1">
                       <Badge
                         variant="secondary"
-                        className="text-xs bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 text-yellow-700 dark:text-yellow-300"
+                        className="text-xs bg-linear-to-r from-yellow-500/20 to-yellow-600/20 text-yellow-700 dark:text-yellow-300"
                       >
                         <Crown className="h-3 w-3 mr-1" />
                         Premium Member
@@ -202,7 +202,7 @@ AccountDropdownProps) {
                       whileHover={{ scale: 1.05 }}
                     >
                       <div
-                        className={`w-8 h-8 mx-auto mb-2 rounded-lg bg-gradient-to-r ${stat.color} flex items-center justify-center`}
+                        className={`w-8 h-8 mx-auto mb-2 rounded-lg bg-linear-to-r ${stat.color} flex items-center justify-center`}
                       >
                         <stat.icon className="h-4 w-4 text-white" />
                       </div>
@@ -228,7 +228,7 @@ AccountDropdownProps) {
                       variant="ghost"
                       className={`w-full justify-start p-4 h-auto text-left rounded-xl transition-all duration-200 ${
                         hoveredItem === item.id
-                          ? "bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20"
+                          ? "bg-linear-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20"
                           : "hover:bg-muted/50"
                       }`}
                       onMouseEnter={() => setHoveredItem(item.id)}
@@ -240,7 +240,7 @@ AccountDropdownProps) {
                           <div
                             className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200 ${
                               hoveredItem === item.id
-                                ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white"
+                                ? "bg-linear-to-r from-blue-500 to-purple-500 text-white"
                                 : "bg-muted text-muted-foreground"
                             }`}
                           >
@@ -303,3 +303,4 @@ AccountDropdownProps) {
     </AnimatePresence>
   );
 }
+

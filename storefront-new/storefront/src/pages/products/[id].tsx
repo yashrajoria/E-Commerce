@@ -16,6 +16,7 @@ import { Heart, Minus, Plus, Share2, ShoppingBag, Star } from "lucide-react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { formatGBP } from "@/lib/utils";
 
 export default function ProductPage() {
   const [quantity, setQuantity] = useState(1);
@@ -37,11 +38,7 @@ export default function ProductPage() {
     : "";
   const isWishlisted = product ? hasWishlistItem(product.id) : false;
 
-  const formatGBP = (value?: number) =>
-    new Intl.NumberFormat("en-GB", {
-      style: "currency",
-      currency: "GBP",
-    }).format(value ?? 0);
+  // use shared formatter from utils
 
   const { addToCart } = useCart();
 
@@ -196,7 +193,7 @@ export default function ProductPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                   disabled={quantity <= 1}
                 >
                   <Minus className="h-4 w-4" />
@@ -205,12 +202,15 @@ export default function ProductPage() {
                   type="number"
                   className="w-16 text-center border-0"
                   value={quantity}
-                  onChange={(e) => setQuantity(parseInt(e.target.value))}
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value, 10);
+                    setQuantity(Number.isNaN(v) ? 1 : Math.max(1, v));
+                  }}
                 />
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setQuantity(quantity + 1)}
+                  onClick={() => setQuantity((q) => q + 1)}
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -218,7 +218,7 @@ export default function ProductPage() {
 
               <Button
                 size="lg"
-                className="flex-1 rounded-full bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 shadow-lg shadow-rose-500/20"
+                className="flex-1 rounded-full bg-linear-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 shadow-lg shadow-rose-500/20"
                 onClick={handleAddToCart}
               >
                 <ShoppingBag className="h-4 w-4 mr-2" />

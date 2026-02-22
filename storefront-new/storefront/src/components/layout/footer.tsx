@@ -74,7 +74,7 @@ export function Footer() {
                 placeholder="Enter your email"
                 className="rounded-full h-11 bg-background"
               />
-              <Button className="rounded-full h-11 px-6 bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 text-white shadow-lg shadow-rose-500/20">
+              <Button className="rounded-full h-11 px-6 bg-linear-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 text-white shadow-lg shadow-rose-500/20">
                 Subscribe
                 <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
@@ -89,7 +89,7 @@ export function Footer() {
           {/* Brand */}
           <div className="lg:col-span-2 space-y-5">
             <Link href="/" className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-rose-600 to-amber-500 flex items-center justify-center shadow-lg shadow-rose-500/20">
+              <div className="h-9 w-9 rounded-xl bg-linear-to-br from-rose-600 to-amber-500 flex items-center justify-center shadow-lg shadow-rose-500/20">
                 <span className="text-white font-bold text-sm">S</span>
               </div>
               <span className="font-semibold text-xl tracking-tight">
@@ -176,3 +176,4 @@ export function Footer() {
     </footer>
   );
 }
+

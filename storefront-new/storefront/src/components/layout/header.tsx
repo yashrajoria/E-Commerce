@@ -75,7 +75,7 @@ export function Header() {
           <div className="flex h-[72px] items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-3 group">
-              <div className="relative h-9 w-9 rounded-xl bg-gradient-to-br from-rose-600 to-amber-500 flex items-center justify-center shadow-lg shadow-rose-500/20 group-hover:shadow-rose-500/40 transition-shadow duration-300">
+              <div className="relative h-9 w-9 rounded-xl bg-linear-to-br from-rose-600 to-amber-500 flex items-center justify-center shadow-lg shadow-rose-500/20 group-hover:shadow-rose-500/40 transition-shadow duration-300">
                 <span className="text-white font-bold text-sm tracking-tight">
                   S
                 </span>
@@ -105,7 +105,7 @@ export function Header() {
               >
                 <Heart className="h-[18px] w-[18px]" />
                 {wishlist.length > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 text-[10px] text-white font-medium flex items-center justify-center shadow-sm">
+                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-linear-to-r from-rose-500 to-pink-500 text-[10px] text-white font-medium flex items-center justify-center shadow-sm">
                     {wishlist.length}
                   </span>
                 )}
@@ -120,7 +120,7 @@ export function Header() {
               >
                 <ShoppingBag className="h-[18px] w-[18px]" />
                 {cartItemCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-gradient-to-r from-rose-600 to-amber-500 text-[10px] text-white font-medium flex items-center justify-center shadow-sm">
+                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-linear-to-r from-rose-600 to-amber-500 text-[10px] text-white font-medium flex items-center justify-center shadow-sm">
                     {cartItemCount}
                   </span>
                 )}
@@ -191,7 +191,7 @@ export function Header() {
               >
                 <ShoppingBag className="h-[18px] w-[18px]" />
                 {cartItemCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-gradient-to-r from-rose-600 to-amber-500 text-[10px] text-white font-medium flex items-center justify-center">
+                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-linear-to-r from-rose-600 to-amber-500 text-[10px] text-white font-medium flex items-center justify-center">
                     {cartItemCount}
                   </span>
                 )}
@@ -256,3 +256,4 @@ export function Header() {
     </>
   );
 }
+
