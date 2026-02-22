@@ -14,6 +14,7 @@ import { useProductById } from "@/hooks/useProducts";
 import { motion } from "framer-motion";
 import { Heart, Minus, Plus, Share2, ShoppingBag, Star } from "lucide-react";
 import Head from "next/head";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { formatGBP } from "@/lib/utils";
@@ -37,6 +38,11 @@ export default function ProductPage() {
       : product.category?.name
     : "";
   const isWishlisted = product ? hasWishlistItem(product.id) : false;
+
+  const isOutOfStock =
+    product?.stock === 0 ||
+    product?.inventory === 0 ||
+    product?.inventory?.quantity === 0;
 
   // use shared formatter from utils
 
@@ -129,15 +135,27 @@ export default function ProductPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="text-sm text-muted-foreground">
-              <span className="hover:text-rose-600 cursor-pointer">Home</span>
+            <nav
+              aria-label="Breadcrumb"
+              className="text-sm text-muted-foreground"
+            >
+              <Link href="/" className="hover:text-rose-600">
+                Home
+              </Link>
               <span className="mx-2">/</span>
-              <span className="hover:text-rose-600 cursor-pointer">
-                {categoryName}
-              </span>
+              {categoryName ? (
+                <Link
+                  href={`/products?category=${encodeURIComponent(categoryName)}`}
+                  className="hover:text-rose-600"
+                >
+                  {categoryName}
+                </Link>
+              ) : (
+                <span className="hover:text-rose-600">Category</span>
+              )}
               <span className="mx-2">/</span>
-              <span>{product?.name}</span>
-            </div>
+              <span aria-current="page">{product?.name}</span>
+            </nav>
 
             <div>
               <h1 className="text-3xl font-bold mb-2">{product?.name}</h1>
@@ -195,6 +213,7 @@ export default function ProductPage() {
                   size="icon"
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                   disabled={quantity <= 1}
+                  aria-label="Decrease quantity"
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
@@ -202,6 +221,8 @@ export default function ProductPage() {
                   type="number"
                   className="w-16 text-center border-0"
                   value={quantity}
+                  min={1}
+                  aria-label="Quantity"
                   onChange={(e) => {
                     const v = parseInt(e.target.value, 10);
                     setQuantity(Number.isNaN(v) ? 1 : Math.max(1, v));
@@ -211,6 +232,7 @@ export default function ProductPage() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setQuantity((q) => q + 1)}
+                  aria-label="Increase quantity"
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -220,9 +242,12 @@ export default function ProductPage() {
                 size="lg"
                 className="flex-1 rounded-full bg-linear-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 shadow-lg shadow-rose-500/20"
                 onClick={handleAddToCart}
+                disabled={isOutOfStock}
+                aria-disabled={isOutOfStock}
+                aria-label={isOutOfStock ? "Out of stock" : "Add to bag"}
               >
                 <ShoppingBag className="h-4 w-4 mr-2" />
-                Add to Bag
+                {isOutOfStock ? "Out of stock" : "Add to Bag"}
               </Button>
 
               <Button
