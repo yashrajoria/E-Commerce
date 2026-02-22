@@ -39,10 +39,8 @@ export default function ProductPage() {
     : "";
   const isWishlisted = product ? hasWishlistItem(product.id) : false;
 
-  const isOutOfStock =
-    product?.stock === 0 ||
-    product?.inventory === 0 ||
-    product?.inventory?.quantity === 0;
+  // Use `inStock` from `Product` type if provided; default to false
+  const isOutOfStock = product ? product.inStock === false : false;
 
   // use shared formatter from utils
 
