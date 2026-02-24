@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -35,28 +36,36 @@ export function AccountDropdown({
 AccountDropdownProps) {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const { user, signOut } = useUser();
-  // const getAccountStats = async () => {
-  //   await axios.get()
-  // }
+  console.log(user);
+  const getInitials = (name?: string | null) =>
+    name
+      ? name
+          .split(" ")
+          .map((n) => n.charAt(0))
+          .slice(0, 2)
+          .join("")
+          .toUpperCase()
+      : "";
+  const displayName = (user as any)?.name || (user as any)?.profile?.name || "";
+  const avatarUrl =
+    (user as any)?.avatar || (user as any)?.profile?.avatar || "";
+  const userOrdersCount = (user as any)?.orders?.meta?.total_orders ?? 0;
+  const userWishlistCount =
+    (user as any)?.wishlist?.length ?? (user as any)?.wishlists?.length ?? 0;
+
   const accountStats = [
     {
       label: "Orders",
-      value: "12",
+      value: String(userOrdersCount),
       icon: Package,
       color: "from-blue-500 to-blue-600",
     },
     {
       label: "Wishlist",
-      value: "8",
+      value: String(userWishlistCount),
       icon: Heart,
       color: "from-pink-500 to-pink-600",
     },
-    // {
-    //   label: "Points",
-    //   value: "2.4K",
-    //   icon: Star,
-    //   color: "from-yellow-500 to-yellow-600",
-    // },
   ];
 
   const router = useRouter();
@@ -75,7 +84,7 @@ AccountDropdownProps) {
       label: "Order History",
       description: "Track and manage your orders",
       icon: Package,
-      badge: "3 Active",
+      badge: userOrdersCount ? `${userOrdersCount} Orders` : null,
       action: () => router.push("/account/?tab=orders"),
     },
     {
@@ -95,20 +104,20 @@ AccountDropdownProps) {
       action: () => router.push("/account/?tab=addresses"),
     },
     {
-      id: "payments",
+      id: "payment",
       label: "Payment Methods",
       description: "Cards and payment options",
       icon: CreditCard,
       badge: null,
-      action: () => router.push("/account/?tab=payments"),
+      action: () => router.push("/account/?tab=payment"),
     },
     {
       id: "notifications",
       label: "Notifications",
       description: "Manage your preferences",
       icon: Bell,
-      badge: "2 New",
-      action: () => router.push("/account/?tab=notifications"),
+      badge: null,
+      action: () => router.push("/account/?tab=settings"),
     },
     {
       id: "settings",
@@ -153,20 +162,23 @@ AccountDropdownProps) {
             transition={{ duration: 0.2, ease: "easeOut" }}
           >
             <div className="bg-background/95 backdrop-blur-xl rounded-2xl border border-border/50 shadow-2xl overflow-hidden">
-              {/* Gradient Background */}
-              <div className="absolute inset-0 bg-linear-to-br from-blue-500/5 via-purple-500/5 to-teal-500/5 pointer-events-none" />
+              {/* Gradient Background (match Account header: rose -> amber) */}
+              <div className="absolute inset-0 bg-linear-to-br from-rose-600/5 via-rose-600/5 to-amber-500/5 pointer-events-none" />
 
               {/* Header Section */}
               <div className="relative p-6 border-b border-border/50">
                 <div className="flex items-center space-x-4">
                   <div className="relative group">
                     <Avatar className="h-14 w-14">
-                      <AvatarImage src="/placeholder-avatar.jpg" alt="User" />
-                      <AvatarFallback className="bg-linear-to-br from-blue-600 to-purple-600 text-white font-semibold text-lg">
-                        {user?.name?.charAt(0)}
+                      <AvatarImage
+                        src={avatarUrl || "/placeholder-avatar.jpg"}
+                        alt="User"
+                      />
+                      <AvatarFallback className="bg-linear-to-r from-rose-600 to-amber-500 text-white font-semibold text-lg">
+                        {getInitials(displayName)}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-blue-500 transition-all duration-300" />
+                    <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-rose-600 transition-all duration-300" />
                     <div className="absolute -bottom-1 -right-1">
                       <div className="w-5 h-5 bg-linear-to-r from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center">
                         <Crown className="h-3 w-3 text-white" />
@@ -174,14 +186,16 @@ AccountDropdownProps) {
                     </div>
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-lg">{user?.name}</h3>
+                    <h3 className="font-semibold text-lg text-foreground">
+                      {displayName || user?.email || "User"}
+                    </h3>
                     <p className="text-sm text-muted-foreground">
                       {user?.email}
                     </p>
                     <div className="flex items-center mt-1">
                       <Badge
                         variant="secondary"
-                        className="text-xs bg-linear-to-r from-yellow-500/20 to-yellow-600/20 text-yellow-700 dark:text-yellow-300"
+                        className="text-xs bg-linear-to-r from-rose-600/20 to-amber-500/20 text-rose-700 dark:text-amber-300"
                       >
                         <Crown className="h-3 w-3 mr-1" />
                         Premium Member
@@ -228,7 +242,7 @@ AccountDropdownProps) {
                       variant="ghost"
                       className={`w-full justify-start p-4 h-auto text-left rounded-xl transition-all duration-200 ${
                         hoveredItem === item.id
-                          ? "bg-linear-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20"
+                          ? "bg-linear-to-r from-rose-600/10 to-amber-500/10 border border-rose-600/20"
                           : "hover:bg-muted/50"
                       }`}
                       onMouseEnter={() => setHoveredItem(item.id)}
@@ -240,7 +254,7 @@ AccountDropdownProps) {
                           <div
                             className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200 ${
                               hoveredItem === item.id
-                                ? "bg-linear-to-r from-blue-500 to-purple-500 text-white"
+                                ? "bg-linear-to-r from-rose-600 to-amber-500 text-white"
                                 : "bg-muted text-muted-foreground"
                             }`}
                           >
@@ -303,4 +317,3 @@ AccountDropdownProps) {
     </AnimatePresence>
   );
 }
-
