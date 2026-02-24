@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { useWishlist } from "@/context/WishlistContext";
 
 interface AccountDropdownProps {
   isOpen: boolean;
@@ -49,9 +50,14 @@ AccountDropdownProps) {
   const displayName = (user as any)?.name || (user as any)?.profile?.name || "";
   const avatarUrl =
     (user as any)?.avatar || (user as any)?.profile?.avatar || "";
+  const { wishlist: localWishlist } = useWishlist();
+
   const userOrdersCount = (user as any)?.orders?.meta?.total_orders ?? 0;
   const userWishlistCount =
-    (user as any)?.wishlist?.length ?? (user as any)?.wishlists?.length ?? 0;
+    (user as any)?.wishlist?.length ??
+    (user as any)?.wishlists?.length ??
+    localWishlist?.length ??
+    0;
 
   const accountStats = [
     {
@@ -92,7 +98,7 @@ AccountDropdownProps) {
       label: "Wishlist",
       description: "Your saved items",
       icon: Heart,
-      badge: "8 Items",
+      badge: userWishlistCount ? `${userWishlistCount} Items` : null,
       action: () => router.push("/account/?tab=wishlist"),
     },
     {

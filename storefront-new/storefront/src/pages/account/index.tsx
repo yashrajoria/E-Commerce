@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUser } from "@/context/UserContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { useToast } from "@/hooks/use-toast";
 import { updatePassword, updateUserData } from "@/lib/user";
 import { motion } from "framer-motion";
@@ -35,6 +36,7 @@ export default function AccountPage() {
   const [activeTab, setActiveTab] = useState("profile");
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const { user, loading } = useUser();
+  const { wishlist: localWishlist } = useWishlist();
 
   console.log({ user });
   const [profile, setProfile] = useState({
@@ -183,6 +185,12 @@ export default function AccountPage() {
                     <span className="text-white/60">Total Orders</span>
                     <p className="font-medium">
                       {user?.orders?.meta?.total_orders || 0}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-white/60">Wishlist</span>
+                    <p className="font-medium">
+                      {user?.wishlist?.length ?? localWishlist.length ?? 0}
                     </p>
                   </div>
                   <div>
