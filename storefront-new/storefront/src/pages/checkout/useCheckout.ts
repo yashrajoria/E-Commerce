@@ -6,11 +6,7 @@ import { axiosInstance } from "@/utils/axiosInstance";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { STEP_META } from "./checkoutConstants";
 import { FieldError, ShippingDetails, StepId } from "./checkoutTypes";
-import {
-  debounce,
-  formatGBP,
-  validateField,
-} from "./checkoutUtils";
+import { debounce, formatGBP, validateField } from "./checkoutUtils";
 
 /** Polls the payment API until a checkout URL is available or attempt limit is reached. */
 async function pollForPaymentUrl(id: string): Promise<string> {
@@ -20,10 +16,17 @@ async function pollForPaymentUrl(id: string): Promise<string> {
 
   while (attempts < maxAttempts) {
     try {
-      const res = await axiosInstance.get(API_ROUTES.PAYMENT.STATUS_BY_ORDER(id));
+      const res = await axiosInstance.get(
+        API_ROUTES.PAYMENT.STATUS_BY_ORDER(id),
+      );
       const { status, checkout_url } = res.data;
-      if (status === "URL_READY" && checkout_url) return checkout_url;
-      if (status === "FAILED") throw new Error("Payment failed during processing.");
+      const statusStr = typeof status === "string" ? status.toUpperCase() : "";
+      // Accept the payment URL as soon as the backend returns it (some responses
+      // may set a 'pending' status while still providing the `checkout_url`).
+      if (checkout_url) return checkout_url;
+      if (statusStr === "URL_READY") return checkout_url;
+      if (statusStr === "FAILED")
+        throw new Error("Payment failed during processing.");
     } catch {
       // swallow poll errors; retry loop handles it
     }
@@ -85,8 +88,15 @@ export function useCheckout(): CheckoutState {
   const [direction, setDirection] = useState<1 | -1>(1);
   const [shippingMethod, setShippingMethod] = useState("standard");
   const [shippingDetails, setShippingDetails] = useState<ShippingDetails>({
-    email: "", phone: "", firstName: "", lastName: "",
-    address: "", city: "", state: "", zipCode: "", country: "",
+    email: "",
+    phone: "",
+    firstName: "",
+    lastName: "",
+    address: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    country: "",
   });
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [fieldErrors, setFieldErrors] = useState<FieldError>({});
@@ -99,7 +109,10 @@ export function useCheckout(): CheckoutState {
   const [editingSection, setEditingSection] = useState<StepId | null>(null);
 
   // Computed values
-  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = cart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
   const shipping = shippingMethod === "express" ? 15.99 : 5.99;
   const tax = subtotal * 0.08;
   const discountAmount = subtotal * discount;
@@ -108,11 +121,16 @@ export function useCheckout(): CheckoutState {
 
   const ctaLabel = (() => {
     switch (currentStep) {
-      case 1: return "Continue to Shipping";
-      case 2: return "Continue to Delivery";
-      case 3: return "Review Order";
-      case 4: return `Pay ${formatGBP(total)}`;
-      default: return "Continue";
+      case 1:
+        return "Continue to Shipping";
+      case 2:
+        return "Continue to Delivery";
+      case 3:
+        return "Review Order";
+      case 4:
+        return `Pay ${formatGBP(total)}`;
+      default:
+        return "Continue";
     }
   })();
 
@@ -139,7 +157,9 @@ export function useCheckout(): CheckoutState {
       const parsed = JSON.parse(draft);
       if (parsed.shippingDetails) setShippingDetails(parsed.shippingDetails);
       if (parsed.shippingMethod) setShippingMethod(parsed.shippingMethod);
-    } catch { /* ignore corrupt data */ }
+    } catch {
+      /* ignore corrupt data */
+    }
   }, []);
 
   // Cleanup poll interval on unmount
@@ -154,7 +174,10 @@ export function useCheckout(): CheckoutState {
     (name: keyof ShippingDetails, value: string) => {
       setShippingDetails((prev) => ({ ...prev, [name]: value }));
       if (touched[name]) {
-        setFieldErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
+        setFieldErrors((prev) => ({
+          ...prev,
+          [name]: validateField(name, value),
+        }));
       }
     },
     [touched],
@@ -175,7 +198,15 @@ export function useCheckout(): CheckoutState {
     (step: StepId): boolean => {
       let fields: (keyof ShippingDetails)[] = [];
       if (step === 1) fields = ["email", "phone"];
-      else if (step === 2) fields = ["firstName", "lastName", "address", "city", "state", "zipCode"];
+      else if (step === 2)
+        fields = [
+          "firstName",
+          "lastName",
+          "address",
+          "city",
+          "state",
+          "zipCode",
+        ];
       else return true;
 
       const newErrors: FieldError = {};
@@ -198,7 +229,15 @@ export function useCheckout(): CheckoutState {
     (step: StepId): boolean => {
       let fields: (keyof ShippingDetails)[] = [];
       if (step === 1) fields = ["email", "phone"];
-      else if (step === 2) fields = ["firstName", "lastName", "address", "city", "state", "zipCode"];
+      else if (step === 2)
+        fields = [
+          "firstName",
+          "lastName",
+          "address",
+          "city",
+          "state",
+          "zipCode",
+        ];
       else return true;
       return fields.every((f) => {
         const v = shippingDetails[f].trim();
@@ -218,7 +257,9 @@ export function useCheckout(): CheckoutState {
         const el = document.getElementById("sr-step-announce");
         if (el) el.textContent = `Step ${step} of 4: ${label}`;
       }
-      const firstInput = document.querySelector(`[data-step="${step}"] input`) as HTMLElement | null;
+      const firstInput = document.querySelector(
+        `[data-step="${step}"] input`,
+      ) as HTMLElement | null;
       firstInput?.focus();
     },
     [currentStep],
@@ -237,7 +278,10 @@ export function useCheckout(): CheckoutState {
   }, [currentStep, goToStep]);
 
   const applyPromo = useCallback(() => {
-    if (!promoCode.trim()) { setPromoError("Enter a promo code"); return; }
+    if (!promoCode.trim()) {
+      setPromoError("Enter a promo code");
+      return;
+    }
     if (promoCode.trim().toUpperCase() === "SAVE10") {
       setDiscount(0.1);
       setPromoError("");
@@ -249,7 +293,10 @@ export function useCheckout(): CheckoutState {
   }, [promoCode, showSuccess]);
 
   const completeOrder = useCallback(async () => {
-    if (cart.length === 0) { showError("Your cart is empty"); return; }
+    if (cart.length === 0) {
+      showError("Your cart is empty");
+      return;
+    }
     if (!validateStep(1) || !validateStep(2)) {
       showError("Please complete all required details");
       return;
@@ -257,24 +304,59 @@ export function useCheckout(): CheckoutState {
     setIsProcessing(true);
     try {
       const addRes = await axiosInstance.post(API_ROUTES.CART.ADD, {
-        items: cart.map((item) => ({ product_id: item.id, quantity: item.quantity })),
+        items: cart.map((item) => ({
+          product_id: item.id,
+          quantity: item.quantity,
+        })),
       });
       if (addRes.status !== 200) {
         showError("Failed to update cart. Please try again.");
         return;
       }
-      const checkoutRes = await axiosInstance.post(API_ROUTES.CART.CHECKOUT, {});
+      const checkoutRes = await axiosInstance.post(
+        API_ROUTES.CART.CHECKOUT,
+        {},
+      );
       if (checkoutRes.status !== 200 || !checkoutRes.data.order_id) {
         showError("Failed to initiate checkout. Please try again.");
         return;
       }
       const checkoutUrl = await pollForPaymentUrl(checkoutRes.data.order_id);
+      // Debugging: log order id and returned URL to help diagnose redirect failures
+      // (These logs can be removed once the issue is resolved.)
+      // eslint-disable-next-line no-console
+      console.debug("checkoutRes.order_id", checkoutRes.data?.order_id);
+      // eslint-disable-next-line no-console
+      console.debug("polled checkoutUrl", checkoutUrl);
       localStorage.removeItem("checkout_draft");
       showSuccess("Redirecting to secure payment…");
-      window.location.href = checkoutUrl;
+      if (checkoutUrl && typeof checkoutUrl === "string") {
+        try {
+          // Prefer assign (does not create a new history entry)
+          window.location.assign(checkoutUrl);
+          // Fallback: if assign didn't navigate (e.g. blocked), open in a new tab after a short delay
+          setTimeout(() => {
+            try {
+              window.open(checkoutUrl, "_blank");
+            } catch {
+              // swallow fallback errors
+            }
+          }, 3000);
+        } catch {
+          try {
+            window.open(checkoutUrl, "_blank");
+          } catch {
+            showError("Unable to open payment page. Please try again.");
+          }
+        }
+      } else {
+        showError("Payment URL was invalid. Please try again.");
+      }
     } catch (error: unknown) {
       showError(
-        error instanceof Error ? error.message : "Something went wrong. Please try again.",
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again.",
       );
     } finally {
       setIsProcessing(false);
@@ -282,13 +364,40 @@ export function useCheckout(): CheckoutState {
   }, [cart, showError, showSuccess, validateStep]);
 
   return {
-    cart, currentStep, direction, shippingMethod, shippingDetails,
-    touched, fieldErrors, promoCode, discount, promoExpanded, promoError,
-    isProcessing, showMobileSummary, editingSection,
-    subtotal, shipping, tax, discountAmount, total, itemCount, ctaLabel,
-    setShippingMethod, setPromoCode, setPromoExpanded,
-    setShowMobileSummary, setEditingSection,
-    handleChange, handleBlur, validateStep, isStepValid,
-    goToStep, goNext, goBack, applyPromo, completeOrder,
+    cart,
+    currentStep,
+    direction,
+    shippingMethod,
+    shippingDetails,
+    touched,
+    fieldErrors,
+    promoCode,
+    discount,
+    promoExpanded,
+    promoError,
+    isProcessing,
+    showMobileSummary,
+    editingSection,
+    subtotal,
+    shipping,
+    tax,
+    discountAmount,
+    total,
+    itemCount,
+    ctaLabel,
+    setShippingMethod,
+    setPromoCode,
+    setPromoExpanded,
+    setShowMobileSummary,
+    setEditingSection,
+    handleChange,
+    handleBlur,
+    validateStep,
+    isStepValid,
+    goToStep,
+    goNext,
+    goBack,
+    applyPromo,
+    completeOrder,
   };
 }
