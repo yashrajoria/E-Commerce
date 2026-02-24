@@ -9,25 +9,30 @@ const route = (path: string) =>
 
 export const API_ROUTES = {
   AUTH: {
+    // LOGIN: route("/bff/auth/login"),
+    // REGISTER: route("/bff/auth/register"),
     LOGIN: route("/auth/login"),
     REGISTER: route("/auth/register"),
-    VERIFY_EMAIL: route("/auth/verify-email"),
-    RESEND_VERIFICATION: route("/auth/resend-verification"),
-    REFRESH: route("/auth/refresh"),
-    REQUEST_PASSWORD_RESET: route("/auth/request-password-reset"),
-    RESET_PASSWORD: route("/auth/reset-password"),
-    LOGOUT: route("/auth/logout"),
-    STATUS: route("/auth/status"),
+    VERIFY_EMAIL: route("/bff/auth/verify-email"),
+    RESEND_VERIFICATION: route("/bff/auth/resend-verification"),
+    REFRESH: route("/bff/auth/refresh"),
+    REQUEST_PASSWORD_RESET: route("/bff/auth/request-password-reset"),
+    RESET_PASSWORD: route("/bff/auth/reset-password"),
+    LOGOUT: route("/bff/auth/logout"),
+    STATUS: route("/bff/auth/status"),
   },
 
   USER: {
-    PROFILE: route("/users/profile"),
-    UPDATE_PASSWORD: route("/users/change-password"),
-    UPDATE_USER_DATA: route("/users/profile"),
+    // PROFILE: route("/users/profile"),
+    PROFILE: route("/bff/profile"),
+    // UPDATE_PASSWORD: route("/users/change-password"),
+    // UPDATE_USER_DATA: route("/users/profile"),
+    UPDATE_PASSWORD: route("/bff/change-password"),
+    UPDATE_USER_DATA: route("/bff/profile"),
   },
 
   PRODUCTS: {
-    ALL: route("/products"),
+    ALL: route("/bff/products"),
     BY_ID: (id: string) => route(`/products/${id}`),
   },
 
