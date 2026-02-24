@@ -17,6 +17,11 @@ interface User {
   created_at: string;
   totalOrders?: number;
   totalSpent?: number;
+  // optional fields returned by various API shapes
+  orders?: any;
+  wishlist?: any[];
+  wishlists?: any[];
+  profile?: { [key: string]: any };
   role: string;
 }
 
