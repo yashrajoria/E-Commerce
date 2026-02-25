@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 import BulkUpload from "@/components/category/BulkUpload";
 import DeleteComponent from "@/components/category/DeleteComponent";
 import EditComponent from "@/components/category/EditComponent";

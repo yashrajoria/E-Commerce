@@ -3,7 +3,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useCategories } from "@/hooks/useCategory";
-import React from "react";
 import { Plus } from "lucide-react";
 import {
   Dialog,

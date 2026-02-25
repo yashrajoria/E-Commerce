@@ -1,6 +1,3 @@
-/**
- * Premium Inventory Page
- */
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
 import StatsCard from "@/components/ui/stats-card";
 import { Button } from "@/components/ui/button";
