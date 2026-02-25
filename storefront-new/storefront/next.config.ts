@@ -9,7 +9,9 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "res.cloudinary.com" },
       { protocol: "https", hostname: "i.imgur.com" },
+      { protocol: "https", hostname: "tse2.mm.bing.net" },
       { protocol: "http", hostname: "localhost" },
+
       // Allow images served from localstack (used in local integration tests)
       { protocol: "http", hostname: "localstack", port: "4566" },
     ],
