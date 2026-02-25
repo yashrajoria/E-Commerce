@@ -185,7 +185,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   <div className="space-y-2">
                     <Button
                       asChild
-                      className="w-full rounded-full bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 shadow-lg shadow-rose-500/20"
+                      className="w-full rounded-full bg-linear-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 shadow-lg shadow-rose-500/20"
                       size="lg"
                     >
                       <Link href="/checkout" onClick={onClose}>
@@ -216,3 +216,4 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     </AnimatePresence>
   );
 }
+

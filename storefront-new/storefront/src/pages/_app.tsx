@@ -17,13 +17,13 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <title>Storefront</title>
+        <title>ShopSwift</title>
         <meta
           name="description"
           content="Shop top products with fast delivery, secure checkout, and great prices."
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta property="og:title" content="Storefront" />
+        <meta property="og:title" content="ShopSwift" />
         <meta
           property="og:description"
           content="Shop top products with fast delivery, secure checkout, and great prices."

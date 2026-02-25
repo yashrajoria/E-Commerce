@@ -3,6 +3,8 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useCallback,
+  useMemo,
   ReactNode,
 } from "react";
 import type { Product } from "@/lib/types";
@@ -35,7 +37,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
         const normalized = parsed.map((item) => ({
           ...item,
           id: item.id ?? item._id,
-          images: item.images?.length ? item.images : item.image ? [item.image] : [],
+          images: item.images?.length
+            ? item.images
+            : item.image
+              ? [item.image]
+              : [],
         }));
         setCart(normalized);
       }
@@ -53,63 +59,52 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return currentCart.findIndex((item) => item.id === id);
   };
 
-  const addToCart = (itemToAdd: CartItem) => {
+  const addToCart = useCallback((itemToAdd: CartItem) => {
     setCart((prevCart) => {
-      // FIX: Use the robust helper to find an existing item
       const existingItemIndex = findItemIndex(prevCart, itemToAdd.id);
       if (existingItemIndex !== -1) {
-        // If item exists, update its quantity
         return prevCart.map((item, index) =>
           index === existingItemIndex
             ? { ...item, quantity: item.quantity + itemToAdd.quantity }
-            : item
+            : item,
         );
       }
-      // If item does not exist, add it to the cart
       return [...prevCart, itemToAdd];
     });
-  };
+  }, []);
 
-  const removeFromCart = (id: number | string) => {
+  const removeFromCart = useCallback((id: number | string) => {
     setCart((prevCart) => {
       const itemIndex = findItemIndex(prevCart, id);
-      // FIX: Use the robust helper to find the item
-      if (itemIndex === -1) return prevCart; // Item not found, do nothing
-
+      if (itemIndex === -1) return prevCart;
       const newCart = [...prevCart];
-      newCart.splice(itemIndex, 1); // Remove the item at the found index
+      newCart.splice(itemIndex, 1);
       return newCart;
     });
-  };
+  }, []);
 
-  const updateQuantity = (id: number | string, quantity: number) => {
-    if (quantity <= 0) {
-      return;
-    }
-
-    setCart((prevCart) => {
-      // FIX: Use the robust helper to find the item to update
-      const itemIndex = findItemIndex(prevCart, id);
-      if (itemIndex === -1) {
-        return prevCart;
-      }
-      return prevCart.map((item, index) =>
-        index === itemIndex ? { ...item, quantity } : item
-      );
-    });
-  };
-
-  const clearCart = () => {
-    setCart([]);
-  };
-
-  return (
-    <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart }}
-    >
-      {children}
-    </CartContext.Provider>
+  const updateQuantity = useCallback(
+    (id: number | string, quantity: number) => {
+      if (quantity <= 0) return;
+      setCart((prevCart) => {
+        const itemIndex = findItemIndex(prevCart, id);
+        if (itemIndex === -1) return prevCart;
+        return prevCart.map((item, index) =>
+          index === itemIndex ? { ...item, quantity } : item,
+        );
+      });
+    },
+    [],
   );
+
+  const clearCart = useCallback(() => setCart([]), []);
+
+  const value = useMemo(
+    () => ({ cart, addToCart, removeFromCart, updateQuantity, clearCart }),
+    [cart, addToCart, removeFromCart, updateQuantity, clearCart],
+  );
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
 export function useCart() {

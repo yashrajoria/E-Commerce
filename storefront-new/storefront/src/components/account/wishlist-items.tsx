@@ -11,10 +11,12 @@ import Image from "next/image";
 export function WishlistItems() {
   const { wishlist, removeFromWishlist } = useWishlist();
   const wishlistItems = wishlist;
-  const formatGBP = (value?: number) =>
-    new Intl.NumberFormat("en-GB", {
+  const currency = process.env.NEXT_PUBLIC_CURRENCY ?? "GBP";
+  const locale = process.env.NEXT_PUBLIC_LOCALE ?? "en-GB";
+  const formatCurrency = (value?: number) =>
+    new Intl.NumberFormat(locale, {
       style: "currency",
-      currency: "GBP",
+      currency,
     }).format(value ?? 0);
 
   return (
@@ -65,10 +67,12 @@ export function WishlistItems() {
               <h3 className="font-semibold mb-2 line-clamp-2">{item.name}</h3>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-2">
-                  <span className="font-bold">{formatGBP(item.price)}</span>
+                  <span className="font-bold">
+                    {formatCurrency(item.price)}
+                  </span>
                   {item.originalPrice && (
                     <span className="text-sm text-muted-foreground line-through">
-                      {formatGBP(item.originalPrice)}
+                      {formatCurrency(item.originalPrice)}
                     </span>
                   )}
                 </div>

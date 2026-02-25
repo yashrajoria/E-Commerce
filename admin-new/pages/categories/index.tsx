@@ -56,9 +56,18 @@ const Categories = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isBulkOpen, setIsBulkOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategoryParent, setNewCategoryParent] = useState<string | null>(
+    null,
+  );
+  const [newCategoryImage, setNewCategoryImage] = useState("");
+  const [newCategorySlug, setNewCategorySlug] = useState("");
+  const [newCategoryPath, setNewCategoryPath] = useState<string>("");
+  const [newCategoryLevel, setNewCategoryLevel] = useState<number>(1);
+  const [newCategoryActive, setNewCategoryActive] = useState<boolean>(true);
   const [editCategoryName, setEditCategoryName] = useState("");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
@@ -83,13 +92,29 @@ const Categories = () => {
   const handleAddCategory = async () => {
     if (!newCategoryName.trim()) return;
     try {
-      await axios.post(
-        "/api/categories",
-        { name: newCategoryName },
-        { withCredentials: true },
-      );
+      // build payload to match backend schema
+      const payload: any = {
+        name: newCategoryName,
+        parent_ids: newCategoryParent ? [newCategoryParent] : [],
+        image: newCategoryImage || undefined,
+        ancestors: newCategoryParent ? [newCategoryParent] : [],
+        slug:
+          newCategorySlug ||
+          (newCategoryName || "").toLowerCase().replace(/\s+/g, "-"),
+        path: newCategoryPath ? [newCategoryPath] : [],
+        level: newCategoryLevel,
+        is_active: newCategoryActive,
+      };
+
+      await axios.post("/api/categories", payload, { withCredentials: true });
       toast.success("Category created successfully!");
       setNewCategoryName("");
+      setNewCategoryParent(null);
+      setNewCategoryImage("");
+      setNewCategorySlug("");
+      setNewCategoryPath("");
+      setNewCategoryLevel(1);
+      setNewCategoryActive(true);
       setIsAddOpen(false);
       window.location.reload();
     } catch {
@@ -132,51 +157,257 @@ const Categories = () => {
       title="Categories"
       breadcrumbs={[{ label: "Categories" }]}
       headerActions={
-        <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-          <DialogTrigger asChild>
-            <Button
-              size="sm"
-              className="gap-2 text-xs gradient-purple text-white hover:opacity-90 rounded-xl h-8 border-0"
-            >
-              <Plus size={13} />
-              Add Category
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="glass-effect-strong border-white/[0.08]">
-            <DialogHeader>
-              <DialogTitle className="text-gradient">New Category</DialogTitle>
-              <DialogDescription>
-                Create a new product category
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label className="text-sm">Category Name</Label>
-                <Input
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                  placeholder="Enter category name"
-                  className="bg-white/[0.04] border-white/[0.08] rounded-xl"
-                />
+        <>
+          <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+            <DialogTrigger asChild>
+              <Button
+                size="sm"
+                className="gap-2 text-xs gradient-purple text-white hover:opacity-90 rounded-xl h-8 border-0"
+              >
+                <Plus size={13} />
+                Add Category
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="glass-effect-strong border-white/[0.08]">
+              <DialogHeader>
+                <DialogTitle className="text-gradient">
+                  New Category
+                </DialogTitle>
+                <DialogDescription>
+                  Create a new product category
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2 grid grid-cols-1 gap-3">
+                  <div>
+                    <Label className="text-sm">Category Name</Label>
+                    <Input
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      placeholder="Enter category name"
+                      className="bg-white/[0.04] border-white/[0.08] rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-sm">
+                      Parent Category (optional)
+                    </Label>
+                    <select
+                      value={newCategoryParent || ""}
+                      onChange={(e) =>
+                        setNewCategoryParent(e.target.value || null)
+                      }
+                      className="w-full bg-white/[0.04] border-white/[0.08] rounded-xl h-9 px-3"
+                    >
+                      <option value="">None</option>
+                      {categories.map((c: any) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm">Image URL (optional)</Label>
+                    <Input
+                      value={newCategoryImage}
+                      onChange={(e) => setNewCategoryImage(e.target.value)}
+                      placeholder="https://.../image.jpg"
+                      className="bg-white/[0.04] border-white/[0.08] rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-sm">Slug (optional)</Label>
+                    <Input
+                      value={newCategorySlug}
+                      onChange={(e) => setNewCategorySlug(e.target.value)}
+                      placeholder="peripherals"
+                      className="bg-white/[0.04] border-white/[0.08] rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-sm">Path (optional)</Label>
+                    <Input
+                      value={newCategoryPath}
+                      onChange={(e) => setNewCategoryPath(e.target.value)}
+                      placeholder="string"
+                      className="bg-white/[0.04] border-white/[0.08] rounded-xl"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-sm">Level</Label>
+                      <Input
+                        type="number"
+                        value={newCategoryLevel}
+                        onChange={(e) =>
+                          setNewCategoryLevel(Number(e.target.value))
+                        }
+                        className="bg-white/[0.04] border-white/[0.08] rounded-xl"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm">Active</Label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={newCategoryActive}
+                          onChange={(e) =>
+                            setNewCategoryActive(e.target.checked)
+                          }
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          is_active
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-            <DialogFooter>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsAddOpen(false)}
+                  className="rounded-xl border-white/[0.08]"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleAddCategory}
+                  className="gradient-purple text-white border-0 rounded-xl"
+                >
+                  Create
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Bulk Upload Dialog */}
+          <Dialog open={isBulkOpen} onOpenChange={setIsBulkOpen}>
+            <DialogTrigger asChild>
               <Button
+                size="sm"
                 variant="outline"
-                onClick={() => setIsAddOpen(false)}
-                className="rounded-xl border-white/[0.08]"
+                className="gap-2 text-xs text-muted-foreground hover:opacity-90 rounded-xl h-8 border-white/[0.04] ml-2"
               >
-                Cancel
+                Bulk Upload
               </Button>
-              <Button
-                onClick={handleAddCategory}
-                className="gradient-purple text-white border-0 rounded-xl"
-              >
-                Create
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent className="glass-effect-strong border-white/[0.08]">
+              <DialogHeader>
+                <DialogTitle className="text-gradient">
+                  Bulk Upload Categories
+                </DialogTitle>
+                <DialogDescription>
+                  Upload a CSV file or paste CSV content. Required header: name.
+                  Optional: parent_ids (semicolon-separated), image, slug, path,
+                  level, is_active.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="py-2">
+                <input
+                  type="file"
+                  accept="text/csv,application/vnd.ms-excel"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (!f) return;
+                    const reader = new FileReader();
+                    reader.onload = async () => {
+                      const text = String(reader.result || "");
+                      (
+                        document.getElementById(
+                          "_bulk_csv_input",
+                        ) as HTMLTextAreaElement
+                      ).value = text;
+                    };
+                    reader.readAsText(f);
+                  }}
+                />
+
+                <div className="mt-3">
+                  <Label className="text-sm">CSV Content</Label>
+                  <textarea
+                    id="_bulk_csv_input"
+                    className="w-full h-40 p-2 bg-white/[0.03] border-white/[0.08] rounded-md"
+                    placeholder={`name,parent_ids,image,slug,path,level,is_active\nElectronics,,https://...,electronics,/,1,true`}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsBulkOpen(false)}
+                  className="rounded-xl border-white/[0.08]"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={async () => {
+                    try {
+                      const textarea = document.getElementById(
+                        "_bulk_csv_input",
+                      ) as HTMLTextAreaElement;
+                      const csv = (textarea?.value || "").trim();
+                      if (!csv) {
+                        toast.error("No CSV content provided");
+                        return;
+                      }
+
+                      // simple CSV parser
+                      const lines = csv.split(/\r?\n/).filter(Boolean);
+                      const headers = lines[0].split(",").map((h) => h.trim());
+                      const rows = lines.slice(1).map((ln) => {
+                        const cols = ln.split(",");
+                        const obj: Record<string, string> = {};
+                        headers.forEach(
+                          (h, i) => (obj[h] = (cols[i] || "").trim()),
+                        );
+                        return obj;
+                      });
+
+                      const payload = rows.map((r) => ({
+                        name: r["name"] || "",
+                        parent_ids: r["parent_ids"]
+                          ? r["parent_ids"]
+                              .split(";")
+                              .map((s) => s.trim())
+                              .filter(Boolean)
+                          : [],
+                        image: r["image"] || undefined,
+                        slug: r["slug"] || undefined,
+                        path: r["path"] ? [r["path"]] : [],
+                        level: r["level"] ? Number(r["level"]) : 1,
+                        is_active: r["is_active"]
+                          ? String(r["is_active"]).toLowerCase() === "true"
+                          : true,
+                      }));
+
+                      await axios.post(
+                        "/api/categories/bulk",
+                        { items: payload },
+                        { withCredentials: true },
+                      );
+                      toast.success("Bulk categories uploaded");
+                      setIsBulkOpen(false);
+                      window.location.reload();
+                    } catch (err) {
+                      console.error(err);
+                      toast.error("Bulk upload failed");
+                    }
+                  }}
+                  className="gradient-purple text-white border-0 rounded-xl"
+                >
+                  Upload
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </>
       }
     >
       {/* KPI Stats */}

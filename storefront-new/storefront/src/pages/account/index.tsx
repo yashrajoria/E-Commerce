@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUser } from "@/context/UserContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { useToast } from "@/hooks/use-toast";
 import { updatePassword, updateUserData } from "@/lib/user";
 import { motion } from "framer-motion";
@@ -35,21 +36,25 @@ export default function AccountPage() {
   const [activeTab, setActiveTab] = useState("profile");
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const { user, loading } = useUser();
+  const { wishlist: localWishlist } = useWishlist();
+
+  console.log({ user });
   const [profile, setProfile] = useState({
     name: "",
     email: "",
     phone_number: "",
   });
-
+  console.log({ profile });
+  console.log(user?.profile?.name);
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const router = useRouter();
   useEffect(() => {
     setProfile({
-      name: user?.name ?? "",
-      email: user?.email ?? "",
-      phone_number: user?.phone_number ?? "",
+      name: user?.profile?.name ?? "",
+      email: user?.profile?.email ?? "",
+      phone_number: user?.profile?.phone_number ?? "",
     });
     const tabQuery = router.query.tab;
     const tab = Array.isArray(tabQuery) ? tabQuery[0] : tabQuery;
@@ -105,13 +110,13 @@ export default function AccountPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Head>
-          <title>Storefront | Account</title>
+          <title>ShopSwift | Account</title>
           <meta
             name="description"
             content="Manage your profile, orders, and preferences."
           />
           <link rel="canonical" href={`${siteUrl}/account`} />
-          <meta property="og:title" content="Storefront | Account" />
+          <meta property="og:title" content="ShopSwift | Account" />
           <meta
             property="og:description"
             content="Manage your profile, orders, and preferences."
@@ -128,13 +133,13 @@ export default function AccountPage() {
   return (
     <div className="min-h-screen">
       <Head>
-        <title>Storefront | Account</title>
+        <title>ShopSwift | Account</title>
         <meta
           name="description"
           content="Manage your profile, orders, and preferences."
         />
         <link rel="canonical" href={`${siteUrl}/account`} />
-        <meta property="og:title" content="Storefront | Account" />
+        <meta property="og:title" content="ShopSwift | Account" />
         <meta
           property="og:description"
           content="Manage your profile, orders, and preferences."
@@ -166,20 +171,27 @@ export default function AccountPage() {
                   <div>
                     <span className="text-white/60">Member since</span>
                     <p className="font-medium">
-                      {user?.created_at
-                        ? new Date(user.created_at).toLocaleDateString(
-                            "en-US",
-                            {
-                              year: "numeric",
-                              month: "long",
-                            },
-                          )
+                      {user?.profile?.created_at
+                        ? new Date(
+                            user?.profile?.created_at,
+                          ).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                          })
                         : "—"}
                     </p>
                   </div>
                   <div>
                     <span className="text-white/60">Total Orders</span>
-                    <p className="font-medium">{user?.totalOrders || 0}</p>
+                    <p className="font-medium">
+                      {user?.orders?.meta?.total_orders || 0}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-white/60">Wishlist</span>
+                    <p className="font-medium">
+                      {user?.wishlist?.length ?? localWishlist.length ?? 0}
+                    </p>
                   </div>
                   <div>
                     <span className="text-white/60">Total Spent</span>
@@ -344,7 +356,7 @@ export default function AccountPage() {
             </TabsContent>
 
             <TabsContent value="orders">
-              <OrderHistory />
+              <OrderHistory orders={user?.orders} />
             </TabsContent>
 
             <TabsContent value="wishlist">

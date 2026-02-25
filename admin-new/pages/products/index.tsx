@@ -52,16 +52,22 @@ const Products = () => {
 
   const query = { page: currentPage, perPage, search: searchQuery };
   const { categories, loading: categoriesLoading } = useCategories();
-  const { products, loading: productsLoading, meta } = useProducts(query);
+  const {
+    products: productsData,
+    loading: productsLoading,
+    meta,
+  } = useProducts(query);
+  const products = Array.isArray(productsData) ? productsData : [];
   const totalPages = meta?.totalPages || 1;
   const isLoading = productsLoading || categoriesLoading;
   const productsCount = meta?.total || 0;
 
   // Client-side filters
   const handleToggleOutOfStock = () => setShowOutOfStock((s) => !s);
-  const displayedProducts = products.filter((p: { quantity: number }) =>
-    showOutOfStock ? true : p.quantity > 0,
-  );
+  const displayedProducts =
+    products?.filter((p: { quantity: number }) =>
+      showOutOfStock ? true : p.quantity > 0,
+    ) || [];
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -118,7 +124,8 @@ const Products = () => {
         <StatsCard
           title="In Stock"
           value={
-            products.filter((p: { quantity: number }) => p.quantity > 0).length
+            products?.filter((p: { quantity: number }) => p.quantity > 0)
+              ?.length || 0
           }
           icon={Package}
           gradient="gradient-emerald"
@@ -127,7 +134,8 @@ const Products = () => {
         <StatsCard
           title="Out of Stock"
           value={
-            products.filter((p: { quantity: number }) => p.quantity <= 0).length
+            products?.filter((p: { quantity: number }) => p.quantity <= 0)
+              ?.length || 0
           }
           icon={AlertTriangle}
           gradient="gradient-rose"
@@ -166,7 +174,7 @@ const Products = () => {
           >
             <LoadingSpinner />
           </motion.section>
-        ) : products.length === 0 ? (
+        ) : (products?.length || 0) === 0 ? (
           <motion.section key="empty" variants={pageItem}>
             <div className="glass-effect rounded-xl">
               <EmptyState
@@ -245,6 +253,7 @@ const Products = () => {
                               {product.images?.[0] ? (
                                 <Image
                                   src={product.images[0]}
+                                  width={100}
                                   alt={product.name}
                                   className="h-full w-full object-cover"
                                 />
@@ -361,3 +370,8 @@ const Products = () => {
 };
 
 export default Products;
+
+export async function getServerSideProps(ctx: any) {
+  const { requireAuth } = await import("@/lib/ssrAuth");
+  return requireAuth(ctx);
+}

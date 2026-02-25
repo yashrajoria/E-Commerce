@@ -52,7 +52,7 @@ export function FloatingActionButton() {
 
       <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
         <button
-          className="w-14 h-14 rounded-full shadow-lg bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 flex items-center justify-center text-white"
+          className="w-14 h-14 rounded-full shadow-lg bg-linear-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 flex items-center justify-center text-white"
           onClick={() => setIsOpen(!isOpen)}
         >
           <motion.div
@@ -66,3 +66,4 @@ export function FloatingActionButton() {
     </div>
   );
 }
+

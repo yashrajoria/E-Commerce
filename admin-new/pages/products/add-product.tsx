@@ -190,3 +190,8 @@ const AddProductPage = () => {
 };
 
 export default AddProductPage;
+
+export async function getServerSideProps(ctx: any) {
+  const { requireAuth } = await import("@/lib/ssrAuth");
+  return requireAuth(ctx);
+}
