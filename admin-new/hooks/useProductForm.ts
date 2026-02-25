@@ -4,6 +4,7 @@ import axios from "axios";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import z from "zod";
+import uploadFiles from "./useUpload";
 
 // Define form schema for single product
 const singleProductSchema = z.object({
@@ -34,6 +35,7 @@ export function useProductForm(
   setUploadedImages: any,
   images: any,
   imagePreview: any,
+  initialData?: Partial<z.infer<typeof singleProductSchema>>,
 ) {
   const form = useForm<z.infer<typeof singleProductSchema>>({
     resolver: zodResolver(singleProductSchema),
@@ -47,6 +49,7 @@ export function useProductForm(
       brand: "",
       sku: "",
       is_featured: false,
+      ...initialData,
     },
   });
 
@@ -65,14 +68,18 @@ export function useProductForm(
       if (typeof data.is_featured !== "undefined")
         formData.append("is_featured", String(data.is_featured));
 
+      // If files are provided, try presign+upload flow and send image URLs instead
       if (images && images.length > 0) {
-        images.forEach((img: any) => {
-          if (img.file instanceof File) {
-            formData.append("images", img.file);
-          }
-        });
+        const files = images
+          .map((img: any) => img.file)
+          .filter((f: any) => f instanceof File) as File[];
+        if (files.length > 0) {
+          const urls = await uploadFiles(files, data.sku);
+          formData.append("image_urls", JSON.stringify(urls));
+        }
       } else if (imagePreview instanceof File) {
-        formData.append("images", imagePreview);
+        const urls = await uploadFiles([imagePreview], data.sku);
+        formData.append("image_urls", JSON.stringify(urls));
       }
 
       for (const pair of formData.entries()) {
@@ -107,8 +114,22 @@ export function useProductForm(
       // console.log({ data });
       console.log({ productId });
       const id = (productId as any)._id || productId;
-      console.log(id);
-      const res = await axios.put(`/api/products/${productId}`, data, {
+
+      // If there are new files in images, upload them first and include image_urls
+      const files = images
+        ? images
+            .map((img: any) => img.file)
+            .filter((f: any) => f instanceof File)
+        : [];
+
+      const payload: any = { ...data };
+
+      if (files.length > 0) {
+        const urls = await uploadFiles(files, data.sku);
+        payload.image_urls = urls;
+      }
+
+      const res = await axios.put(`/api/products/${id}`, payload, {
         withCredentials: true,
       });
 
