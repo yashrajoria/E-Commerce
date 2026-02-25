@@ -12,20 +12,19 @@ export const useCategories = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get(
-          // "https://lawana-indexless-terese.ngrok-free.dev/categories",
-          "http://localhost:8080/categories",
-          {
-            headers: { "Content-Type": "application/json" },
-            withCredentials: true,
-          },
-        );
+        const res = await axios.get("/api/categories", {
+          withCredentials: true,
+        });
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setCategories(
           res.data.map((cat: any) => ({
             name: cat.name,
             _id: cat._id,
+            id: cat._id,
+            slug: cat.slug,
+            image: cat.image,
+            is_active: cat.is_active,
           })),
         );
       } catch (error) {
