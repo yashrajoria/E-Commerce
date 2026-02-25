@@ -5,6 +5,8 @@ import { Toaster } from "sonner";
 import { ErrorBoundary } from "react-error-boundary";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
+import useAuth from "@/hooks/useAuth";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { motion, AnimatePresence } from "framer-motion";
 
 /** Premium error fallback with glassmorphism styling */
@@ -97,6 +99,38 @@ function RouteProgressBar() {
 }
 
 export default function App({ Component, pageProps, router }: AppProps) {
+  const { loading, authenticated } = useAuth();
+
+  // pages/prefixes that should require an authenticated session
+  const protectedPrefixes = [
+    "/products",
+    "/orders",
+    "/dashboard",
+    "/customers",
+    "/settings",
+    "/inventory",
+    "/returns",
+    "/reviews",
+    "/profile",
+  ];
+
+  const needsAuth = protectedPrefixes.some((p) => router.asPath.startsWith(p));
+
+  useEffect(() => {
+    if (!loading && needsAuth && !authenticated) {
+      // redirect unauthenticated users to the sign-in page
+      router.replace("/sign-in");
+    }
+  }, [loading, authenticated, needsAuth, router]);
+
+  if (needsAuth && loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <RouteProgressBar />
