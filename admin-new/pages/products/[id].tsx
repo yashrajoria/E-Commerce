@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { useProductForm } from "@/hooks/useProductForm";
 
 const ProductDetailPage = () => {
   const router = useRouter();
@@ -84,6 +85,26 @@ const ProductDetailPage = () => {
     );
   }
 
+  const { deleteSingleProduct } = useProductForm(
+    () => {},
+    () => {},
+    [],
+    null,
+  );
+
+  const handleDelete = async () => {
+    const ok = window.confirm(
+      "Delete this product? This action cannot be undone.",
+    );
+    if (!ok) return;
+    try {
+      await deleteSingleProduct((p as any)._id || id);
+      router.push("/products");
+    } catch (e) {
+      console.error("Delete failed", e);
+    }
+  };
+
   return (
     <PageLayout
       title={p.name || "Product Details"}
@@ -106,6 +127,7 @@ const ProductDetailPage = () => {
             variant="outline"
             size="sm"
             className="gap-2 text-xs border-red-500/20 text-red-400 hover:bg-red-500/10 rounded-xl h-8"
+            onClick={handleDelete}
           >
             <Trash2 size={13} />
             Delete
@@ -248,3 +270,8 @@ const ProductDetailPage = () => {
 };
 
 export default ProductDetailPage;
+
+export async function getServerSideProps(ctx: any) {
+  const { requireAuth } = await import("@/lib/ssrAuth");
+  return requireAuth(ctx);
+}
