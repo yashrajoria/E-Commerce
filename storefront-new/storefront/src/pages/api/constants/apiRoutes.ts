@@ -32,7 +32,8 @@ export const API_ROUTES = {
   },
 
   PRODUCTS: {
-    ALL: route("/bff/products"),
+    // ALL: route("/bff/products"),
+    ALL: route("/products"),
     BY_ID: (id: string) => route(`/products/${id}`),
   },
 
