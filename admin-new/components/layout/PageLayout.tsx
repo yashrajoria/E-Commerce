@@ -17,6 +17,9 @@ import { Bell, Search, Menu, X } from "lucide-react";
 import Head from "next/head";
 import Link from "next/link";
 import { useState, ReactNode } from "react";
+import { useRouter } from "next/router";
+import axios from "axios";
+import { toast } from "sonner";
 
 // ── Page-level animation variants (same as dashboard) ──
 export const pageContainer = {
@@ -60,6 +63,7 @@ const PageLayout = ({
 }: PageLayoutProps) => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter();
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -158,6 +162,28 @@ const PageLayout = ({
                 <Search size={16} />
               </Button>
               {headerActions}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 rounded-xl hover:bg-white/[0.06] text-muted-foreground"
+                onClick={async () => {
+                  try {
+                    await axios.post(
+                      "/api/auth/logout",
+                      {},
+                      { withCredentials: true },
+                    );
+                    toast.success("Signed out");
+                    const router = useRouter();
+                    router.replace("/sign-in");
+                  } catch (e) {
+                    console.error("Logout failed", e);
+                    toast.error("Sign out failed");
+                  }
+                }}
+              >
+                Sign Out
+              </Button>
             </div>
           </div>
 
