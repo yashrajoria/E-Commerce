@@ -41,6 +41,7 @@ const proxyRequest = async (config: AxiosRequestConfig, cookie?: string) => {
         ...config.headers,
         Cookie: cookie || "",
       },
+      withCredentials: true,
     });
     return response;
   } catch (error) {
@@ -101,6 +102,21 @@ async function handleCreateProduct(req: NextApiRequest, res: NextApiResponse) {
       }
     }
 
+    // If frontend uploaded images via presign and sent URLs, include them
+    const rawImageUrls = fields.image_urls?.[0];
+    if (rawImageUrls) {
+      try {
+        // rawImageUrls may already be a JSON string
+        const urls =
+          typeof rawImageUrls === "string"
+            ? rawImageUrls
+            : JSON.stringify(rawImageUrls);
+        formData.append("image_urls", urls);
+      } catch (e) {
+        console.warn("Invalid image_urls format", e);
+      }
+    }
+
     // Forward __session cookie
     const sessionCookie = extractSessionCookie(req);
 
@@ -110,6 +126,7 @@ async function handleCreateProduct(req: NextApiRequest, res: NextApiResponse) {
         ...formData.getHeaders(),
         Cookie: sessionCookie,
       },
+      withCredentials: true,
     });
 
     return res.status(response.status).json({
@@ -141,6 +158,7 @@ async function handleGetProducts(req: NextApiRequest, res: NextApiResponse) {
         page,
         perPage,
       },
+      withCredentials: true,
     });
 
     return res.status(response.status).json(response.data);
