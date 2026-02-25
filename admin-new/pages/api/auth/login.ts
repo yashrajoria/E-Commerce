@@ -48,7 +48,11 @@ export default async function handler(
 
   try {
     const response = await axios.post(`${API_URL}auth/login`, req.body, {
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: req.headers.cookie || "",
+      },
+      withCredentials: true,
     });
 
     const setCookie = response.headers["set-cookie"] as string[] | undefined;
