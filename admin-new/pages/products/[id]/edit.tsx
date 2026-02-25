@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
 import ProductInformation from "@/components/products/ProductInformation";
 import { useProduct } from "@/hooks/useProduct";

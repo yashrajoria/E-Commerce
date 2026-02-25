@@ -1,18 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
 
-/**
- * Sanitize backend Set-Cookie headers so they work when relayed from the
- * Next.js API proxy to the browser.
- *
- * Problems this solves:
- *  - Domain=<backend-host> → browser rejects cookie for frontend origin
- *  - Secure flag → browser rejects cookie over plain http://localhost
- *  - SameSite=None without Secure → browser rejects cookie
- *  - Path might be wrong or missing
- */
 function sanitizeSetCookies(raw: string[]): string[] {
   const isProd = process.env.NODE_ENV === "production";
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -63,7 +64,6 @@ const AuthForm = () => {
       );
       toast.success("Successfully signed in");
       if (res.status === 200) router.push("/dashboard");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       const msg = error?.response?.data?.message || "Something went wrong";
       toast.error(msg);

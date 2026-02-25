@@ -1,7 +1,5 @@
-/**
- * Premium Page Layout – Shared wrapper for all admin pages.
- * Provides sidebar, top header bar, breadcrumbs, and page-level animations.
- */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -174,7 +172,6 @@ const PageLayout = ({
                       { withCredentials: true },
                     );
                     toast.success("Signed out");
-                    const router = useRouter();
                     router.replace("/sign-in");
                   } catch (e) {
                     console.error("Logout failed", e);

@@ -1,7 +1,5 @@
-/**
- * Premium Add Product Page
- * Matches the glassmorphism design system used across the admin dashboard
- */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
 import ProductInformation from "@/components/products/ProductInformation";
 import BulkUpload from "@/components/products/BulkUpload";

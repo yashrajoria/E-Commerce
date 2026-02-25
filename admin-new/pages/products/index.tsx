@@ -1,6 +1,5 @@
-/**
- * Premium Products List Page
- */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
 import StatsCard from "@/components/ui/stats-card";
 import EmptyState from "@/components/ui/empty-state";
