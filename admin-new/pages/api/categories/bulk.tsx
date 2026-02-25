@@ -12,7 +12,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL || "http://localhost:8080/";
+  const API_URL =
+    process.env.NEXT_PUBLIC_NEW_API_URL || "http://localhost:8080/";
 
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method not allowed" });
@@ -28,16 +29,22 @@ export default async function handler(
 
   const items = req.body?.items;
   if (!Array.isArray(items)) {
-    return res.status(400).json({ message: "Invalid payload: items array required" });
+    return res
+      .status(400)
+      .json({ message: "Invalid payload: items array required" });
   }
 
   // Try backend bulk endpoint first
   try {
     const target = `${API_URL}categories/bulk`;
-    const resp = await axios.post(target, { items }, {
-      headers: { "Content-Type": "application/json", Cookie: cookie || "" },
-      withCredentials: true,
-    });
+    const resp = await axios.post(
+      target,
+      { items },
+      {
+        headers: { "Content-Type": "application/json", Cookie: cookie || "" },
+        withCredentials: true,
+      },
+    );
     return res.status(resp.status).json(resp.data);
   } catch (err: any) {
     // If bulk endpoint not available, fall back to creating items one by one
@@ -46,12 +53,18 @@ export default async function handler(
       for (const it of items) {
         try {
           const r = await axios.post(`${API_URL}categories/`, it, {
-            headers: { "Content-Type": "application/json", Cookie: cookie || "" },
+            headers: {
+              "Content-Type": "application/json",
+              Cookie: cookie || "",
+            },
             withCredentials: true,
           });
           results.push({ status: r.status, data: r.data });
         } catch (e: any) {
-          results.push({ status: e?.response?.status || 500, error: e?.response?.data || e.message });
+          results.push({
+            status: e?.response?.status || 500,
+            error: e?.response?.data || e.message,
+          });
         }
       }
       return res.status(207).json({ results });
