@@ -125,11 +125,13 @@ export default function AuthModal({
     setIsLoading(true);
     try {
       const res = await axios.post(
-        // "https://lawana-indexless-terese.ngrok-free.dev/auth/login",
-        "http://localhost:8080/auth/login",
+        "/api/auth/login",
 
         { ...loginData, role: "admin" },
-        { headers: { "Content-Type": "application/json" } },
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        },
       );
       toast.success("Successfully signed in");
       if (res.status === 200) router.push("/dashboard");
@@ -155,14 +157,14 @@ export default function AuthModal({
     setIsLoading(true);
     try {
       await axios.post(
-        "http://localhost:8080/auth/register",
-        // " https://lawana-indexless-terese.ngrok-free.dev/auth/register",
+        "/api/auth/register",
         {
           name: registerData.name,
           email: registerData.email,
           password: registerData.password,
           role: "admin",
         },
+        { withCredentials: true },
       );
       toast.success("Verification code sent to your email");
       setView("otp");
