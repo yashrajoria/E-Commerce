@@ -27,6 +27,7 @@ export default async function handler(
   try {
     const response = await axios.post(`${API_URL}auth/register`, req.body, {
       headers: { "Content-Type": "application/json" },
+      withCredentials: true,
     });
 
     const setCookie = response.headers["set-cookie"] as string[] | undefined;
