@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Sparkles, Shield, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { useProducts } from "@/hooks/useProducts";
+import { motion } from "framer-motion";
+import { ArrowRight, Shield, Sparkles, Truck } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
 
 /* ── Typewriter hook ─────────────────────────── */
 const typewriterPhrases = [
@@ -203,7 +203,7 @@ export function HeroSection() {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="/products">
+              <Link href="/categories">
                 <Button
                   variant="outline"
                   size="lg"

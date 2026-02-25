@@ -16,13 +16,13 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Storefront | Home</title>
+        <title>ShopSwift | Home</title>
         <meta
           name="description"
           content="Discover top products with fast delivery, secure checkout, and great prices."
         />
         <link rel="canonical" href={siteUrl} />
-        <meta property="og:title" content="Storefront" />
+        <meta property="og:title" content="ShopSwift" />
         <meta
           property="og:description"
           content="Discover top products with fast delivery, secure checkout, and great prices."

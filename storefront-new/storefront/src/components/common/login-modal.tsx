@@ -67,7 +67,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
       setShowPassword(false);
       setIsLogin(true);
     }
-  }, [isLogin, isOpen]);
+  }, [isLogin, isOpen, isOtp]);
 
   const onCloseOtp = () => {
     setIsOtp(false);
@@ -197,7 +197,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 via-amber-500/5 to-rose-500/5 pointer-events-none" />
+                <div className="absolute inset-0 bg-linear-to-br from-rose-500/5 via-amber-500/5 to-rose-500/5 pointer-events-none" />
 
                 <Button
                   variant="ghost"
@@ -210,7 +210,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
                 <div className="text-center mb-8 relative z-10">
                   <motion.div
-                    className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-rose-600 to-amber-500 flex items-center justify-center"
+                    className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-linear-to-br from-rose-600 to-amber-500 flex items-center justify-center"
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.2, type: "spring" }}
@@ -342,7 +342,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
                   <Button
                     type="submit"
-                    className="w-full h-12 bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 rounded-full"
+                    className="w-full h-12 bg-linear-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 rounded-full"
                     size="lg"
                     disabled={loading}
                   >
@@ -399,7 +399,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-rose-500/5 to-amber-500/5 pointer-events-none" />
+                <div className="absolute inset-0 bg-linear-to-br from-emerald-500/5 via-rose-500/5 to-amber-500/5 pointer-events-none" />
 
                 <Button
                   variant="ghost"
@@ -412,14 +412,14 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
                 <div className="text-center mb-8 relative z-10">
                   <motion.div
-                    className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-emerald-600 to-rose-600 flex items-center justify-center"
+                    className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-linear-to-br from-emerald-600 to-rose-600 flex items-center justify-center"
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.2, type: "spring" }}
                   >
                     <CheckCircle className="h-8 w-8 text-white" />
                   </motion.div>
-                  <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-emerald-600 to-rose-600 bg-clip-text text-transparent">
+                  <h2 className="text-2xl font-bold mb-2 bg-linear-to-r from-emerald-600 to-rose-600 bg-clip-text text-transparent">
                     Verify Your Email
                   </h2>
                   <p className="text-muted-foreground text-sm">
@@ -469,7 +469,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
                   <Button
                     onClick={handleOtpSubmit}
-                    className="w-full h-12 bg-gradient-to-r from-emerald-600 to-rose-600 hover:from-emerald-700 hover:to-rose-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 rounded-full"
+                    className="w-full h-12 bg-linear-to-r from-emerald-600 to-rose-600 hover:from-emerald-700 hover:to-rose-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 rounded-full"
                     disabled={loading || otpValue.length !== 6}
                   >
                     {loading ? (
@@ -511,3 +511,4 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
     </>
   );
 }
+

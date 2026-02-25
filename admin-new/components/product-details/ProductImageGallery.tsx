@@ -38,6 +38,8 @@ const ProductImageGallery = ({
           src={safeImage}
           alt="Product"
           className="w-full h-full object-cover"
+          priority
+          width={100}
         />
 
         {/* Overlay */}
@@ -88,6 +90,7 @@ const ProductImageGallery = ({
               src={image}
               alt={`Product view ${index + 1}`}
               className="w-full h-full object-cover"
+              width={100}
             />
           </motion.button>
         ))}

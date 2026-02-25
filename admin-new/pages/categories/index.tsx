@@ -1,31 +1,12 @@
-/**
- * Premium Categories Page
- */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import BulkUpload from "@/components/category/BulkUpload";
+import DeleteComponent from "@/components/category/DeleteComponent";
+import EditComponent from "@/components/category/EditComponent";
+import SingleCategory from "@/components/category/SingleCategory";
+import CategoryTable from "@/components/category/Table";
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
-import StatsCard from "@/components/ui/stats-card";
-import EmptyState from "@/components/ui/empty-state";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Pagination,
   PaginationContent,
@@ -34,19 +15,12 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import StatsCard from "@/components/ui/stats-card";
 import { useCategories } from "@/hooks/useCategory";
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  Edit,
-  FolderTree,
-  Grid3X3,
-  Layers,
-  Plus,
-  Search,
-  Trash2,
-} from "lucide-react";
-import { useState, useMemo } from "react";
 import axios from "axios";
+import { motion } from "framer-motion";
+import { FolderTree, Grid3X3, Layers, Search } from "lucide-react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 10;
@@ -56,16 +30,23 @@ const Categories = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isBulkOpen, setIsBulkOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategoryParent, setNewCategoryParent] = useState<string | null>(
+    null,
+  );
+  const [newCategoryImage, setNewCategoryImage] = useState("");
+  const [newCategorySlug, setNewCategorySlug] = useState("");
+  const [newCategoryPath, setNewCategoryPath] = useState<string>("");
+  const [newCategoryLevel, setNewCategoryLevel] = useState<number>(1);
+  const [newCategoryActive, setNewCategoryActive] = useState<boolean>(true);
   const [editCategoryName, setEditCategoryName] = useState("");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
 
   const filteredCategories = useMemo(() => {
     if (!categories) return [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let result = [...categories] as any[];
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -83,13 +64,28 @@ const Categories = () => {
   const handleAddCategory = async () => {
     if (!newCategoryName.trim()) return;
     try {
-      await axios.post(
-        "/api/categories",
-        { name: newCategoryName },
-        { withCredentials: true },
-      );
+      const payload: any = {
+        name: newCategoryName,
+        parent_ids: newCategoryParent ? [newCategoryParent] : [],
+        image: newCategoryImage || undefined,
+        ancestors: newCategoryParent ? [newCategoryParent] : [],
+        slug:
+          newCategorySlug ||
+          (newCategoryName || "").toLowerCase().replace(/\s+/g, "-"),
+        path: newCategoryPath ? [newCategoryPath] : [],
+        level: newCategoryLevel,
+        is_active: newCategoryActive,
+      };
+
+      await axios.post("/api/categories", payload, { withCredentials: true });
       toast.success("Category created successfully!");
       setNewCategoryName("");
+      setNewCategoryParent(null);
+      setNewCategoryImage("");
+      setNewCategorySlug("");
+      setNewCategoryPath("");
+      setNewCategoryLevel(1);
+      setNewCategoryActive(true);
       setIsAddOpen(false);
       window.location.reload();
     } catch {
@@ -132,51 +128,30 @@ const Categories = () => {
       title="Categories"
       breadcrumbs={[{ label: "Categories" }]}
       headerActions={
-        <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-          <DialogTrigger asChild>
-            <Button
-              size="sm"
-              className="gap-2 text-xs gradient-purple text-white hover:opacity-90 rounded-xl h-8 border-0"
-            >
-              <Plus size={13} />
-              Add Category
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="glass-effect-strong border-white/[0.08]">
-            <DialogHeader>
-              <DialogTitle className="text-gradient">New Category</DialogTitle>
-              <DialogDescription>
-                Create a new product category
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label className="text-sm">Category Name</Label>
-                <Input
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                  placeholder="Enter category name"
-                  className="bg-white/[0.04] border-white/[0.08] rounded-xl"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setIsAddOpen(false)}
-                className="rounded-xl border-white/[0.08]"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleAddCategory}
-                className="gradient-purple text-white border-0 rounded-xl"
-              >
-                Create
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <>
+          <SingleCategory
+            isAddOpen={isAddOpen}
+            setIsAddOpen={setIsAddOpen}
+            newCategoryName={newCategoryName}
+            setNewCategoryName={setNewCategoryName}
+            handleAddCategory={handleAddCategory}
+            newCategoryParent={newCategoryParent}
+            setNewCategoryParent={setNewCategoryParent}
+            newCategoryImage={newCategoryImage}
+            setNewCategoryImage={setNewCategoryImage}
+            newCategorySlug={newCategorySlug}
+            setNewCategorySlug={setNewCategorySlug}
+            newCategoryPath={newCategoryPath}
+            setNewCategoryPath={setNewCategoryPath}
+            newCategoryLevel={newCategoryLevel}
+            setNewCategoryLevel={setNewCategoryLevel}
+            newCategoryActive={newCategoryActive}
+            setNewCategoryActive={setNewCategoryActive}
+          />
+
+          {/* Bulk Upload Dialog */}
+          <BulkUpload isBulkOpen={isBulkOpen} setIsBulkOpen={setIsBulkOpen} />
+        </>
       }
     >
       {/* KPI Stats */}
@@ -232,110 +207,18 @@ const Categories = () => {
       </motion.section>
 
       {/* Table */}
-      <AnimatePresence mode="wait">
-        {loading ? (
-          <motion.section
-            key="loading"
-            variants={pageItem}
-            className="flex items-center justify-center py-16"
-          >
-            <LoadingSpinner />
-          </motion.section>
-        ) : paginatedCategories.length === 0 ? (
-          <motion.section key="empty" variants={pageItem}>
-            <div className="glass-effect rounded-xl">
-              <EmptyState
-                icon={FolderTree}
-                title="No categories found"
-                description={
-                  searchQuery
-                    ? "Try a different search term"
-                    : "Create your first category to organize products"
-                }
-                actionLabel="Add Category"
-                onAction={() => setIsAddOpen(true)}
-              />
-            </div>
-          </motion.section>
-        ) : (
-          <motion.section key="table" variants={pageItem}>
-            <Card className="glass-effect overflow-hidden border-white/[0.06]">
-              <CardContent className="p-0 overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-white/[0.04]">
-                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
-                        Name
-                      </TableHead>
-                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
-                        ID
-                      </TableHead>
-                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground text-right">
-                        Actions
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    {paginatedCategories.map((cat: any, index: number) => (
-                      <motion.tr
-                        key={cat.id || index}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.04 }}
-                        className="border-white/[0.04] hover:bg-white/[0.02] transition-colors"
-                      >
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-lg gradient-purple flex items-center justify-center">
-                              <FolderTree className="h-4 w-4 text-white" />
-                            </div>
-                            <span className="font-medium text-sm">
-                              {cat.name}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-xs font-mono text-muted-foreground">
-                            {cat.id}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-8 w-8 hover:bg-white/[0.06] rounded-lg"
-                              onClick={() => {
-                                setSelectedCategory(cat);
-                                setEditCategoryName(cat.name);
-                                setIsEditOpen(true);
-                              }}
-                            >
-                              <Edit className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-8 w-8 hover:bg-red-500/10 text-red-400 rounded-lg"
-                              onClick={() => {
-                                setSelectedCategory(cat);
-                                setIsDeleteOpen(true);
-                              }}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </motion.tr>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </motion.section>
-        )}
-      </AnimatePresence>
+      <CategoryTable
+        loading={loading}
+        paginatedCategories={paginatedCategories}
+        searchQuery={searchQuery}
+        setIsAddOpen={setIsAddOpen}
+        setIsEditOpen={setIsEditOpen}
+        setSelectedCategory={setSelectedCategory}
+        setIsDeleteOpen={setIsDeleteOpen}
+        handleEditCategory={handleEditCategory}
+        handleDeleteCategory={handleDeleteCategory}
+        setEditCategoryName={setEditCategoryName}
+      />
 
       {/* Pagination */}
       {!loading && totalPages > 1 && (
@@ -373,68 +256,21 @@ const Categories = () => {
       )}
 
       {/* Edit Dialog */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="glass-effect-strong border-white/[0.08]">
-          <DialogHeader>
-            <DialogTitle className="text-gradient">Edit Category</DialogTitle>
-            <DialogDescription>Update category name</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label className="text-sm">Category Name</Label>
-              <Input
-                value={editCategoryName}
-                onChange={(e) => setEditCategoryName(e.target.value)}
-                className="bg-white/[0.04] border-white/[0.08] rounded-xl"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsEditOpen(false)}
-              className="rounded-xl border-white/[0.08]"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleEditCategory}
-              className="gradient-purple text-white border-0 rounded-xl"
-            >
-              Save
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <EditComponent
+        isEditOpen={isEditOpen}
+        setIsEditOpen={setIsEditOpen}
+        editCategoryName={editCategoryName}
+        setEditCategoryName={setEditCategoryName}
+        handleEditCategory={handleEditCategory}
+      />
 
-      {/* Delete Confirmation */}
-      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <DialogContent className="glass-effect-strong border-white/[0.08]">
-          <DialogHeader>
-            <DialogTitle className="text-red-400">Delete Category</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete &quot;{selectedCategory?.name}
-              &quot;? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteOpen(false)}
-              className="rounded-xl border-white/[0.08]"
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteCategory}
-              className="rounded-xl"
-            >
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Delete Dialog */}
+      <DeleteComponent
+        isDeleteOpen={isDeleteOpen}
+        setIsDeleteOpen={setIsDeleteOpen}
+        selectedCategory={selectedCategory}
+        handleDeleteCategory={handleDeleteCategory}
+      />
     </PageLayout>
   );
 };

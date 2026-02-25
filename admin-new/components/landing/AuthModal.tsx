@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -110,6 +110,10 @@ export default function AuthModal({
     [onClose, initialView],
   );
 
+  useEffect(() => {
+    if (open) setView(initialView);
+  }, [open, initialView]);
+
   const passwordStrength = useMemo(
     () => getPasswordStrength(registerData.password),
     [registerData.password],
@@ -121,9 +125,13 @@ export default function AuthModal({
     setIsLoading(true);
     try {
       const res = await axios.post(
-        "http://localhost:8080/auth/login",
+        "/api/auth/login",
+
         { ...loginData, role: "admin" },
-        { headers: { "Content-Type": "application/json" } },
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        },
       );
       toast.success("Successfully signed in");
       if (res.status === 200) router.push("/dashboard");
@@ -148,12 +156,16 @@ export default function AuthModal({
     }
     setIsLoading(true);
     try {
-      await axios.post("http://localhost:8080/auth/register", {
-        name: registerData.name,
-        email: registerData.email,
-        password: registerData.password,
-        role: "admin",
-      });
+      await axios.post(
+        "/api/auth/register",
+        {
+          name: registerData.name,
+          email: registerData.email,
+          password: registerData.password,
+          role: "admin",
+        },
+        { withCredentials: true },
+      );
       toast.success("Verification code sent to your email");
       setView("otp");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

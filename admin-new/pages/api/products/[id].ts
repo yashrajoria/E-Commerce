@@ -1,14 +1,14 @@
 import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
 
-// Utility function to extract token from cookies
-const extractTokenFromCookies = (cookieHeader: string | undefined): string => {
+// Utility function to extract auth cookie (prefer __session, fallback to token)
+const extractAuthCookie = (cookieHeader: string | undefined): string => {
   if (!cookieHeader) return "";
-  const tokenCookie = cookieHeader
-    .split(";")
-    .find((c) => c.trim().startsWith("token="))
-    ?.trim();
-  return tokenCookie || "";
+  const parts = cookieHeader.split(";").map((c) => c.trim());
+  const session = parts.find((c) => c.startsWith("__session="));
+  if (session) return session;
+  const token = parts.find((c) => c.startsWith("token="));
+  return token || "";
 };
 
 export default async function handler(
@@ -17,7 +17,7 @@ export default async function handler(
 ) {
   const { id } = req.query;
   console.log("ID", id);
-  const tokenCookie = extractTokenFromCookies(req.headers.cookie);
+  const tokenCookie = extractAuthCookie(req.headers.cookie);
   const baseUrl = process.env.NEXT_PUBLIC_NEW_API_URL;
 
   if (!baseUrl) {

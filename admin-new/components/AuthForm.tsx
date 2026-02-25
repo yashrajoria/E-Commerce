@@ -51,13 +51,14 @@ const AuthForm = () => {
     setIsLoading(true);
     try {
       const res = await axios.post(
-        "http://localhost:8080/auth/login",
+        "/api/auth/login",
         {
           ...signinData,
           role: "admin",
         },
         {
           headers: { "Content-Type": "application/json" },
+          withCredentials: true,
         },
       );
       toast.success("Successfully signed in");
@@ -75,10 +76,14 @@ const AuthForm = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const res = await axios.post("http://localhost:8080/auth/register", {
-        ...signupData,
-        role: "admin",
-      });
+      const res = await axios.post(
+        "/api/auth/register",
+        {
+          ...signupData,
+          role: "admin",
+        },
+        { withCredentials: true },
+      );
       toast.success("Verification email sent");
       setShowOTPVerification(true);
       if (res.status === 200) {

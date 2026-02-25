@@ -32,7 +32,7 @@ const AddProductPage = () => {
     csvData,
     handleFileUpload,
     validateBulkUpload,
-    confirmBulkUpload,
+    handleBulkUpload,
     isBulk,
     isValidating,
     isUploading,
@@ -177,7 +177,7 @@ const AddProductPage = () => {
             csvData={csvData}
             handleFileUpload={handleFileUpload}
             validateBulkUpload={validateBulkUpload}
-            confirmBulkUpload={confirmBulkUpload}
+            confirmBulkUpload={handleBulkUpload}
             isBulk={isBulk}
             isValidating={isValidating}
             isUploading={isUploading}
@@ -190,3 +190,8 @@ const AddProductPage = () => {
 };
 
 export default AddProductPage;
+
+export async function getServerSideProps(ctx: any) {
+  const { requireAuth } = await import("@/lib/ssrAuth");
+  return requireAuth(ctx);
+}

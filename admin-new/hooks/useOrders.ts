@@ -7,7 +7,12 @@ import { toast } from "sonner";
 export const useOrders = (query: any) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [meta, setMeta] = useState({});
+  interface Meta {
+    total_pages: number;
+    total: number; // Added total property
+    // Add other properties if needed
+  }
+  const [meta, setMeta] = useState<Meta>({ total_pages: 1, total: 0 });
 
   const { orderId, page = 1, perPage = 10 } = query;
 
@@ -27,7 +32,7 @@ export const useOrders = (query: any) => {
             {
               headers: { "Content-Type": "application/json" },
               withCredentials: true,
-            }
+            },
           );
           setOrders(res?.data?.orders || []);
           setMeta(res?.data?.meta || {});

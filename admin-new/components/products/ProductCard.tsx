@@ -50,7 +50,7 @@ const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
       scale: 1,
       transition: {
         duration: 0.5,
-        ease: "easeOut",
+        ease: "easeOut" as const,
       },
     },
     hover: {
@@ -58,7 +58,7 @@ const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
       scale: 1.02,
       transition: {
         duration: 0.3,
-        ease: "easeInOut",
+        ease: "easeInOut" as const,
       },
     },
   };
@@ -68,7 +68,7 @@ const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
       scale: 1.1,
       transition: {
         duration: 0.4,
-        ease: "easeInOut",
+        ease: "easeInOut" as const,
       },
     },
   };
@@ -88,6 +88,8 @@ const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
               <Image
                 src={product?.images?.[0] || "/placeholder.svg"}
                 alt={product?.name}
+                width={100}
+                height={100}
                 className="h-full w-full object-cover transition-transform duration-300"
               />
             </motion.div>

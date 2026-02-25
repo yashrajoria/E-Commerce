@@ -1,38 +1,28 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import {
-  Star,
-  Heart,
-  Share2,
-  ShoppingBag,
-  Minus,
-  Plus,
-  Truck,
-  Shield,
-  RotateCcw,
-  Award,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { Header } from "@/components/layout/header";
 import { ProductImageGallery } from "@/components/product/product-image-gallery";
 import { ProductReviews } from "@/components/product/product-reviews";
 import { RelatedProducts } from "@/components/product/related-products";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCart } from "@/context/CartContext";
-import { useProductById } from "@/hooks/useProducts";
-import { useRouter } from "next/router";
-import Head from "next/head";
 import { useWishlist } from "@/context/WishlistContext";
 import { useToast } from "@/hooks/use-toast";
-import { Input } from "@/components/ui/input";
+import { useProductById } from "@/hooks/useProducts";
+import { motion } from "framer-motion";
+import { Heart, Minus, Plus, Share2, ShoppingBag, Star } from "lucide-react";
+import Head from "next/head";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { useState } from "react";
+import { formatGBP } from "@/lib/utils";
 
 export default function ProductPage() {
   const [quantity, setQuantity] = useState(1);
   const router = useRouter();
-  const { toast } = useToast();
+  const { showSuccess, showInfo } = useToast();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const id = Array.isArray(router.query.id)
     ? router.query.id[0]
@@ -42,13 +32,17 @@ export default function ProductPage() {
 
   const rating = product?.rating ?? 0;
   const images = (product?.images ?? []).filter(Boolean);
-  const isWishlisted = hasWishlistItem(product?.id);
+  const categoryName = product
+    ? typeof product.category === "string"
+      ? product.category
+      : product.category?.name
+    : "";
+  const isWishlisted = product ? hasWishlistItem(product.id) : false;
 
-  const formatGBP = (value?: number) =>
-    new Intl.NumberFormat("en-GB", {
-      style: "currency",
-      currency: "GBP",
-    }).format(value ?? 0);
+  // Use `inStock` from `Product` type if provided; default to false
+  const isOutOfStock = product ? product.inStock === false : false;
+
+  // use shared formatter from utils
 
   const { addToCart } = useCart();
 
@@ -60,26 +54,17 @@ export default function ProductPage() {
       images: product?.images ?? [],
       quantity,
     });
-    toast({
-      title: "Added to cart",
-      description: `${product.name} has been added to your cart.`,
-    });
+    showSuccess(`${product.name} has been added to your cart.`);
   };
 
   const handleWishlistToggle = () => {
     if (!product) return;
     if (isWishlisted) {
       removeFromWishlist(product.id);
-      toast({
-        title: "Removed from wishlist",
-        description: `${product.name} has been removed from your wishlist.`,
-      });
+      showSuccess(`${product.name} has been removed from your wishlist.`);
     } else {
       addToWishlist(product);
-      toast({
-        title: "Added to wishlist",
-        description: `${product.name} has been added to your wishlist.`,
-      });
+      showSuccess(`${product.name} has been added to your wishlist.`);
     }
   };
 
@@ -93,10 +78,7 @@ export default function ProductPage() {
         })
         .catch((error) => console.error("Error sharing", error));
     } else {
-      toast({
-        title: "Share",
-        description: "Web Share API is not supported in your browser.",
-      });
+      showInfo("Web Share API is not supported in your browser.");
     }
   };
 
@@ -111,7 +93,7 @@ export default function ProductPage() {
   return (
     <div className="min-h-screen">
       <Head>
-        <title>{product.name} | Storefront</title>
+        <title>{product.name} | ShopSwift</title>
         <meta
           name="description"
           content={
@@ -120,7 +102,7 @@ export default function ProductPage() {
           }
         />
         <link rel="canonical" href={`${siteUrl}/products/${id}`} />
-        <meta property="og:title" content={`${product.name} | Storefront`} />
+        <meta property="og:title" content={`${product.name} | ShopSwift`} />
         <meta
           property="og:description"
           content={
@@ -151,15 +133,27 @@ export default function ProductPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="text-sm text-muted-foreground">
-              <span className="hover:text-rose-600 cursor-pointer">Home</span>
+            <nav
+              aria-label="Breadcrumb"
+              className="text-sm text-muted-foreground"
+            >
+              <Link href="/" className="hover:text-rose-600">
+                Home
+              </Link>
               <span className="mx-2">/</span>
-              <span className="hover:text-rose-600 cursor-pointer">
-                {product?.category}
-              </span>
+              {categoryName ? (
+                <Link
+                  href={`/products?category=${encodeURIComponent(categoryName)}`}
+                  className="hover:text-rose-600"
+                >
+                  {categoryName}
+                </Link>
+              ) : (
+                <span className="hover:text-rose-600">Category</span>
+              )}
               <span className="mx-2">/</span>
-              <span>{product?.name}</span>
-            </div>
+              <span aria-current="page">{product?.name}</span>
+            </nav>
 
             <div>
               <h1 className="text-3xl font-bold mb-2">{product?.name}</h1>
@@ -215,8 +209,9 @@ export default function ProductPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                   disabled={quantity <= 1}
+                  aria-label="Decrease quantity"
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
@@ -224,12 +219,18 @@ export default function ProductPage() {
                   type="number"
                   className="w-16 text-center border-0"
                   value={quantity}
-                  onChange={(e) => setQuantity(parseInt(e.target.value))}
+                  min={1}
+                  aria-label="Quantity"
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value, 10);
+                    setQuantity(Number.isNaN(v) ? 1 : Math.max(1, v));
+                  }}
                 />
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setQuantity(quantity + 1)}
+                  onClick={() => setQuantity((q) => q + 1)}
+                  aria-label="Increase quantity"
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -237,11 +238,14 @@ export default function ProductPage() {
 
               <Button
                 size="lg"
-                className="flex-1 rounded-full bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 shadow-lg shadow-rose-500/20"
+                className="flex-1 rounded-full bg-linear-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 shadow-lg shadow-rose-500/20"
                 onClick={handleAddToCart}
+                disabled={isOutOfStock}
+                aria-disabled={isOutOfStock}
+                aria-label={isOutOfStock ? "Out of stock" : "Add to bag"}
               >
                 <ShoppingBag className="h-4 w-4 mr-2" />
-                Add to Bag
+                {isOutOfStock ? "Out of stock" : "Add to Bag"}
               </Button>
 
               <Button

@@ -1,7 +1,3 @@
-/**
- * PremiumKPICards – Animated stat cards with sparklines,
- * trend indicators, and premium gradient backgrounds
- */
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { AnimatedCounter } from "@/components/ui/animated-counter";
@@ -86,7 +82,7 @@ const itemVariants = {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { duration: 0.4, ease: "easeOut" },
+    transition: { duration: 0.4 },
   },
 };
 

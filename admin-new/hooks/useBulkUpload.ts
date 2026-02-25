@@ -48,81 +48,6 @@ export function useBulkUpload() {
     });
   };
 
-  // const validateBulkUpload = async () => {
-  //   if (!bulkFile) {
-  //     toast.error("Please upload a CSV file first");
-  //     return null;
-  //   }
-
-  //   setIsValidating(true);
-
-  //   try {
-  //     const formData = new FormData();
-  //     formData.append("file", bulkFile);
-
-  //     const res = await axios.post(
-  //       "http://localhost:8080/products/bulk/validate",
-  //       formData,
-  //       {
-  //         headers: { "Content-Type": "multipart/form-data" },
-  //         withCredentials: true,
-  //       },
-  //     );
-
-  //     const validation = res.data;
-  //     setValidationResult(validation);
-
-  //     // Show validation summary
-  //     if (validation.errors && validation.errors.length > 0) {
-  //       toast.error(
-  //         `Found ${validation.errors.length} errors. Please fix them before importing.`,
-  //         { duration: 5000 },
-  //       );
-  //       return validation;
-  //     }
-
-  //     if (validation.warnings && validation.warnings.length > 0) {
-  //       toast.warning(
-  //         `Found ${validation.warnings.length} warnings. Products will be created but some issues were detected.`,
-  //         { duration: 5000 },
-  //       );
-  //     }
-
-  //     if (
-  //       validation.missing_categories &&
-  //       validation.missing_categories.length > 0
-  //     ) {
-  //       toast.info(
-  //         `${
-  //           validation.missing_categories.length
-  //         } new categories will be created: ${validation.missing_categories.join(
-  //           ", ",
-  //         )}`,
-  //         { duration: 5000 },
-  //       );
-  //     }
-
-  //     if (validation.duplicate_skus && validation.duplicate_skus.length > 0) {
-  //       toast.warning(
-  //         `${validation.duplicate_skus.length} products with duplicate SKUs will be skipped.`,
-  //         { duration: 5000 },
-  //       );
-  //     }
-
-  //     toast.success(
-  //       `Validation complete! ${validation.valid_products} products ready to import.`,
-  //     );
-
-  //     return validation;
-  //   } catch (err) {
-  //     console.error("Validation Error:", err);
-  //     toast.error(err.response?.data?.error || "Error validating CSV file");
-  //     return null;
-  //   } finally {
-  //     setIsValidating(false);
-  //   }
-  // };
-
   const validateBulkUpload = (data?: Record<string, string>[]) => {
     return (data || csvData)
       .map((row: Record<string, string>, index: number) => {
@@ -182,11 +107,10 @@ export function useBulkUpload() {
       formData.append("file", bulkFile);
 
       const res = await axios.post(
-        `http://localhost:8080/products/bulk?auto_create_categories=${autoCreateCategories}`,
+        `/api/products?isBulk=1&auto_create_categories=${autoCreateCategories}`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
-          withCredentials: true,
         },
       );
 

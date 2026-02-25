@@ -21,6 +21,7 @@ export default async function handler(
           "Content-Type": "application/json",
           Cookie: req.headers.cookie || "",
         },
+        withCredentials: true,
       },
     );
 

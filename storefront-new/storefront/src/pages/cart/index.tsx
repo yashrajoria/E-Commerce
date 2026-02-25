@@ -68,13 +68,13 @@ export default function CartPage() {
     return (
       <div className="min-h-screen">
         <Head>
-          <title>Storefront | Cart</title>
+          <title>ShopSwift | Cart</title>
           <meta
             name="description"
             content="Review items in your cart and proceed to checkout."
           />
           <link rel="canonical" href={`${siteUrl}/cart`} />
-          <meta property="og:title" content="Storefront | Cart" />
+          <meta property="og:title" content="ShopSwift | Cart" />
           <meta
             property="og:description"
             content="Review items in your cart and proceed to checkout."
@@ -107,13 +107,13 @@ export default function CartPage() {
   return (
     <div className="min-h-screen">
       <Head>
-        <title>Storefront | Cart</title>
+        <title>ShopSwift | Cart</title>
         <meta
           name="description"
           content="Review items in your cart and proceed to checkout."
         />
         <link rel="canonical" href={`${siteUrl}/cart`} />
-        <meta property="og:title" content="Storefront | Cart" />
+        <meta property="og:title" content="ShopSwift | Cart" />
         <meta
           property="og:description"
           content="Review items in your cart and proceed to checkout."
@@ -159,7 +159,9 @@ export default function CartPage() {
                   <div className="flex-1">
                     <h3 className="font-semibold mb-1">{item.name}</h3>
                     <p className="text-sm text-muted-foreground mb-2">
-                      {item.category}
+                      {typeof item.category === "string"
+                        ? item.category
+                        : item.category?.name}
                     </p>
                     <div className="flex items-center space-x-2">
                       <span className="font-bold">{formatGBP(item.price)}</span>

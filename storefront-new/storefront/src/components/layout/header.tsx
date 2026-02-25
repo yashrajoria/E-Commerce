@@ -1,6 +1,8 @@
 "use client";
 
 import { useCart } from "@/context/CartContext";
+import { useUser } from "@/context/UserContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Heart,
@@ -15,16 +17,13 @@ import {
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { AccountDropdown } from "../common/account-dropwdown";
+import { AccountDropdown } from "../common/account-dropdown";
 import { CartDrawer } from "../common/cart-drawer";
 import { LoginModal } from "../common/login-modal";
-import { Badge } from "../ui/badge";
+import { WishlistDrawer } from "../common/wishlist-drawer";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { MegaMenu } from "./mega-menu";
-import { useUser } from "@/context/UserContext";
-import { useWishlist } from "@/context/WishlistContext";
-import { WishlistDrawer } from "../common/wishlist-drawer";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -76,15 +75,25 @@ export function Header() {
           <div className="flex h-[72px] items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-3 group">
-              <div className="relative h-9 w-9 rounded-xl bg-gradient-to-br from-rose-600 to-amber-500 flex items-center justify-center shadow-lg shadow-rose-500/20 group-hover:shadow-rose-500/40 transition-shadow duration-300">
+              <div className="relative h-9 w-9 rounded-xl bg-linear-to-br from-rose-600 to-amber-500 flex items-center justify-center shadow-lg shadow-rose-500/20 group-hover:shadow-rose-500/40 transition-shadow duration-300">
                 <span className="text-white font-bold text-sm tracking-tight">
                   S
                 </span>
               </div>
               <span className="font-semibold text-xl tracking-tight text-gradient-premium">
-                Storefront
+                ShopSwift
               </span>
             </Link>
+
+            {/* Quick Nav */}
+            <nav className="hidden md:flex md:ml-6 lg:ml-8 items-center gap-4">
+              <Link
+                href="/categories"
+                className="text-sm font-medium text-gray-700 hover:text-gray-900"
+              >
+                Categories
+              </Link>
+            </nav>
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center space-x-1">
@@ -106,7 +115,7 @@ export function Header() {
               >
                 <Heart className="h-[18px] w-[18px]" />
                 {wishlist.length > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 text-[10px] text-white font-medium flex items-center justify-center shadow-sm">
+                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-linear-to-r from-rose-500 to-pink-500 text-[10px] text-white font-medium flex items-center justify-center shadow-sm">
                     {wishlist.length}
                   </span>
                 )}
@@ -121,7 +130,7 @@ export function Header() {
               >
                 <ShoppingBag className="h-[18px] w-[18px]" />
                 {cartItemCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-gradient-to-r from-rose-600 to-amber-500 text-[10px] text-white font-medium flex items-center justify-center shadow-sm">
+                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-linear-to-r from-rose-600 to-amber-500 text-[10px] text-white font-medium flex items-center justify-center shadow-sm">
                     {cartItemCount}
                   </span>
                 )}
@@ -192,7 +201,7 @@ export function Header() {
               >
                 <ShoppingBag className="h-[18px] w-[18px]" />
                 {cartItemCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-gradient-to-r from-rose-600 to-amber-500 text-[10px] text-white font-medium flex items-center justify-center">
+                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-linear-to-r from-rose-600 to-amber-500 text-[10px] text-white font-medium flex items-center justify-center">
                     {cartItemCount}
                   </span>
                 )}
