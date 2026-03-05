@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import axios from "axios";
+import { getResponseInfo } from "@/lib/error";
 
 export const config = {
   api: {
@@ -60,15 +61,8 @@ export default async function handler(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: unknown) {
       console.error("Error creating category:", err);
-      const status =
-        typeof err === "object" && err !== null && "response" in err
-          ? (err as any).response?.status
-          : 500;
-      const data =
-        typeof err === "object" && err !== null && "response" in err
-          ? (err as any).response?.data
-          : { message: "Error creating category" };
-      return res.status(status).json(data);
+      const { status, data } = getResponseInfo(err);
+      return res.status(status || 500).json(data ?? { message: "Error creating category" });
     }
   } else {
     return res.status(405).json({ message: "Method not allowed" });

@@ -2,6 +2,7 @@
 
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
+import { getResponseInfo } from "@/lib/error";
 
 const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
 
@@ -42,23 +43,16 @@ export default async function handler(
 
     return res.status(response.status).json(response.data);
   } catch (err: unknown) {
+    const { headers, status, data } = getResponseInfo(err);
     const errSetCookie =
-      typeof err === "object" && err !== null && "response" in err
-        ? (err as any).response?.headers?.["set-cookie"] as string[] | undefined
+      typeof headers === "object" && headers !== null && "set-cookie" in (headers as { [k: string]: unknown })
+        ? (headers as { [k: string]: unknown })["set-cookie"] as string[] | undefined
         : undefined;
     if (errSetCookie && errSetCookie.length > 0) {
       res.setHeader("Set-Cookie", sanitizeSetCookies(errSetCookie));
     }
 
     console.error("Auth proxy error (status):", err);
-    const status =
-      typeof err === "object" && err !== null && "response" in err
-        ? (err as any).response?.status
-        : 500;
-    const message =
-      typeof err === "object" && err !== null && "response" in err
-        ? (err as any).response?.data
-        : "Auth status error";
-    return res.status(status || 500).json({ message });
+    return res.status(status || 500).json({ message: data ?? "Auth status error" });
   }
 }

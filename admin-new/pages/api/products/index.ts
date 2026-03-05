@@ -137,11 +137,8 @@ async function handleCreateProduct(req: NextApiRequest, res: NextApiResponse) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (uploadErr: unknown) {
     // Normalize error
-    const msg =
-      (uploadErr && typeof uploadErr === "object" &&
-        "response" in uploadErr &&
-        (uploadErr as any).response?.data) ||
-      (uploadErr instanceof Error ? uploadErr.message : String(uploadErr));
+    const { data } = require("@/lib/error").getResponseInfo(uploadErr);
+    const msg = data ?? (uploadErr instanceof Error ? uploadErr.message : String(uploadErr));
     console.log("Upload failed:", msg);
     return res.status(500).json({ message: "Error uploading product" });
   }

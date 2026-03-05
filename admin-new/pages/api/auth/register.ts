@@ -2,6 +2,7 @@
 
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
+import { getResponseInfo } from "@/lib/error";
 
 const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
 
@@ -46,23 +47,17 @@ export default async function handler(
     }
 
     return res.status(response.status).json(response.data);
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const { headers, status, data } = getResponseInfo(err);
+    const errSetCookie =
+      typeof headers === "object" && headers !== null && "set-cookie" in (headers as { [k: string]: unknown })
+        ? (headers as { [k: string]: unknown })["set-cookie"] as string[] | undefined
+        : undefined;
+    if (errSetCookie && errSetCookie.length > 0) {
+      res.setHeader("Set-Cookie", sanitizeSetCookies(errSetCookie));
+    }
 
-      const errSetCookie = err?.response?.headers?.["set-cookie"] as
-        | string[]
-        | undefined;
-      if (errSetCookie && errSetCookie.length > 0) {
-        res.setHeader("Set-Cookie", sanitizeSetCookies(errSetCookie));
-      }
+    console.error("Auth register proxy error:", err);
+    return res.status(status || 500).json({ message: data ?? "Auth error" });
   }
-      console.error("Auth register proxy error:", err);
-      const status =
-        typeof err === "object" && err !== null && "response" in err
-          ? (err as any).response?.status
-          : 500;
-      const message =
-        typeof err === "object" && err !== null && "response" in err
-          ? (err as any).response?.data
-          : "Auth error";
-      return res.status(status || 500).json({ message });
 }
