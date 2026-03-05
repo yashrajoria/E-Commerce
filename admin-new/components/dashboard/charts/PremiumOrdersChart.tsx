@@ -1,7 +1,3 @@
-/**
- * PremiumOrdersChart – Enhanced bar chart with gradient bars,
- * comparison overlays, and interactive tooltips
- */
 import { useState } from "react";
 import {
   BarChart,
