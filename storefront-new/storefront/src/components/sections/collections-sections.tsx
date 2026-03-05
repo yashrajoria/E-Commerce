@@ -21,10 +21,8 @@ interface CollectionViewModel {
 export function CollectionsSection() {
   const { data: productsData, isLoading, error } = useProducts(12, 1, false);
   const { data: categoriesData = [] } = useCategories();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const products = productsData?.products ?? [];
-
   const collections = useMemo<CollectionViewModel[]>(() => {
+    const products = productsData?.products ?? [];
     if (!products.length) return [];
     const grouped = new Map<string, number>();
     const getCategoryName = (product: Product) =>
@@ -54,7 +52,7 @@ export function CollectionsSection() {
         layout: index === 0 ? "large" : "medium",
       };
     });
-  }, [products, categoriesData]);
+  }, [productsData, categoriesData]);
 
   if (isLoading) {
     return (
