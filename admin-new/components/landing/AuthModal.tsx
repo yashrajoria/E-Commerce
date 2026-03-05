@@ -28,6 +28,7 @@ import { FcGoogle } from "react-icons/fc";
 import { toast } from "sonner";
 import axios from "axios";
 import { useRouter } from "next/router";
+import { getResponseInfo, getErrorMessage } from "@/lib/error";
 
 type AuthView = "login" | "register" | "otp" | "success";
 
@@ -135,12 +136,12 @@ export default function AuthModal({
       );
       toast.success("Successfully signed in");
       if (res.status === 200) router.push("/dashboard");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      
     } catch (error: unknown) {
-      const msg =
-        typeof error === "object" && error !== null && "response" in error
-          ? (error as any).response?.data?.message || "Invalid credentials"
-          : "Invalid credentials";
+      const { data } = getResponseInfo(error);
+      const msg = typeof data === "object" && data !== null && "message" in (data as Record<string, unknown>)
+        ? String((data as Record<string, unknown>).message)
+        : getErrorMessage(error) || "Invalid credentials";
       toast.error(msg);
     } finally {
       setIsLoading(false);
@@ -171,12 +172,12 @@ export default function AuthModal({
       );
       toast.success("Verification code sent to your email");
       setView("otp");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      
     } catch (error: unknown) {
-      const msg =
-        typeof error === "object" && error !== null && "response" in error
-          ? (error as any).response?.data?.message || "Registration failed"
-          : "Registration failed";
+      const { data } = getResponseInfo(error);
+      const msg = typeof data === "object" && data !== null && "message" in (data as Record<string, unknown>)
+        ? String((data as Record<string, unknown>).message)
+        : getErrorMessage(error) || "Registration failed";
       toast.error(msg);
     } finally {
       setIsLoading(false);
