@@ -215,8 +215,8 @@ export default async function handler(
     console.error("API error:", error);
     // Attempt to extract status/message safely
     const { status, data } = require("@/lib/error").getResponseInfo(error);
-    const message = typeof data === "object" && data !== null && "message" in (data as any)
-      ? (data as any).message
+    const message = typeof data === "object" && data !== null && "message" in (data as { message?: unknown })
+      ? (data as { message?: string }).message
       : undefined;
     return res.status(status || 500).json({ message: message || "Server error" });
   }
