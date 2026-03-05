@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Dialog,
   DialogContent,
@@ -8,6 +7,8 @@ import {
 import { Button } from "../ui/button";
 import { DialogHeader, DialogFooter } from "../ui/dialog";
 
+import { Category } from "@/types/shared";
+
 export default function DeleteComponent({
   isDeleteOpen,
   setIsDeleteOpen,
@@ -16,7 +17,7 @@ export default function DeleteComponent({
 }: {
   isDeleteOpen: boolean;
   setIsDeleteOpen: (open: boolean) => void;
-  selectedCategory: any;
+  selectedCategory: Category | null;
   handleDeleteCategory: () => void;
 }) {
   return (
