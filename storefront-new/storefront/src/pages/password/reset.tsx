@@ -23,9 +23,22 @@ export default function ResetPassword() {
       await resetPassword(email, code, newPassword);
       showSuccess("Password reset successful. Please sign in.");
       router.push("/");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      showError(err?.response?.data?.error || "Failed to reset password.");
+    } catch (err: unknown) {
+      const msg = (() => {
+        if (typeof err === "string") return err;
+        if (err && typeof err === "object") {
+          try {
+            // axios-style error shape
+            const e = err as { response?: { data?: { error?: string } }; message?: string };
+            return e?.response?.data?.error ?? e?.message ?? "Failed to reset password.";
+          } catch {
+            return "Failed to reset password.";
+          }
+        }
+        return "Failed to reset password.";
+      })();
+
+      showError(msg);
     } finally {
       setLoading(false);
     }
