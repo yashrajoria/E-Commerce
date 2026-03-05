@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
 import StatsCard from "@/components/ui/stats-card";
 import ProductImageGallery from "@/components/product-details/ProductImageGallery";
@@ -20,6 +18,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useRouter } from "next/router";
+import type { GetServerSidePropsContext } from "next";
 import { useState } from "react";
 import { useProductForm } from "@/hooks/useProductForm";
 
@@ -28,13 +27,35 @@ const ProductDetailPage = () => {
   const { id } = router.query;
   const { product, loading } = useProduct(id as string);
   const [isEditing, setIsEditing] = useState(false);
+  const { deleteSingleProduct } = useProductForm(
+    () => {},
+    () => {},
+    [],
+    null,
+  );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const p: any = Array.isArray(product) ? product[0] : product;
+  interface Product {
+    _id?: string;
+    name?: string;
+    category?: string;
+    category_ids?: string[];
+    price?: number;
+    quantity?: number;
+    status?: string;
+    images?: string[];
+    description?: string;
+    compareAtPrice?: number;
+    totalSales?: number;
+    views?: number | string;
+    sku?: string;
+  }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-  const handleInputChange = (_field: string, _value: any) => {
+  const p: Product | undefined = Array.isArray(product) ? product[0] : product;
+
+  const handleInputChange = (_field: string, _value: unknown) => {
     // handle input changes for edit mode
+    void _field;
+    void _value;
   };
 
   if (loading) {
@@ -84,12 +105,6 @@ const ProductDetailPage = () => {
     );
   }
 
-  const { deleteSingleProduct } = useProductForm(
-    () => {},
-    () => {},
-    [],
-    null,
-  );
 
   const handleDelete = async () => {
     const ok = window.confirm(
@@ -97,7 +112,7 @@ const ProductDetailPage = () => {
     );
     if (!ok) return;
     try {
-      await deleteSingleProduct((p as any)._id || id);
+      await deleteSingleProduct(p?._id || (id as string));
       router.push("/products");
     } catch (e) {
       console.error("Delete failed", e);
@@ -192,12 +207,12 @@ const ProductDetailPage = () => {
                 <Badge
                   variant="outline"
                   className={
-                    p.quantity > 0
-                      ? "bg-emerald-400/10 text-emerald-400 border-emerald-400/20"
-                      : "bg-red-400/10 text-red-400 border-red-400/20"
-                  }
+                      (p.quantity ?? 0) > 0
+                        ? "bg-emerald-400/10 text-emerald-400 border-emerald-400/20"
+                        : "bg-red-400/10 text-red-400 border-red-400/20"
+                    }
                 >
-                  {p.quantity > 0 ? "In Stock" : "Out of Stock"}
+                  {(p.quantity ?? 0) > 0 ? "In Stock" : "Out of Stock"}
                 </Badge>
               </div>
             </CardHeader>
@@ -270,7 +285,7 @@ const ProductDetailPage = () => {
 
 export default ProductDetailPage;
 
-export async function getServerSideProps(ctx: any) {
+export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { requireAuth } = await import("@/lib/ssrAuth");
   return requireAuth(ctx);
 }
