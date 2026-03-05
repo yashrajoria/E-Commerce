@@ -119,7 +119,7 @@ export default function App({ Component, pageProps, router }: AppProps) {
   useEffect(() => {
     if (!loading && needsAuth && !authenticated) {
       // redirect unauthenticated users to the sign-in page
-      router.replace("/sign-in");
+      router.replace("/");
     }
   }, [loading, authenticated, needsAuth, router]);
 
