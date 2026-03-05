@@ -3,18 +3,18 @@
 import { AnimatePresence } from "framer-motion";
 import { ArrowLeft, ChevronRight, Lock, Mail, MapPin, Truck } from "lucide-react";
 import Head from "next/head";
-import { STEP_META } from "./checkoutConstants";
-import { CompletedCard, ProgressDots } from "./CheckoutComponents";
-import { formatGBP } from "./checkoutUtils";
-import { useCheckout } from "./useCheckout";
-import { CheckoutCTABar } from "./sections/CheckoutCTABar";
-import { ExpressCheckout } from "./sections/ExpressCheckout";
-import { InlineEditPanels } from "./sections/InlineEditPanels";
-import { MobileOrderSummary } from "./sections/MobileOrderSummary";
-import { StepContact } from "./steps/StepContact";
-import { StepDelivery } from "./steps/StepDelivery";
-import { StepReview } from "./steps/StepReview";
-import { StepShipping } from "./steps/StepShipping";
+import { STEP_META } from "@/components/checkout/checkoutConstants";
+import { CompletedCard, ProgressDots } from "@/components/checkout/CheckoutComponents";
+import { formatGBP } from "@/components/checkout/checkoutUtils";
+import { useCheckout } from "@/components/checkout/useCheckout";
+import { CheckoutCTABar } from "@/components/checkout/sections/CheckoutCTABar";
+import { ExpressCheckout } from "@/components/checkout/sections/ExpressCheckout";
+import { InlineEditPanels } from "@/components/checkout/sections/InlineEditPanels";
+import { MobileOrderSummary } from "@/components/checkout/sections/MobileOrderSummary";
+import { StepContact } from "@/components/checkout/steps/StepContact";
+import { StepDelivery } from "@/components/checkout/steps/StepDelivery";
+import { StepReview } from "@/components/checkout/steps/StepReview";
+import { StepShipping } from "@/components/checkout/steps/StepShipping";
 
 export default function CheckoutPage() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
