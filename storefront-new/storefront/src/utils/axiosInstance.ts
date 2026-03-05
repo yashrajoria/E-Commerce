@@ -1,5 +1,5 @@
 import { refreshTokens } from "@/lib/auth";
-import axios, { AxiosError } from "axios";
+import axios, { AxiosError, AxiosRequestConfig } from "axios";
 
 // Create the Axios instance with base configuration
 export const axiosInstance = axios.create({
@@ -31,8 +31,7 @@ const processQueue = (error: unknown | null) => {
 axiosInstance.interceptors.response.use(
   (response) => response, // Pass through successful responses
   async (error: AxiosError) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const originalRequest: any = error.config;
+    const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean; url?: string };
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
