@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { useForm } from "react-hook-form";
@@ -31,12 +31,12 @@ const singleProductSchema = z.object({
   is_featured: z.boolean().optional(),
 });
 
-export type UploadedImage = { file: File; url?: string; name?: string };
+export type UploadedImage = { file: File | null; url?: string; name?: string; preview?: string };
 
 export function useProductForm(
   setImagePreview: React.Dispatch<React.SetStateAction<File | null>>,
-  setUploadedImages: React.Dispatch<React.SetStateAction<any[]>>,
-  images: any[],
+  setUploadedImages: React.Dispatch<React.SetStateAction<UploadedImage[]>>,
+  images: UploadedImage[],
   imagePreview: File | null,
   initialData?: Partial<z.infer<typeof singleProductSchema>>,
 ) {
@@ -74,7 +74,7 @@ export function useProductForm(
       // If files are provided, try presign+upload flow and send image URLs instead
       if (images && images.length > 0) {
         const files = images
-          .map((img: any) => img.file)
+          .map((img: unknown) => (img && typeof img === "object" ? (img as Record<string, unknown>).file : undefined))
           .filter((f: unknown): f is File => f instanceof File);
         if (files.length > 0) {
           const urls = await uploadFiles(files, data.sku);
