@@ -34,7 +34,7 @@ export const checkAuthStatus = async () => {
   try {
     const response = await axiosInstance.get(API_ROUTES.AUTH.STATUS);
     return response.data;
-  } catch (error: unknown) {
+  } catch {
     // Treat any error (including 401) as not authenticated
     // Don't trigger logout event; let interceptor handle it on subsequent requests
     return { authenticated: false };
