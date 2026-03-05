@@ -1,15 +1,4 @@
-interface Product {
-  _id?: string;
-  name?: string;
-  category?: string[];
-  price?: number;
-  quantity?: number;
-  description?: string;
-  images?: string[];
-  brand?: string;
-  sku?: string;
-  is_featured?: boolean;
-}
+import type { Product } from "@/types/shared";
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
 import ProductInformation from "@/components/products/ProductInformation";
 import { useProduct } from "@/hooks/useProduct";
@@ -32,14 +21,14 @@ export default function EditProductPage() {
   const initialData = p
     ? {
         name: p.name,
-        category: p.category || [],
+        category: p.category_ids || [],
         price: p.price || 0,
         quantity: p.quantity || 0,
         description: p.description || "",
         images: p.images || [],
         brand: p.brand || "",
         sku: p.sku || "",
-        is_featured: p.is_featured || false,
+        is_featured: (p && (p as { is_featured?: boolean }).is_featured) || false,
       }
     : undefined;
 

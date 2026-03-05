@@ -9,6 +9,8 @@ export interface Product {
   status?: string;
   images?: string[];
   description?: string;
+  brand?: string;
+  is_featured?: boolean;
   compareAtPrice?: number;
   totalSales?: number;
   views?: number | string;
