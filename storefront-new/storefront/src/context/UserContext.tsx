@@ -18,10 +18,10 @@ interface User {
   totalOrders?: number;
   totalSpent?: number;
   // optional fields returned by various API shapes
-  orders?: any;
-  wishlist?: any[];
-  wishlists?: any[];
-  profile?: { [key: string]: any };
+  orders?: unknown;
+  wishlist?: unknown[];
+  wishlists?: unknown[];
+  profile?: Record<string, unknown>;
   role: string;
 }
 
