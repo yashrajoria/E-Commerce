@@ -36,7 +36,6 @@ export function AccountDropdown({
 AccountDropdownProps) {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const { user, signOut } = useUser();
-  console.log(user);
   const getInitials = (name?: string | null) =>
     name
       ? name
@@ -46,17 +45,23 @@ AccountDropdownProps) {
           .join("")
           .toUpperCase()
       : "";
-  const displayName = (user as any)?.name || (user as any)?.profile?.name || "";
-  const avatarUrl =
-    (user as any)?.avatar || (user as any)?.profile?.avatar || "";
+  const safeUser = user as unknown as Record<string, unknown> | null;
   const { wishlist: localWishlist } = useWishlist();
 
-  const userOrdersCount = (user as any)?.orders?.meta?.total_orders ?? 0;
-  const userWishlistCount =
-    (user as any)?.wishlist?.length ??
-    (user as any)?.wishlists?.length ??
-    localWishlist?.length ??
-    0;
+  const getProp = <T,>(obj: unknown, ...keys: string[]): T | undefined => {
+    let cur = obj as Record<string, unknown> | undefined;
+    for (const k of keys) {
+      if (!cur || typeof cur !== "object") return undefined;
+      const next = cur[k];
+      cur = (next as Record<string, unknown>) || undefined;
+    }
+    return cur as unknown as T;
+  };
+
+  const displayName = (getProp<string>(safeUser, "name") || getProp<string>(safeUser, "profile", "name") || "");
+  const avatarUrl = (getProp<string>(safeUser, "avatar") || getProp<string>(safeUser, "profile", "avatar") || "");
+  const userOrdersCount = Number(getProp<number>(safeUser, "orders", "meta", "total_orders") ?? 0);
+  const userWishlistCount = Number(getProp<number[]>(safeUser, "wishlist")?.length ?? getProp<number[]>(safeUser, "wishlists")?.length ?? localWishlist?.length ?? 0);
 
   const accountStats = [
     {
