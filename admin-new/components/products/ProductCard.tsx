@@ -5,24 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Package, Edit } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-
-interface Product {
-  _id: string;
-  name: string;
-  category: string;
-  category_ids?: string[];
-  price: number;
-  quantity: number;
-  status: string;
-  images: string[];
-  description: string;
-}
-
-interface Category {
-  _id: string;
-  id?: string;
-  name: string;
-}
+import type { Product, Category } from "@/types/shared";
 
 interface ProductCardProps {
   product: Product;
@@ -31,7 +14,8 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
-  const getCategoryName = (categoryId: string) => {
+  const getCategoryName = (categoryId?: string) => {
+    if (!categoryId) return "-";
     const category = categories?.find(
       (cat) => cat._id === categoryId || cat.id === categoryId,
     );
@@ -87,7 +71,7 @@ const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
             <motion.div variants={imageVariants} className="h-full w-full">
               <Image
                 src={product?.images?.[0] || "/placeholder.svg"}
-                alt={product?.name}
+                alt={product?.name ?? ""}
                 width={100}
                 height={100}
                 className="h-full w-full object-cover transition-transform duration-300"
@@ -102,14 +86,14 @@ const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
 
             <div className="absolute top-3 right-3">
               <Badge
-                variant={product.quantity >= 1 ? "default" : "destructive"}
+                variant={product.quantity ?? 0 >= 1 ? "default" : "destructive"}
                 className={`text-xs font-medium ${
-                  product.quantity >= 1
+                  product.quantity ?? 0 >= 1
                     ? "bg-emerald-500/90 text-white border-emerald-600/20"
                     : "bg-amber-500/90 text-white border-amber-600/20"
                 }`}
               >
-                {product.quantity >= 1 ? "In Stock" : "Out of Stock"}
+                {product.quantity ?? 0 >= 1 ? "In Stock" : "Out of Stock"}
               </Badge>
             </div>
 
@@ -160,7 +144,7 @@ const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
               </motion.div>
               <div className="text-sm text-muted-foreground flex items-center gap-1">
                 <Package className="h-3 w-3" />
-                {product.quantity} left
+                {product.quantity ?? 0} left
               </div>
             </div>
           </div>
@@ -175,9 +159,9 @@ const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
             >
               <Button
                 className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-primary/90 hover:to-primary/70 shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
-                disabled={product.quantity < 1}
+                disabled={(product.quantity ?? 0) < 1}
               >
-                {product.quantity >= 1 ? (
+                {product.quantity ?? 0 >= 1 ? (
                   <Link href={`/products/${product._id}/`}>View Details</Link>
                 ) : (
                   "Out of Stock"

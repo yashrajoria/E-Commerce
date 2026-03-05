@@ -1,10 +1,4 @@
-interface ProductType {
-  _id?: string;
-  name?: string;
-  price?: number;
-  quantity?: number;
-  images?: string[];
-}
+import type { Product } from "@/types/shared";
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
 import StatsCard from "@/components/ui/stats-card";
 import EmptyState from "@/components/ui/empty-state";
@@ -82,7 +76,7 @@ const Products = () => {
     setPerPage(parseInt(value, 10));
     setCurrentPage(1);
   };
-  const handleEditProduct = (product: ProductType | null) => {
+  const handleEditProduct = (product: Product | null) => {
     void product;
     /* open edit modal */
   };

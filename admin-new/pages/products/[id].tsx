@@ -21,6 +21,7 @@ import { useRouter } from "next/router";
 import type { GetServerSidePropsContext } from "next";
 import { useState } from "react";
 import { useProductForm } from "@/hooks/useProductForm";
+import type { Product } from "@/types/shared";
 
 const ProductDetailPage = () => {
   const router = useRouter();
@@ -33,22 +34,6 @@ const ProductDetailPage = () => {
     [],
     null,
   );
-
-  interface Product {
-    _id?: string;
-    name?: string;
-    category?: string;
-    category_ids?: string[];
-    price?: number;
-    quantity?: number;
-    status?: string;
-    images?: string[];
-    description?: string;
-    compareAtPrice?: number;
-    totalSales?: number;
-    views?: number | string;
-    sku?: string;
-  }
 
   const p: Product | undefined = Array.isArray(product) ? product[0] : product;
 

@@ -4,17 +4,7 @@ import { AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { FormProvider } from "react-hook-form";
 import ProductInformation from "./ProductInformation";
-
-interface Product {
-  _id: string;
-  name: string;
-  category: string;
-  price: number;
-  quantity: number;
-  status: string;
-  images: string[];
-  description: string;
-}
+import type { Product } from "@/types/shared";
 
 // interface EditProductDialogProps {
 //   product: Product | null;
