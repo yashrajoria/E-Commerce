@@ -1,13 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FC } from "react";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
+import type { Product } from "@/types/shared";
 
 interface ProductInfoProps {
-  product?: unknown;
+  product?: Product | null;
   isEditing?: boolean;
-  handleInputChange?: (field: string, value: unknown) => void;
+  handleInputChange?: (field: keyof Product, value: unknown) => void;
 }
 
 const ProductInfo: FC<ProductInfoProps> = ({
@@ -15,7 +15,6 @@ const ProductInfo: FC<ProductInfoProps> = ({
   isEditing,
   handleInputChange,
 }) => {
-  console.log(product);
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Product Name */}
@@ -24,14 +23,12 @@ const ProductInfo: FC<ProductInfoProps> = ({
         {isEditing ? (
           <Input
             type="text"
-            value={(product as any)?.name}
+            value={product?.name ?? ""}
             onChange={(e) => handleInputChange?.("name", e.target.value)}
             className="w-full bg-zinc-800 border-zinc-700 text-white"
           />
         ) : (
-          <p className="text-white font-medium">
-            {(product as any)?.name || "-"}
-          </p>
+          <p className="text-white font-medium">{product?.name || "-"}</p>
         )}
       </div>
 
@@ -41,29 +38,25 @@ const ProductInfo: FC<ProductInfoProps> = ({
         {isEditing ? (
           <Input
             type="text"
-            value={(product as any)?.category_ids}
-            onChange={(e) => handleInputChange?.("category", e.target.value)}
+            value={Array.isArray(product?.category_ids) ? product?.category_ids.join(", ") : product?.category_ids ?? ""}
+            onChange={(e) => handleInputChange?.("category_ids", e.target.value)}
             className="w-full bg-zinc-800 border-zinc-700 text-white"
           />
         ) : (
-          <p className="text-white font-medium">
-            {(product as any)?.category_ids || "-"}
-          </p>
+          <p className="text-white font-medium">{(product?.category_ids && product.category_ids.length) ? product.category_ids.join(", ") : "-"}</p>
         )}
       </div>
 
       {/* Brand */}
       <div className="flex flex-col space-y-1">
         <Label className="text-sm text-zinc-400">Brand</Label>
-        <p className="text-white font-medium">
-          {(product as any)?.brand || "-"}
-        </p>
+        <p className="text-white font-medium">{product?.brand || "-"}</p>
       </div>
 
       {/* SKU */}
       <div className="flex flex-col space-y-1">
         <Label className="text-sm text-zinc-400">SKU</Label>
-        <p className="text-white font-medium">{(product as any)?.sku || "-"}</p>
+        <p className="text-white font-medium">{product?.sku || "-"}</p>
       </div>
 
       {/* Description - full width */}
@@ -71,14 +64,12 @@ const ProductInfo: FC<ProductInfoProps> = ({
         <Label className="text-sm text-zinc-400">Description</Label>
         {isEditing ? (
           <Textarea
-            value={(product as any)?.description}
+            value={product?.description ?? ""}
             onChange={(e) => handleInputChange?.("description", e.target.value)}
             className="w-full bg-zinc-800 border-zinc-700 text-white h-32 resize-none"
           />
         ) : (
-          <p className="text-zinc-300 mt-1">
-            {(product as any)?.description || "-"}
-          </p>
+          <p className="text-zinc-300 mt-1">{product?.description || "-"}</p>
         )}
       </div>
     </div>
