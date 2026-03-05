@@ -2,6 +2,7 @@
 
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
+import { getResponseInfo } from "@/lib/error";
 
 const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
 
@@ -35,14 +36,7 @@ export default async function handler(
     return res.status(response.status).json(response.data);
   } catch (err: unknown) {
     console.error("Image presign proxy error:", err);
-    const status =
-      typeof err === "object" && err !== null && "response" in err
-        ? (err as any).response?.status
-        : 500;
-    const message =
-      typeof err === "object" && err !== null && "response" in err
-        ? (err as any).response?.data
-        : "Server error";
-    return res.status(status || 500).json({ message });
+    const { status, data } = getResponseInfo(err);
+    return res.status(status || 500).json({ message: data ?? "Server error" });
   }
 }

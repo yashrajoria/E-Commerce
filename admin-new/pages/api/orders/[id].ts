@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getResponseInfo } from "@/lib/error";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(
@@ -30,14 +31,8 @@ export default async function handler(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: unknown) {
     console.error("Error fetching order:", error);
-    const status =
-      typeof error === "object" && error !== null && "response" in error
-        ? (error as any).response?.status
-        : 500;
-    const errData =
-      typeof error === "object" && error !== null && "response" in error
-        ? (error as any).response?.data
-        : (error instanceof Error ? error.message : String(error));
+    const { status, data } = getResponseInfo(error);
+    const errData = data ?? (error instanceof Error ? error.message : String(error));
     return res.status(status || 500).json({
       message: "Failed to fetch order",
       error: errData,

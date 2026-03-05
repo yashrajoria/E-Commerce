@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getResponseInfo } from "@/lib/error";
 import { NextApiRequest, NextApiResponse } from "next";
 
 // Utility function to extract auth cookie (prefer __session, fallback to token)
@@ -88,14 +89,8 @@ export default async function handler(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: unknown) {
     console.error("API error:", err);
-    const status =
-      typeof err === "object" && err !== null && "response" in err
-        ? (err as any).response?.status
-        : 500;
-    const errorData =
-      typeof err === "object" && err !== null && "response" in err
-        ? (err as any).response?.data
-        : { message: "Internal Server Error" };
+    const { status, data } = getResponseInfo(err);
+    const errorData = data ?? { message: "Internal Server Error" };
     return res.status(status || 500).json(errorData);
   }
 }
