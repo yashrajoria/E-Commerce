@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
+import type { GetServerSidePropsContext } from "next";
 import ProductInformation from "@/components/products/ProductInformation";
 import BulkUpload from "@/components/products/BulkUpload";
 import { Button } from "@/components/ui/button";
@@ -11,13 +10,12 @@ import { motion } from "framer-motion";
 import { Package, FileSpreadsheet, ArrowLeft, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import type { UploadedImage } from "@/hooks/useProductForm";
 
 const AddProductPage = () => {
   const [uploadMode, setUploadMode] = useState<"single" | "bulk">("single");
   const [imagePreview, setImagePreview] = useState<File | null>(null);
-  const [uploadedImages, setUploadedImages] = useState<
-    { file: File; preview: string }[]
-  >([]);
+  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
 
   const { form, onSubmitSingleProduct } = useProductForm(
     setImagePreview,
@@ -189,7 +187,7 @@ const AddProductPage = () => {
 
 export default AddProductPage;
 
-export async function getServerSideProps(ctx: any) {
+export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { requireAuth } = await import("@/lib/ssrAuth");
   return requireAuth(ctx);
 }
