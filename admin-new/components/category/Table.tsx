@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnimatePresence, motion } from "framer-motion";
 import { FolderTree, Edit, Trash2 } from "lucide-react";
-import React from "react";
 import { pageItem } from "../layout/PageLayout";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";

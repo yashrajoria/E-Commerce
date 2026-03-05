@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from "react";
+import { FC } from "react";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
@@ -10,7 +10,7 @@ interface ProductInfoProps {
   handleInputChange?: (field: string, value: unknown) => void;
 }
 
-const ProductInfo: React.FC<ProductInfoProps> = ({
+const ProductInfo: FC<ProductInfoProps> = ({
   product,
   isEditing,
   handleInputChange,
