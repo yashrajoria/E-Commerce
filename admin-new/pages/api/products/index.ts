@@ -134,11 +134,14 @@ async function handleCreateProduct(req: NextApiRequest, res: NextApiResponse) {
       product: response.data,
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (uploadErr: any) {
-    console.log(
-      "Upload failed:",
-      uploadErr?.response?.data || uploadErr.message,
-    );
+  } catch (uploadErr: unknown) {
+    // Normalize error
+    const msg =
+      (uploadErr && typeof uploadErr === "object" &&
+        "response" in uploadErr &&
+        (uploadErr as any).response?.data) ||
+      (uploadErr instanceof Error ? uploadErr.message : String(uploadErr));
+    console.log("Upload failed:", msg);
     return res.status(500).json({ message: "Error uploading product" });
   }
 }
@@ -162,7 +165,7 @@ async function handleGetProducts(req: NextApiRequest, res: NextApiResponse) {
     });
 
     return res.status(response.status).json(response.data);
-  } catch (err) {
+  } catch (err: unknown) {
     console.error("Error fetching products:", err);
     return res.status(500).json({ message: "Error fetching products" });
   }
@@ -207,10 +210,17 @@ export default async function handler(
       return res.status(405).json({ message: "Method not allowed" });
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("API error:", error);
-    return res.status(error?.response?.status || 500).json({
-      message: error?.response?.data?.message || "Server error",
-    });
+    // Attempt to extract status/message safely
+    const status =
+      typeof error === "object" && error !== null && "response" in error
+        ? (error as any).response?.status
+        : undefined;
+    const message =
+      typeof error === "object" && error !== null && "response" in error
+        ? (error as any).response?.data?.message
+        : undefined;
+    return res.status(status || 500).json({ message: message || "Server error" });
   }
 }

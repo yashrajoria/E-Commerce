@@ -33,13 +33,16 @@ export default async function handler(
     );
 
     return res.status(response.status).json(response.data);
-  } catch (err: any) {
-    console.error(
-      "Image presign proxy error:",
-      err?.response?.data || err?.message,
-    );
-    return res
-      .status(err?.response?.status || 500)
-      .json({ message: err?.response?.data || "Server error" });
+  } catch (err: unknown) {
+    console.error("Image presign proxy error:", err);
+    const status =
+      typeof err === "object" && err !== null && "response" in err
+        ? (err as any).response?.status
+        : 500;
+    const message =
+      typeof err === "object" && err !== null && "response" in err
+        ? (err as any).response?.data
+        : "Server error";
+    return res.status(status || 500).json({ message });
   }
 }

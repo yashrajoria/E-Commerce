@@ -86,12 +86,16 @@ export default async function handler(
           .json({ message: `Method ${req.method} Not Allowed` });
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (err: any) {
-    console.error("API error:", err?.response?.data || err.message);
-    const status = err?.response?.status || 500;
-    const errorData = err?.response?.data || {
-      message: "Internal Server Error",
-    };
-    return res.status(status).json(errorData);
+  } catch (err: unknown) {
+    console.error("API error:", err);
+    const status =
+      typeof err === "object" && err !== null && "response" in err
+        ? (err as any).response?.status
+        : 500;
+    const errorData =
+      typeof err === "object" && err !== null && "response" in err
+        ? (err as any).response?.data
+        : { message: "Internal Server Error" };
+    return res.status(status || 500).json(errorData);
   }
 }

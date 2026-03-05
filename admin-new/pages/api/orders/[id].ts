@@ -28,14 +28,19 @@ export default async function handler(
     console.log({ order });
     return res.status(200).json(order);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.error(
-      "Error fetching order:",
-      error.response?.data || error.message
-    );
-    return res.status(error?.response?.status || 500).json({
+  } catch (error: unknown) {
+    console.error("Error fetching order:", error);
+    const status =
+      typeof error === "object" && error !== null && "response" in error
+        ? (error as any).response?.status
+        : 500;
+    const errData =
+      typeof error === "object" && error !== null && "response" in error
+        ? (error as any).response?.data
+        : (error instanceof Error ? error.message : String(error));
+    return res.status(status || 500).json({
       message: "Failed to fetch order",
-      error: error?.response?.data || error.message,
+      error: errData,
     });
   }
 }
