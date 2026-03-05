@@ -47,19 +47,22 @@ export default async function handler(
 
     return res.status(response.status).json(response.data);
   } catch (err: any) {
-    const errSetCookie = err?.response?.headers?.["set-cookie"] as
-      | string[]
-      | undefined;
-    if (errSetCookie && errSetCookie.length > 0) {
-      res.setHeader("Set-Cookie", sanitizeSetCookies(errSetCookie));
-    }
 
-    console.error(
-      "Auth proxy error (register):",
-      err?.response?.data || err.message,
-    );
-    return res
-      .status(err?.response?.status || 500)
-      .json({ message: err?.response?.data || "Auth error" });
+      const errSetCookie = err?.response?.headers?.["set-cookie"] as
+        | string[]
+        | undefined;
+      if (errSetCookie && errSetCookie.length > 0) {
+        res.setHeader("Set-Cookie", sanitizeSetCookies(errSetCookie));
+      }
   }
+      console.error("Auth register proxy error:", err);
+      const status =
+        typeof err === "object" && err !== null && "response" in err
+          ? (err as any).response?.status
+          : 500;
+      const message =
+        typeof err === "object" && err !== null && "response" in err
+          ? (err as any).response?.data
+          : "Auth error";
+      return res.status(status || 500).json({ message });
 }

@@ -32,7 +32,7 @@ export default async function handler(
         withCredentials: true,
       });
       return res.status(response.status).json(response.data);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Error fetching products:", err);
       return res.status(500).json({ message: "Error fetching products" });
     }
@@ -58,15 +58,16 @@ export default async function handler(
       });
       return res.status(response.status).json(response.data);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      console.error(
-        "Error creating category:",
-        err?.response?.data || err.message || err,
-      );
-      const status = err?.response?.status || 500;
-      const data = err?.response?.data || {
-        message: "Error creating category",
-      };
+    } catch (err: unknown) {
+      console.error("Error creating category:", err);
+      const status =
+        typeof err === "object" && err !== null && "response" in err
+          ? (err as any).response?.status
+          : 500;
+      const data =
+        typeof err === "object" && err !== null && "response" in err
+          ? (err as any).response?.data
+          : { message: "Error creating category" };
       return res.status(status).json(data);
     }
   } else {

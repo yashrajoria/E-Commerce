@@ -48,10 +48,16 @@ export default async function handler(
     // ✅ Send response only once
     return res.status(statusCode).json(response.data);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Auth proxy error:", error);
-    return res
-      .status(error.response?.status || 500)
-      .json({ message: error.response?.data?.message || "Server error" });
+    const status =
+      typeof error === "object" && error !== null && "response" in error
+        ? (error as any).response?.status
+        : 500;
+    const message =
+      typeof error === "object" && error !== null && "response" in error
+        ? (error as any).response?.data?.message
+        : "Server error";
+    return res.status(status || 500).json({ message });
   }
 }

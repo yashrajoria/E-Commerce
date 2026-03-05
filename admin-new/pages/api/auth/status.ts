@@ -41,20 +41,24 @@ export default async function handler(
     }
 
     return res.status(response.status).json(response.data);
-  } catch (err: any) {
-    const errSetCookie = err?.response?.headers?.["set-cookie"] as
-      | string[]
-      | undefined;
+  } catch (err: unknown) {
+    const errSetCookie =
+      typeof err === "object" && err !== null && "response" in err
+        ? (err as any).response?.headers?.["set-cookie"] as string[] | undefined
+        : undefined;
     if (errSetCookie && errSetCookie.length > 0) {
       res.setHeader("Set-Cookie", sanitizeSetCookies(errSetCookie));
     }
 
-    console.error(
-      "Auth proxy error (status):",
-      err?.response?.data || err.message,
-    );
-    return res
-      .status(err?.response?.status || 500)
-      .json({ message: err?.response?.data || "Auth status error" });
+    console.error("Auth proxy error (status):", err);
+    const status =
+      typeof err === "object" && err !== null && "response" in err
+        ? (err as any).response?.status
+        : 500;
+    const message =
+      typeof err === "object" && err !== null && "response" in err
+        ? (err as any).response?.data
+        : "Auth status error";
+    return res.status(status || 500).json({ message });
   }
 }

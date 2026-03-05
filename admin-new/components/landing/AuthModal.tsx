@@ -136,8 +136,11 @@ export default function AuthModal({
       toast.success("Successfully signed in");
       if (res.status === 200) router.push("/dashboard");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      const msg = error?.response?.data?.message || "Invalid credentials";
+    } catch (error: unknown) {
+      const msg =
+        typeof error === "object" && error !== null && "response" in error
+          ? (error as any).response?.data?.message || "Invalid credentials"
+          : "Invalid credentials";
       toast.error(msg);
     } finally {
       setIsLoading(false);
@@ -169,8 +172,12 @@ export default function AuthModal({
       toast.success("Verification code sent to your email");
       setView("otp");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Registration failed");
+    } catch (error: unknown) {
+      const msg =
+        typeof error === "object" && error !== null && "response" in error
+          ? (error as any).response?.data?.message || "Registration failed"
+          : "Registration failed";
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }

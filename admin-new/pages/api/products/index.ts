@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import axios, { type AxiosRequestConfig } from "axios";
+import { getResponseInfo } from "@/lib/error";
 import FormData from "form-data";
 import formidable from "formidable";
 import fs from "fs";
@@ -213,14 +214,10 @@ export default async function handler(
   } catch (error: unknown) {
     console.error("API error:", error);
     // Attempt to extract status/message safely
-    const status =
-      typeof error === "object" && error !== null && "response" in error
-        ? (error as any).response?.status
-        : undefined;
-    const message =
-      typeof error === "object" && error !== null && "response" in error
-        ? (error as any).response?.data?.message
-        : undefined;
+    const { status, data } = require("@/lib/error").getResponseInfo(error);
+    const message = typeof data === "object" && data !== null && "message" in (data as any)
+      ? (data as any).message
+      : undefined;
     return res.status(status || 500).json({ message: message || "Server error" });
   }
 }

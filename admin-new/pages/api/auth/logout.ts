@@ -35,18 +35,22 @@ export default async function handler(
       res.setHeader("Set-Cookie", sanitizeSetCookies(setCookie));
 
     return res.status(response.status).json(response.data);
-  } catch (err: any) {
-    const errSetCookie = err?.response?.headers?.["set-cookie"] as
-      | string[]
-      | undefined;
+  } catch (err: unknown) {
+    const errSetCookie =
+      typeof err === "object" && err !== null && "response" in err
+        ? (err as any).response?.headers?.["set-cookie"] as string[] | undefined
+        : undefined;
     if (errSetCookie && errSetCookie.length)
       res.setHeader("Set-Cookie", sanitizeSetCookies(errSetCookie));
-    console.error(
-      "Auth logout proxy error:",
-      err?.response?.data || err.message,
-    );
-    return res
-      .status(err?.response?.status || 500)
-      .json({ message: err?.response?.data || "Logout error" });
+    console.error("Auth logout proxy error:", err);
+    const status =
+      typeof err === "object" && err !== null && "response" in err
+        ? (err as any).response?.status
+        : 500;
+    const message =
+      typeof err === "object" && err !== null && "response" in err
+        ? (err as any).response?.data
+        : "Logout error";
+    return res.status(status || 500).json({ message });
   }
 }
