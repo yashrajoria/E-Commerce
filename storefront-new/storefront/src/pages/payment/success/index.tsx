@@ -1,9 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import {
   Suspense,
-  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -111,6 +109,14 @@ function PaymentSuccessContent() {
     clearCartRef.current = clearCart;
   }, [clearCart]);
 
+  // Snapshot ref for cart so the verify effect doesn't need to re-run when cart
+  // updates (we intentionally verify once per sessionId). Keep cartRef in sync
+  // with cart so the effect can access the latest snapshot safely.
+  const cartRef = useRef(cart);
+  useEffect(() => {
+    cartRef.current = cart;
+  }, [cart]);
+
   // 1. Extract session_id from URL once
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -148,20 +154,23 @@ function PaymentSuccessContent() {
         setVerifiedAt(Date.now());
 
         // Normalize items — prefer backend response, fall back to cart snapshot
-        const rawItems: any[] =
-          data.items || data.line_items || data.order?.items || null;
+        const rawItems: unknown = data.items ?? data.line_items ?? data.order?.items ?? null;
 
         let normalized: NormalizedItem[];
 
         if (Array.isArray(rawItems) && rawItems.length > 0) {
-          normalized = rawItems.map((it: any, idx: number) => ({
-            id: String(it.id ?? it.product_id ?? it.sku ?? idx),
-            name: it.name ?? it.title ?? it.product_name ?? "Product",
-            price: Number(it.price ?? it.unit_price ?? it.amount ?? 0),
-            quantity: Number(it.quantity ?? it.qty ?? 1),
-          }));
+          normalized = (rawItems as unknown[]).map((it: unknown, idx: number) => {
+            const item = it as Record<string, unknown>;
+            return {
+              id: String(item.id ?? item.product_id ?? item.sku ?? idx),
+              name: (item.name ?? item.title ?? item.product_name ?? "Product") as string,
+              price: Number(item.price ?? item.unit_price ?? item.amount ?? 0),
+              quantity: Number(item.quantity ?? item.qty ?? 1),
+            } as NormalizedItem;
+          });
         } else {
-          normalized = (cart ?? []).map((it: CartItem, idx: number) => ({
+          const snapshot = cartRef.current ?? [];
+          normalized = (snapshot as CartItem[]).map((it: CartItem, idx: number) => ({
             id: String(it.id ?? idx),
             name: it.name ?? it.title ?? "Product",
             price: Number(it.price ?? 0),
@@ -188,8 +197,15 @@ function PaymentSuccessContent() {
 
           // Fire confetti (optional dependency — silently skipped if absent)
           try {
+            type ConfettiFn = (opts?: {
+              particleCount?: number;
+              spread?: number;
+              origin?: { x?: number; y?: number };
+              [key: string]: unknown;
+            }) => void;
+
             const mod = await import("canvas-confetti");
-            const confetti = (mod as any).default ?? mod;
+            const confetti = ((mod as unknown) as { default?: ConfettiFn }).default ?? ((mod as unknown) as ConfettiFn);
             confetti?.({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
           } catch {
             // package not installed — that's fine
@@ -200,13 +216,21 @@ function PaymentSuccessContent() {
           setStatus("error");
           setMessage(data.message || "Payment verification failed.");
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (!mounted) return;
         setStatus("error");
-        setMessage(
-          err?.response?.data?.error ??
-            "An error occurred during verification.",
-        );
+        const msg = (() => {
+          if (typeof err === "string") return err;
+          if (err && typeof err === "object") {
+            const e = err as Record<string, unknown>;
+            const r = (e.response as unknown) as Record<string, unknown> | undefined;
+            const dataRec = (r?.data as unknown) as Record<string, unknown> | undefined;
+            return (dataRec?.error as string | undefined) ?? (e.message as string) ?? "An error occurred during verification.";
+          }
+          return "An error occurred during verification.";
+        })();
+
+        setMessage(msg);
       }
     })();
 

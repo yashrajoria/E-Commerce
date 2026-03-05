@@ -1,6 +1,6 @@
 import { Separator } from "@/components/ui/separator";
 import { CartItem } from "@/context/CartContext";
-import { formatGBP } from "../checkoutUtils";
+import { formatGBP } from "@/components/checkout/checkoutUtils";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import Image from "next/image";

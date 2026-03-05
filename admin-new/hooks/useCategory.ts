@@ -2,11 +2,10 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
+import { Category } from "@/types/shared";
 
 export const useCategories = () => {
-  const [categories, setCategories] = useState<{ _id: string; name: string }[]>(
-    [],
-  );
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -16,15 +15,22 @@ export const useCategories = () => {
           withCredentials: true,
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        type ApiCategory = {
+          _id?: string;
+          id?: string;
+          name?: string;
+          slug?: string;
+          image?: string;
+          is_active?: boolean;
+        };
+
+        const data = Array.isArray(res.data) ? (res.data as ApiCategory[]) : [];
+
         setCategories(
-          res.data.map((cat: any) => ({
+          data.map((cat) => ({
             name: cat.name,
             _id: cat._id,
-            id: cat._id,
-            slug: cat.slug,
-            image: cat.image,
-            is_active: cat.is_active,
+            id: cat.id ?? cat._id,
           })),
         );
       } catch (error) {

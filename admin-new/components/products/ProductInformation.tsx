@@ -287,7 +287,7 @@ const ProductInformation: React.FC<ProductInformationProps> = ({
                     Categories
                   </FormLabel>
                   <FormControl>
-                    <MultiSelectCombobox
+                      <MultiSelectCombobox
                       value={
                         Array.isArray(field.value)
                           ? field.value

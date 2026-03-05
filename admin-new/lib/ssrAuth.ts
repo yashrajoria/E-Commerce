@@ -11,7 +11,7 @@ export async function requireAuth(
 
   if (!base) {
     return {
-      redirect: { destination: "/sign-in", permanent: false },
+      redirect: { destination: "/", permanent: false },
     };
   }
 
@@ -26,8 +26,9 @@ export async function requireAuth(
     const data = res.data || null;
     return { props: { user: data } };
   } catch (e) {
+    console.error("SSR auth check failed:", e);
     return {
-      redirect: { destination: "/sign-in", permanent: false },
+      redirect: { destination: "/", permanent: false },
     };
   }
 }

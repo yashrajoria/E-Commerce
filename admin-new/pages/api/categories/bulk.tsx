@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import axios from "axios";
+import { getResponseInfo } from "@/lib/error";
 
 export const config = {
   api: {
@@ -46,10 +47,11 @@ export default async function handler(
       },
     );
     return res.status(resp.status).json(resp.data);
-  } catch (err: any) {
+  } catch (err: unknown) {
     // If bulk endpoint not available, fall back to creating items one by one
-    if (err?.response?.status === 404 || err?.response?.status === 405) {
-      const results: any[] = [];
+    const { status: respStatus } = getResponseInfo(err);
+    if (respStatus === 404 || respStatus === 405) {
+      const results: Array<{ status: number; data?: unknown; error?: unknown }> = [];
       for (const it of items) {
         try {
           const r = await axios.post(`${API_URL}categories/`, it, {
@@ -60,18 +62,15 @@ export default async function handler(
             withCredentials: true,
           });
           results.push({ status: r.status, data: r.data });
-        } catch (e: any) {
-          results.push({
-            status: e?.response?.status || 500,
-            error: e?.response?.data || e.message,
-          });
+        } catch (e: unknown) {
+          const { status: s, data: errData } = getResponseInfo(e);
+          results.push({ status: s ?? 500, error: errData ?? (e instanceof Error ? e.message : String(e)) });
         }
       }
       return res.status(207).json({ results });
     }
 
-    const status = err?.response?.status || 500;
-    const data = err?.response?.data || { message: "Bulk upload failed" };
-    return res.status(status).json(data);
+    const { status, data } = getResponseInfo(err);
+    return res.status(status ?? 500).json(data ?? { message: "Bulk upload failed" });
   }
 }

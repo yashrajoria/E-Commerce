@@ -18,7 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getStatusBadgeStyle, statusIcons } from "@/lib/orders";
-import { Order, SortConfig } from "@/types/orders";
+import type { Order, SortConfig } from "@/types/shared";
 import { motion } from "framer-motion";
 import {
   ArrowUpDown,
@@ -44,8 +44,10 @@ export const OrdersTable = ({
   onStatusUpdate,
   onRowClick,
 }: OrdersTableProps) => {
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "-";
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "-";
     return new Intl.DateTimeFormat("en-US", {
       year: "numeric",
       month: "short",
@@ -106,12 +108,12 @@ export const OrdersTable = ({
         <TableBody>
           {orders.map((order, index) => (
             <motion.tr
-              key={order.id}
+              key={order.id ?? order._id ?? index}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: index * 0.05 }}
               className="group cursor-pointer hover:bg-muted/50"
-              onClick={() => onRowClick(order.id)}
+              onClick={() => onRowClick(order.id ?? order._id ?? "")}
             >
               <TableCell className="font-medium">
                 {order.order_number || order.id || "Order Not Found"}
@@ -156,11 +158,11 @@ export const OrdersTable = ({
                 <Badge
                   variant="outline"
                   className={`flex items-center gap-1 px-2 py-1 capitalize transition-all duration-300 ${getStatusBadgeStyle(
-                    order.status,
+                    order.status ?? "pending",
                   )}`}
                 >
-                  {statusIcons[order.status]}
-                  {order.status}
+                  {statusIcons[order.status ?? "pending"]}
+                  {order.status ?? "pending"}
                 </Badge>
               </TableCell>
               <TableCell className="text-right">
@@ -183,7 +185,7 @@ export const OrdersTable = ({
                     <DropdownMenuItem
                       onClick={(e) => {
                         e.stopPropagation();
-                        onStatusUpdate(order.id);
+                        onStatusUpdate(order.id ?? order._id ?? "");
                       }}
                     >
                       Update Status

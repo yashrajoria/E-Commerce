@@ -79,23 +79,25 @@ const trafficSources = [
   { source: "Referral", visitors: 1600, percentage: 7 },
 ];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (!active || !payload?.length) return null;
+type TooltipEntry = { color?: string; name?: string; value?: number | string };
+const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipEntry[]; label?: string }) => {
+  if (!active || !Array.isArray(payload) || payload.length === 0) return null;
   return (
     <div className="glass-effect-strong rounded-lg p-3 border border-white/[0.08] text-sm">
       <p className="font-medium mb-1">{label}</p>
-      {payload.map(
-        (entry: { color: string; name: string; value: number }, i: number) => (
-          <p key={i} className="text-xs" style={{ color: entry.color }}>
-            {entry.name}:{" "}
-            {typeof entry.value === "number" &&
-            entry.name.toLowerCase().includes("revenue")
-              ? `$${entry.value.toLocaleString()}`
-              : entry.value.toLocaleString()}
+      {payload.map((entry, i) => {
+        const name = entry?.name ?? "";
+        const value = entry?.value ?? "";
+        const color = entry?.color ?? undefined;
+        const formatted = typeof value === "number" && name.toLowerCase().includes("revenue")
+          ? `$${value.toLocaleString()}`
+          : String(value).toLocaleString();
+        return (
+          <p key={i} className="text-xs" style={{ color }}>
+            {name}: {formatted}
           </p>
-        ),
-      )}
+        );
+      })}
     </div>
   );
 };

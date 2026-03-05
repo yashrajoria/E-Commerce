@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
+import { getResponseInfo } from "@/lib/error";
 
 const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
 
@@ -27,13 +28,9 @@ export default async function handler(
       );
 
     return res.status(response.status).json(response.data);
-  } catch (err: any) {
-    console.error(
-      "Auth refresh proxy error:",
-      err?.response?.data || err.message,
-    );
-    return res
-      .status(err?.response?.status || 500)
-      .json({ message: err?.response?.data || "Refresh error" });
+  } catch (err: unknown) {
+    console.error("Auth refresh proxy error:", err);
+    const { status, data } = getResponseInfo(err);
+    return res.status(status || 500).json({ message: data ?? "Refresh error" });
   }
 }

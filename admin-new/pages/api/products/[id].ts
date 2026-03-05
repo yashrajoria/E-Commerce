@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getResponseInfo } from "@/lib/error";
 import { NextApiRequest, NextApiResponse } from "next";
 
 // Utility function to extract auth cookie (prefer __session, fallback to token)
@@ -80,18 +81,15 @@ export default async function handler(
       }
 
       default:
-        res.setHeader("Allow", ["GET", "PUT", "POST", "DELETE"]);
-        return res
-          .status(405)
-          .json({ message: `Method ${req.method} Not Allowed` });
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (err: any) {
-    console.error("API error:", err?.response?.data || err.message);
-    const status = err?.response?.status || 500;
-    const errorData = err?.response?.data || {
-      message: "Internal Server Error",
-    };
-    return res.status(status).json(errorData);
+          res.setHeader("Allow", ["GET", "PUT", "POST", "DELETE"]);
+          return res
+            .status(405)
+            .json({ message: `Method ${req.method} Not Allowed` });
+      }
+  } catch (err: unknown) {
+    console.error("API error:", err);
+    const { status, data } = getResponseInfo(err);
+    const errorData = data ?? { message: "Internal Server Error" };
+    return res.status(status || 500).json(errorData);
   }
 }

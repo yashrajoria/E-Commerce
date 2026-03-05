@@ -1,8 +1,3 @@
-/**
- * Ultra-Premium Admin Dashboard – Main Overview Page
- * Features: KPI Stats, Revenue/Order Charts, Top Products,
- * Recent Activity, Customer Insights, Revenue Forecast, Quick Actions
- */
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import PremiumKPICards from "@/components/dashboard/PremiumKPICards";
 import PremiumRevenueChart from "@/components/dashboard/charts/PremiumRevenueChart";

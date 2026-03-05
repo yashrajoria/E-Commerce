@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Filter, Search } from "lucide-react";
-import { OrdersFilter } from "@/types/orders";
+import type { OrdersFilter } from "@/types/shared";
 
 interface OrdersFiltersProps {
   filter: OrdersFilter;

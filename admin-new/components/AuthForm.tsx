@@ -46,6 +46,12 @@ const AuthForm = () => {
     }
   };
 
+  const getErrorMessage = (err: unknown) => {
+    if (axios.isAxiosError(err)) return err.response?.data?.message ?? err.message;
+    if (err instanceof Error) return err.message;
+    return String(err);
+  };
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -63,9 +69,8 @@ const AuthForm = () => {
       );
       toast.success("Successfully signed in");
       if (res.status === 200) router.push("/dashboard");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      const msg = error?.response?.data?.message || "Something went wrong";
+    } catch (error: unknown) {
+      const msg = getErrorMessage(error) || "Something went wrong";
       toast.error(msg);
     } finally {
       setIsLoading(false);
@@ -90,9 +95,8 @@ const AuthForm = () => {
         setShowOTPVerification(false);
         router.push("/dashboard");
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Something went wrong");
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error) || "Something went wrong");
     } finally {
       setIsLoading(false);
     }
@@ -129,8 +133,7 @@ const AuthForm = () => {
           <CardContent>
             <Tabs
               value={tab}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onValueChange={(v) => setTab(v as any)}
+              onValueChange={(v) => setTab(v as "signin" | "signup")}
               className="w-full"
             >
               <TabsList className="grid w-full grid-cols-2 mb-8 bg-muted/50">

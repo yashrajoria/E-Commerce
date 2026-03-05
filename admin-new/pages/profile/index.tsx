@@ -1,6 +1,3 @@
-/**
- * Premium Profile Page
- */
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
 import {
@@ -359,11 +356,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   let initialEmail = "";
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const decoded: any = jwt.decode(token);
-    if (decoded) {
-      initialName = decoded.name || "";
-      initialEmail = decoded.email || "";
+    const decoded = jwt.decode(token) as unknown;
+    if (typeof decoded === "object" && decoded !== null) {
+      const dd = decoded as Record<string, unknown>;
+      initialName = typeof dd.name === "string" ? dd.name : "";
+      initialEmail = typeof dd.email === "string" ? dd.email : "";
     }
   } catch {
     // Token decode failed, use defaults

@@ -1,5 +1,5 @@
-import { SHIPPING_OPTIONS, SLIDE_VARIANTS } from "../checkoutConstants";
-import { formatGBP, getDeliveryDate } from "../checkoutUtils";
+import { SHIPPING_OPTIONS, SLIDE_VARIANTS } from "@/components/checkout/checkoutConstants";
+import { formatGBP, getDeliveryDate } from "@/components/checkout/checkoutUtils";
 import { motion } from "framer-motion";
 import { Check, Truck } from "lucide-react";
 
