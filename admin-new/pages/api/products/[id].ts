@@ -81,12 +81,11 @@ export default async function handler(
       }
 
       default:
-        res.setHeader("Allow", ["GET", "PUT", "POST", "DELETE"]);
-        return res
-          .status(405)
-          .json({ message: `Method ${req.method} Not Allowed` });
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          res.setHeader("Allow", ["GET", "PUT", "POST", "DELETE"]);
+          return res
+            .status(405)
+            .json({ message: `Method ${req.method} Not Allowed` });
+      }
   } catch (err: unknown) {
     console.error("API error:", err);
     const { status, data } = getResponseInfo(err);

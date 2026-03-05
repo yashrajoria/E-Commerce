@@ -14,10 +14,7 @@ export const config = {
 
 const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
 
-const parseForm = (
-  req: NextApiRequest,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<{ fields: any; files: any }> => {
+const parseForm = (req: NextApiRequest): Promise<{ fields: Record<string, unknown>; files: Record<string, unknown> }> => {
   const form = formidable({ keepExtensions: true });
   return new Promise((resolve, reject) => {
     form.parse(req, (err, fields, files) => {
@@ -55,16 +52,24 @@ async function handleCreateProduct(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { fields, files } = await parseForm(req);
 
-    // Extract fields
-    const name = fields.name?.[0];
-    const category = JSON.parse(fields.category?.[0] || "[]");
-    const price = parseFloat(fields.price?.[0] || "0");
-    const quantity = parseInt(fields.quantity?.[0] || "0");
-    const description = fields.description?.[0] || "";
-    const brand = fields.brand?.[0] || "";
-    const sku = fields.sku?.[0] || "";
+    const getFieldString = (key: string) => {
+      const val = fields[key];
+      if (Array.isArray(val) && val.length > 0) return String(val[0]);
+      if (typeof val === "string") return val;
+      return undefined;
+    };
+
+    // Extract fields safely
+    const name = getFieldString("name");
+    const rawCategory = getFieldString("category");
+    const category = rawCategory ? JSON.parse(rawCategory) : [];
+    const price = parseFloat(getFieldString("price") || "0");
+    const quantity = parseInt(getFieldString("quantity") || "0");
+    const description = getFieldString("description") || "";
+    const brand = getFieldString("brand") || "";
+    const sku = getFieldString("sku") || "";
     // is_featured may come as string 'true'/'false' or '1'/'0'
-    const rawIsFeatured = fields.is_featured?.[0];
+    const rawIsFeatured = getFieldString("is_featured");
     const is_featured =
       rawIsFeatured === undefined
         ? undefined
@@ -87,24 +92,26 @@ async function handleCreateProduct(req: NextApiRequest, res: NextApiResponse) {
       formData.append("is_featured", String(is_featured));
 
     // Handle image files
-    const rawImages = files.images;
-    const imagesArray = Array.isArray(rawImages) ? rawImages : [rawImages];
+    const rawImages = (files as Record<string, unknown>)?.images;
+    const imagesArray = Array.isArray(rawImages) ? rawImages : rawImages ? [rawImages] : [];
     for (const img of imagesArray) {
-      if (img?.filepath) {
+      if (img && typeof img === "object" && "filepath" in (img as Record<string, unknown>)) {
+        const fileObj = img as Record<string, unknown>;
+        const filepath = String(fileObj.filepath);
         try {
-          const buffer = await fs.promises.readFile(img.filepath);
+          const buffer = await fs.promises.readFile(filepath);
           formData.append("images", buffer, {
-            filename: img.originalFilename || "image.jpg",
-            contentType: img.mimetype || "image/jpeg",
+            filename: String(fileObj.originalFilename ?? "image.jpg"),
+            contentType: String(fileObj.mimetype ?? "image/jpeg"),
           });
         } catch (e) {
-          console.warn("Could not read file:", img.filepath, e);
+          console.warn("Could not read file:", filepath, e);
         }
       }
     }
 
     // If frontend uploaded images via presign and sent URLs, include them
-    const rawImageUrls = fields.image_urls?.[0];
+    const rawImageUrls = getFieldString("image_urls");
     if (rawImageUrls) {
       try {
         // rawImageUrls may already be a JSON string
@@ -134,11 +141,10 @@ async function handleCreateProduct(req: NextApiRequest, res: NextApiResponse) {
       message: "Product created successfully",
       product: response.data,
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (uploadErr: unknown) {
-    // Normalize error
-    const { data } = require("@/lib/error").getResponseInfo(uploadErr);
-    const msg = data ?? (uploadErr instanceof Error ? uploadErr.message : String(uploadErr));
+    // Normalize error using helper
+    const { data } = getResponseInfo(uploadErr);
+    const msg = typeof data === "string" ? data : uploadErr instanceof Error ? uploadErr.message : String(uploadErr);
     console.log("Upload failed:", msg);
     return res.status(500).json({ message: "Error uploading product" });
   }
@@ -171,10 +177,12 @@ async function handleGetProducts(req: NextApiRequest, res: NextApiResponse) {
 
 async function handleBulkUpload(req: NextApiRequest, res: NextApiResponse) {
   const { files } = await parseForm(req);
-  const file = files.file?.[0];
-  if (!file) return res.status(400).json({ message: "No file uploaded" });
+  const rawFile = (files as Record<string, unknown>)?.file;
+  const file = Array.isArray(rawFile) ? rawFile[0] : rawFile;
+  if (!file || typeof file !== "object" || !("filepath" in (file as Record<string, unknown>)))
+    return res.status(400).json({ message: "No file uploaded" });
 
-  const fileStream = fs.createReadStream(file.filepath);
+  const fileStream = fs.createReadStream(String((file as Record<string, unknown>).filepath));
   const formData = new FormData();
   formData.append("file", fileStream, file.originalFilename || "upload.csv");
 
@@ -207,11 +215,11 @@ export default async function handler(
     } else {
       return res.status(405).json({ message: "Method not allowed" });
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
   } catch (error: unknown) {
     console.error("API error:", error);
     // Attempt to extract status/message safely
-    const { status, data } = require("@/lib/error").getResponseInfo(error);
+    const { status, data } = getResponseInfo(error);
     const message = typeof data === "object" && data !== null && "message" in (data as { message?: unknown })
       ? (data as { message?: string }).message
       : undefined;

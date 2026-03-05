@@ -58,7 +58,6 @@ export default async function handler(
         withCredentials: true,
       });
       return res.status(response.status).json(response.data);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: unknown) {
       console.error("Error creating category:", err);
       const { status, data } = getResponseInfo(err);

@@ -29,7 +29,6 @@ export default async function handler(
     }
 
     return res.status(response.status).json(response.data);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: unknown) {
     console.error("🔴 Auth proxy error:", error);
     const { status, data } = getResponseInfo(error);

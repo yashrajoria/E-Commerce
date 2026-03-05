@@ -28,7 +28,6 @@ export default async function handler(
     const order = apiRes.data;
     console.log({ order });
     return res.status(200).json(order);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: unknown) {
     console.error("Error fetching order:", error);
     const { status, data } = getResponseInfo(error);
