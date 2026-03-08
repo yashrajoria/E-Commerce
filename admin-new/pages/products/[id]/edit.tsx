@@ -50,7 +50,6 @@ export default function EditProductPage() {
         })),
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product]);
 
   if (loading) {

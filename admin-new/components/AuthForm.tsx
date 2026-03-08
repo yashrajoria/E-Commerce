@@ -90,7 +90,6 @@ const AuthForm = () => {
         setShowOTPVerification(false);
         router.push("/dashboard");
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Something went wrong");
     } finally {
@@ -129,7 +128,6 @@ const AuthForm = () => {
           <CardContent>
             <Tabs
               value={tab}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onValueChange={(v) => setTab(v as any)}
               className="w-full"
             >

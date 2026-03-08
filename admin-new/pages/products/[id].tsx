@@ -29,10 +29,8 @@ const ProductDetailPage = () => {
   const { product, loading } = useProduct(id as string);
   const [isEditing, setIsEditing] = useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const p: any = Array.isArray(product) ? product[0] : product;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
   const handleInputChange = (_field: string, _value: any) => {
     // handle input changes for edit mode
   };

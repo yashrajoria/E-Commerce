@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
@@ -77,7 +78,7 @@ const Products = () => {
     setPerPage(parseInt(value, 10));
     setCurrentPage(1);
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+
   const handleEditProduct = (_product: any) => {
     /* open edit modal */
   };

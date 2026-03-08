@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
 import type { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
 
@@ -25,7 +26,13 @@ export async function requireAuth(
     // allow page, forward user data if present
     const data = res.data || null;
     return { props: { user: data } };
-  } catch (e) {
+  } catch (e: any) {
+    if (e.response.status === 401) {
+      // not authenticated, redirect to sign-in
+      return {
+        redirect: { destination: "/sign-in", permanent: false },
+      };
+    }
     return {
       redirect: { destination: "/sign-in", permanent: false },
     };
