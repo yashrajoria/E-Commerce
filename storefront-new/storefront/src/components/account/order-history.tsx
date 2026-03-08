@@ -34,6 +34,7 @@ const getStatusIcon = (status: string) => {
     case "shipped":
       return <Truck className="h-4 w-4 text-blue-500" />;
     case "pending":
+    case "pending_payment":
       return <Clock className="h-4 w-4 text-yellow-500" />;
     default:
       return <Package className="h-4 w-4 text-gray-500" />;
@@ -48,6 +49,7 @@ const getStatusColor = (status: string) => {
     case "shipped":
       return "bg-blue-500";
     case "pending":
+    case "pending_payment":
       return "bg-yellow-500";
     default:
       return "bg-gray-500";
@@ -66,23 +68,32 @@ function safeNumber(v: unknown) {
 export function OrderHistory({ orders: ordersProp }: { orders?: unknown }) {
   const data = useUserOrders();
 
-  // determine raw orders array from prop or hook
   let rawOrders: RawRecord[] = [];
-  if (Array.isArray(ordersProp)) rawOrders = ordersProp as RawRecord[];
-  else if (data && Array.isArray((data as unknown as { orders?: unknown }).orders))
-    rawOrders = ((data as unknown) as { orders?: unknown }).orders as RawRecord[];
-  else if (Array.isArray(data)) rawOrders = data as unknown as RawRecord[];
+  if (Array.isArray(ordersProp)) {
+    rawOrders = ordersProp as RawRecord[];
+  } else if (data) {
+    const hookData = data as unknown as { orders?: { orders?: unknown[] } };
+    const nested = hookData?.orders?.orders;
+    if (Array.isArray(nested)) {
+      rawOrders = nested as RawRecord[];
+    }
+  }
 
   const ordersData: NormalizedOrder[] = rawOrders.map((o) => {
     const itemsRaw = (o["OrderItems"] ?? o["items"]) as unknown;
     const items: NormalizedItem[] = Array.isArray(itemsRaw)
       ? (itemsRaw as unknown[]).map((it) => {
           const item = it as RawRecord;
-          const product_id = safeString(item["ProductID"] ?? item["product_id"]);
-          const quantity = safeNumber(item["Quantity"] ?? item["quantity"] ?? 0);
-          // if backend uses uppercase Price in cents, convert; otherwise use provided price
+          const product_id = safeString(
+            item["ProductID"] ?? item["product_id"],
+          );
+          const quantity = safeNumber(
+            item["Quantity"] ?? item["quantity"] ?? 0,
+          );
           const hasCents = Object.prototype.hasOwnProperty.call(item, "Price");
-          const price = hasCents ? safeNumber(item["Price"]) / 100 : safeNumber(item["price"] ?? 0);
+          const price = hasCents
+            ? safeNumber(item["Price"]) / 100
+            : safeNumber(item["price"] ?? 0);
           return { product_id, quantity, price };
         })
       : [];
@@ -98,18 +109,28 @@ export function OrderHistory({ orders: ordersProp }: { orders?: unknown }) {
       orderNumber: safeString(o["OrderNumber"] ?? o["id"] ?? o["ID"]),
       status,
       total,
-      date: safeString(o["CompletedAt"] ?? o["CreatedAt"] ?? o["date"]) || undefined,
+      date:
+        safeString(o["CompletedAt"] ?? o["CreatedAt"] ?? o["date"]) ||
+        undefined,
       items,
     };
   });
 
-  const productIds = Array.from(new Set(ordersData.flatMap((o) => o.items.map((it) => it.product_id).filter(Boolean))));
+  const productIds = Array.from(
+    new Set(
+      ordersData.flatMap((o) =>
+        o.items.map((it) => it.product_id).filter(Boolean),
+      ),
+    ),
+  );
 
   const productQueries = useQueries({
     queries: productIds.map((id) => ({
       queryKey: ["product", id],
       queryFn: async () => {
-        const res = await axiosInstance.get(API_ROUTES.PRODUCTS.BY_ID(String(id)));
+        const res = await axiosInstance.get(
+          API_ROUTES.PRODUCTS.BY_ID(String(id)),
+        );
         const d = res.data as unknown as RawRecord;
         return { ...d, id: safeString(d?.id ?? d?._id ?? id) } as RawRecord;
       },
@@ -126,7 +147,12 @@ export function OrderHistory({ orders: ordersProp }: { orders?: unknown }) {
   });
 
   return (
-    <motion.div className="space-y-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+    <motion.div
+      className="space-y-6"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Order History</h2>
         <Button variant="outline">Download All</Button>
@@ -145,22 +171,33 @@ export function OrderHistory({ orders: ordersProp }: { orders?: unknown }) {
               <h3 className="font-semibold">{order.orderNumber || order.id}</h3>
               <Badge className={getStatusColor(order.status)}>
                 {getStatusIcon(order.status)}
-                <span className="ml-1 capitalize">{order.status}</span>
+                <span className="ml-1 capitalize">
+                  {order.status.replace("_", " ")}
+                </span>
               </Badge>
             </div>
             <div className="text-right">
               <p className="font-semibold">${order.total.toFixed(2)}</p>
-              <p className="text-sm text-muted-foreground">{order.date ? new Date(order.date).toLocaleDateString() : "-"}</p>
+              <p className="text-sm text-muted-foreground">
+                {order.date ? new Date(order.date).toLocaleDateString() : "-"}
+              </p>
             </div>
           </div>
 
           <div className="space-y-3">
             {order.items.map((item, itemIndex) => (
               <div key={itemIndex} className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-sm">{String(item.product_id).slice(0, 6)}</div>
+                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-sm">
+                  {String(item.product_id).slice(0, 6)}
+                </div>
                 <div className="flex-1">
-                  <p className="font-medium">{productMap[item.product_id] || `Product ID: ${item.product_id}`}</p>
-                  <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
+                  <p className="font-medium">
+                    {productMap[item.product_id] ||
+                      `Product ID: ${item.product_id}`}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Qty: {item.quantity}
+                  </p>
                 </div>
                 <div className="text-right">
                   <p className="font-medium">${item.price.toFixed(2)}</p>
@@ -171,10 +208,20 @@ export function OrderHistory({ orders: ordersProp }: { orders?: unknown }) {
 
           <div className="flex items-center justify-between mt-4 pt-4 border-t">
             <div className="flex space-x-2">
-              <Button variant="outline" size="sm">View Details</Button>
-              {order.status === "delivered" && (<Button variant="outline" size="sm">Reorder</Button>)}
+              <Button variant="outline" size="sm">
+                View Details
+              </Button>
+              {order.status === "delivered" && (
+                <Button variant="outline" size="sm">
+                  Reorder
+                </Button>
+              )}
             </div>
-            {order.status === "shipped" && (<Button variant="outline" size="sm">Track Package</Button>)}
+            {order.status === "shipped" && (
+              <Button variant="outline" size="sm">
+                Track Package
+              </Button>
+            )}
           </div>
         </motion.div>
       ))}
