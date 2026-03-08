@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import BulkUpload from "@/components/category/BulkUpload";
 import DeleteComponent from "@/components/category/DeleteComponent";
 import EditComponent from "@/components/category/EditComponent";
@@ -20,6 +19,7 @@ import axios from "axios";
 import { motion } from "framer-motion";
 import { FolderTree, Grid3X3, Layers, Search } from "lucide-react";
 import { useMemo, useState } from "react";
+import { Category } from "@/types/shared";
 import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 10;
@@ -42,11 +42,11 @@ const Categories = () => {
   const [newCategoryLevel, setNewCategoryLevel] = useState<number>(1);
   const [newCategoryActive, setNewCategoryActive] = useState<boolean>(true);
   const [editCategoryName, setEditCategoryName] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<any>(null);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
 
   const filteredCategories = useMemo(() => {
-    if (!categories) return [];
-    let result = [...categories] as any[];
+    if (!categories) return [] as Category[];
+    let result = [...categories];
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       result = result.filter((c) => c.name?.toLowerCase().includes(q));
@@ -63,7 +63,18 @@ const Categories = () => {
   const handleAddCategory = async () => {
     if (!newCategoryName.trim()) return;
     try {
-      const payload: any = {
+      type NewCategoryPayload = {
+        name: string;
+        parent_ids?: string[];
+        image?: string;
+        ancestors?: string[];
+        slug?: string;
+        path?: string[];
+        level?: number;
+        is_active?: boolean;
+      };
+
+      const payload: NewCategoryPayload = {
         name: newCategoryName,
         parent_ids: newCategoryParent ? [newCategoryParent] : [],
         image: newCategoryImage || undefined,

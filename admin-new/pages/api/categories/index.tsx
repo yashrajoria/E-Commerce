@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import axios from "axios";
+import { getResponseInfo } from "@/lib/error";
 
 export const config = {
   api: {
@@ -32,7 +33,7 @@ export default async function handler(
         withCredentials: true,
       });
       return res.status(response.status).json(response.data);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Error fetching products:", err);
       return res.status(500).json({ message: "Error fetching products" });
     }
@@ -57,17 +58,10 @@ export default async function handler(
         withCredentials: true,
       });
       return res.status(response.status).json(response.data);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      console.error(
-        "Error creating category:",
-        err?.response?.data || err.message || err,
-      );
-      const status = err?.response?.status || 500;
-      const data = err?.response?.data || {
-        message: "Error creating category",
-      };
-      return res.status(status).json(data);
+    } catch (err: unknown) {
+      console.error("Error creating category:", err);
+      const { status, data } = getResponseInfo(err);
+      return res.status(status || 500).json(data ?? { message: "Error creating category" });
     }
   } else {
     return res.status(405).json({ message: "Method not allowed" });

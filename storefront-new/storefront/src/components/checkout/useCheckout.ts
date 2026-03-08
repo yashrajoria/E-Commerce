@@ -21,8 +21,6 @@ async function pollForPaymentUrl(id: string): Promise<string> {
       );
       const { status, checkout_url } = res.data;
       const statusStr = typeof status === "string" ? status.toUpperCase() : "";
-      // Accept the payment URL as soon as the backend returns it (some responses
-      // may set a 'pending' status while still providing the `checkout_url`).
       if (checkout_url) return checkout_url;
       if (statusStr === "URL_READY") return checkout_url;
       if (statusStr === "FAILED")
@@ -53,7 +51,6 @@ export interface CheckoutState {
   isProcessing: boolean;
   showMobileSummary: boolean;
   editingSection: StepId | null;
-  // computed
   subtotal: number;
   shipping: number;
   tax: number;
@@ -61,13 +58,11 @@ export interface CheckoutState {
   total: number;
   itemCount: number;
   ctaLabel: string;
-  // setters
   setShippingMethod: (v: string) => void;
   setPromoCode: (v: string) => void;
   setPromoExpanded: (v: boolean) => void;
   setShowMobileSummary: (v: boolean) => void;
   setEditingSection: (v: StepId | null) => void;
-  // handlers
   handleChange: (name: keyof ShippingDetails, value: string) => void;
   handleBlur: (name: keyof ShippingDetails) => void;
   validateStep: (step: StepId) => boolean;
@@ -108,7 +103,6 @@ export function useCheckout(): CheckoutState {
   const [showMobileSummary, setShowMobileSummary] = useState(false);
   const [editingSection, setEditingSection] = useState<StepId | null>(null);
 
-  // Computed values
   const subtotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
@@ -134,7 +128,6 @@ export function useCheckout(): CheckoutState {
     }
   })();
 
-  // Persist draft
   useEffect(() => {
     const saveDraft = debounce(() => {
       if (typeof window !== "undefined") {
@@ -148,7 +141,6 @@ export function useCheckout(): CheckoutState {
     return () => saveDraft.cancel();
   }, [shippingDetails, shippingMethod, currentStep]);
 
-  // Restore draft on mount
   useEffect(() => {
     if (typeof window === "undefined") return;
     const draft = localStorage.getItem("checkout_draft");
@@ -162,7 +154,6 @@ export function useCheckout(): CheckoutState {
     }
   }, []);
 
-  // Cleanup poll interval on unmount
   useEffect(() => {
     const ref = pollIntervalRef;
     return () => {
@@ -322,19 +313,11 @@ export function useCheckout(): CheckoutState {
         return;
       }
       const checkoutUrl = await pollForPaymentUrl(checkoutRes.data.order_id);
-      // Debugging: log order id and returned URL to help diagnose redirect failures
-      // (These logs can be removed once the issue is resolved.)
-      // eslint-disable-next-line no-console
-      console.debug("checkoutRes.order_id", checkoutRes.data?.order_id);
-      // eslint-disable-next-line no-console
-      console.debug("polled checkoutUrl", checkoutUrl);
       localStorage.removeItem("checkout_draft");
       showSuccess("Redirecting to secure payment…");
       if (checkoutUrl && typeof checkoutUrl === "string") {
         try {
-          // Prefer assign (does not create a new history entry)
           window.location.assign(checkoutUrl);
-          // Fallback: if assign didn't navigate (e.g. blocked), open in a new tab after a short delay
           setTimeout(() => {
             try {
               window.open(checkoutUrl, "_blank");

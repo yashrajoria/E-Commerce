@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
+import { getResponseInfo } from "@/lib/error";
 
 export default async function handler(
   req: NextApiRequest,
@@ -47,11 +48,12 @@ export default async function handler(
 
     // ✅ Send response only once
     return res.status(statusCode).json(response.data);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Auth proxy error:", error);
-    return res
-      .status(error.response?.status || 500)
-      .json({ message: error.response?.data?.message || "Server error" });
+    const { status, data } = getResponseInfo(error);
+    const message = typeof data === "object" && data !== null && "message" in data
+      ? (data as { message?: string }).message
+      : "Server error";
+    return res.status(status || 500).json({ message });
   }
 }

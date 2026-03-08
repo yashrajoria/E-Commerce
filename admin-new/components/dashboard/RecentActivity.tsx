@@ -1,7 +1,3 @@
-/**
- * RecentActivity – Premium activity feed with type indicators,
- * time stamps, and smooth animated entries
- */
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

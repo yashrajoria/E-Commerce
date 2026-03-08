@@ -146,21 +146,15 @@ export const FormField = ({
   );
 };
 
-export const CompletedCard = ({
-  step,
-  title,
-  summary,
-  isEditing,
-  onEditToggle,
-  icon: Icon,
-}: {
-  step: number;
+export const CompletedCard = (props: {
+  step?: number;
   title: string;
   summary: React.ReactNode;
   isEditing?: boolean;
   onEditToggle?: () => void;
   icon?: React.ElementType;
 }) => {
+  const { title, summary, isEditing, onEditToggle, icon: Icon } = props;
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}

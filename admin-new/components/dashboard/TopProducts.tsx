@@ -10,7 +10,7 @@ import { Trophy, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 
-interface Product {
+interface TopProduct {
   name: string;
   category: string;
   revenue: number;
@@ -20,7 +20,7 @@ interface Product {
   image?: string;
 }
 
-const topProducts: Product[] = [
+const topProducts: TopProduct[] = [
   {
     name: "Premium Wireless Headphones",
     category: "Electronics",

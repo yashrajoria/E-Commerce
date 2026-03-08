@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { FormField } from "../CheckoutComponents";
-import { SHIPPING_OPTIONS } from "../checkoutConstants";
-import { FieldError, ShippingDetails, StepId } from "../checkoutTypes";
-import { formatGBP, getDeliveryDate } from "../checkoutUtils";
+import { FormField } from "@/components/checkout/CheckoutComponents";
+import { SHIPPING_OPTIONS } from "@/components/checkout/checkoutConstants";
+import { FieldError, ShippingDetails, StepId } from "@/components/checkout/checkoutTypes";
+import { formatGBP, getDeliveryDate } from "@/components/checkout/checkoutUtils";
 import { AnimatePresence, motion } from "framer-motion";
 import { Mail, MapPin, Phone, User } from "lucide-react";
 

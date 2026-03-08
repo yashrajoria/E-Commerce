@@ -55,23 +55,25 @@ export function getDeliveryDate(days: number): string {
 }
 
 /* ─── Simple debounce utility (local replacement for lodash.debounce) ─── */
-export function debounce<T extends (...args: any[]) => any>(fn: T, wait = 0) {
+export function debounce<T extends (...args: unknown[]) => unknown>(fn: T, wait = 0) {
   let timer: ReturnType<typeof setTimeout> | null = null;
 
   const debounced = (...args: Parameters<T>) => {
-    if (timer) clearTimeout(timer);
+    if (timer) clearTimeout(timer as ReturnType<typeof setTimeout>);
     timer = setTimeout(() => {
-      fn(...args);
+      // cast is safe here — we call the provided function with the original args
+      (fn as (...a: unknown[]) => unknown)(...args);
       timer = null;
-    }, wait);
+    }, wait) as unknown as ReturnType<typeof setTimeout>;
   };
 
-  debounced.cancel = () => {
+  const result = debounced as T & { cancel: () => void };
+  result.cancel = () => {
     if (timer) {
-      clearTimeout(timer);
+      clearTimeout(timer as ReturnType<typeof setTimeout>);
       timer = null;
     }
   };
 
-  return debounced as T & { cancel: () => void };
+  return result;
 }

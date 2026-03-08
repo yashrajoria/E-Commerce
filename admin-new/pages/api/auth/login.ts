@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
+import { getResponseInfo } from "@/lib/error";
 
 const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
 
@@ -59,21 +58,18 @@ export default async function handler(
     }
 
     return res.status(response.status).json(response.data);
-  } catch (err: any) {
+  } catch (err: unknown) {
     // If backend returned Set-Cookie even on error (e.g. 401), relay it
-    const errSetCookie = err?.response?.headers?.["set-cookie"] as
-      | string[]
-      | undefined;
+    const { headers, status, data } = getResponseInfo(err);
+    const errSetCookie =
+      typeof headers === "object" && headers !== null && "set-cookie" in (headers as { [k: string]: unknown })
+        ? (headers as { [k: string]: unknown })["set-cookie"] as string[] | undefined
+        : undefined;
     if (errSetCookie && errSetCookie.length > 0) {
       res.setHeader("Set-Cookie", sanitizeSetCookies(errSetCookie));
     }
 
-    console.error(
-      "Auth proxy error (login):",
-      err?.response?.data || err.message,
-    );
-    return res
-      .status(err?.response?.status || 500)
-      .json({ message: err?.response?.data || "Auth error" });
+    console.error("Auth proxy error (login):", err);
+    return res.status(status || 500).json({ message: data ?? "Auth error" });
   }
 }

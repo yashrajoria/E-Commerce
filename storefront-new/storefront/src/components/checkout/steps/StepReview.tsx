@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { SLIDE_VARIANTS } from "../checkoutConstants";
-import { formatGBP } from "../checkoutUtils";
+import { SLIDE_VARIANTS } from "@/components/checkout/checkoutConstants";
+import { formatGBP } from "@/components/checkout/checkoutUtils";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ChevronDown,
@@ -70,7 +70,6 @@ export function StepReview({
       className="space-y-4"
       aria-label="Step 4: Review and Payment"
     >
-      {/* ── Order items ── */}
       <div className="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm p-6 sm:p-8">
         <div className="flex items-center gap-3 mb-5">
           <div className="w-10 h-10 rounded-xl bg-linear-to-br from-rose-600 to-amber-500 flex items-center justify-center">
@@ -111,7 +110,6 @@ export function StepReview({
           ))}
         </div>
 
-        {/* Promo code — expandable */}
         <div className="mt-6">
           <button
             onClick={() => onPromoExpandChange(!promoExpanded)}
@@ -168,7 +166,6 @@ export function StepReview({
           </AnimatePresence>
         </div>
 
-        {/* ── Pricing breakdown ── */}
         <Separator className="my-6" />
         <div className="space-y-2.5">
           <div className="flex justify-between text-sm text-neutral-600 dark:text-neutral-400">
@@ -201,7 +198,6 @@ export function StepReview({
         </div>
       </div>
 
-      {/* ── Trust signals ── */}
       <div className="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm p-5">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
           <div className="flex flex-col items-center gap-2">
@@ -245,16 +241,10 @@ export function StepReview({
           </div>
         </div>
 
-        {/* Payment method logos */}
         <div className="flex items-center justify-center gap-3 mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-800">
-          {["Visa", "Mastercard", "Amex"].map((brand) => (
-            <span
-              key={brand}
-              className="px-3 py-1.5 text-xs font-bold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 rounded-lg"
-            >
-              {brand}
-            </span>
-          ))}
+          { ["Visa", "Mastercard", "Amex"].map((brand) => (
+            <span key={brand} className="px-3 py-1.5 text-xs font-bold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 rounded-lg">{brand}</span>
+          )) }
         </div>
       </div>
     </motion.section>

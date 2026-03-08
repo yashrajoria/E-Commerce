@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnimatePresence, motion } from "framer-motion";
 import { FolderTree, Edit, Trash2 } from "lucide-react";
-import React from "react";
 import { pageItem } from "../layout/PageLayout";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
@@ -16,6 +14,8 @@ import {
   Table,
 } from "../ui/table";
 
+import { Category } from "@/types/shared";
+
 const CategoryTable = ({
   loading,
   paginatedCategories,
@@ -24,21 +24,24 @@ const CategoryTable = ({
   setIsEditOpen,
   setSelectedCategory,
   setIsDeleteOpen,
-  //   handleEditCategory,
-  //   handleDeleteCategory,
+  handleEditCategory,
+  handleDeleteCategory,
   setEditCategoryName,
 }: {
   loading: boolean;
-  paginatedCategories: any[];
+  paginatedCategories: Category[];
   searchQuery: string;
   setIsAddOpen: (open: boolean) => void;
   setIsEditOpen: (open: boolean) => void;
-  setSelectedCategory: (category: any) => void;
+  setSelectedCategory: (category: Category) => void;
   setIsDeleteOpen: (open: boolean) => void;
-  handleEditCategory: () => void;
-  handleDeleteCategory: () => void;
+  handleEditCategory?: () => void;
+  handleDeleteCategory?: () => void;
   setEditCategoryName: (name: string) => void;
 }) => {
+  // avoid unused variable ESLint errors when callbacks are optional
+  void handleEditCategory;
+  void handleDeleteCategory;
   return (
     <AnimatePresence mode="wait">
       {loading ? (
@@ -84,7 +87,7 @@ const CategoryTable = ({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {paginatedCategories.map((cat: any, index: number) => (
+                  {paginatedCategories.map((cat: Category, index: number) => (
                     <motion.tr
                       key={cat.id || index}
                       initial={{ opacity: 0, x: -20 }}
@@ -115,7 +118,7 @@ const CategoryTable = ({
                             className="h-8 w-8 hover:bg-white/[0.06] rounded-lg"
                             onClick={() => {
                               setSelectedCategory(cat);
-                              setEditCategoryName(cat.name);
+                              setEditCategoryName(cat.name ?? "");
                               setIsEditOpen(true);
                             }}
                           >

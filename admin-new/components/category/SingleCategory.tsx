@@ -1,8 +1,7 @@
 "use client"
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { useCategories } from "@/hooks/useCategory";
+import { Category } from "@/types/shared";
 import { Plus } from "lucide-react";
 import {
   Dialog,
@@ -90,12 +89,13 @@ const SingleCategory = ({
                 onChange={(e) => setNewCategoryParent(e.target.value || null)}
                 className="w-full bg-white/[0.04] border-white/[0.08] rounded-xl h-9 px-3"
               >
-                <option value="">None</option>
-                {categories.map((c: any) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
+                  <option value="">None</option>
+                  {Array.isArray(categories) &&
+                    categories.map((c: Category) => (
+                      <option key={c.id ?? c._id} value={c.id ?? c._id}>
+                        {c.name}
+                      </option>
+                    ))}
               </select>
             </div>
 

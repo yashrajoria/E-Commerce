@@ -20,7 +20,7 @@ export function useBulkUpload() {
   const [isBulk, setIsBulk] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  
   const [validationResult, setValidationResult] = useState<any>(null);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {

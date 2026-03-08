@@ -1,9 +1,8 @@
-// hooks/useOrders.ts
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export const useOrders = (query: any) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);

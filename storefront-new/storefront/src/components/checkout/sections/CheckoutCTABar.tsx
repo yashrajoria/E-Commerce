@@ -1,4 +1,4 @@
-import { formatGBP } from "../checkoutUtils";
+import { formatGBP } from "@/components/checkout/checkoutUtils";
 import { motion } from "framer-motion";
 import { ChevronRight, ChevronUp, Lock, ShoppingBag } from "lucide-react";
 
@@ -24,7 +24,6 @@ export function CheckoutCTABar({
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-neutral-950/95 backdrop-blur-xl border-t border-neutral-200/50 dark:border-neutral-800/50">
       <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
-        {/* Mobile summary toggle */}
         <button
           onClick={onShowSummary}
           className="flex items-center gap-2 min-h-12 px-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-sm font-medium text-neutral-700 dark:text-neutral-300 shrink-0 lg:hidden"
@@ -35,7 +34,6 @@ export function CheckoutCTABar({
           <ChevronUp className="h-3.5 w-3.5" />
         </button>
 
-        {/* Total on desktop */}
         <div className="hidden lg:flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400 shrink-0">
           <ShoppingBag className="h-4 w-4" />
           <span>
@@ -46,7 +44,6 @@ export function CheckoutCTABar({
           </span>
         </div>
 
-        {/* CTA Button */}
         <motion.button
           onClick={onAction}
           disabled={isProcessing}

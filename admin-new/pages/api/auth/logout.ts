@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
+import { getResponseInfo } from "@/lib/error";
 
 const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
 
@@ -35,18 +35,14 @@ export default async function handler(
       res.setHeader("Set-Cookie", sanitizeSetCookies(setCookie));
 
     return res.status(response.status).json(response.data);
-  } catch (err: any) {
-    const errSetCookie = err?.response?.headers?.["set-cookie"] as
-      | string[]
-      | undefined;
-    if (errSetCookie && errSetCookie.length)
-      res.setHeader("Set-Cookie", sanitizeSetCookies(errSetCookie));
-    console.error(
-      "Auth logout proxy error:",
-      err?.response?.data || err.message,
-    );
-    return res
-      .status(err?.response?.status || 500)
-      .json({ message: err?.response?.data || "Logout error" });
+  } catch (err: unknown) {
+    const { headers, status, data } = getResponseInfo(err);
+    const errSetCookie =
+      typeof headers === "object" && headers !== null && "set-cookie" in (headers as { [k: string]: unknown })
+        ? (headers as { [k: string]: unknown })["set-cookie"] as string[] | undefined
+        : undefined;
+    if (errSetCookie && errSetCookie.length) res.setHeader("Set-Cookie", sanitizeSetCookies(errSetCookie));
+    console.error("Auth logout proxy error:", err);
+    return res.status(status || 500).json({ message: data ?? "Logout error" });
   }
 }

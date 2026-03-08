@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useOrders } from "@/hooks/useOrders";
-import { Order, OrderStatus } from "@/types/orders";
+import type { Order, OrderStatus } from "@/types/shared";
 import { motion } from "framer-motion";
 import {
   ShoppingCart,

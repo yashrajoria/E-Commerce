@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
+import type { Product } from "@/types/shared";
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
 import StatsCard from "@/components/ui/stats-card";
 import EmptyState from "@/components/ui/empty-state";
@@ -78,8 +76,8 @@ const Products = () => {
     setPerPage(parseInt(value, 10));
     setCurrentPage(1);
   };
-
-  const handleEditProduct = (_product: any) => {
+  const handleEditProduct = (product: Product | null) => {
+    void product;
     /* open edit modal */
   };
 
@@ -371,7 +369,9 @@ const Products = () => {
 
 export default Products;
 
-export async function getServerSideProps(ctx: any) {
+import type { GetServerSidePropsContext } from "next";
+
+export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { requireAuth } = await import("@/lib/ssrAuth");
   return requireAuth(ctx);
 }

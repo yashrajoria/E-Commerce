@@ -13,9 +13,9 @@ import { Bell, Search, Menu, X } from "lucide-react";
 import Head from "next/head";
 import Link from "next/link";
 import { useState, ReactNode } from "react";
-import { useRouter } from "next/router";
 import axios from "axios";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 // ── Page-level animation variants (same as dashboard) ──
 export const pageContainer = {
@@ -59,8 +59,8 @@ const PageLayout = ({
 }: PageLayoutProps) => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const router = useRouter();
 
+  const router = useRouter();
   return (
     <div className="flex min-h-screen bg-background">
       <Head>
@@ -170,7 +170,7 @@ const PageLayout = ({
                       { withCredentials: true },
                     );
                     toast.success("Signed out");
-                    router.replace("/sign-in");
+                    router.replace("/");
                   } catch (e) {
                     console.error("Logout failed", e);
                     toast.error("Sign out failed");

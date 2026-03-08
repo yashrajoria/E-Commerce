@@ -1,6 +1,6 @@
-import { FormField } from "../CheckoutComponents";
-import { SLIDE_VARIANTS } from "../checkoutConstants";
-import { FormStateProps } from "../checkoutTypes";
+import { FormField } from "@/components/checkout/CheckoutComponents";
+import { SLIDE_VARIANTS } from "@/components/checkout/checkoutConstants";
+import { FormStateProps } from "@/components/checkout/checkoutTypes";
 import { motion } from "framer-motion";
 import { MapPin, User } from "lucide-react";
 
