@@ -47,7 +47,8 @@ const AuthForm = () => {
   };
 
   const getErrorMessage = (err: unknown) => {
-    if (axios.isAxiosError(err)) return err.response?.data?.message ?? err.message;
+    if (axios.isAxiosError(err))
+      return err.response?.data?.message ?? err.message;
     if (err instanceof Error) return err.message;
     return String(err);
   };
@@ -95,13 +96,8 @@ const AuthForm = () => {
         setShowOTPVerification(false);
         router.push("/dashboard");
       }
-<<<<<<< HEAD
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Something went wrong");
-=======
     } catch (error: unknown) {
       toast.error(getErrorMessage(error) || "Something went wrong");
->>>>>>> 03b9577afe64ab57a47b4be7a95da98206fd8d9b
     } finally {
       setIsLoading(false);
     }
@@ -138,11 +134,7 @@ const AuthForm = () => {
           <CardContent>
             <Tabs
               value={tab}
-<<<<<<< HEAD
-              onValueChange={(v) => setTab(v as any)}
-=======
               onValueChange={(v) => setTab(v as "signin" | "signup")}
->>>>>>> 03b9577afe64ab57a47b4be7a95da98206fd8d9b
               className="w-full"
             >
               <TabsList className="grid w-full grid-cols-2 mb-8 bg-muted/50">
