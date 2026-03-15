@@ -50,55 +50,27 @@ const Customers = () => {
         const res = await axios.get("/api/customers", {
           withCredentials: true,
         });
-        setCustomers(res.data || []);
-      } catch {
-        // Use mock data if API fails
-        setCustomers([
-          {
-            _id: "1",
-            name: "John Doe",
-            email: "john@example.com",
-            phone: "+1234567890",
-            status: "active" as CustomerStatus,
-            addresses: [],
-            stats: {
-              totalOrders: 12,
-              totalSpent: 1459.99,
-              lastOrderDate: "2024-03-15",
-              averageOrderValue: 121.66,
-              joinedDate: "2023-01-10",
-            },
+        const users = res.data?.users || [];
+        // Map backend user objects to Customer type
+        const mapped: Customer[] = users.map((u: any) => ({
+          _id: u.id,
+          name: u.name,
+          email: u.email,
+          phone: u.phone_number || "",
+          status: "active" as CustomerStatus,
+          addresses: [],
+          stats: {
+            totalOrders: 0,
+            totalSpent: 0,
+            lastOrderDate: "",
+            averageOrderValue: 0,
+            joinedDate: u.created_at || "",
           },
-          {
-            _id: "2",
-            name: "Jane Smith",
-            email: "jane@example.com",
-            phone: "+0987654321",
-            status: "active" as CustomerStatus,
-            addresses: [],
-            stats: {
-              totalOrders: 8,
-              totalSpent: 892.5,
-              lastOrderDate: "2024-03-20",
-              averageOrderValue: 111.56,
-              joinedDate: "2023-03-15",
-            },
-          },
-          {
-            _id: "3",
-            name: "Bob Wilson",
-            email: "bob@example.com",
-            status: "inactive" as CustomerStatus,
-            addresses: [],
-            stats: {
-              totalOrders: 3,
-              totalSpent: 245.0,
-              lastOrderDate: "2024-01-05",
-              averageOrderValue: 81.67,
-              joinedDate: "2023-06-20",
-            },
-          },
-        ]);
+        }));
+        setCustomers(mapped);
+      } catch (error) {
+        console.error("Error fetching customers:", error);
+        setCustomers([]);
       } finally {
         setLoading(false);
       }
