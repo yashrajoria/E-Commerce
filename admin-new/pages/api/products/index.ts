@@ -187,6 +187,7 @@ async function handleBulkUpload(req: NextApiRequest, res: NextApiResponse) {
   formData.append("file", fileStream, file.originalFilename || "upload.csv");
 
   const autoCreate = req.query.auto_create_categories ?? "true";
+  console.log({autoCreate})
   const cookie = extractSessionCookie(req);
   const response = await proxyRequest(
     {
