@@ -11,6 +11,7 @@ export default function useAuth() {
     setLoading(true);
     try {
       const res = await fetch("/api/auth/status", { credentials: "include" });
+      
       if (res.ok) {
         const data = await res.json();
         setUser((data && (data.user || data)) || null);
