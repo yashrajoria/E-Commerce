@@ -1,8 +1,5 @@
 "use client";
 
-/**
- * Premium Orders Management Page
- */
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
 import StatsCard from "@/components/ui/stats-card";
 import EmptyState from "@/components/ui/empty-state";
