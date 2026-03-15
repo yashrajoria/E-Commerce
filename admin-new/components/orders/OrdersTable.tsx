@@ -116,7 +116,7 @@ export const OrdersTable = ({
               onClick={() => onRowClick(order.id ?? order._id ?? "")}
             >
               <TableCell className="font-medium">
-                {order.order_number || order.id || "Order Not Found"}
+                {order.OrderNumber || order.ID || "Order Not Found"}
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-3">
@@ -146,12 +146,12 @@ export const OrdersTable = ({
                   <span>{formatDate(order?.CreatedAt)}</span>
                 </div>
               </TableCell>
-              <TableCell>${order?.amount?.toFixed(2)}</TableCell>
+              <TableCell>${order?.Amount?.toFixed(2)}</TableCell>
               <TableCell>
-                {typeof order.items === "number"
-                  ? order.items
-                  : Array.isArray(order.items)
-                    ? order.items.length
+                {typeof order.OrderItems === "number"
+                  ? order.OrderItems
+                  : Array.isArray(order.OrderItems)
+                    ? order.OrderItems.length
                     : ""}
               </TableCell>
               <TableCell>
