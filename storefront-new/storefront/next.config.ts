@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "tse2.mm.bing.net" },
       { protocol: "http", hostname: "localhost" },
       { protocol: "https", hostname: "shopswift.s3.amazonaws.com" },
+      { protocol: "https", hostname: "cdn.example.com" },
 
       // Allow images served from localstack (used in local integration tests)
       { protocol: "http", hostname: "localstack", port: "4566" },
