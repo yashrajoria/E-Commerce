@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import useAuth from "@/hooks/useAuth";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { motion, AnimatePresence } from "framer-motion";
+import { setupGlobalAxiosInterceptors } from "@/lib/axios-interceptor";
 
 /** Premium error fallback with glassmorphism styling */
 function ErrorFallback({
@@ -115,6 +116,11 @@ export default function App({ Component, pageProps, router }: AppProps) {
   ];
 
   const needsAuth = protectedPrefixes.some((p) => router.asPath.startsWith(p));
+
+  useEffect(() => {
+    // Setup global Axios 401 interceptor
+    setupGlobalAxiosInterceptors(router);
+  }, [router]);
 
   useEffect(() => {
     if (!loading && needsAuth && !authenticated) {
