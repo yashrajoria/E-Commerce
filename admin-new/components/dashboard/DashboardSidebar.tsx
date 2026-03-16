@@ -1,7 +1,3 @@
-/**
- * PremiumSidebar – Ultra-premium glassmorphism sidebar with
- * animated navigation, notification badges, quick actions, and responsive collapse
- */
 import { useState, useMemo } from "react";
 import { useRouter } from "next/router";
 import { cn } from "@/lib/utils";
@@ -68,7 +64,7 @@ const DashboardSidebar = () => {
         icon: Package,
         label: "Products",
         path: "/products",
-        badge: 12,
+        badge: 120,
         section: "Commerce",
       },
       {
