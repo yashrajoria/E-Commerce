@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import axios from "axios";
 
 type User = Record<string, unknown> | null;
 
@@ -10,10 +11,10 @@ export default function useAuth() {
   const fetchStatus = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/status", { credentials: "include" });
+      const res = await axios.get("/api/auth/status", { withCredentials: true });
       
-      if (res.ok) {
-        const data = await res.json();
+      if (res.status === 200) {
+        const data = res.data;
         setUser((data && (data.user || data)) || null);
         setAuthenticated(true);
       } else {

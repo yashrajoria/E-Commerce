@@ -87,9 +87,8 @@ export function uploadSingleFile(
   const promise = new Promise<string>(async (resolve, reject) => {
     try {
       const presignUrl = `/api/products/presign${sku ? `?sku=${encodeURIComponent(sku)}` : ""}`;
-      const presignRes = await fetch(presignUrl, { credentials: "include" });
-      if (!presignRes.ok) throw new Error("Failed to get presign");
-      const presign: PresignResponse = await presignRes.json();
+      const presignRes = await axios.get<PresignResponse>(presignUrl, { withCredentials: true });
+      const presign = presignRes.data;
 
       if (presign.fields && presign.upload_url) {
         const fd = new FormData();
