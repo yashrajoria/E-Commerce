@@ -304,9 +304,15 @@ export function useCheckout(): CheckoutState {
         showError("Failed to update cart. Please try again.");
         return;
       }
+      const idempotencyKey = crypto.randomUUID();
       const checkoutRes = await axiosInstance.post(
         API_ROUTES.CART.CHECKOUT,
         {},
+        {
+          headers: {
+            "Idempotency-Key": idempotencyKey,
+          },
+        },
       );
       if (checkoutRes.status !== 200 || !checkoutRes.data.order_id) {
         showError("Failed to initiate checkout. Please try again.");
