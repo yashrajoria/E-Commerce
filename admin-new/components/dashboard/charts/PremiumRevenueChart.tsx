@@ -89,12 +89,15 @@ const CustomTooltip = ({
 
 type Period = "weekly" | "monthly";
 
-export default function PremiumRevenueChart() {
+export default function PremiumRevenueChart({ data }: { data: any }) {
   const [period, setPeriod] = useState<Period>("monthly");
-  const data = period === "monthly" ? monthlyData : weeklyData;
+  
+  if (!data) return null;
 
-  const totalRevenue = data.reduce((sum, d) => sum + d.revenue, 0);
-  const totalProfit = data.reduce((sum, d) => sum + d.profit, 0);
+  const chartData = period === "monthly" ? data.monthly || [] : data.weekly || [];
+
+  const totalRevenue = chartData.reduce((sum: number, d: RevenueData) => sum + d.revenue, 0);
+  const totalProfit = chartData.reduce((sum: number, d: RevenueData) => sum + d.profit, 0);
 
   return (
     <motion.div
@@ -154,7 +157,7 @@ export default function PremiumRevenueChart() {
         <CardContent className="px-2 pt-4 pb-2 h-[320px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
-              data={data}
+              data={chartData}
               margin={{ top: 10, right: 16, left: 0, bottom: 0 }}
             >
               <defs>
