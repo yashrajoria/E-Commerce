@@ -20,7 +20,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Bell, Search, Calendar, Download, Menu, X } from "lucide-react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import axios from "axios";
+import { toast } from "sonner";
 
 // ── Page-level animation variants ──
 const pageContainer = {
@@ -40,9 +42,33 @@ const pageItem = {
   },
 };
 
+type DashboardData = any;
+
 const Dashboard = ({ name }: { name: string }) => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
+    null,
+  );
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch dashboard metrics on mount
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const response = await axios.get("/api/dashboard");
+        if (response.data && response.data.data) {
+          setDashboardData(response.data.data);
+        }
+      } catch (error) {
+        console.error("Failed to load dashboard data", error);
+        toast.error("Failed to load dashboard data");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchDashboard();
+  }, []);
 
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -159,90 +185,101 @@ const Dashboard = ({ name }: { name: string }) => {
 
         {/* ── Page Content ── */}
         <main className="flex-1 overflow-y-auto custom-scrollbar">
-          <motion.div
-            variants={pageContainer}
-            initial="hidden"
-            animate="show"
-            className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto"
-          >
-            {/* ── Welcome Section ── */}
-            <motion.section
-              variants={pageItem}
-              className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4"
+          {isLoading ? (
+            <div className="flex h-[60vh] items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : !dashboardData ? (
+            <div className="flex h-[60vh] items-center justify-center text-muted-foreground">
+              Failed to load dashboard data
+            </div>
+          ) : (
+            <motion.div
+              variants={pageContainer}
+              initial="hidden"
+              animate="show"
+              className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto"
             >
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                  {getGreeting()}, <span className="text-gradient">{name}</span>
-                </h2>
-                <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
-                  <Calendar size={13} />
-                  {today} — Here&apos;s your store overview
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 text-xs border-white/[0.08] hover:bg-white/[0.04] rounded-xl h-8"
-                >
-                  <Download size={13} />
-                  Export
-                </Button>
-                <Button
-                  size="sm"
-                  className="gap-2 text-xs gradient-purple text-white hover:opacity-90 rounded-xl h-8 border-0"
-                >
-                  <Calendar size={13} />
-                  This Month
-                </Button>
-              </div>
-            </motion.section>
+              {/* ── Welcome Section ── */}
+              <motion.section
+                variants={pageItem}
+                className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4"
+              >
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                    {getGreeting()},{" "}
+                    <span className="text-gradient">{name}</span>
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
+                    <Calendar size={13} />
+                    {today} — Here&apos;s your store overview
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 text-xs border-white/[0.08] hover:bg-white/[0.04] rounded-xl h-8"
+                  >
+                    <Download size={13} />
+                    Export
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="gap-2 text-xs gradient-purple text-white hover:opacity-90 rounded-xl h-8 border-0"
+                  >
+                    <Calendar size={13} />
+                    This Month
+                  </Button>
+                </div>
+              </motion.section>
 
-            {/* ── KPI Stats ── */}
-            <motion.section variants={pageItem}>
-              <PremiumKPICards />
-            </motion.section>
+              {/* ── KPI Stats ── */}
+              <motion.section variants={pageItem}>
+                <PremiumKPICards data={dashboardData.kpis} />
+              </motion.section>
 
-            {/* ── Charts Row ── */}
-            <motion.section
-              variants={pageItem}
-              className="grid grid-cols-1 xl:grid-cols-5 gap-6"
-            >
-              <div className="xl:col-span-3">
-                <PremiumRevenueChart />
-              </div>
-              <div className="xl:col-span-2">
-                <PremiumOrdersChart />
-              </div>
-            </motion.section>
+              {/* ── Charts Row ── */}
+              <motion.section
+                variants={pageItem}
+                className="grid grid-cols-1 xl:grid-cols-5 gap-6"
+              >
+                <div className="xl:col-span-3">
+                  <PremiumRevenueChart data={dashboardData.revenueCharts} />
+                </div>
+                <div className="xl:col-span-2">
+                  <PremiumOrdersChart />
+                </div>
+              </motion.section>
 
-            {/* ── Middle Row: Top Products + Quick Actions + Customer Insights ── */}
-            <motion.section
-              variants={pageItem}
-              className="grid grid-cols-1 lg:grid-cols-3 gap-6"
-            >
-              <TopProducts />
-              <div className="space-y-6">
-                <QuickActions />
-                <CustomerInsights />
-              </div>
-              <RevenueForecast />
-            </motion.section>
+              {/* ── Middle Row: Top Products + Quick Actions + Customer Insights ── */}
+              <motion.section
+                variants={pageItem}
+                className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+              >
+                <TopProducts products={dashboardData.topProducts} />
+                <div className="space-y-6">
+                  <QuickActions />
+                  <CustomerInsights insights={dashboardData.customerInsights} />
+                </div>
+                <RevenueForecast />
+              </motion.section>
 
-            {/* ── Recent Activity (Full Width) ── */}
-            <motion.section variants={pageItem}>
-              <RecentActivity />
-            </motion.section>
+              {/* ── Recent Activity (Full Width) ── */}
+              <motion.section variants={pageItem}>
+                <RecentActivity activities={dashboardData.recentActivity} />
+              </motion.section>
 
-            {/* ── Footer ── */}
-            <motion.footer
-              variants={pageItem}
-              className="text-center py-4 text-xs text-muted-foreground/40"
-            >
-              © {new Date().getFullYear()} ShopSwift Admin Pro — Premium
-              E-Commerce Dashboard
-            </motion.footer>
-          </motion.div>
+              {/* ── Footer ── */}
+              <motion.footer
+                variants={pageItem}
+                className="text-center py-4 text-xs text-muted-foreground/40"
+              >
+                © {new Date().getFullYear()} ShopSwift Admin Pro — Premium
+                E-Commerce Dashboard
+              </motion.footer>
+            </motion.div>
+          )}
         </main>
       </div>
     </div>
