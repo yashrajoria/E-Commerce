@@ -23,58 +23,33 @@ interface Activity {
   variant: "success" | "warning" | "error" | "info" | "neutral";
 }
 
-const activities: Activity[] = [
-  {
-    id: "1",
-    type: "New Order",
-    description: "John Doe purchased Premium Wireless Headphones × 2",
-    time: "2 min ago",
-    icon: ShoppingCart,
-    variant: "success",
-  },
-  {
-    id: "2",
-    type: "Payment Received",
-    description: "Payment of $1,249.00 processed successfully",
-    time: "15 min ago",
-    icon: CheckCircle2,
-    variant: "success",
-  },
-  {
-    id: "3",
-    type: "Refund Request",
-    description: "Sarah Smith requested refund for Smart Watch Pro",
-    time: "45 min ago",
-    icon: Wallet,
-    variant: "warning",
-  },
-  {
-    id: "4",
-    type: "Low Stock Alert",
-    description: "Gaming Mouse Pro is running low (3 remaining)",
-    time: "1 hour ago",
-    icon: AlertTriangle,
-    variant: "error",
-  },
-  {
-    id: "5",
-    type: "New Customer",
-    description: "Michael Brown created an account",
-    time: "2 hours ago",
-    icon: Users,
-    variant: "info",
-  },
-  {
-    id: "6",
-    type: "Product Updated",
-    description: "Inventory updated for Organic Cotton T-Shirt",
-    time: "3 hours ago",
-    icon: Package,
-    variant: "neutral",
-  },
-];
 
-export default function RecentActivity() {
+
+export default function RecentActivity({ activities }: { activities: any[] }) {
+  if (!activities || activities.length === 0) return null;
+
+  const mappedActivities: Activity[] = activities.map((act) => {
+    let icon = Clock;
+    
+    // Naively map backend types to icons
+    const typeStr = act.type?.toLowerCase() || "";
+    if (typeStr.includes("order")) icon = ShoppingCart;
+    if (typeStr.includes("payment")) icon = Wallet;
+    if (typeStr.includes("stock") || typeStr.includes("inventory") || typeStr.includes("product")) icon = Package;
+    if (typeStr.includes("customer") || typeStr.includes("user")) icon = Users;
+    if (act.variant === "warning" || act.variant === "error") icon = AlertTriangle;
+    if (act.variant === "success") icon = CheckCircle2;
+
+    return {
+      id: act.id,
+      type: act.type,
+      description: act.description,
+      time: act.time,
+      icon,
+      variant: act.variant as "success" | "warning" | "error" | "info" | "neutral",
+    };
+  });
+
   return (
     <Card className="glass-effect border-gradient overflow-hidden">
       <CardHeader className="pb-3">
@@ -96,9 +71,9 @@ export default function RecentActivity() {
       </CardHeader>
       <CardContent className="px-4 pb-4">
         <div className="space-y-1">
-          {activities.map((activity, idx) => (
+          {mappedActivities.map((activity, idx) => (
             <motion.div
-              key={activity.id}
+              key={activity.id + idx}
               initial={{ opacity: 0, x: -12 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: 0.05 * idx }}
