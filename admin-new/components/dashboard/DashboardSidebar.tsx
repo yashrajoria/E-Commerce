@@ -30,6 +30,7 @@ import {
   Truck,
   Activity,
   Headphones,
+  Bot,
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -58,6 +59,12 @@ const DashboardSidebar = () => {
         icon: BarChart3,
         label: "Analytics",
         path: "/analytics",
+        section: "Main",
+      },
+      {
+        icon: Bot,
+        label: "AI Insights",
+        path: "/dashboard/ai-insights",
         section: "Main",
       },
       {
