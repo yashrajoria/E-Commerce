@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
+import { type ElementType, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
+import axios from "axios";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,16 +37,274 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface NavItem {
-  icon: React.ElementType;
+  icon: ElementType;
   label: string;
   path: string;
   badge?: number;
   section?: string;
 }
 
+type BadgeCounts = {
+  products?: number;
+  orders?: number;
+  customers?: number;
+  inventory?: number;
+};
+
+type BadgeCacheEntry = {
+  expiresAt: number;
+  value: BadgeCounts;
+};
+
+const SIDEBAR_BADGE_CACHE_KEY = "admin-sidebar-badge-counts";
+const SIDEBAR_BADGE_CACHE_TTL_MS = 5 * 60 * 1000;
+
+let badgeCountsMemoryCache: BadgeCacheEntry | null = null;
+
+const getCountValue = (...candidates: unknown[]) => {
+  for (const candidate of candidates) {
+    const value = Number(candidate);
+    if (Number.isFinite(value) && value >= 0) {
+      return value;
+    }
+  }
+
+  return undefined;
+};
+
+const hasAllBadgeCounts = (counts: BadgeCounts) =>
+  [counts.products, counts.orders, counts.customers, counts.inventory].every(
+    (value) => typeof value === "number",
+  );
+
+const readCachedBadgeCounts = (): BadgeCounts | null => {
+  const now = Date.now();
+
+  if (badgeCountsMemoryCache && badgeCountsMemoryCache.expiresAt > now) {
+    return badgeCountsMemoryCache.value;
+  }
+
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const raw = window.sessionStorage.getItem(SIDEBAR_BADGE_CACHE_KEY);
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as BadgeCacheEntry;
+    if (parsed.expiresAt <= now) {
+      window.sessionStorage.removeItem(SIDEBAR_BADGE_CACHE_KEY);
+      return null;
+    }
+
+    badgeCountsMemoryCache = parsed;
+    return parsed.value;
+  } catch {
+    window.sessionStorage.removeItem(SIDEBAR_BADGE_CACHE_KEY);
+    return null;
+  }
+};
+
+const writeCachedBadgeCounts = (value: BadgeCounts) => {
+  const hasAnyCount = Object.values(value).some(
+    (candidate) => typeof candidate === "number",
+  );
+  if (!hasAnyCount) {
+    return;
+  }
+
+  const entry: BadgeCacheEntry = {
+    value,
+    expiresAt: Date.now() + SIDEBAR_BADGE_CACHE_TTL_MS,
+  };
+
+  badgeCountsMemoryCache = entry;
+
+  if (typeof window !== "undefined") {
+    window.sessionStorage.setItem(SIDEBAR_BADGE_CACHE_KEY, JSON.stringify(entry));
+  }
+};
+
+const extractDashboardBadgeCounts = (payload: any): BadgeCounts => {
+  const dashboard = payload?.data ?? payload;
+  const kpis = dashboard?.kpis ?? dashboard?.overview?.kpis ?? dashboard?.metrics;
+  const totals = dashboard?.totals ?? dashboard?.counts ?? dashboard?.summary;
+  const inventorySummary = dashboard?.inventorySummary ?? dashboard?.inventory;
+
+  return {
+    products: getCountValue(
+      kpis?.totalProducts?.value,
+      totals?.products,
+      dashboard?.totalProducts,
+      dashboard?.productsCount,
+      dashboard?.productCount,
+    ),
+    orders: getCountValue(
+      kpis?.totalOrders?.value,
+      totals?.orders,
+      dashboard?.totalOrders,
+      dashboard?.ordersCount,
+      dashboard?.orderCount,
+    ),
+    customers: getCountValue(
+      kpis?.totalCustomers?.value,
+      kpis?.customers?.value,
+      totals?.customers,
+      dashboard?.totalCustomers,
+      dashboard?.customersCount,
+      dashboard?.customerCount,
+    ),
+    inventory: getCountValue(
+      kpis?.totalInventory?.value,
+      inventorySummary?.totalSkus,
+      inventorySummary?.totalItems,
+      totals?.inventory,
+      dashboard?.inventoryCount,
+      dashboard?.totalInventory,
+    ),
+  };
+};
+
+const fetchBadgeCountsFromFallbackEndpoints = async (
+  currentCounts: BadgeCounts,
+): Promise<BadgeCounts> => {
+  const nextCounts = { ...currentCounts };
+  const pendingFetches: Promise<void>[] = [];
+
+  if (typeof nextCounts.products !== "number") {
+    pendingFetches.push(
+      axios
+        .get("/api/products?page=1&perPage=1", {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        })
+        .then((response) => {
+          nextCounts.products = getCountValue(
+            response.data?.meta?.total,
+            response.data?.products?.length,
+          );
+        })
+        .catch(() => undefined),
+    );
+  }
+
+  if (typeof nextCounts.orders !== "number") {
+    pendingFetches.push(
+      axios
+        .get("/api/orders?page=1&limit=1", {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        })
+        .then((response) => {
+          nextCounts.orders = getCountValue(
+            response.data?.meta?.total,
+            response.data?.orders?.length,
+          );
+        })
+        .catch(() => undefined),
+    );
+  }
+
+  if (typeof nextCounts.customers !== "number") {
+    pendingFetches.push(
+      axios
+        .get("/api/customers?page=1&page_size=1", {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        })
+        .then((response) => {
+          nextCounts.customers = getCountValue(
+            response.data?.meta?.total,
+            response.data?.users?.length,
+          );
+        })
+        .catch(() => undefined),
+    );
+  }
+
+  if (typeof nextCounts.inventory !== "number") {
+    pendingFetches.push(
+      axios
+        .get("/api/inventory?page=1&page_size=1", {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        })
+        .then((response) => {
+          nextCounts.inventory = getCountValue(
+            response.data?.meta?.total,
+            response.data?.inventory?.length,
+          );
+        })
+        .catch(() => undefined),
+    );
+  }
+
+  await Promise.all(pendingFetches);
+
+  return nextCounts;
+};
+
+const fetchSidebarBadgeCounts = async (): Promise<BadgeCounts> => {
+  const cachedCounts = readCachedBadgeCounts();
+  if (cachedCounts) {
+    return cachedCounts;
+  }
+
+  let nextCounts: BadgeCounts = {};
+
+  try {
+    const dashboardResponse = await axios.get("/api/dashboard", {
+      headers: { "Content-Type": "application/json" },
+      withCredentials: true,
+    });
+    nextCounts = extractDashboardBadgeCounts(dashboardResponse.data);
+  } catch {
+    nextCounts = {};
+  }
+
+  if (!hasAllBadgeCounts(nextCounts)) {
+    nextCounts = await fetchBadgeCountsFromFallbackEndpoints(nextCounts);
+  }
+
+  writeCachedBadgeCounts(nextCounts);
+  return nextCounts;
+};
+
 const DashboardSidebar = () => {
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const [badgeCounts, setBadgeCounts] = useState<BadgeCounts>(
+    () => readCachedBadgeCounts() ?? {},
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchBadgeCounts = async () => {
+      try {
+        const counts = await fetchSidebarBadgeCounts();
+        if (!isMounted) {
+          return;
+        }
+
+        setBadgeCounts(counts);
+      } catch {
+        if (!isMounted) {
+          return;
+        }
+        setBadgeCounts({});
+      }
+    };
+
+    void fetchBadgeCounts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const navItems: NavItem[] = useMemo(
     () => [
@@ -71,20 +330,21 @@ const DashboardSidebar = () => {
         icon: Package,
         label: "Products",
         path: "/products",
-        badge: 120,
+        badge: badgeCounts.products,
         section: "Commerce",
       },
       {
         icon: ShoppingCart,
         label: "Orders",
         path: "/orders",
-        badge: 5,
+        badge: badgeCounts.orders,
         section: "Commerce",
       },
       {
         icon: Users,
         label: "Customers",
         path: "/customers",
+        badge: badgeCounts.customers,
         section: "Commerce",
       },
       {
@@ -109,6 +369,7 @@ const DashboardSidebar = () => {
         icon: Layers,
         label: "Inventory",
         path: "/inventory",
+        badge: badgeCounts.inventory,
         section: "Finance",
       },
       {
@@ -148,7 +409,12 @@ const DashboardSidebar = () => {
         section: "System",
       },
     ],
-    [],
+    [
+      badgeCounts.customers,
+      badgeCounts.inventory,
+      badgeCounts.orders,
+      badgeCounts.products,
+    ],
   );
 
   // Group items by section
