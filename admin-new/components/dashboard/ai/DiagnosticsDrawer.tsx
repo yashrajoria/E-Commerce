@@ -33,7 +33,7 @@ export const DiagnosticsDrawer = ({
 
         <section className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
           <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.13em] text-muted-foreground">
-            <Activity className="size-3.5 text-[hsl(160,84%,62%)]" aria-hidden="true" />
+            <Activity className="size-3.5 text-[hsl(191,73%,62%)]" aria-hidden="true" />
             Request Metadata
           </h3>
           <dl className="grid gap-3 text-sm sm:grid-cols-2">
@@ -62,7 +62,7 @@ export const DiagnosticsDrawer = ({
 
         <section className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
           <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.13em] text-muted-foreground">
-            <Wrench className="size-3.5 text-[hsl(263,70%,72%)]" aria-hidden="true" />
+            <Wrench className="size-3.5 text-[hsl(23,83%,72%)]" aria-hidden="true" />
             Available Tools
           </h3>
           {tools.length === 0 ? (
@@ -84,7 +84,7 @@ export const DiagnosticsDrawer = ({
 
         <section className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
           <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.13em] text-muted-foreground">
-            <Bug className="size-3.5 text-[hsl(43,96%,64%)]" aria-hidden="true" />
+            <Bug className="size-3.5 text-[hsl(35,74%,64%)]" aria-hidden="true" />
             Raw Diagnostic Payload
           </h3>
           <pre className="max-h-80 overflow-auto rounded-lg bg-[hsla(240,15%,4.5%,0.86)] p-3 text-xs text-foreground">

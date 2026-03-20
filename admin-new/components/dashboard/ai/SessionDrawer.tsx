@@ -54,7 +54,7 @@ export const SessionDrawer = ({
                   <button
                     type="button"
                     onClick={() => onUsePrompt(item)}
-                    className="flex-1 text-left text-sm text-foreground hover:text-[hsl(160,84%,72%)]"
+                    className="flex-1 text-left text-sm text-foreground hover:text-[hsl(191,73%,72%)]"
                   >
                     {item}
                   </button>
@@ -63,7 +63,7 @@ export const SessionDrawer = ({
                     size="sm"
                     variant="ghost"
                     onClick={() => onRemoveSavedPrompt(item)}
-                    className="h-8 rounded-lg text-[hsl(43,96%,76%)] hover:bg-[hsla(43,96%,56%,0.14)]"
+                    className="h-8 rounded-lg text-[hsl(35,74%,76%)] hover:bg-[hsla(35,74%,64%,0.14)]"
                     aria-label={`Remove saved prompt ${item}`}
                   >
                     <Trash2 className="size-3.5" aria-hidden="true" />
@@ -105,7 +105,7 @@ export const SessionDrawer = ({
                       size="sm"
                       variant="outline"
                       onClick={() => onUsePrompt(item.prompt)}
-                      className="h-7 rounded-lg border-white/20 bg-transparent text-[hsl(160,84%,72%)]"
+                      className="h-7 rounded-lg border-white/20 bg-transparent text-[hsl(191,73%,72%)]"
                     >
                       Reuse
                     </Button>

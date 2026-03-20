@@ -26,11 +26,14 @@ export const ToolTimeline = ({ toolResults, toolsCalled }: ToolTimelineProps) =>
   const hasToolFailures = useMemo(() => {
     return toolResults.some((item) => item.success === false || item.status === "error" || item.error);
   }, [toolResults]);
+  const successfulSteps = toolResults.filter(
+    (item) => !(item.success === false || item.status === "error" || item.error),
+  ).length;
 
   return (
     <section
       aria-label="Tool execution timeline"
-      className="glass-effect rounded-2xl p-4 text-foreground"
+      className="glass-effect rounded-[28px] p-4 text-foreground"
     >
       <button
         type="button"
@@ -38,10 +41,10 @@ export const ToolTimeline = ({ toolResults, toolsCalled }: ToolTimelineProps) =>
         onClick={() => setExpanded((value) => !value)}
         aria-expanded={expanded}
       >
-        <Activity className="size-4 text-[hsl(160,84%,62%)]" aria-hidden="true" />
+        <Activity className="size-4 text-[hsl(191,73%,62%)]" aria-hidden="true" />
         <h3 className="text-sm font-semibold">Tool Execution Timeline</h3>
         {hasToolFailures && (
-          <Badge className="bg-[hsla(43,96%,56%,0.2)] text-[hsl(43,96%,82%)]">
+          <Badge className="bg-[hsla(35,74%,64%,0.2)] text-[hsl(35,74%,82%)]">
             <AlertCircle className="size-3" aria-hidden="true" />
             Partial
           </Badge>
@@ -52,6 +55,29 @@ export const ToolTimeline = ({ toolResults, toolsCalled }: ToolTimelineProps) =>
         />
       </button>
 
+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Steps
+          </p>
+          <p className="mt-1 text-lg font-semibold text-foreground">{toolResults.length}</p>
+        </div>
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Successful
+          </p>
+          <p className="mt-1 text-lg font-semibold text-foreground">{successfulSteps}</p>
+        </div>
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Mode
+          </p>
+          <p className="mt-1 text-lg font-semibold text-foreground">
+            {toolResults.length === 0 ? "Direct" : "Tool-backed"}
+          </p>
+        </div>
+      </div>
+
       <div className="mt-3 flex flex-wrap gap-2">
         {toolsCalled.length === 0 ? (
           <span className="rounded-full border border-white/12 bg-white/[0.03] px-3 py-1 text-xs text-muted-foreground">
@@ -59,7 +85,7 @@ export const ToolTimeline = ({ toolResults, toolsCalled }: ToolTimelineProps) =>
           </span>
         ) : (
           toolsCalled.map((tool) => (
-            <Badge key={tool} variant="outline" className="border-[hsla(263,70%,58%,0.4)] bg-[hsla(263,70%,58%,0.15)] text-[hsl(263,70%,84%)]">
+            <Badge key={tool} variant="outline" className="border-[hsla(23,83%,58%,0.38)] bg-[hsla(23,83%,58%,0.14)] text-[hsl(26,86%,84%)]">
               {tool}
             </Badge>
           ))
@@ -95,16 +121,19 @@ export const ToolTimeline = ({ toolResults, toolsCalled }: ToolTimelineProps) =>
                 initial={{ opacity: 0, x: prefersReducedMotion ? 0 : 8 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.2, delay: prefersReducedMotion ? 0 : index * 0.03 }}
-                className="rounded-xl border border-white/10 bg-white/[0.03] p-3"
+                className="rounded-2xl border border-white/10 bg-white/[0.03] p-3"
               >
                 <div className="flex items-center gap-2">
+                  <span className="inline-flex size-6 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-[11px] font-semibold text-muted-foreground">
+                    {index + 1}
+                  </span>
                   <Wrench className="size-3.5 text-muted-foreground" aria-hidden="true" />
                   <p className="text-sm font-medium text-foreground">{normalizeToolName(toolResult)}</p>
                   <span
                     className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
                       status === "success"
-                        ? "bg-[hsla(160,84%,39%,0.2)] text-[hsl(160,84%,82%)]"
-                        : "bg-[hsla(43,96%,56%,0.2)] text-[hsl(43,96%,82%)]"
+                        ? "bg-[hsla(191,73%,56%,0.18)] text-[hsl(191,73%,82%)]"
+                        : "bg-[hsla(35,74%,64%,0.2)] text-[hsl(35,74%,82%)]"
                     }`}
                   >
                     {status}
@@ -112,18 +141,18 @@ export const ToolTimeline = ({ toolResults, toolsCalled }: ToolTimelineProps) =>
                 </div>
 
                 {typeof toolResult.duration_ms === "number" && (
-                  <p className="mt-1 text-xs text-muted-foreground">Duration: {toolResult.duration_ms} ms</p>
+                  <p className="mt-2 text-xs text-muted-foreground">Duration: {toolResult.duration_ms} ms</p>
                 )}
 
                 {toolResult.error && (
-                  <p className="mt-2 rounded bg-[hsla(43,96%,56%,0.12)] px-2 py-1 text-xs text-[hsl(43,96%,80%)]">
+                  <p className="mt-2 rounded bg-[hsla(35,74%,64%,0.12)] px-2 py-1 text-xs text-[hsl(35,74%,80%)]">
                     {String(toolResult.error)}
                   </p>
                 )}
 
                 {hasOutput && (
                   <details className="mt-2 rounded-lg border border-white/10 bg-[hsla(240,14%,6%,0.66)] p-2">
-                    <summary className="cursor-pointer text-xs text-[hsl(160,84%,72%)]">View output</summary>
+                    <summary className="cursor-pointer text-xs text-[hsl(191,73%,72%)]">View output</summary>
                     <pre className="mt-2 max-h-44 overflow-auto text-[11px] text-foreground">
                       {outputText}
                     </pre>
