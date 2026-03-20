@@ -124,8 +124,8 @@ const config = {
           "100%": { transform: "translateX(100%)" },
         },
         glow: {
-          "0%, 100%": { boxShadow: "0 0 20px hsla(263, 70%, 58%, 0.2)" },
-          "50%": { boxShadow: "0 0 40px hsla(263, 70%, 58%, 0.4)" },
+          "0%, 100%": { boxShadow: "0 0 20px hsla(23, 83%, 58%, 0.2)" },
+          "50%": { boxShadow: "0 0 40px hsla(23, 83%, 58%, 0.4)" },
         },
         "border-beam": {
           "0%": { offsetDistance: "0%" },
@@ -148,11 +148,11 @@ const config = {
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "auth-gradient":
-          "linear-gradient(to right bottom, rgb(79, 70, 229) 0%, rgb(45, 212, 191) 100%)",
+          "linear-gradient(to right bottom, hsl(23, 83%, 58%) 0%, hsl(191, 73%, 56%) 100%)",
         "premium-gradient":
-          "linear-gradient(135deg, hsl(263, 70%, 58%) 0%, hsl(160, 84%, 39%) 100%)",
+          "linear-gradient(135deg, hsl(23, 83%, 58%) 0%, hsl(191, 73%, 56%) 100%)",
         "gold-gradient":
-          "linear-gradient(135deg, hsl(43, 96%, 56%) 0%, hsl(38, 92%, 50%) 100%)",
+          "linear-gradient(135deg, hsl(35, 74%, 64%) 0%, hsl(23, 83%, 58%) 100%)",
       },
     },
   },
