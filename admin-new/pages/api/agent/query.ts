@@ -3,7 +3,7 @@ import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
 
-const queryTargets = ["agent/query"];
+const queryTargets = ["bff/admin/agent/query", "bff/agent/query", "agent/query"];
 
 export default async function handler(
   req: NextApiRequest,
