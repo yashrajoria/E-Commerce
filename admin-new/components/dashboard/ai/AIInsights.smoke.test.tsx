@@ -5,10 +5,28 @@ import { PromptComposer } from "@/components/dashboard/ai/PromptComposer";
 import { AnswerCanvas } from "@/components/dashboard/ai/AnswerCanvas";
 import { ToolTimeline } from "@/components/dashboard/ai/ToolTimeline";
 import { AIInsightsWorkspace } from "@/components/dashboard/ai/AIInsightsWorkspace";
+import { ContextualAIAssistant } from "@/components/ai/ContextualAIAssistant";
 import { useAIInsights } from "@/hooks/useAIInsights";
+import {
+  buildContextualPrompt,
+  resolveAIPageContext,
+} from "@/lib/ai-contextual-assistant";
 
 vi.mock("next/dynamic", () => ({
   default: () => () => null,
+}));
+
+vi.mock("next/link", () => ({
+  default: ({ children, href }: { children: React.ReactNode; href: unknown }) => (
+    <a href={typeof href === "string" ? href : "#"}>{children}</a>
+  ),
+}));
+
+vi.mock("next/router", () => ({
+  useRouter: () => ({
+    isReady: true,
+    query: {},
+  }),
 }));
 
 vi.mock("@/hooks/useAIInsights", () => ({
@@ -81,6 +99,86 @@ describe("AI Insights smoke flows", () => {
     expect(screen.getByText(/tool execution timeline/i)).toBeInTheDocument();
     expect(screen.getAllByText(/inventory.lookup/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/view output/i)).toBeInTheDocument();
+  });
+
+  it("runs a contextual quick task from the floating assistant", () => {
+    const submitPrompt = vi.fn();
+
+    vi.mocked(useAIInsights).mockReturnValue({
+      lifecycle: "idle",
+      sessionId: "ai-page-orders",
+      prompt: "",
+      setPrompt: vi.fn(),
+      responseText: "",
+      diagnostics: null,
+      tools: [],
+      history: [],
+      recentPrompts: [],
+      savedPrompts: [],
+      friendlyError: null,
+      technicalError: null,
+      showTechnicalDetails: false,
+      isClearDialogOpen: false,
+      setIsClearDialogOpen: vi.fn(),
+      canSubmit: true,
+      promptValidationMessage: null,
+      submitPrompt,
+      retry: vi.fn(),
+      clearPrompt: vi.fn(),
+      clearSession: vi.fn(),
+      savePrompt: vi.fn(),
+      removeSavedPrompt: vi.fn(),
+      toggleTechnicalDetails: vi.fn(),
+      maxPromptLength: 1200,
+    });
+
+    render(
+      <ContextualAIAssistant
+        context={{
+          key: "orders-list",
+          title: "Orders",
+          summary: "Operational orders queue with filters and status tracking.",
+          placeholder: "Ask about the current orders queue...",
+          focusAreas: ["Pending backlog", "Fulfillment bottlenecks"],
+          sessionNamespace: "page-orders",
+          route: "/orders",
+          quickActions: [
+            {
+              id: "orders-backlog",
+              label: "Review backlog",
+              description: "Pinpoint where the queue is piling up.",
+              prompt: "Analyze the current orders page and identify the biggest backlog or delay patterns by status.",
+            },
+          ],
+        }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /open ai assistant for orders/i }));
+    fireEvent.click(screen.getByRole("button", { name: /review backlog/i }));
+    expect(submitPrompt).toHaveBeenCalledWith(
+      "Analyze the current orders page and identify the biggest backlog or delay patterns by status.",
+    );
+  });
+
+  it("resolves route context and builds a contextual prompt envelope", () => {
+    const context = resolveAIPageContext({
+      pathname: "/orders/[id]",
+      asPath: "/orders/ord_12345?tab=timeline",
+      query: { id: "ord_12345" },
+    });
+
+    expect(context?.title).toContain("Order");
+    expect(context?.sessionNamespace).toContain("ord_12345");
+
+    const prompt = buildContextualPrompt(
+      context!,
+      "What should I do next on this order?",
+    );
+
+    expect(prompt).toContain("[SHOPSWIFT_CONTEXT]");
+    expect(prompt).toContain("page_key=order-details");
+    expect(prompt).toContain("User request: What should I do next on this order?");
   });
 
   it("executes confirmed session clear flow", () => {
