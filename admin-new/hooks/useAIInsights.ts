@@ -108,10 +108,14 @@ const formatHistoryFromMessages = (
 
 interface UseAIInsightsOptions {
   maxPromptLength?: number;
+  storageNamespace?: string;
+  transformPrompt?: (prompt: string) => string;
 }
 
 export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
   const maxPromptLength = options.maxPromptLength ?? DEFAULT_MAX_PROMPT_LENGTH;
+  const storageNamespace = options.storageNamespace ?? "workspace";
+  const transformPrompt = options.transformPrompt;
   const [lifecycle, setLifecycle] = useState<RequestLifecycle>("bootstrapping");
   const [sessionId, setSessionId] = useState("");
   const [prompt, setPrompt] = useState("");
@@ -126,9 +130,9 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
   const [showTechnicalDetails, setShowTechnicalDetails] = useState(false);
   const [isClearDialogOpen, setIsClearDialogOpen] = useState(false);
   const [storageKeys, setStorageKeys] = useState({
-    session: "ai-insights:session:admin",
-    recent: "ai-insights:recent:admin",
-    saved: "ai-insights:saved:admin",
+    session: `ai-insights:${storageNamespace}:session:admin`,
+    recent: `ai-insights:${storageNamespace}:recent:admin`,
+    saved: `ai-insights:${storageNamespace}:saved:admin`,
   });
 
   const lastPromptRef = useRef("");
@@ -159,17 +163,24 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
   const createStorageKeys = useCallback((identity: string) => {
     const safeIdentity = identity.replace(/[^a-zA-Z0-9_-]/g, "_");
     return {
-      session: `ai-insights:session:${safeIdentity}`,
-      recent: `ai-insights:recent:${safeIdentity}`,
-      saved: `ai-insights:saved:${safeIdentity}`,
+      session: `ai-insights:${storageNamespace}:session:${safeIdentity}`,
+      recent: `ai-insights:${storageNamespace}:recent:${safeIdentity}`,
+      saved: `ai-insights:${storageNamespace}:saved:${safeIdentity}`,
     };
-  }, []);
+  }, [storageNamespace]);
 
   useEffect(() => {
     let isMounted = true;
 
     const bootstrap = async () => {
       setLifecycle("bootstrapping");
+      setResponseText("");
+      setFriendlyError(null);
+      setTechnicalError(null);
+      setDiagnostics(null);
+      setHistory([]);
+      setRecentPrompts([]);
+      setSavedPrompts([]);
       try {
         const [toolsResult, statusResult] = await Promise.allSettled([
           fetchAgentTools(),
@@ -273,9 +284,10 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
       trackAIInsightsEvent("prompt_submitted", { promptLength: nextPrompt.length });
 
       try {
+        const requestPrompt = transformPrompt ? transformPrompt(nextPrompt) : nextPrompt;
         const result = await queryAgent({
           session_id: sessionId,
-          prompt: nextPrompt,
+          prompt: requestPrompt,
         });
 
         setResponseText(result.answer);
@@ -316,7 +328,7 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
         trackAIInsightsEvent("response_failed", { reason: friendly });
       }
     },
-    [lifecycle, maxPromptLength, prompt, sessionId, updatePromptCollections],
+    [lifecycle, maxPromptLength, prompt, sessionId, transformPrompt, updatePromptCollections],
   );
 
   const retry = useCallback(async () => {
