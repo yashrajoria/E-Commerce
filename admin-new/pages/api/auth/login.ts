@@ -47,11 +47,9 @@ export default async function handler(
     });
 
     const setCookie = response.headers["set-cookie"] as string[] | undefined;
-    console.debug("[login proxy] Raw Set-Cookie from backend:", setCookie);
 
     if (setCookie && setCookie.length > 0) {
       const sanitized = sanitizeSetCookies(setCookie);
-      console.debug("[login proxy] Sanitized Set-Cookie:", sanitized);
       res.setHeader("Set-Cookie", sanitized);
     } else {
       console.warn("[login proxy] No Set-Cookie header received from backend");
