@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import useAuth from "@/hooks/useAuth";
 
 interface NavItem {
   icon: ElementType;
@@ -71,6 +72,7 @@ const getCountValue = (...candidates: unknown[]) => {
 
   return undefined;
 };
+
 
 const hasAllBadgeCounts = (counts: BadgeCounts) =>
   [counts.products, counts.orders, counts.customers, counts.inventory].every(
@@ -128,42 +130,59 @@ const writeCachedBadgeCounts = (value: BadgeCounts) => {
   }
 };
 
-const extractDashboardBadgeCounts = (payload: any): BadgeCounts => {
-  const dashboard = payload?.data ?? payload;
-  const kpis = dashboard?.kpis ?? dashboard?.overview?.kpis ?? dashboard?.metrics;
-  const totals = dashboard?.totals ?? dashboard?.counts ?? dashboard?.summary;
-  const inventorySummary = dashboard?.inventorySummary ?? dashboard?.inventory;
+const extractDashboardBadgeCounts = (payload: unknown): BadgeCounts => {
+  const obj = (typeof payload === "object" && payload !== null) ? (payload as Record<string, unknown>) : {};
+  const dashboard = typeof obj.data === "object" && obj.data !== null ? obj.data as Record<string, unknown> : obj;
+  const kpis = typeof dashboard.kpis === "object" && dashboard.kpis !== null
+    ? dashboard.kpis as Record<string, unknown>
+    : typeof dashboard.overview === "object" && dashboard.overview !== null && typeof (dashboard.overview as Record<string, unknown>).kpis === "object"
+      ? ((dashboard.overview as Record<string, unknown>).kpis as Record<string, unknown>)
+      : typeof dashboard.metrics === "object" && dashboard.metrics !== null
+        ? dashboard.metrics as Record<string, unknown>
+        : undefined;
+  const totals = typeof dashboard.totals === "object" && dashboard.totals !== null
+    ? dashboard.totals as Record<string, unknown>
+    : typeof dashboard.counts === "object" && dashboard.counts !== null
+      ? dashboard.counts as Record<string, unknown>
+      : typeof dashboard.summary === "object" && dashboard.summary !== null
+        ? dashboard.summary as Record<string, unknown>
+        : undefined;
+  const inventorySummary = typeof dashboard.inventorySummary === "object" && dashboard.inventorySummary !== null
+    ? dashboard.inventorySummary as Record<string, unknown>
+    : typeof dashboard.inventory === "object" && dashboard.inventory !== null
+      ? dashboard.inventory as Record<string, unknown>
+      : undefined;
 
   return {
     products: getCountValue(
-      kpis?.totalProducts?.value,
-      totals?.products,
-      dashboard?.totalProducts,
-      dashboard?.productsCount,
-      dashboard?.productCount,
+      kpis && typeof kpis.totalProducts === "object" && kpis.totalProducts !== null ? (kpis.totalProducts as Record<string, unknown>).value : undefined,
+      totals && typeof totals.products !== "undefined" ? totals.products : undefined,
+      dashboard.totalProducts,
+      dashboard.productsCount,
+      dashboard.productCount,
     ),
     orders: getCountValue(
-      kpis?.totalOrders?.value,
-      totals?.orders,
-      dashboard?.totalOrders,
-      dashboard?.ordersCount,
-      dashboard?.orderCount,
+      kpis && typeof kpis.totalOrders === "object" && kpis.totalOrders !== null ? (kpis.totalOrders as Record<string, unknown>).value : undefined,
+      totals && typeof totals.orders !== "undefined" ? totals.orders : undefined,
+      dashboard.totalOrders,
+      dashboard.ordersCount,
+      dashboard.orderCount,
     ),
     customers: getCountValue(
-      kpis?.totalCustomers?.value,
-      kpis?.customers?.value,
-      totals?.customers,
-      dashboard?.totalCustomers,
-      dashboard?.customersCount,
-      dashboard?.customerCount,
+      kpis && typeof kpis.totalCustomers === "object" && kpis.totalCustomers !== null ? (kpis.totalCustomers as Record<string, unknown>).value : undefined,
+      kpis && typeof kpis.customers === "object" && kpis.customers !== null ? (kpis.customers as Record<string, unknown>).value : undefined,
+      totals && typeof totals.customers !== "undefined" ? totals.customers : undefined,
+      dashboard.totalCustomers,
+      dashboard.customersCount,
+      dashboard.customerCount,
     ),
     inventory: getCountValue(
-      kpis?.totalInventory?.value,
-      inventorySummary?.totalSkus,
-      inventorySummary?.totalItems,
-      totals?.inventory,
-      dashboard?.inventoryCount,
-      dashboard?.totalInventory,
+      kpis && typeof kpis.totalInventory === "object" && kpis.totalInventory !== null ? (kpis.totalInventory as Record<string, unknown>).value : undefined,
+      inventorySummary && typeof inventorySummary.totalSkus !== "undefined" ? inventorySummary.totalSkus : undefined,
+      inventorySummary && typeof inventorySummary.totalItems !== "undefined" ? inventorySummary.totalItems : undefined,
+      totals && typeof totals.inventory !== "undefined" ? totals.inventory : undefined,
+      dashboard.inventoryCount,
+      dashboard.totalInventory,
     ),
   };
 };
@@ -273,12 +292,22 @@ const fetchSidebarBadgeCounts = async (): Promise<BadgeCounts> => {
   return nextCounts;
 };
 
+
 const DashboardSidebar = () => {
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const [badgeCounts, setBadgeCounts] = useState<BadgeCounts>(
     () => readCachedBadgeCounts() ?? {},
   );
+  const { user, loading: userLoading } = useAuth();
+
+  // Helper for user initials
+  const getInitials = (name?: string) => {
+    if (!name) return "?";
+    const parts = name.trim().split(" ");
+    if (parts.length === 1) return parts[0][0]?.toUpperCase() || "?";
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -669,17 +698,17 @@ const DashboardSidebar = () => {
           >
             <div className="relative shrink-0">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-sm font-bold">
-                A
+                {userLoading ? "..." : getInitials(user?.name)}
               </div>
               <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[hsl(var(--sidebar-background))]" />
             </div>
             {!collapsed && (
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">
-                  Admin User
+                  {userLoading ? "Loading..." : user?.name || "Unknown User"}
                 </p>
                 <p className="text-[11px] text-muted-foreground truncate">
-                  admin@shopswift.com
+                  {userLoading ? "" : user?.email || "No email"}
                 </p>
               </div>
             )}
