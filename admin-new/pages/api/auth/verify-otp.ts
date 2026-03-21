@@ -10,8 +10,8 @@ export default async function handler(
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  console.log(req.body, "REQ BODY");
-  console.log(req.headers.cookie, "COOKIE");
+  // Safe log for endpoint call
+  console.log('verify-otp called');
 
   try {
     const response = await axios.post(
