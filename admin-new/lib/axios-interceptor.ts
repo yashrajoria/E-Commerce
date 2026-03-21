@@ -1,5 +1,5 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
-import { NextRouter } from "next/router";
+import { toast } from "sonner";
 
 // To prevent multiple token refresh requests if several API calls fail at the same time
 let isRefreshing = false;
@@ -19,7 +19,7 @@ const processQueue = (error: Error | null, token: string | null = null) => {
   failedQueue = [];
 };
 
-export const setupGlobalAxiosInterceptors = (router: NextRouter) => {
+export const setupGlobalAxiosInterceptors = () => {
   // Clear any existing interceptors to prevent duplicates on hot-reload/re-renders
   axios.interceptors.response.clear();
 
@@ -84,6 +84,25 @@ export const setupGlobalAxiosInterceptors = (router: NextRouter) => {
         }
       }
 
+      // Global error handling for 403, 429, 404
+      if (error.response) {
+        const status = error.response.status;
+        // 403 Forbidden: Admin-only resource accessed by non-admin
+        if (status === 403) {
+          toast.error("You don't have permission to do this");
+        }
+        // 429 Too Many Requests: Rate limited
+        else if (status === 429) {
+          const retryAfter = error.response.headers?.['retry-after'] || 60;
+          toast.error(`Rate limited. Try again in ${retryAfter} seconds`);
+        }
+        // 404 Not Found: Only show toast for non-GET (action) requests
+        else if (status === 404) {
+          if (error.config && error.config.method && error.config.method.toLowerCase() !== 'get') {
+            toast.error('Resource not found');
+          }
+        }
+      }
       // For all other errors, just return the exact error
       return Promise.reject(error);
     }
