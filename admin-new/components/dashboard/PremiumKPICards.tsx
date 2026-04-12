@@ -28,7 +28,7 @@ const stats: KPIStat[] = [
   {
     title: "Total Revenue",
     value: 42835,
-    prefix: "$",
+    prefix: "£",
     trend: 12.5,
     icon: Wallet,
     gradient: "from-violet-600 via-purple-600 to-indigo-600",
@@ -93,7 +93,7 @@ export default function PremiumKPICards({ data }: { data: any }) {
     {
       title: "Total Revenue",
       value: data.totalRevenue?.value || 0,
-      prefix: "$",
+      prefix: "£",
       trend: data.totalRevenue?.trend || 0,
       icon: Wallet,
       gradient: "from-violet-600 via-purple-600 to-indigo-600",

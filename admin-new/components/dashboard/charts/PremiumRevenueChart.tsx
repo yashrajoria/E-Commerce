@@ -188,7 +188,7 @@ export default function PremiumRevenueChart({ data }: { data: any }) {
                 axisLine={false}
                 tickLine={false}
                 tick={{ fill: "#64748b", fontSize: 11 }}
-                tickFormatter={(v) => `$${v >= 1000 ? `${v / 1000}k` : v}`}
+                tickFormatter={(v) => `£${v >= 1000 ? `${v / 1000}k` : v}`}
                 width={50}
               />
               <Tooltip

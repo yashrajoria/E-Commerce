@@ -132,13 +132,13 @@ export default function RevenueForecast() {
                   <span className="text-lg font-bold text-foreground">
                     {metric.label === "Conversion Rate"
                       ? `${metric.current}%`
-                      : `$${metric.current.toLocaleString()}`}
+                      : `£${metric.current.toLocaleString()}`}
                   </span>
                   <span className="text-xs text-muted-foreground">
                     /{" "}
                     {metric.label === "Conversion Rate"
                       ? `${metric.target}%`
-                      : `$${metric.target.toLocaleString()}`}
+                      : `£${metric.target.toLocaleString()}`}
                   </span>
                 </div>
               </div>
