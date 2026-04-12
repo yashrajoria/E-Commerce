@@ -25,6 +25,10 @@ export default async function handler(
   if (req.method !== "POST")
     return res.status(405).json({ message: "Method not allowed" });
 
+  if (!API_URL) {
+    return res.status(500).json({ message: "NEXT_PUBLIC_NEW_API_URL is not configured" });
+  }
+
   try {
     const response = await axios.post(`${API_URL}auth/register`, req.body, {
       headers: { "Content-Type": "application/json" },
@@ -32,16 +36,10 @@ export default async function handler(
     });
 
     const setCookie = response.headers["set-cookie"] as string[] | undefined;
-    console.debug("[register proxy] Raw Set-Cookie from backend:", setCookie);
 
     if (setCookie && setCookie.length > 0) {
       const sanitized = sanitizeSetCookies(setCookie);
-      console.debug("[register proxy] Sanitized Set-Cookie:", sanitized);
       res.setHeader("Set-Cookie", sanitized);
-    } else {
-      console.warn(
-        "[register proxy] No Set-Cookie header received from backend",
-      );
     }
 
     return res.status(response.status).json(response.data);

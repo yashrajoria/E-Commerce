@@ -14,6 +14,39 @@ export const config = {
 
 const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
 
+const normalizeProductsResponse = (raw: unknown) => {
+  if (!raw || typeof raw !== "object") {
+    return { products: [], meta: { totalPages: 1, total: 0 } };
+  }
+
+  const payload = raw as Record<string, unknown>;
+  const nested =
+    payload.data && typeof payload.data === "object"
+      ? (payload.data as Record<string, unknown>)
+      : payload;
+
+  const productsCandidate =
+    payload.products ?? payload.items ?? payload.results ?? nested.products ?? nested.items ?? nested.results ?? nested.data;
+  const products = Array.isArray(productsCandidate)
+    ? productsCandidate
+    : Array.isArray(nested.products)
+      ? nested.products
+      : Array.isArray(nested.items)
+        ? nested.items
+        : Array.isArray(nested.results)
+          ? nested.results
+          : [];
+
+  const metaCandidate =
+    payload.meta ?? nested.meta ?? payload.pagination ?? nested.pagination ?? undefined;
+  const meta =
+    metaCandidate && typeof metaCandidate === "object"
+      ? metaCandidate
+      : { totalPages: 1, total: products.length };
+
+  return { products, meta };
+};
+
 const parseForm = (req: NextApiRequest): Promise<{ fields: Record<string, unknown>; files: Record<string, unknown> }> => {
   const form = formidable({ keepExtensions: true });
   return new Promise((resolve, reject) => {
@@ -168,7 +201,7 @@ async function handleGetProducts(req: NextApiRequest, res: NextApiResponse) {
       withCredentials: true,
     });
 
-    return res.status(response.status).json(response.data);
+    return res.status(response.status).json(normalizeProductsResponse(response.data));
   } catch (err: unknown) {
     console.error("Error fetching products:", err);
     return res.status(500).json({ message: "Error fetching products" });
