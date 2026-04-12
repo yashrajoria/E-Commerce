@@ -37,66 +37,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 import { Megaphone, Tag, Plus, Copy, DollarSign, Users } from "lucide-react";
 import { useState } from "react";
+import { useAdminCoupons } from "@/lib/hooks/useAdminData";
+import { TableSkeleton, EmptyState, ErrorState } from "@/components/admin/shared/DataStates";
 import { toast } from "sonner";
 
-interface Coupon {
-  id: string;
-  code: string;
-  discount: string;
-  type: "percentage" | "fixed";
-  usageCount: number;
-  maxUses: number;
-  status: "active" | "expired" | "scheduled";
-  startDate: string;
-  endDate: string;
-}
 
-const mockCoupons: Coupon[] = [
-  {
-    id: "1",
-    code: "WELCOME20",
-    discount: "20",
-    type: "percentage",
-    usageCount: 245,
-    maxUses: 500,
-    status: "active",
-    startDate: "2024-01-01",
-    endDate: "2024-12-31",
-  },
-  {
-    id: "2",
-    code: "FLAT50",
-    discount: "50",
-    type: "fixed",
-    usageCount: 89,
-    maxUses: 200,
-    status: "active",
-    startDate: "2024-03-01",
-    endDate: "2024-06-30",
-  },
-  {
-    id: "3",
-    code: "SUMMER15",
-    discount: "15",
-    type: "percentage",
-    usageCount: 500,
-    maxUses: 500,
-    status: "expired",
-    startDate: "2024-06-01",
-    endDate: "2024-08-31",
-  },
-  {
-    id: "4",
-    code: "HOLIDAY25",
-    discount: "25",
-    type: "percentage",
-    usageCount: 0,
-    maxUses: 1000,
-    status: "scheduled",
-    startDate: "2024-12-01",
-    endDate: "2024-12-31",
-  },
-];
 
 const campaigns = [
   {
@@ -148,8 +93,9 @@ const Marketing = () => {
     toast.success(`Copied "${code}" to clipboard`);
   };
 
-  const activeCoupons = mockCoupons.filter((c) => c.status === "active").length;
-  const totalUsage = mockCoupons.reduce((sum, c) => sum + c.usageCount, 0);
+  const { coupons, error, isLoading, mutate } = useAdminCoupons();
+  const activeCoupons = Array.isArray(coupons) ? coupons.filter((c: any) => c.status === "active").length : 0;
+  const totalUsage = Array.isArray(coupons) ? coupons.reduce((sum: number, c: any) => sum + (c.usageCount || 0), 0) : 0;
 
   return (
     <PageLayout
@@ -370,79 +316,116 @@ const Marketing = () => {
                             {coupon.status}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right">
-                          <Switch defaultChecked={coupon.status === "active"} />
-                        </TableCell>
-                      </motion.tr>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Campaigns Tab */}
-          <TabsContent value="campaigns" className="space-y-4 mt-6">
-            {campaigns.map((campaign, i) => (
-              <motion.div
-                key={campaign.name}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.08 }}
-              >
-                <Card className="glass-effect border-white/[0.06] hover:bg-white/[0.02] transition-colors">
-                  <CardContent className="p-5">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                      <div className="flex items-center gap-4">
-                        <div className="h-11 w-11 rounded-xl gradient-purple flex items-center justify-center shrink-0">
-                          <Megaphone className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-sm">
-                            {campaign.name}
-                          </h3>
-                          <Badge
-                            variant="outline"
-                            className={`mt-1 text-[10px] ${statusColors[campaign.status]}`}
-                          >
-                            {campaign.status}
-                          </Badge>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-6 text-xs">
-                        <div className="text-center">
-                          <p className="text-muted-foreground mb-0.5">Reach</p>
-                          <p className="font-semibold">
-                            {campaign.reach.toLocaleString()}
-                          </p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-muted-foreground mb-0.5">
-                            Conversions
-                          </p>
-                          <p className="font-semibold">
-                            {campaign.conversions.toLocaleString()}
-                          </p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-muted-foreground mb-0.5">
-                            Revenue
-                          </p>
+                        <TabsContent value="coupons" className="mt-6">
+                          {isLoading ? (
+                            <Card className="glass-effect overflow-hidden border-white/[0.06]">
+                              <CardContent className="p-0">
+                                <TableSkeleton rows={4} cols={6} />
+                              </CardContent>
+                            </Card>
+                          ) : error ? (
+                            <Card className="glass-effect overflow-hidden border-white/[0.06]">
+                              <CardContent className="p-0">
+                                <ErrorState message={error.message} onRetry={() => mutate()} />
+                              </CardContent>
+                            </Card>
+                          ) : !coupons || coupons.length === 0 ? (
+                            <Card className="glass-effect overflow-hidden border-white/[0.06]">
+                              <CardContent className="p-0">
+                                <EmptyState
+                                  title="No coupons found"
+                                  description="Your coupons will appear here."
+                                />
+                              </CardContent>
+                            </Card>
+                          ) : (
+                            <Card className="glass-effect overflow-hidden border-white/[0.06]">
+                              <CardContent className="p-0 overflow-x-auto">
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow className="border-white/[0.04]">
+                                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
+                                        Code
+                                      </TableHead>
+                                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
+                                        Discount
+                                      </TableHead>
+                                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
+                                        Usage
+                                      </TableHead>
+                                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
+                                        Validity
+                                      </TableHead>
+                                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
+                                        Status
+                                      </TableHead>
+                                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground text-right">
+                                        Actions
+                                      </TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {coupons.map((coupon: any, i: number) => (
+                                      <motion.tr
+                                        key={coupon.id}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: i * 0.04 }}
+                                        className="border-white/[0.04] hover:bg-white/[0.02] transition-colors"
+                                      >
+                                        <TableCell>
+                                          <div className="flex items-center gap-2">
+                                            <code className="text-sm font-mono font-semibold bg-white/[0.04] px-2 py-0.5 rounded">
+                                              {coupon.code}
+                                            </code>
+                                            <Button
+                                              size="icon"
+                                              variant="ghost"
+                                              className="h-6 w-6 hover:bg-white/[0.06]"
+                                              onClick={() => handleCopyCode(coupon.code)}
+                                            >
+                                              <Copy className="h-3 w-3" />
+                                            </Button>
+                                          </div>
+                                        </TableCell>
+                                        <TableCell className="font-semibold text-sm">
+                                          {coupon.type === "percentage"
+                                            ? `${coupon.discount}%`
+                                            : `$${coupon.discount}`}
+                                        </TableCell>
+                                        <TableCell>
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-sm">
+                                              {coupon.usageCount}/{coupon.maxUses}
+                                            </span>
+                                            <div className="w-16 h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+                                              <div
+                                                className="h-full gradient-purple rounded-full"
+                                                style={{ width: `${(coupon.usageCount / coupon.maxUses) * 100}%` }}
+                                              />
+                                            </div>
+                                          </div>
+                                        </TableCell>
+                                        <TableCell className="text-xs text-muted-foreground">
+                                          {coupon.startDate} — {coupon.endDate}
+                                        </TableCell>
+                                        <TableCell>
+                                          <Badge
+                                            variant="outline"
+                                            className={statusColors[coupon.status]}
+                                          >
+                                            {coupon.status}
+                                          </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                          <Switch defaultChecked={coupon.status === "active"} />
+                                        </TableCell>
+                                      </motion.tr>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              </CardContent>
+                            </Card>
+                          )}
+                        </TabsContent>
                           <p className="font-semibold text-emerald-400">
-                            ${campaign.revenue.toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </TabsContent>
-        </Tabs>
-      </motion.section>
-    </PageLayout>
-  );
-};
-
-export default Marketing;

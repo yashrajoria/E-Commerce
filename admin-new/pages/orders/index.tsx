@@ -1,8 +1,7 @@
 "use client";
 
+import { ErrorState, TableSkeleton } from "@/components/admin/shared/DataStates";
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
-import StatsCard from "@/components/ui/stats-card";
-import EmptyState from "@/components/ui/empty-state";
 import { OrdersFilters } from "@/components/orders/OrdersFilters";
 import { OrdersTable } from "@/components/orders/OrdersTable";
 import { Button } from "@/components/ui/button";
@@ -15,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import EmptyState from "@/components/ui/empty-state";
 import {
   Pagination,
   PaginationContent,
@@ -30,17 +30,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useOrders } from "@/hooks/useOrders";
+import StatsCard from "@/components/ui/stats-card";
+import { useAdminOrders } from "@/lib/hooks/useAdminData";
 import type { Order, OrderStatus } from "@/types/shared";
 import { motion } from "framer-motion";
 import {
-  ShoppingCart,
-  Clock,
-  Truck,
-  CheckCircle,
-  Download,
   Calendar,
+  CheckCircle,
+  Clock,
+  Download,
+  ShoppingCart,
+  Truck,
 } from "lucide-react";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -62,8 +62,7 @@ const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
 
-  const query = { page: currentPage, perPage: ORDERS_PER_PAGE };
-  const { orders, meta, loading: isLoading } = useOrders(query);
+  const { orders, meta, error: ordersError, isLoading, mutate } = useAdminOrders(currentPage, ORDERS_PER_PAGE, filter.status !== "all" ? filter.status : undefined);
 
   const handleSort = (key: string) => {
     setSortConfig((prev) => ({
@@ -158,22 +157,15 @@ const Orders = () => {
       <motion.section variants={pageItem}>
         {isLoading ? (
           <div className="glass-effect rounded-xl p-6 space-y-4">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-4">
-                <Skeleton className="h-10 w-10 rounded-full" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-48" />
-                  <Skeleton className="h-3 w-32" />
-                </div>
-                <Skeleton className="h-6 w-20 rounded-full" />
-                <Skeleton className="h-4 w-16" />
-              </div>
-            ))}
+            <TableSkeleton rows={5} cols={6} />
+          </div>
+        ) : ordersError ? (
+          <div className="glass-effect rounded-xl">
+            <ErrorState message={ordersError.message} onRetry={() => mutate()} />
           </div>
         ) : orders.length === 0 ? (
           <div className="glass-effect rounded-xl">
             <EmptyState
-              icon={ShoppingCart}
               title="No orders found"
               description="Orders will appear here once customers start placing them."
             />

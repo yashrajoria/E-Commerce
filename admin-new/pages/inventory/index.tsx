@@ -14,8 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import EmptyState from "@/components/ui/empty-state";
+import { TableSkeleton, EmptyState, ErrorState } from "@/components/admin/shared/DataStates";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Package,
@@ -27,7 +26,7 @@ import {
   Download,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
-import axios from "axios";
+import { useAdminInventory } from "@/lib/hooks/useAdminData";
 
 interface InventoryItem {
   product_id: string;
@@ -59,34 +58,21 @@ function getStockStatus(item: { available: number; threshold: number }): "in-sto
   return "in-stock";
 }
 
+
 const Inventory = () => {
-  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
 
-  useEffect(() => {
-    const fetchInventory = async () => {
-      try {
-        setLoading(true);
-        const res = await axios.get("/api/inventory", {
-          withCredentials: true,
-          params: { page: 1, page_size: 100 },
-        });
-        const items = (res.data?.inventory || []).map((item: any) => ({
-          ...item,
-          status: getStockStatus(item),
-        }));
-        setInventoryItems(items);
-      } catch (error) {
-        console.error("Error fetching inventory:", error);
-        setInventoryItems([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchInventory();
-  }, []);
+  const { inventory, error, isLoading, mutate } = useAdminInventory();
+
+  // Add status to each item (mimic old logic)
+  const inventoryItems = useMemo(() => {
+    if (!Array.isArray(inventory)) return [];
+    return inventory.map((item: any) => ({
+      ...item,
+      status: getStockStatus(item),
+    }));
+  }, [inventory]);
 
   const filtered = useMemo(() => {
     return inventoryItems.filter((item) => {
@@ -98,13 +84,9 @@ const Inventory = () => {
     });
   }, [inventoryItems, searchQuery, activeTab]);
 
-  const inStockCount = inventoryItems.filter(
-    (i) => i.status === "in-stock",
-  ).length;
+  const inStockCount = inventoryItems.filter((i) => i.status === "in-stock").length;
   const lowStockCount = inventoryItems.filter((i) => i.status === "low").length;
-  const outOfStockCount = inventoryItems.filter(
-    (i) => i.status === "out",
-  ).length;
+  const outOfStockCount = inventoryItems.filter((i) => i.status === "out").length;
   const totalStock = inventoryItems.reduce((sum, i) => sum + i.available, 0);
 
   return (
@@ -246,19 +228,24 @@ const Inventory = () => {
 
       {/* Inventory Table */}
       <AnimatePresence mode="wait">
-        {loading ? (
+        {isLoading ? (
           <motion.section
             key="loading"
             variants={pageItem}
             className="flex items-center justify-center py-16"
           >
-            <LoadingSpinner />
+            <TableSkeleton rows={6} cols={6} />
+          </motion.section>
+        ) : error ? (
+          <motion.section key="error" variants={pageItem}>
+            <div className="glass-effect rounded-xl">
+              <ErrorState message={error.message} onRetry={() => mutate()} />
+            </div>
           </motion.section>
         ) : filtered.length === 0 ? (
           <motion.section key="empty" variants={pageItem}>
             <div className="glass-effect rounded-xl">
               <EmptyState
-                icon={Package}
                 title="No inventory found"
                 description={
                   searchQuery

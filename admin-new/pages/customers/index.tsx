@@ -1,9 +1,9 @@
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
 import StatsCard from "@/components/ui/stats-card";
-import EmptyState from "@/components/ui/empty-state";
+import { EmptyState, TableSkeleton, ErrorState } from "@/components/admin/shared/DataStates";
 import { CustomersFilters } from "@/components/customers/CustomersFilters";
 import { CustomersTable } from "@/components/customers/CustomersTable";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
+// import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import {
   Pagination,
@@ -23,7 +23,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
-import axios from "axios";
+import { useAdminUsers } from "@/lib/hooks/useAdminData";
 import type {
   Customer,
   CustomerFilter,
@@ -32,74 +32,41 @@ import type {
 
 const ITEMS_PER_PAGE = 10;
 
+
 const Customers = () => {
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [filter, setFilter] = useState<CustomerFilter>({
-    search: "", // Ensure search is always a string
+    search: "",
     status: "all",
     sortBy: "name",
     sortOrder: "asc",
   });
 
-  useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        setLoading(true);
-        const res = await axios.get("/api/customers", {
-          withCredentials: true,
-        });
-        const users = res.data?.users || [];
-        // Map backend user objects to Customer type
-        const mapped: Customer[] = users.map((u: any) => ({
-          _id: u.id,
-          name: u.name,
-          email: u.email,
-          phone: u.phone_number || "",
-          status: "active" as CustomerStatus,
-          addresses: [],
-          stats: {
-            totalOrders: 0,
-            totalSpent: 0,
-            lastOrderDate: "",
-            averageOrderValue: 0,
-            joinedDate: u.created_at || "",
-          },
-        }));
-        setCustomers(mapped);
-      } catch (error) {
-        console.error("Error fetching customers:", error);
-        setCustomers([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCustomers();
-  }, []);
+  const { users, meta, error, isLoading, mutate } = useAdminUsers(currentPage, ITEMS_PER_PAGE);
 
+  // Filtering and sorting (client-side, as before)
   const filteredCustomers = useMemo(() => {
-    let result = [...customers];
+    let result = Array.isArray(users) ? [...users] : [];
     if (filter.search) {
       const q = filter.search.toLowerCase();
       result = result.filter(
-        (c) =>
-          c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q),
+        (c: any) =>
+          c.name?.toLowerCase().includes(q) || c.email?.toLowerCase().includes(q),
       );
     }
     if (filter.status !== "all")
-      result = result.filter((c) => c.status === filter.status);
-    result.sort((a, b) => {
+      result = result.filter((c: any) => c.status === filter.status);
+    result.sort((a: any, b: any) => {
       const order = filter.sortOrder === "asc" ? 1 : -1;
       if (filter.sortBy === "name") return a.name.localeCompare(b.name) * order;
       if (filter.sortBy === "totalOrders")
-        return (a.stats.totalOrders - b.stats.totalOrders) * order;
+        return ((a.stats?.totalOrders || 0) - (b.stats?.totalOrders || 0)) * order;
       if (filter.sortBy === "totalSpent")
-        return (a.stats.totalSpent - b.stats.totalSpent) * order;
+        return ((a.stats?.totalSpent || 0) - (b.stats?.totalSpent || 0)) * order;
       return 0;
     });
     return result;
-  }, [customers, filter]);
+  }, [users, filter]);
 
   const totalPages = Math.ceil(filteredCustomers.length / ITEMS_PER_PAGE);
   const paginatedCustomers = filteredCustomers.slice(
@@ -107,12 +74,11 @@ const Customers = () => {
     currentPage * ITEMS_PER_PAGE,
   );
 
-  const activeCount = customers.filter((c) => c.status === "active").length;
-  const inactiveCount = customers.filter((c) => c.status === "inactive").length;
-  const totalRevenue = customers.reduce(
-    (sum, c) => sum + c.stats.totalSpent,
-    0,
-  );
+  const activeCount = Array.isArray(users) ? users.filter((c: any) => c.status === "active").length : 0;
+  const inactiveCount = Array.isArray(users) ? users.filter((c: any) => c.status === "inactive").length : 0;
+  const totalRevenue = Array.isArray(users)
+    ? users.reduce((sum: number, c: any) => sum + (c.stats?.totalSpent || 0), 0)
+    : 0;
 
   return (
     <PageLayout
@@ -186,19 +152,24 @@ const Customers = () => {
 
       {/* Table */}
       <AnimatePresence mode="wait">
-        {loading ? (
+        {isLoading ? (
           <motion.section
             key="loading"
             variants={pageItem}
             className="flex items-center justify-center py-16"
           >
-            <LoadingSpinner />
+            <TableSkeleton rows={5} cols={6} />
+          </motion.section>
+        ) : error ? (
+          <motion.section key="error" variants={pageItem}>
+            <div className="glass-effect rounded-xl">
+              <ErrorState message={error.message} onRetry={() => mutate()} />
+            </div>
           </motion.section>
         ) : paginatedCustomers.length === 0 ? (
           <motion.section key="empty" variants={pageItem}>
             <div className="glass-effect rounded-xl">
               <EmptyState
-                icon={Users}
                 title="No customers found"
                 description={
                   filter.search
@@ -213,12 +184,12 @@ const Customers = () => {
             <div className="glass-effect rounded-xl overflow-hidden border border-white/[0.06]">
               <CustomersTable
                 customers={paginatedCustomers}
-                isLoading={loading}
+                isLoading={isLoading}
                 filter={filter}
                 onSort={(key) =>
                   setFilter((prev) => ({
                     ...prev,
-                    sortBy: key as CustomerFilter["sortBy"], // Explicitly cast key
+                    sortBy: key as CustomerFilter["sortBy"],
                   }))
                 }
                 onCustomerClick={(id) => console.log("Customer clicked:", id)}
