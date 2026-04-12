@@ -28,7 +28,7 @@ const plans = [
   },
   {
     name: "Pro",
-    price: "$49",
+    price: "£49",
     period: "/month",
     description: "For growing businesses that need more power.",
     gradient: "gradient-purple",
@@ -47,7 +47,7 @@ const plans = [
   },
   {
     name: "Enterprise",
-    price: "$199",
+    price: "£199",
     period: "/month",
     description: "For large-scale operations with custom needs.",
     gradient: "",

@@ -64,6 +64,8 @@ ProductsFiltersProps) => {
             onClick={() =>
               onViewModeChange(viewMode === "grid" ? "list" : "grid")
             }
+            aria-label={`Switch to ${viewMode === "grid" ? "list" : "grid"} view`}
+            title={`Switch to ${viewMode === "grid" ? "list" : "grid"} view`}
             className={`transition-all duration-300 bg-zinc-900/50 border-zinc-700 hover:bg-zinc-800 ${
               viewMode === "grid"
                 ? "text-blue-400 border-blue-500/50"
@@ -95,6 +97,8 @@ ProductsFiltersProps) => {
               <Button
                 variant="outline"
                 size="icon"
+                aria-label="Open product filters"
+                title="Open product filters"
                 className="bg-zinc-900/50 border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-all duration-300"
               >
                 <Filter size={18} />
@@ -125,6 +129,8 @@ ProductsFiltersProps) => {
               <Button
                 variant="outline"
                 size="sm"
+                aria-label="Sort products"
+                title="Sort products"
                 className="gap-1 bg-zinc-900/50 border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-all duration-300"
               >
                 <ArrowUpDown size={14} />

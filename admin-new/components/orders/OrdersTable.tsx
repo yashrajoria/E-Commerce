@@ -146,7 +146,7 @@ export const OrdersTable = ({
                   <span>{formatDate(order?.CreatedAt)}</span>
                 </div>
               </TableCell>
-              <TableCell>${order?.Amount?.toFixed(2)}</TableCell>
+              <TableCell>£{order?.Amount?.toFixed(2)}</TableCell>
               <TableCell>
                 {typeof order.OrderItems === "number"
                   ? order.OrderItems

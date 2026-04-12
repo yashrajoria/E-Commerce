@@ -97,15 +97,17 @@ const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
               </Badge>
             </div>
 
-            {/* Edit Button - appears on hover */}
+            {/* Edit Button - visible on touch, revealed on hover for pointer devices */}
             <motion.div
-              className="absolute top-3 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              className="absolute top-3 left-1/2 transform -translate-x-1/2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300"
               initial={{ opacity: 0, y: -10 }}
               whileHover={{ opacity: 1, y: 0 }}
             >
               <Button
                 size="icon"
                 variant="secondary"
+                aria-label={`Edit ${product.name}`}
+                title={`Edit ${product.name}`}
                 className="h-8 w-8 bg-background/90 backdrop-blur-sm hover:bg-primary hover:text-primary-foreground transition-all duration-200"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -140,7 +142,7 @@ const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
                 className="text-2xl font-bold text-primary"
                 whileHover={{ scale: 1.05 }}
               >
-                ${product.price?.toFixed(2)}
+                £{product.price?.toFixed(2)}
               </motion.div>
               <div className="text-sm text-muted-foreground flex items-center gap-1">
                 <Package className="h-3 w-3" />
