@@ -294,16 +294,6 @@ export function useCheckout(): CheckoutState {
     }
     setIsProcessing(true);
     try {
-      const addRes = await axiosInstance.post(API_ROUTES.CART.ADD, {
-        items: cart.map((item) => ({
-          product_id: item.id,
-          quantity: item.quantity,
-        })),
-      });
-      if (addRes.status !== 200) {
-        showError("Failed to update cart. Please try again.");
-        return;
-      }
       const idempotencyKey = crypto.randomUUID();
       const checkoutRes = await axiosInstance.post(
         API_ROUTES.CART.CHECKOUT,

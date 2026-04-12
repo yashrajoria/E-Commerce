@@ -15,9 +15,11 @@ import { StepContact } from "@/components/checkout/steps/StepContact";
 import { StepDelivery } from "@/components/checkout/steps/StepDelivery";
 import { StepReview } from "@/components/checkout/steps/StepReview";
 import { StepShipping } from "@/components/checkout/steps/StepShipping";
+import { useCart } from "@/context/CartContext";
 
 export default function CheckoutPage() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const { cart: cartItems, isHydrated } = useCart();
   const {
     cart, currentStep, direction, shippingMethod, shippingDetails,
     touched, fieldErrors, promoCode, discount, promoExpanded, promoError,
@@ -30,6 +32,63 @@ export default function CheckoutPage() {
   } = useCheckout();
 
   const formStateProps = { shippingDetails, fieldErrors, touched, direction, handleChange, handleBlur };
+
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen bg-linear-to-b from-rose-50 via-amber-50/30 to-rose-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
+        <Head>
+          <title>Secure Checkout | ShopSwift</title>
+          <meta name="description" content="Complete your order with our secure checkout." />
+          <link rel="canonical" href={`${siteUrl}/checkout`} />
+          <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        </Head>
+        <div className="min-h-screen flex items-center justify-center px-4">
+          <div className="text-center max-w-sm">
+            <div className="mx-auto mb-4 h-12 w-12 rounded-full border-4 border-rose-200 border-t-rose-600 animate-spin" />
+            <h1 className="text-xl font-semibold">Loading checkout</h1>
+            <p className="mt-2 text-sm text-neutral-500">
+              We&apos;re restoring your cart and checkout state.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (cartItems.length === 0) {
+    return (
+      <div className="min-h-screen bg-linear-to-b from-rose-50 via-amber-50/30 to-rose-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
+        <Head>
+          <title>Secure Checkout | ShopSwift</title>
+          <meta name="description" content="Complete your order with our secure checkout." />
+          <link rel="canonical" href={`${siteUrl}/checkout`} />
+          <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        </Head>
+        <div className="min-h-screen flex items-center justify-center px-4">
+          <div className="text-center max-w-sm rounded-2xl border bg-white/90 dark:bg-neutral-900/90 p-8 shadow-sm backdrop-blur">
+            <h1 className="text-2xl font-bold">Your checkout is empty</h1>
+            <p className="mt-2 text-sm text-neutral-500">
+              Add items to your cart before starting checkout.
+            </p>
+            <div className="mt-6 flex items-center justify-center gap-3">
+              <button
+                onClick={() => window.history.back()}
+                className="inline-flex items-center justify-center rounded-full border px-4 py-2 text-sm font-medium"
+              >
+                Go Back
+              </button>
+              <a
+                href="/products"
+                className="inline-flex items-center justify-center rounded-full bg-linear-to-r from-rose-600 to-amber-500 px-4 py-2 text-sm font-medium text-white"
+              >
+                Browse Products
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-linear-to-b from-rose-50 via-amber-50/30 to-rose-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
@@ -70,7 +129,7 @@ export default function CheckoutPage() {
 
       {/* ── Main Content ── */}
       <main className="max-w-3xl mx-auto px-4 pt-6 pb-36">
-        {currentStep === 1 && <ExpressCheckout />}
+          {currentStep === 1 && <ExpressCheckout />}
 
         {/* Completed section summaries */}
         <AnimatePresence>
@@ -139,10 +198,10 @@ export default function CheckoutPage() {
         )}
       </main>
 
-      <MobileOrderSummary
+        <MobileOrderSummary
         isOpen={showMobileSummary}
         onClose={() => setShowMobileSummary(false)}
-        cart={cart}
+          cart={cartItems}
         itemCount={itemCount}
         subtotal={subtotal}
         shipping={shipping}

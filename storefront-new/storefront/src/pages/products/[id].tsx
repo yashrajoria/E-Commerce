@@ -37,6 +37,10 @@ export default function ProductPage() {
       ? product.category
       : product.category?.name
     : "";
+  const categoryId =
+    product && typeof product.category !== "string"
+      ? product.category?.id
+      : undefined;
   const isWishlisted = product ? hasWishlistItem(product.id) : false;
 
   // Use `inStock` from `Product` type if provided; default to false
@@ -83,11 +87,38 @@ export default function ProductPage() {
   };
 
   if (!router.isReady || isLoading) {
-    return <div className="min-h-screen">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="text-center max-w-sm">
+          <div className="mx-auto mb-4 h-12 w-12 rounded-full border-4 border-rose-200 border-t-rose-600 animate-spin" />
+          <h1 className="text-xl font-semibold">Loading product details</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Fetching the latest product information.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   if (error || !product) {
-    return <div className="min-h-screen">Failed to load product.</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="text-center max-w-sm rounded-2xl border bg-card p-8 shadow-sm">
+          <h1 className="text-xl font-semibold">Failed to load product</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            The product could not be loaded right now. Please try again.
+          </p>
+          <div className="mt-6 flex items-center justify-center gap-3">
+            <Button asChild variant="outline">
+              <Link href="/products">Back to products</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/">Go home</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -143,7 +174,11 @@ export default function ProductPage() {
               <span className="mx-2">/</span>
               {categoryName ? (
                 <Link
-                  href={`/products?category=${encodeURIComponent(categoryName)}`}
+                  href={
+                    categoryId
+                      ? `/products?categoryId=${encodeURIComponent(categoryId)}&category=${encodeURIComponent(categoryName)}`
+                      : `/products?category=${encodeURIComponent(categoryName)}`
+                  }
                   className="hover:text-rose-600"
                 >
                   {categoryName}
@@ -356,14 +391,14 @@ export default function ProductPage() {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <h5 className="font-medium mb-2">Standard Delivery</h5>
-                    <p className="text-sm text-muted-foreground">
-                      5-7 business days - Free on orders over $50
+                      <p className="text-sm text-muted-foreground">
+                        5-7 business days - Free on orders over {formatGBP(50)}
                     </p>
                   </div>
                   <div>
                     <h5 className="font-medium mb-2">Express Delivery</h5>
-                    <p className="text-sm text-muted-foreground">
-                      2-3 business days - $9.99
+                      <p className="text-sm text-muted-foreground">
+                        2-3 business days - {formatGBP(9.99)}
                     </p>
                   </div>
                 </div>

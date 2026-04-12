@@ -13,7 +13,25 @@ import { useState } from "react";
 const inter = Inter({ subsets: ["latin"] });
 
 export default function App({ Component, pageProps }: AppProps) {
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            // Reduce background refetch bursts while backend rate limits are strict.
+            refetchOnWindowFocus: false,
+            refetchOnReconnect: false,
+            retry: (failureCount, error) => {
+              const status =
+                (error as { response?: { status?: number } })?.response?.status;
+              if (status === 429) return false;
+              return failureCount < 2;
+            },
+            retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 4000),
+          },
+        },
+      }),
+  );
   return (
     <>
       <Head>

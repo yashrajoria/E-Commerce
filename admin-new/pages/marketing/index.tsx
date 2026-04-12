@@ -40,31 +40,22 @@ import { useState } from "react";
 import { useAdminCoupons } from "@/lib/hooks/useAdminData";
 import { TableSkeleton, EmptyState, ErrorState } from "@/components/admin/shared/DataStates";
 import { toast } from "sonner";
-
-
+type CouponRecord = {
+  id?: string | number;
+  code?: string;
+  type?: "percentage" | "fixed" | string;
+  discount?: number | string;
+  usageCount?: number;
+  maxUses?: number;
+  startDate?: string;
+  endDate?: string;
+  status?: string;
+};
 
 const campaigns = [
-  {
-    name: "Winter Sale 2024",
-    status: "active",
-    reach: 12500,
-    conversions: 340,
-    revenue: 8500,
-  },
-  {
-    name: "New Year Flash Sale",
-    status: "scheduled",
-    reach: 0,
-    conversions: 0,
-    revenue: 0,
-  },
-  {
-    name: "Valentine's Day Special",
-    status: "completed",
-    reach: 8900,
-    conversions: 210,
-    revenue: 5200,
-  },
+  { name: "Winter Sale 2024", status: "active", reach: 12500, conversions: 340, revenue: 8500 },
+  { name: "New Year Flash Sale", status: "scheduled", reach: 0, conversions: 0, revenue: 0 },
+  { name: "Valentine's Day Special", status: "completed", reach: 8900, conversions: 210, revenue: 5200 },
 ];
 
 const statusColors: Record<string, string> = {
@@ -72,6 +63,12 @@ const statusColors: Record<string, string> = {
   expired: "bg-red-400/10 text-red-400 border-red-400/20",
   scheduled: "bg-amber-400/10 text-amber-400 border-amber-400/20",
   completed: "bg-blue-400/10 text-blue-400 border-blue-400/20",
+};
+
+const formatDate = (raw?: string) => {
+  if (!raw) return "-";
+  const d = new Date(raw);
+  return Number.isNaN(d.getTime()) ? raw : d.toLocaleDateString();
 };
 
 const Marketing = () => {
@@ -88,14 +85,16 @@ const Marketing = () => {
     setNewDiscount("");
   };
 
-  const handleCopyCode = (code: string) => {
+  const handleCopyCode = (code?: string) => {
+    if (!code) return;
     navigator.clipboard.writeText(code);
     toast.success(`Copied "${code}" to clipboard`);
   };
 
   const { coupons, error, isLoading, mutate } = useAdminCoupons();
-  const activeCoupons = Array.isArray(coupons) ? coupons.filter((c: any) => c.status === "active").length : 0;
-  const totalUsage = Array.isArray(coupons) ? coupons.reduce((sum: number, c: any) => sum + (c.usageCount || 0), 0) : 0;
+  const couponRows = (Array.isArray(coupons) ? coupons : []) as CouponRecord[];
+  const activeCoupons = couponRows.filter((c) => c.status === "active").length;
+  const totalUsage = couponRows.reduce((sum, c) => sum + (c.usageCount || 0), 0);
 
   return (
     <PageLayout
@@ -115,9 +114,7 @@ const Marketing = () => {
           <DialogContent className="glass-effect-strong border-white/[0.08]">
             <DialogHeader>
               <DialogTitle className="text-gradient">New Coupon</DialogTitle>
-              <DialogDescription>
-                Create a new discount coupon code
-              </DialogDescription>
+              <DialogDescription>Create a new discount coupon code</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
@@ -142,12 +139,7 @@ const Marketing = () => {
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Type</Label>
-                  <Select
-                    value={newType}
-                    onValueChange={(v) =>
-                      setNewType(v as "percentage" | "fixed")
-                    }
-                  >
+                  <Select value={newType} onValueChange={(v) => setNewType(v as "percentage" | "fixed")}>
                     <SelectTrigger className="bg-white/[0.04] border-white/[0.08] rounded-xl">
                       <SelectValue />
                     </SelectTrigger>
@@ -167,10 +159,7 @@ const Marketing = () => {
               >
                 Cancel
               </Button>
-              <Button
-                onClick={handleCreateCoupon}
-                className="gradient-purple text-white border-0 rounded-xl"
-              >
+              <Button onClick={handleCreateCoupon} className="gradient-purple text-white border-0 rounded-xl">
                 Create
               </Button>
             </DialogFooter>
@@ -178,7 +167,6 @@ const Marketing = () => {
         </Dialog>
       }
     >
-      {/* KPI Stats */}
       <motion.section
         variants={pageItem}
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
@@ -200,7 +188,7 @@ const Marketing = () => {
         />
         <StatsCard
           title="Revenue Impact"
-          value="$13,700"
+          value="£13,700"
           icon={DollarSign}
           gradient="gradient-gold"
           glowClass="glow-gold"
@@ -234,198 +222,133 @@ const Marketing = () => {
             </TabsList>
           </div>
 
-          {/* Coupons Tab */}
           <TabsContent value="coupons" className="mt-6">
-            <Card className="glass-effect overflow-hidden border-white/[0.06]">
-              <CardContent className="p-0 overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-white/[0.04]">
-                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
-                        Code
-                      </TableHead>
-                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
-                        Discount
-                      </TableHead>
-                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
-                        Usage
-                      </TableHead>
-                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
-                        Validity
-                      </TableHead>
-                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
-                        Status
-                      </TableHead>
-                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground text-right">
-                        Actions
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockCoupons.map((coupon, i) => (
-                      <motion.tr
-                        key={coupon.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.04 }}
-                        className="border-white/[0.04] hover:bg-white/[0.02] transition-colors"
-                      >
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <code className="text-sm font-mono font-semibold bg-white/[0.04] px-2 py-0.5 rounded">
-                              {coupon.code}
-                            </code>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-6 w-6 hover:bg-white/[0.06]"
-                              onClick={() => handleCopyCode(coupon.code)}
-                            >
-                              <Copy className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-semibold text-sm">
-                          {coupon.type === "percentage"
-                            ? `${coupon.discount}%`
-                            : `$${coupon.discount}`}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm">
-                              {coupon.usageCount}/{coupon.maxUses}
-                            </span>
-                            <div className="w-16 h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
-                              <div
-                                className="h-full gradient-purple rounded-full"
-                                style={{
-                                  width: `${(coupon.usageCount / coupon.maxUses) * 100}%`,
-                                }}
-                              />
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-xs text-muted-foreground">
-                          {coupon.startDate} — {coupon.endDate}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={statusColors[coupon.status]}
+            {isLoading ? (
+              <Card className="glass-effect overflow-hidden border-white/[0.06]">
+                <CardContent className="p-0">
+                  <Table>
+                    <TableSkeleton rows={4} cols={6} />
+                  </Table>
+                </CardContent>
+              </Card>
+            ) : error ? (
+              <Card className="glass-effect overflow-hidden border-white/[0.06]">
+                <CardContent className="p-4">
+                  <ErrorState message={error.message} onRetry={() => mutate()} />
+                </CardContent>
+              </Card>
+            ) : couponRows.length === 0 ? (
+              <EmptyState
+                title="No coupons found"
+                description="Your coupons will appear here."
+              />
+            ) : (
+              <Card className="glass-effect overflow-hidden border-white/[0.06]">
+                <CardContent className="p-0 overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-white/[0.04]">
+                        <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">Code</TableHead>
+                        <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">Discount</TableHead>
+                        <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">Usage</TableHead>
+                        <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">Validity</TableHead>
+                        <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">Status</TableHead>
+                        <TableHead className="text-xs uppercase tracking-wider text-muted-foreground text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {couponRows.map((coupon, i) => {
+                        const usage = coupon.usageCount || 0;
+                        const maxUses = coupon.maxUses || 0;
+                        const width = maxUses > 0 ? Math.min(100, (usage / maxUses) * 100) : 0;
+                        const couponKey = String(coupon.id ?? coupon.code ?? i);
+                        const discountText =
+                          coupon.type === "percentage"
+                            ? `${coupon.discount || 0}%`
+                            : `£${coupon.discount || 0}`;
+
+                        return (
+                          <TableRow
+                            key={couponKey}
+                            className="border-white/[0.04] hover:bg-white/[0.02] transition-colors"
                           >
-                            {coupon.status}
-                          </Badge>
-                        </TableCell>
-                        <TabsContent value="coupons" className="mt-6">
-                          {isLoading ? (
-                            <Card className="glass-effect overflow-hidden border-white/[0.06]">
-                              <CardContent className="p-0">
-                                <TableSkeleton rows={4} cols={6} />
-                              </CardContent>
-                            </Card>
-                          ) : error ? (
-                            <Card className="glass-effect overflow-hidden border-white/[0.06]">
-                              <CardContent className="p-0">
-                                <ErrorState message={error.message} onRetry={() => mutate()} />
-                              </CardContent>
-                            </Card>
-                          ) : !coupons || coupons.length === 0 ? (
-                            <Card className="glass-effect overflow-hidden border-white/[0.06]">
-                              <CardContent className="p-0">
-                                <EmptyState
-                                  title="No coupons found"
-                                  description="Your coupons will appear here."
-                                />
-                              </CardContent>
-                            </Card>
-                          ) : (
-                            <Card className="glass-effect overflow-hidden border-white/[0.06]">
-                              <CardContent className="p-0 overflow-x-auto">
-                                <Table>
-                                  <TableHeader>
-                                    <TableRow className="border-white/[0.04]">
-                                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
-                                        Code
-                                      </TableHead>
-                                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
-                                        Discount
-                                      </TableHead>
-                                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
-                                        Usage
-                                      </TableHead>
-                                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
-                                        Validity
-                                      </TableHead>
-                                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
-                                        Status
-                                      </TableHead>
-                                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground text-right">
-                                        Actions
-                                      </TableHead>
-                                    </TableRow>
-                                  </TableHeader>
-                                  <TableBody>
-                                    {coupons.map((coupon: any, i: number) => (
-                                      <motion.tr
-                                        key={coupon.id}
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: i * 0.04 }}
-                                        className="border-white/[0.04] hover:bg-white/[0.02] transition-colors"
-                                      >
-                                        <TableCell>
-                                          <div className="flex items-center gap-2">
-                                            <code className="text-sm font-mono font-semibold bg-white/[0.04] px-2 py-0.5 rounded">
-                                              {coupon.code}
-                                            </code>
-                                            <Button
-                                              size="icon"
-                                              variant="ghost"
-                                              className="h-6 w-6 hover:bg-white/[0.06]"
-                                              onClick={() => handleCopyCode(coupon.code)}
-                                            >
-                                              <Copy className="h-3 w-3" />
-                                            </Button>
-                                          </div>
-                                        </TableCell>
-                                        <TableCell className="font-semibold text-sm">
-                                          {coupon.type === "percentage"
-                                            ? `${coupon.discount}%`
-                                            : `$${coupon.discount}`}
-                                        </TableCell>
-                                        <TableCell>
-                                          <div className="flex items-center gap-2">
-                                            <span className="text-sm">
-                                              {coupon.usageCount}/{coupon.maxUses}
-                                            </span>
-                                            <div className="w-16 h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
-                                              <div
-                                                className="h-full gradient-purple rounded-full"
-                                                style={{ width: `${(coupon.usageCount / coupon.maxUses) * 100}%` }}
-                                              />
-                                            </div>
-                                          </div>
-                                        </TableCell>
-                                        <TableCell className="text-xs text-muted-foreground">
-                                          {coupon.startDate} — {coupon.endDate}
-                                        </TableCell>
-                                        <TableCell>
-                                          <Badge
-                                            variant="outline"
-                                            className={statusColors[coupon.status]}
-                                          >
-                                            {coupon.status}
-                                          </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                          <Switch defaultChecked={coupon.status === "active"} />
-                                        </TableCell>
-                                      </motion.tr>
-                                    ))}
-                                  </TableBody>
-                                </Table>
-                              </CardContent>
-                            </Card>
-                          )}
-                        </TabsContent>
-                          <p className="font-semibold text-emerald-400">
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <code className="text-sm font-mono font-semibold bg-white/[0.04] px-2 py-0.5 rounded">
+                                  {coupon.code || "-"}
+                                </code>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-6 w-6 hover:bg-white/[0.06]"
+                                  onClick={() => handleCopyCode(coupon.code)}
+                                >
+                                  <Copy className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-semibold text-sm">{discountText}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm">{usage}/{maxUses || "-"}</span>
+                                <div className="w-16 h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+                                  <div className="h-full gradient-purple rounded-full" style={{ width: `${width}%` }} />
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground">
+                              {formatDate(coupon.startDate)} - {formatDate(coupon.endDate)}
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={statusColors[coupon.status || ""] || ""}
+                              >
+                                {coupon.status || "unknown"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Switch checked={coupon.status === "active"} />
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="campaigns" className="mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              {campaigns.map((campaign) => (
+                <Card key={campaign.name} className="glass-effect border-white/[0.06]">
+                  <CardContent className="p-5 space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <h3 className="text-sm font-semibold leading-tight">{campaign.name}</h3>
+                      <Badge variant="outline" className={statusColors[campaign.status]}>
+                        {campaign.status}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Reach: <span className="text-foreground">{campaign.reach.toLocaleString()}</span>
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Conversions: <span className="text-foreground">{campaign.conversions.toLocaleString()}</span>
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Revenue: <span className="text-emerald-400 font-semibold">£{campaign.revenue.toLocaleString()}</span>
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </motion.section>
+    </PageLayout>
+  );
+};
+
+export default Marketing;

@@ -13,7 +13,7 @@ let categoriesInFlight: Promise<CategoriesResult> | null = null;
 const fetchCategoriesOnce = async (): Promise<CategoriesResult> => {
   if (!categoriesInFlight) {
     categoriesInFlight = axios
-      .get("/api/categories", {
+      .get("/bff/categories", {
         withCredentials: true,
       })
       .then((res) => ({ data: res.data }))

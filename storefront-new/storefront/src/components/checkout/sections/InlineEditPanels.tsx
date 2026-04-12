@@ -73,10 +73,11 @@ export function InlineEditPanels({
             />
             <div className="flex justify-end">
               <Button
+                type="button"
                 onClick={() => {
                   if (validateStep(1)) onClose();
                 }}
-                className={saveButtonCls}
+                className={`${saveButtonCls} w-full sm:w-auto`}
               >
                 Save Changes
               </Button>
@@ -166,10 +167,11 @@ export function InlineEditPanels({
             </div>
             <div className="flex justify-end">
               <Button
+                type="button"
                 onClick={() => {
                   if (validateStep(2)) onClose();
                 }}
-                className={saveButtonCls}
+                className={`${saveButtonCls} w-full sm:w-auto`}
               >
                 Save Changes
               </Button>
@@ -192,6 +194,7 @@ export function InlineEditPanels({
                 const isSelected = shippingMethod === opt.id;
                 return (
                   <button
+                    type="button"
                     key={opt.id}
                     onClick={() => setShippingMethod(opt.id)}
                     className={`w-full text-left rounded-2xl border-2 p-5 transition-all duration-200 min-h-20 ${
@@ -236,7 +239,7 @@ export function InlineEditPanels({
               })}
             </div>
             <div className="flex justify-end mt-4">
-              <Button onClick={onClose} className={saveButtonCls}>
+              <Button type="button" onClick={onClose} className={`${saveButtonCls} w-full sm:w-auto`}>
                 Save Changes
               </Button>
             </div>

@@ -64,7 +64,7 @@ export function debounce<T extends (...args: unknown[]) => unknown>(fn: T, wait 
       // cast is safe here — we call the provided function with the original args
       (fn as (...a: unknown[]) => unknown)(...args);
       timer = null;
-    }, wait) as unknown as ReturnType<typeof setTimeout>;
+    }, wait);
   };
 
   const result = debounced as T & { cancel: () => void };

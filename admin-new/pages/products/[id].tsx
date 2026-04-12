@@ -140,7 +140,7 @@ const ProductDetailPage = () => {
       >
         <StatsCard
           title="Price"
-          value={`$${p.price?.toFixed(2) || "0.00"}`}
+          value={`£${p.price?.toFixed(2) || "0.00"}`}
           icon={DollarSign}
           gradient="gradient-emerald"
           glowClass="glow-emerald"
@@ -223,7 +223,7 @@ const ProductDetailPage = () => {
                     Regular Price
                   </span>
                   <span className="text-lg font-bold text-gradient">
-                    ${p.price?.toFixed(2)}
+                    £{p.price?.toFixed(2)}
                   </span>
                 </div>
                 {p.compareAtPrice && (
@@ -232,7 +232,7 @@ const ProductDetailPage = () => {
                       Compare At
                     </span>
                     <span className="text-sm line-through text-muted-foreground">
-                      ${p.compareAtPrice?.toFixed(2)}
+                      £{p.compareAtPrice?.toFixed(2)}
                     </span>
                   </div>
                 )}

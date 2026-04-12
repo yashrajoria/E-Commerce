@@ -16,6 +16,7 @@ import { useUser } from "@/context/UserContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useToast } from "@/hooks/use-toast";
 import { updatePassword, updateUserData } from "@/lib/user";
+import { formatGBP } from "@/lib/utils";
 import { motion } from "framer-motion";
 import {
   Bell,
@@ -37,15 +38,11 @@ export default function AccountPage() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const { user, loading } = useUser();
   const { wishlist: localWishlist } = useWishlist();
-
-  console.log({ user });
   const [profile, setProfile] = useState({
     name: "",
     email: "",
     phone_number: "",
   });
-  console.log({ profile });
-  console.log(user?.profile?.name);
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -215,7 +212,7 @@ export default function AccountPage() {
                   <div>
                     <span className="text-white/60">Total Spent</span>
                     <p className="font-medium">
-                      ${user?.totalSpent?.toFixed(2) || 0}
+                      {formatGBP(safeNumber(user?.totalSpent))}
                     </p>
                   </div>
                 </div>
@@ -231,7 +228,7 @@ export default function AccountPage() {
             onValueChange={setActiveTab}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-6 mb-8">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 mb-8">
               <TabsTrigger
                 value="profile"
                 className="flex items-center space-x-2"

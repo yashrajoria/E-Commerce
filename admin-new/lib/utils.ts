@@ -23,7 +23,7 @@ export const formatDate = (dateString?: string | null) => {
 export const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "INR",
+    currency: "GBP",
     minimumFractionDigits: 2,
   }).format(amount);
 };

@@ -94,11 +94,17 @@ function FloatingParticle({
 export function HeroSection() {
   const { data } = useProducts(3, 1, true);
   const products = data?.products ?? [];
+  const spotlightProduct = products[0];
   const formatGBP = (value?: number) =>
     new Intl.NumberFormat("en-GB", {
       style: "currency",
       currency: "GBP",
     }).format(value ?? 0);
+  const heroStats = [
+    { value: "12k+", label: "Curated products" },
+    { value: "48h", label: "Fast dispatch" },
+    { value: "4.9/5", label: "Customer rating" },
+  ];
 
   const typed = useTypewriter(typewriterPhrases);
 
@@ -214,6 +220,24 @@ export function HeroSection() {
               </Link>
             </div>
 
+            {/* Fast trust stats */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 max-w-2xl">
+              {heroStats.map((stat, index) => (
+                <motion.div
+                  key={stat.label}
+                  className="rounded-2xl border border-border/50 bg-card/70 p-4 backdrop-blur-sm"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.9 + index * 0.08 }}
+                >
+                  <p className="text-2xl font-semibold tracking-tight">
+                    {stat.value}
+                  </p>
+                  <p className="text-sm text-muted-foreground">{stat.label}</p>
+                </motion.div>
+              ))}
+            </div>
+
             {/* Trust indicators */}
             <div className="flex flex-wrap gap-6 pt-4">
               {[
@@ -313,6 +337,42 @@ export function HeroSection() {
                   </motion.div>
                 );
               })}
+
+            {spotlightProduct && (
+              <motion.div
+                className="absolute bottom-8 right-8 glass rounded-3xl p-5 shadow-xl shadow-black/10 dark:shadow-black/30 premium-card max-w-[280px]"
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8, duration: 0.5 }}
+              >
+                <div className="flex items-start gap-4">
+                  <div className="relative h-16 w-16 overflow-hidden rounded-2xl shrink-0 bg-muted">
+                    <Image
+                      src={spotlightProduct.images?.[0] || "/icons8-image-100.png"}
+                      alt={spotlightProduct.name}
+                      fill
+                      sizes="64px"
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-rose-600 dark:text-rose-400">
+                      Spotlight pick
+                    </p>
+                    <h3 className="mt-1 line-clamp-2 font-semibold text-sm leading-snug">
+                      {spotlightProduct.name}
+                    </h3>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {formatGBP(spotlightProduct.price)}
+                    </p>
+                  </div>
+                </div>
+                <Link href={`/products/${spotlightProduct.id}`} className="mt-4 inline-flex text-sm font-medium text-rose-600 dark:text-rose-400 hover:underline">
+                  View details
+                  <ArrowRight className="ml-1.5 h-4 w-4" />
+                </Link>
+              </motion.div>
+            )}
           </motion.div>
         </div>
       </div>

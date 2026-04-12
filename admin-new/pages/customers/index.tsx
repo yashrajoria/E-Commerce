@@ -74,6 +74,8 @@ const Customers = () => {
     currentPage * ITEMS_PER_PAGE,
   );
 
+  const totalCustomerCount = meta?.total || users.length;
+
   const activeCount = Array.isArray(users) ? users.filter((c: any) => c.status === "active").length : 0;
   const inactiveCount = Array.isArray(users) ? users.filter((c: any) => c.status === "inactive").length : 0;
   const totalRevenue = Array.isArray(users)
@@ -111,7 +113,7 @@ const Customers = () => {
       >
         <StatsCard
           title="Total Customers"
-          value={customers.length}
+          value={totalCustomerCount}
           icon={Users}
           trend={{ value: 12.5, label: "vs last month" }}
           gradient="gradient-purple"
@@ -132,7 +134,7 @@ const Customers = () => {
         />
         <StatsCard
           title="Total Revenue"
-          value={`$${totalRevenue.toLocaleString()}`}
+          value={`£${totalRevenue.toLocaleString()}`}
           icon={DollarSign}
           gradient="gradient-blue"
         />
@@ -200,7 +202,7 @@ const Customers = () => {
       </AnimatePresence>
 
       {/* Pagination */}
-      {!loading && totalPages > 1 && (
+      {!isLoading && totalPages > 1 && (
         <motion.section variants={pageItem} className="flex justify-center">
           <Pagination>
             <PaginationContent>
@@ -210,17 +212,26 @@ const Customers = () => {
                   className={`rounded-xl ${currentPage === 1 ? "pointer-events-none opacity-50" : ""}`}
                 />
               </PaginationItem>
-              {Array.from({ length: totalPages }).map((_, i) => (
-                <PaginationItem key={i + 1}>
-                  <PaginationLink
-                    isActive={currentPage === i + 1}
-                    onClick={() => setCurrentPage(i + 1)}
-                    className={`rounded-xl ${currentPage === i + 1 ? "gradient-purple text-white border-0" : ""}`}
-                  >
-                    {i + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
+              {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
+                let pageNum = i + 1;
+                if (totalPages > 5) {
+                  if (currentPage > 3 && currentPage < totalPages - 1)
+                    pageNum = currentPage - 2 + i;
+                  else if (currentPage >= totalPages - 1)
+                    pageNum = totalPages - 4 + i;
+                }
+                return pageNum <= totalPages ? (
+                  <PaginationItem key={pageNum}>
+                    <PaginationLink
+                      isActive={currentPage === pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`rounded-xl ${currentPage === pageNum ? "gradient-purple text-white border-0" : ""}`}
+                    >
+                      {pageNum}
+                    </PaginationLink>
+                  </PaginationItem>
+                ) : null;
+              })}
               <PaginationItem>
                 <PaginationNext
                   onClick={() =>

@@ -162,6 +162,7 @@ export const CompletedCard = (props: {
       className="rounded-2xl border border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/50 dark:bg-emerald-950/20 p-4 mb-4"
     >
       <button
+        type="button"
         onClick={() => onEditToggle?.()}
         className="w-full flex items-center justify-between text-left"
         aria-expanded={!!isEditing}

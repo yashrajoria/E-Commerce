@@ -117,7 +117,7 @@ export default function BulkUpload({
                 }));
 
                 await axios.post(
-                  "/api/categories/bulk",
+                  "/bff/categories/bulk",
                   { items: payload },
                   { withCredentials: true },
                 );

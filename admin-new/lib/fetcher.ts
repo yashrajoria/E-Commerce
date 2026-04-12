@@ -1,4 +1,4 @@
-import axiosInstance from "./axios-interceptor";
+import axios from "axios";
 
 /**
  * Shared fetcher for SWR using the existing axios instance.
@@ -6,7 +6,7 @@ import axiosInstance from "./axios-interceptor";
  * Throws errors for SWR to catch.
  */
 export const fetcher = async (url: string) => {
-  const response = await axiosInstance.get(url);
+  const response = await axios.get(url);
   const data = response.data;
 
   // BFF shape: { success, data, error, meta }

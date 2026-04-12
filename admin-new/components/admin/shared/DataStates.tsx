@@ -3,7 +3,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle, Ban } from "lucide-react";
+import { AlertCircle, Ban, type LucideIcon } from "lucide-react";
+import { motion } from "framer-motion";
 import React from "react";
 
 // TableSkeleton — shows N skeleton rows while loading
@@ -24,18 +25,46 @@ export function TableSkeleton({ rows = 5, cols = 4 }: { rows?: number; cols?: nu
 }
 
 // EmptyState — shows when list is empty
-export function EmptyState({ title, description, action }: { title: string; description?: string; action?: React.ReactNode }) {
+export function EmptyState({
+  title,
+  description,
+  icon: Icon = Ban,
+  action,
+  actionLabel,
+  onAction,
+}: {
+  title: string;
+  description?: string;
+  action?: React.ReactNode;
+  icon?: LucideIcon;
+  actionLabel?: string;
+  onAction?: () => void;
+}) {
   return (
-    <Card className="flex flex-col items-center justify-center py-12">
-      <CardHeader className="flex flex-col items-center">
-        <Ban className="w-10 h-10 text-muted-foreground mb-2" />
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col items-center">
-        {description && <p className="text-muted-foreground mb-2 text-center">{description}</p>}
-        {action}
-      </CardContent>
-    </Card>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="flex flex-col items-center justify-center py-16 text-center"
+    >
+      <div className="w-16 h-16 rounded-2xl gradient-purple glow-purple flex items-center justify-center mb-6">
+        <Icon size={28} className="text-white" />
+      </div>
+      <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
+      <p className="text-sm text-muted-foreground max-w-sm mb-6">
+        {description}
+      </p>
+      {action}
+      {!action && actionLabel && onAction && (
+        <Button
+          onClick={onAction}
+          size="sm"
+          className="gradient-purple text-white hover:opacity-90 rounded-xl border-0"
+        >
+          {actionLabel}
+        </Button>
+      )}
+    </motion.div>
   );
 }
 

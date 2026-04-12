@@ -90,7 +90,7 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
         const value = entry?.value ?? "";
         const color = entry?.color ?? undefined;
         const formatted = typeof value === "number" && name.toLowerCase().includes("revenue")
-          ? `$${value.toLocaleString()}`
+          ? `£${value.toLocaleString()}`
           : String(value).toLocaleString();
         return (
           <p key={i} className="text-xs" style={{ color }}>
@@ -135,7 +135,7 @@ const Analytics = () => {
       >
         <StatsCard
           title="Total Revenue"
-          value="$306,200"
+          value="£306,200"
           icon={DollarSign}
           trend={{ value: 18.2, label: "vs last year" }}
           gradient="gradient-purple"
@@ -151,7 +151,7 @@ const Analytics = () => {
         />
         <StatsCard
           title="Avg Order Value"
-          value="$43.13"
+          value="£43.13"
           icon={Target}
           trend={{ value: 5.1, label: "vs last year" }}
           gradient="gradient-gold"
@@ -233,7 +233,7 @@ const Analytics = () => {
                       <YAxis
                         stroke="rgba(255,255,255,0.3)"
                         fontSize={12}
-                        tickFormatter={(v) => `$${v / 1000}k`}
+                        tickFormatter={(v) => `£${v / 1000}k`}
                       />
                       <Tooltip content={<CustomTooltip />} />
                       <Area
@@ -377,7 +377,7 @@ const Analytics = () => {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-semibold">
-                          ${product.revenue.toLocaleString()}
+                          £{product.revenue.toLocaleString()}
                         </p>
                         <div
                           className={`flex items-center gap-1 text-xs ${product.trend > 0 ? "text-emerald-400" : "text-red-400"}`}

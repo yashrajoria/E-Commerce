@@ -19,12 +19,14 @@ interface CartContextType {
   removeFromCart: (id: string | number) => void;
   updateQuantity: (id: number | string, quantity: number) => void;
   clearCart: () => void;
+  isHydrated: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   // Load cart from localStorage on initial render
   useEffect(() => {
@@ -45,6 +47,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }));
         setCart(normalized);
       }
+      setIsHydrated(true);
     }
   }, []);
 
@@ -100,8 +103,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clearCart = useCallback(() => setCart([]), []);
 
   const value = useMemo(
-    () => ({ cart, addToCart, removeFromCart, updateQuantity, clearCart }),
-    [cart, addToCart, removeFromCart, updateQuantity, clearCart],
+    () => ({ cart, addToCart, removeFromCart, updateQuantity, clearCart, isHydrated }),
+    [cart, addToCart, removeFromCart, updateQuantity, clearCart, isHydrated],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

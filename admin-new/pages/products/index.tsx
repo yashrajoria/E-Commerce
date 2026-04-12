@@ -5,7 +5,7 @@ import ProductsFilters from "@/components/products/ProductFilters";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import EmptyState from "@/components/ui/empty-state";
+import { EmptyState } from "@/components/admin/shared/DataStates";
 import {
   Pagination,
   PaginationContent,
@@ -60,11 +60,12 @@ const Products = () => {
   const totalPages = meta?.totalPages || 1;
   const isLoading = productsLoading || categoriesLoading;
   const productsCount = meta?.total || 0;
+  const productList = Array.isArray(products) ? products : [];
 
   // Client-side filters
   const handleToggleOutOfStock = () => setShowOutOfStock((s) => !s);
   const displayedProducts =
-    products?.filter((p: { quantity: number }) =>
+    productList.filter((p: { quantity: number }) =>
       showOutOfStock ? true : p.quantity > 0,
     ) || [];
 
@@ -123,7 +124,7 @@ const Products = () => {
         <StatsCard
           title="In Stock"
           value={
-            products?.filter((p: { quantity: number }) => p.quantity > 0)
+            productList.filter((p: { quantity: number }) => p.quantity > 0)
               ?.length || 0
           }
           icon={Package}
@@ -133,7 +134,7 @@ const Products = () => {
         <StatsCard
           title="Out of Stock"
           value={
-            products?.filter((p: { quantity: number }) => p.quantity <= 0)
+            productList.filter((p: { quantity: number }) => p.quantity <= 0)
               ?.length || 0
           }
           icon={AlertTriangle}
@@ -189,13 +190,12 @@ const Products = () => {
                     ? "Try adjusting your search terms"
                     : "Get started by adding your first product"
                 }
-                // If EmptyState supports an onAction prop, use it. Otherwise, just show a button below.
+                action={
+                  <Button asChild>
+                    <Link href="/products/add-product">Add Product</Link>
+                  </Button>
+                }
               />
-              <div className="flex justify-center mt-4">
-                <Button asChild>
-                  <Link href="/products/add-product">Add Product</Link>
-                </Button>
-              </div>
             </div>
           </motion.section>
         ) : viewMode === "grid" ? (
@@ -291,7 +291,7 @@ const Products = () => {
                           </Badge>
                         </TableCell>
                         <TableCell className="font-semibold text-sm">
-                          ${product.price?.toFixed(2)}
+                          £{product.price?.toFixed(2)}
                         </TableCell>
                         <TableCell className="text-sm">
                           {product.quantity}

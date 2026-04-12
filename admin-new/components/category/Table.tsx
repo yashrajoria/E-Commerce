@@ -3,7 +3,7 @@ import { FolderTree, Edit, Trash2 } from "lucide-react";
 import { pageItem } from "../layout/PageLayout";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
-import EmptyState from "../ui/empty-state";
+import { EmptyState } from "../admin/shared/DataStates";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import {
   TableHeader,

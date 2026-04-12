@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import EmptyState from "@/components/ui/empty-state";
+import { EmptyState } from "@/components/admin/shared/DataStates";
 import {
   Pagination,
   PaginationContent,

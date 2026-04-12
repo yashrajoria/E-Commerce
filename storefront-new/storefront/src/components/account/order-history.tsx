@@ -8,8 +8,16 @@ import { useQueries } from "@tanstack/react-query";
 import { axiosInstance } from "@/utils/axiosInstance";
 import { API_ROUTES } from "@/pages/api/constants/apiRoutes";
 import { CheckCircle, Clock, Package, Truck } from "lucide-react";
+import { formatGBP } from "@/lib/utils";
+import type { AxiosError } from "axios";
 
 type RawRecord = Record<string, unknown>;
+
+type OrdersHookData = {
+  orders?: {
+    orders?: unknown[];
+  };
+};
 
 interface NormalizedItem {
   product_id: string;
@@ -70,12 +78,16 @@ export function OrderHistory({ orders: ordersProp }: { orders?: unknown }) {
 
   let rawOrders: RawRecord[] = [];
   if (Array.isArray(ordersProp)) {
-    rawOrders = ordersProp as RawRecord[];
+    rawOrders = ordersProp.filter(
+      (item): item is RawRecord => Boolean(item && typeof item === "object"),
+    );
   } else if (data) {
-    const hookData = data as unknown as { orders?: { orders?: unknown[] } };
+    const hookData = data as OrdersHookData;
     const nested = hookData?.orders?.orders;
     if (Array.isArray(nested)) {
-      rawOrders = nested as RawRecord[];
+      rawOrders = nested.filter(
+        (item): item is RawRecord => Boolean(item && typeof item === "object"),
+      );
     }
   }
 
@@ -127,22 +139,26 @@ export function OrderHistory({ orders: ordersProp }: { orders?: unknown }) {
   const productQueries = useQueries({
     queries: productIds.map((id) => ({
       queryKey: ["product", id],
-      queryFn: async () => {
+      queryFn: async (): Promise<RawRecord> => {
         const res = await axiosInstance.get(
           API_ROUTES.PRODUCTS.BY_ID(String(id)),
         );
-        const d = res.data as unknown as RawRecord;
-        return { ...d, id: safeString(d?.id ?? d?._id ?? id) } as RawRecord;
+        const d = res.data as RawRecord;
+        return { ...d, id: safeString(d?.id ?? d?._id ?? id) };
       },
       enabled: Boolean(id),
       staleTime: 5 * 60 * 1000,
-      retry: 1,
+      retry: (failureCount, error) => {
+        const axiosError = error as AxiosError;
+        if (axiosError.response?.status === 429) return false;
+        return failureCount < 2;
+      },
     })),
   });
 
   const productMap: Record<string, string> = {};
   productIds.forEach((id, i) => {
-    const d = productQueries[i]?.data as unknown as RawRecord | undefined;
+    const d = productQueries[i]?.data as RawRecord | undefined;
     if (d) productMap[id] = safeString(d["name"] ?? d["title"] ?? "");
   });
 
@@ -177,7 +193,7 @@ export function OrderHistory({ orders: ordersProp }: { orders?: unknown }) {
               </Badge>
             </div>
             <div className="text-right">
-              <p className="font-semibold">${order.total.toFixed(2)}</p>
+              <p className="font-semibold">{formatGBP(order.total)}</p>
               <p className="text-sm text-muted-foreground">
                 {order.date ? new Date(order.date).toLocaleDateString() : "-"}
               </p>
@@ -200,7 +216,7 @@ export function OrderHistory({ orders: ordersProp }: { orders?: unknown }) {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="font-medium">${item.price.toFixed(2)}</p>
+                  <p className="font-medium">{formatGBP(item.price)}</p>
                 </div>
               </div>
             ))}

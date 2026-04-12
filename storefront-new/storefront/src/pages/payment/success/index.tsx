@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { formatGBP } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -343,7 +344,7 @@ function PaymentSuccessContent() {
                         <span className="text-gray-400">x{it.quantity}</span>
                       </span>
                       <span className="font-medium text-gray-800 ml-2">
-                        £{(it.price * it.quantity).toFixed(2)}
+                        {formatGBP(it.price * it.quantity)}
                       </span>
                     </li>
                   ))}
@@ -389,7 +390,7 @@ function PaymentSuccessContent() {
               <div className="flex justify-between border-t border-gray-200 pt-3 mt-3">
                 <dt className="font-semibold text-gray-800">Total</dt>
                 <dd className="font-semibold text-gray-900">
-                  £{orderTotal.toFixed(2)}
+                  {formatGBP(orderTotal)}
                 </dd>
               </div>
             </dl>

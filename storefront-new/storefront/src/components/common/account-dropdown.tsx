@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useUser } from "@/context/UserContext";
-import { logoutUser } from "@/lib/user";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Bell,
@@ -22,6 +21,22 @@ import {
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { useWishlist } from "@/context/WishlistContext";
+
+type AccountUser = {
+  name?: string;
+  email?: string;
+  avatar?: string;
+  created_at?: string;
+  wishlist?: unknown[];
+  wishlists?: unknown[];
+  orders?: { meta?: { total_orders?: number } };
+  profile?: {
+    name?: string;
+    email?: string;
+    avatar?: string;
+    created_at?: string;
+  };
+};
 
 interface AccountDropdownProps {
   isOpen: boolean;
@@ -45,17 +60,16 @@ AccountDropdownProps) {
           .join("")
           .toUpperCase()
       : "";
-  const safeUser = user as unknown as Record<string, unknown> | null;
+  const safeUser = user as AccountUser | null;
   const { wishlist: localWishlist } = useWishlist();
 
   const getProp = <T,>(obj: unknown, ...keys: string[]): T | undefined => {
-    let cur = obj as Record<string, unknown> | undefined;
+    let cur: unknown = obj;
     for (const k of keys) {
       if (!cur || typeof cur !== "object") return undefined;
-      const next = cur[k];
-      cur = (next as Record<string, unknown>) || undefined;
+      cur = (cur as Record<string, unknown>)[k];
     }
-    return cur as unknown as T;
+    return cur as T | undefined;
   };
 
   const displayName = (getProp<string>(safeUser, "name") || getProp<string>(safeUser, "profile", "name") || "");
@@ -140,10 +154,8 @@ AccountDropdownProps) {
   ];
 
   const handleLogout = async () => {
-    await logoutUser();
-    // setLoggedIn(false);
     if (signOut) {
-      signOut();
+      await signOut();
     }
 
     router.push("/");

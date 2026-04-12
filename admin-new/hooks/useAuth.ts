@@ -13,6 +13,7 @@ type User = AuthUser | null;
 
 type ProfileResult = {
   status: number;
+  authenticated: boolean;
   data: AuthUser | null;
 };
 
@@ -22,10 +23,14 @@ const normalizeProfile = (raw: unknown): AuthUser | null => {
   if (!raw || typeof raw !== "object") return null;
 
   const obj = raw as Record<string, unknown>;
-  const payload =
+  const dataPayload =
     obj.data && typeof obj.data === "object"
       ? (obj.data as Record<string, unknown>)
       : obj;
+  const payload =
+    dataPayload.user && typeof dataPayload.user === "object"
+      ? (dataPayload.user as Record<string, unknown>)
+      : dataPayload;
 
   const id = String(payload.id ?? payload._id ?? "").trim();
   const name = String(payload.name ?? "").trim();
@@ -46,16 +51,15 @@ const normalizeProfile = (raw: unknown): AuthUser | null => {
 
 const fetchProfileOnce = async (): Promise<ProfileResult> => {
   if (!profileInFlight) {
-    const apiBase =
-      process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_NEW_API_URL;
-    const profileUrl = apiBase
-      ? `${apiBase.replace(/\/$/, "")}/users/profile`
-      : "/users/profile";
-
     profileInFlight = axios
-      .get(profileUrl, { withCredentials: true })
+      .get("/api/auth/status", { withCredentials: true, timeout: 6000 })
       .then((res) => ({
         status: res.status,
+        authenticated: Boolean(
+          (res.data as Record<string, unknown> | null)?.authenticated ??
+            (res.data as Record<string, unknown> | null)?.isAuthenticated ??
+            normalizeProfile(res.data),
+        ),
         data: normalizeProfile(res.data),
       }))
       .finally(() => {
@@ -75,8 +79,8 @@ export default function useAuth() {
     setLoading(true);
     try {
       const res = await fetchProfileOnce();
-      
-      if (res.status === 200 && res.data) {
+
+      if (res.status === 200 && res.authenticated) {
         setUser(res.data);
         setAuthenticated(true);
       } else {
