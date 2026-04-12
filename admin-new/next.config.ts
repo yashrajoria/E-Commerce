@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
       // Allow images served from localstack (used in local integration tests)
       { protocol: "http", hostname: "localstack", port: "4566" },
       { protocol: "https", hostname: "shopswift.s3.amazonaws.com" },
+      { protocol: "https", hostname: "picsum.photos" },
 
     ],
   },
@@ -23,6 +24,10 @@ const nextConfig: NextConfig = {
       {
         source: "/api/:path*",
         destination: `${apiBaseUrl}/:path*`,
+      },
+      {
+        source: "/bff/:path*",
+        destination: `${apiBaseUrl}/bff/:path*`,
       },
     ];
   },
