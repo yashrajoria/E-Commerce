@@ -1,5 +1,5 @@
 import { refreshTokens } from "@/lib/auth";
-import axios, { AxiosError } from "axios";
+import axios, { AxiosError, AxiosRequestConfig } from "axios";
 
 // Create the Axios instance with base configuration
 export const axiosInstance = axios.create({
@@ -31,10 +31,23 @@ const processQueue = (error: unknown | null) => {
 axiosInstance.interceptors.response.use(
   (response) => response, // Pass through successful responses
   async (error: AxiosError) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const originalRequest: any = error.config;
+    const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean; url?: string };
+    const requestUrl = originalRequest.url ?? "";
+    const isAuthEndpoint =
+      requestUrl.includes("/auth/status") ||
+      requestUrl.includes("/auth/refresh") ||
+      requestUrl.includes("/auth/login") ||
+      requestUrl.includes("/auth/register") ||
+      requestUrl.includes("/auth/verify-email") ||
+      requestUrl.includes("/auth/resend-verification");
 
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // Auth endpoints can legitimately return 401 when no session is present.
+      // Avoid refresh recursion for these cases.
+      if (isAuthEndpoint) {
+        return Promise.reject(error);
+      }
+
       originalRequest._retry = true;
 
       // Check if the route is protected

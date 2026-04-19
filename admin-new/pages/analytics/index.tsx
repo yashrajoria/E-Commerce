@@ -79,23 +79,25 @@ const trafficSources = [
   { source: "Referral", visitors: 1600, percentage: 7 },
 ];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (!active || !payload?.length) return null;
+type TooltipEntry = { color?: string; name?: string; value?: number | string };
+const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipEntry[]; label?: string }) => {
+  if (!active || !Array.isArray(payload) || payload.length === 0) return null;
   return (
     <div className="glass-effect-strong rounded-lg p-3 border border-white/[0.08] text-sm">
       <p className="font-medium mb-1">{label}</p>
-      {payload.map(
-        (entry: { color: string; name: string; value: number }, i: number) => (
-          <p key={i} className="text-xs" style={{ color: entry.color }}>
-            {entry.name}:{" "}
-            {typeof entry.value === "number" &&
-            entry.name.toLowerCase().includes("revenue")
-              ? `$${entry.value.toLocaleString()}`
-              : entry.value.toLocaleString()}
+      {payload.map((entry, i) => {
+        const name = entry?.name ?? "";
+        const value = entry?.value ?? "";
+        const color = entry?.color ?? undefined;
+        const formatted = typeof value === "number" && name.toLowerCase().includes("revenue")
+          ? `£${value.toLocaleString()}`
+          : String(value).toLocaleString();
+        return (
+          <p key={i} className="text-xs" style={{ color }}>
+            {name}: {formatted}
           </p>
-        ),
-      )}
+        );
+      })}
     </div>
   );
 };
@@ -133,7 +135,7 @@ const Analytics = () => {
       >
         <StatsCard
           title="Total Revenue"
-          value="$306,200"
+          value="£306,200"
           icon={DollarSign}
           trend={{ value: 18.2, label: "vs last year" }}
           gradient="gradient-purple"
@@ -149,7 +151,7 @@ const Analytics = () => {
         />
         <StatsCard
           title="Avg Order Value"
-          value="$43.13"
+          value="£43.13"
           icon={Target}
           trend={{ value: 5.1, label: "vs last year" }}
           gradient="gradient-gold"
@@ -231,7 +233,7 @@ const Analytics = () => {
                       <YAxis
                         stroke="rgba(255,255,255,0.3)"
                         fontSize={12}
-                        tickFormatter={(v) => `$${v / 1000}k`}
+                        tickFormatter={(v) => `£${v / 1000}k`}
                       />
                       <Tooltip content={<CustomTooltip />} />
                       <Area
@@ -375,7 +377,7 @@ const Analytics = () => {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-semibold">
-                          ${product.revenue.toLocaleString()}
+                          £{product.revenue.toLocaleString()}
                         </p>
                         <div
                           className={`flex items-center gap-1 text-xs ${product.trend > 0 ? "text-emerald-400" : "text-red-400"}`}

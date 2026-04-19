@@ -16,6 +16,7 @@ import { useUser } from "@/context/UserContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useToast } from "@/hooks/use-toast";
 import { updatePassword, updateUserData } from "@/lib/user";
+import { formatGBP } from "@/lib/utils";
 import { motion } from "framer-motion";
 import {
   Bell,
@@ -37,24 +38,43 @@ export default function AccountPage() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const { user, loading } = useUser();
   const { wishlist: localWishlist } = useWishlist();
-
-  console.log({ user });
   const [profile, setProfile] = useState({
     name: "",
     email: "",
     phone_number: "",
   });
-  console.log({ profile });
-  console.log(user?.profile?.name);
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const router = useRouter();
+  const safeString = (v: unknown) => (v == null ? "" : String(v));
+  const safeDateFrom = (v: unknown): Date | null => {
+    if (v == null) return null;
+    if (typeof v === "string" || typeof v === "number") {
+      const d = new Date(v);
+      return Number.isFinite(d.getTime()) ? d : null;
+    }
+    return null;
+  };
+  const safeNumber = (v: unknown) => {
+    if (v == null) return 0;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const getNested = (obj: unknown, ...keys: string[]) => {
+    let cur = obj as unknown;
+    for (const k of keys) {
+      if (!cur || typeof cur !== "object") return undefined;
+      cur = (cur as Record<string, unknown>)[k];
+    }
+    return cur as unknown;
+  };
   useEffect(() => {
     setProfile({
-      name: user?.profile?.name ?? "",
-      email: user?.profile?.email ?? "",
-      phone_number: user?.profile?.phone_number ?? "",
+      name: safeString(user?.profile?.name),
+      email: safeString(user?.profile?.email ?? user?.email),
+      phone_number: safeString(user?.profile?.phone_number ?? user?.phone_number),
     });
     const tabQuery = router.query.tab;
     const tab = Array.isArray(tabQuery) ? tabQuery[0] : tabQuery;
@@ -171,20 +191,16 @@ export default function AccountPage() {
                   <div>
                     <span className="text-white/60">Member since</span>
                     <p className="font-medium">
-                      {user?.profile?.created_at
-                        ? new Date(
-                            user?.profile?.created_at,
-                          ).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                          })
-                        : "—"}
+                      {(() => {
+                        const d = safeDateFrom(user?.profile?.created_at);
+                        return d ? d.toLocaleDateString("en-US", { year: "numeric", month: "long" }) : "—";
+                      })()}
                     </p>
                   </div>
                   <div>
                     <span className="text-white/60">Total Orders</span>
                     <p className="font-medium">
-                      {user?.orders?.meta?.total_orders || 0}
+                      {safeNumber(getNested(user?.orders, "meta", "total_orders"))}
                     </p>
                   </div>
                   <div>
@@ -196,7 +212,7 @@ export default function AccountPage() {
                   <div>
                     <span className="text-white/60">Total Spent</span>
                     <p className="font-medium">
-                      ${user?.totalSpent?.toFixed(2) || 0}
+                      {formatGBP(safeNumber(user?.totalSpent))}
                     </p>
                   </div>
                 </div>
@@ -212,7 +228,7 @@ export default function AccountPage() {
             onValueChange={setActiveTab}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-6 mb-8">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 mb-8">
               <TabsTrigger
                 value="profile"
                 className="flex items-center space-x-2"

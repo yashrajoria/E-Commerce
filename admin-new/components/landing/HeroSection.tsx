@@ -211,7 +211,7 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
                 {[
                   {
                     label: "Revenue",
-                    value: "$48,250",
+                    value: "£48,250",
                     change: "+12.5%",
                     color: "purple",
                   },

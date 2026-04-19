@@ -16,7 +16,7 @@ function AnalyticsView() {
         {[
           {
             label: "Total Revenue",
-            value: "$128,430",
+                    value: "£128,430",
             sub: "+24.5% from last month",
           },
           {
@@ -89,35 +89,35 @@ function OrdersView() {
     {
       id: "#ORD-7291",
       customer: "Sarah Johnson",
-      amount: "$245.00",
+      amount: "£245.00",
       status: "Completed",
       color: "text-emerald-400 bg-emerald-500/10",
     },
     {
       id: "#ORD-7290",
       customer: "Mike Chen",
-      amount: "$189.50",
+      amount: "£189.50",
       status: "Processing",
       color: "text-blue-400 bg-blue-500/10",
     },
     {
       id: "#ORD-7289",
       customer: "Emily Davis",
-      amount: "$432.00",
+      amount: "£432.00",
       status: "Completed",
       color: "text-emerald-400 bg-emerald-500/10",
     },
     {
       id: "#ORD-7288",
       customer: "Alex Rivera",
-      amount: "$78.25",
+      amount: "£78.25",
       status: "Pending",
       color: "text-amber-400 bg-amber-500/10",
     },
     {
       id: "#ORD-7287",
       customer: "Lisa Wang",
-      amount: "$567.00",
+      amount: "£567.00",
       status: "Completed",
       color: "text-emerald-400 bg-emerald-500/10",
     },
@@ -157,16 +157,16 @@ function OrdersView() {
 
 function ProductsView() {
   const products = [
-    { name: "Premium Headphones", sku: "HD-001", stock: 245, price: "$299.99" },
-    { name: "Wireless Mouse", sku: "MS-042", stock: 18, price: "$79.99" },
+    { name: "Premium Headphones", sku: "HD-001", stock: 245, price: "£299.99" },
+    { name: "Wireless Mouse", sku: "MS-042", stock: 18, price: "£79.99" },
     {
       name: "Mechanical Keyboard",
       sku: "KB-015",
       stock: 132,
-      price: "$149.99",
+      price: "£149.99",
     },
-    { name: "Ultra Monitor 4K", sku: "MN-007", stock: 56, price: "$599.99" },
-    { name: "USB-C Hub Pro", sku: "HB-023", stock: 320, price: "$49.99" },
+    { name: "Ultra Monitor 4K", sku: "MN-007", stock: 56, price: "£599.99" },
+    { name: "USB-C Hub Pro", sku: "HB-023", stock: 320, price: "£49.99" },
   ];
 
   return (

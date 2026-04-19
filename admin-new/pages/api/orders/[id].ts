@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getResponseInfo } from "@/lib/error";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(
@@ -27,15 +28,13 @@ export default async function handler(
     const order = apiRes.data;
     console.log({ order });
     return res.status(200).json(order);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.error(
-      "Error fetching order:",
-      error.response?.data || error.message
-    );
-    return res.status(error?.response?.status || 500).json({
+  } catch (error: unknown) {
+    console.error("Error fetching order:", error);
+    const { status, data } = getResponseInfo(error);
+    const errData = data ?? (error instanceof Error ? error.message : String(error));
+    return res.status(status || 500).json({
       message: "Failed to fetch order",
-      error: error?.response?.data || error.message,
+      error: errData,
     });
   }
 }

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -6,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useUser } from "@/context/UserContext";
-import { logoutUser } from "@/lib/user";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Bell,
@@ -24,6 +22,22 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { useWishlist } from "@/context/WishlistContext";
 
+type AccountUser = {
+  name?: string;
+  email?: string;
+  avatar?: string;
+  created_at?: string;
+  wishlist?: unknown[];
+  wishlists?: unknown[];
+  orders?: { meta?: { total_orders?: number } };
+  profile?: {
+    name?: string;
+    email?: string;
+    avatar?: string;
+    created_at?: string;
+  };
+};
+
 interface AccountDropdownProps {
   isOpen: boolean;
   onClose: () => void;
@@ -37,7 +51,6 @@ export function AccountDropdown({
 AccountDropdownProps) {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const { user, signOut } = useUser();
-  console.log(user);
   const getInitials = (name?: string | null) =>
     name
       ? name
@@ -47,17 +60,22 @@ AccountDropdownProps) {
           .join("")
           .toUpperCase()
       : "";
-  const displayName = (user as any)?.name || (user as any)?.profile?.name || "";
-  const avatarUrl =
-    (user as any)?.avatar || (user as any)?.profile?.avatar || "";
+  const safeUser = user as AccountUser | null;
   const { wishlist: localWishlist } = useWishlist();
 
-  const userOrdersCount = (user as any)?.orders?.meta?.total_orders ?? 0;
-  const userWishlistCount =
-    (user as any)?.wishlist?.length ??
-    (user as any)?.wishlists?.length ??
-    localWishlist?.length ??
-    0;
+  const getProp = <T,>(obj: unknown, ...keys: string[]): T | undefined => {
+    let cur: unknown = obj;
+    for (const k of keys) {
+      if (!cur || typeof cur !== "object") return undefined;
+      cur = (cur as Record<string, unknown>)[k];
+    }
+    return cur as T | undefined;
+  };
+
+  const displayName = (getProp<string>(safeUser, "name") || getProp<string>(safeUser, "profile", "name") || "");
+  const avatarUrl = (getProp<string>(safeUser, "avatar") || getProp<string>(safeUser, "profile", "avatar") || "");
+  const userOrdersCount = Number(getProp<number>(safeUser, "orders", "meta", "total_orders") ?? 0);
+  const userWishlistCount = Number(getProp<number[]>(safeUser, "wishlist")?.length ?? getProp<number[]>(safeUser, "wishlists")?.length ?? localWishlist?.length ?? 0);
 
   const accountStats = [
     {
@@ -136,10 +154,8 @@ AccountDropdownProps) {
   ];
 
   const handleLogout = async () => {
-    await logoutUser();
-    // setLoggedIn(false);
     if (signOut) {
-      signOut();
+      await signOut();
     }
 
     router.push("/");

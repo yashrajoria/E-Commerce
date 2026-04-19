@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -23,14 +22,14 @@ import {
 } from "lucide-react";
 
 type BulkUploadProps = {
-  csvData: any[];
+  csvData: Record<string, unknown>[];
   handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   validateBulkUpload: () => void;
   confirmBulkUpload: () => void;
   isBulk: boolean;
   isValidating: boolean;
   isUploading: boolean;
-  validationResult: any;
+  validationResult?: { success?: boolean; message?: string } | null;
 };
 
 const BulkUpload = ({
@@ -268,25 +267,23 @@ const BulkUpload = ({
                             className="border-white/[0.04] hover:bg-white/[0.02] transition-colors"
                           >
                             <TableCell className="text-sm font-medium">
-                              {product.name || product.Name || "N/A"}
+                              {String((product as Record<string, unknown>).name ?? (product as Record<string, unknown>).Name ?? "N/A")}
                             </TableCell>
                             <TableCell className="text-sm text-muted-foreground max-w-xs truncate">
-                              {product.description ||
-                                product.Description ||
-                                "N/A"}
+                              {String((product as Record<string, unknown>).description ?? (product as Record<string, unknown>).Description ?? "N/A")}
                             </TableCell>
                             <TableCell className="text-sm font-mono text-emerald-400">
-                              ${product.price || product.Price || "0.00"}
+                              ${String((product as Record<string, unknown>).price ?? (product as Record<string, unknown>).Price ?? "0.00")}
                             </TableCell>
                             <TableCell className="text-sm">
-                              {product.quantity || product.Quantity || "0"}
+                              {String((product as Record<string, unknown>).quantity ?? (product as Record<string, unknown>).Quantity ?? "0")}
                             </TableCell>
                             <TableCell>
                               <Badge
                                 variant="secondary"
                                 className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs"
                               >
-                                {product.status || "active"}
+                                {String((product as Record<string, unknown>).status ?? "active")}
                               </Badge>
                             </TableCell>
                           </motion.tr>

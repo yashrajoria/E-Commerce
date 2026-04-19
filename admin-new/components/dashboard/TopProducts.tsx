@@ -10,7 +10,7 @@ import { Trophy, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 
-interface Product {
+interface TopProduct {
   name: string;
   category: string;
   revenue: number;
@@ -20,7 +20,7 @@ interface Product {
   image?: string;
 }
 
-const topProducts: Product[] = [
+const topProducts: TopProduct[] = [
   {
     name: "Premium Wireless Headphones",
     category: "Electronics",
@@ -69,7 +69,9 @@ const rankColors = [
   "from-amber-700 to-orange-700",
 ];
 
-export default function TopProducts() {
+export default function TopProducts({ products }: { products: TopProduct[] }) {
+  if (!products || products.length === 0) return null;
+
   return (
     <Card className="glass-effect border-gradient overflow-hidden">
       <CardHeader className="pb-3">
@@ -91,9 +93,9 @@ export default function TopProducts() {
       </CardHeader>
       <CardContent className="px-4 pb-4">
         <div className="space-y-3">
-          {topProducts.map((product, idx) => (
+          {products.map((product, idx) => (
             <motion.div
-              key={product.name}
+              key={product.name + idx}
               initial={{ opacity: 0, x: -12 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.35, delay: 0.06 * idx }}

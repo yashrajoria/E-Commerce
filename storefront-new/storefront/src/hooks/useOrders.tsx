@@ -24,30 +24,28 @@ export const useUserOrders = (): UseOrdersResult => {
   const [error, setError] = useState<string | null>(null);
   const [shouldFetch, setShouldFetch] = useState(true);
 
-  const fetchOrders = async () => {
-    if (!user || userLoading) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const data = await getOrders();
-      setOrders(data);
-    } catch (err) {
-      console.error("Failed to fetch user orders:", err);
-      setError("Could not load order history.");
-      setOrders([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchOrders = async () => {
+      if (!user || userLoading) return;
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const data = await getOrders();
+        setOrders(data);
+      } catch {
+        setError("Could not load order history.");
+        setOrders([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (shouldFetch && !userLoading && user) {
-      fetchOrders();
+      void fetchOrders();
       setShouldFetch(false); // Only fetch once initially or when refetch is called
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, userLoading, shouldFetch]);
 
   const refetch = () => setShouldFetch(true);

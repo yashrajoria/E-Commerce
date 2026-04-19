@@ -127,7 +127,7 @@ export default function RevenueChart() {
               axisLine={false}
               tickLine={false}
               tick={{ fill: "#94A3B8", fontSize: 12 }}
-              tickFormatter={(value) => `$${value / 1000}k`}
+              tickFormatter={(value) => `£${value / 1000}k`}
             />
             <Tooltip content={<CustomTooltip />} />
             <Area

@@ -4,15 +4,24 @@ import axios from "axios";
 import { toast } from "sonner";
 import { z } from "zod";
 
-const productSchema = z.object({
-  name: z.string(),
-  price: z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid price format"),
-  quantity: z.string().regex(/^\d+$/, "Quantity must be a number"),
-  is_featured: z.string().optional(),
-  categories: z.string(),
-  description: z.string().optional(),
-  imageurl: z.string().url("Invalid URL format"),
-});
+// const productSchema = z.object({
+//   name: z.string(),
+//   price: z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid price format"),
+//   quantity: z.string().regex(/^\d+$/, "Quantity must be a number"),
+//   is_featured: z.string().optional(),
+//   categories: z.string(),
+//   description: z.string().optional(),
+//   imageurl: z.string().url("Invalid URL format"),
+// });
+
+type BulkValidationError = { row: number; error: string };
+type BulkValidationResult = {
+  success: boolean;
+  message: string;
+  errors: BulkValidationError[];
+  validated_rows: Record<string, string>[];
+  missing_categories?: string[];
+};
 
 export function useBulkUpload() {
   const [csvData, setCsvData] = useState<Record<string, string>[]>([]);
@@ -20,8 +29,8 @@ export function useBulkUpload() {
   const [isBulk, setIsBulk] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [validationResult, setValidationResult] = useState<any>(null);
+  
+  const [validationResult, setValidationResult] = useState<BulkValidationResult | null>(null);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -30,36 +39,88 @@ export function useBulkUpload() {
     // Reset previous state
     setValidationResult(null);
 
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        setCsvData(results.data as Record<string, string>[]);
-        setIsBulk(true);
-        setBulkFile(file);
-        toast.success(
-          `CSV file loaded successfully! ${results.data.length} rows found.`,
-        );
-      },
-      error: (err) => {
-        console.error("CSV Parse Error:", err);
-        toast.error("Error parsing CSV file");
-      },
-    });
+   Papa.parse(file, {
+  header: true,
+  skipEmptyLines: true,
+  transformHeader: (header) =>
+    header.trim().toLowerCase().replace(/^\uFEFF/, ""),  // strips BOM + whitespace
+  complete: (results) => {
+    setCsvData(results.data as Record<string, string>[]);
+    setIsBulk(true);
+    setBulkFile(file);
+    toast.success(`CSV file loaded successfully! ${results.data.length} rows found.`);
+  },
+  error: (err) => {
+    console.error("CSV Parse Error:", err);
+    toast.error("Error parsing CSV file");
+  },
+});
+  };
+console.log({csvData});
+const normalizeRow = (row: Record<string, unknown>): Record<string, string> => {
+  const normalized: Record<string, string> = {};
+  const keyMap: Record<string, string> = {
+    image_url: "imageurl",
+    image: "imageurl",
+    qty: "quantity",
+    category: "categories",
   };
 
-  const validateBulkUpload = (data?: Record<string, string>[]) => {
-    return (data || csvData)
-      .map((row: Record<string, string>, index: number) => {
-        try {
-          return productSchema.parse(row);
-        } catch (error) {
-          console.error(`Validation error in row ${index + 1}:`, error);
-          return null;
-        }
-      })
-      .filter(Boolean);
-  };
+  Object.entries(row).forEach(([rawKey, value]) => {
+    const cleanKey = rawKey.trim().toLowerCase().replace(/\s+/g, "_");
+    const mappedKey = keyMap[cleanKey] || cleanKey;
+    normalized[mappedKey] = typeof value === "string" ? value.trim() : String(value ?? "");
+  });
+
+  return normalized;
+};
+
+const validateBulkUpload = (data?: Record<string, string>[]) => {
+  setIsValidating(true);
+  const rows = Object.values(data || csvData).filter(
+    (row) => typeof row === "object" && row !== null && !Array.isArray(row)
+  );
+  const errors: BulkValidationError[] = [];
+  const validRows: Record<string, string>[] = [];
+  rows.forEach((row, index) => {
+    const normalizedRow = normalizeRow(row as Record<string, unknown>);
+    try {
+      // productSchema.parse(normalizedRow);
+      validRows.push(normalizedRow);
+    } catch (error: unknown) {
+      let message = "Validation error";
+      if (error instanceof z.ZodError) {
+        message = error.issues
+          .map((issue) => `${issue.path.join(".") || "row"}: ${issue.message}`)
+          .join("; ");
+      } else if (error instanceof Error) {
+        message = error.message;
+      }
+      console.log({errors})
+      errors.push({ row: index + 1, error: message });
+      console.error(`Validation error in row ${index + 1}:`, error);
+    }
+  });
+  let result: BulkValidationResult;
+  if (errors.length === 0) {
+    result = {
+      success: true,
+      message: `All ${rows.length} products passed validation!`,
+      errors: [],
+      validated_rows: validRows,
+    };
+  } else {
+    result = {
+      success: false,
+      message: `${errors.length} of ${rows.length} products have issues. Please review.`,
+      errors,
+      validated_rows: validRows,
+    };
+  }
+  setValidationResult(result);
+  setIsValidating(false);
+  return result;
+};
 
   const handleBulkUpload = async (autoCreateCategories = true) => {
     if (!bulkFile) {
@@ -99,15 +160,16 @@ export function useBulkUpload() {
       }
       autoCreateCategories = true;
     }
-
+    
     setIsUploading(true);
-
+console.log({autoCreateCategories})
     try {
       const formData = new FormData();
       formData.append("file", bulkFile);
 
       const res = await axios.post(
-        `/api/products?isBulk=1&auto_create_categories=${autoCreateCategories}`,
+        // `/api/products?isBulk=1&auto_create_categories=${autoCreateCategories}`,
+        `/api/products?isBulk=1&auto_create_categories=true`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },

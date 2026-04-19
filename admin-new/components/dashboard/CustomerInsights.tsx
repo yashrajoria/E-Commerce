@@ -20,14 +20,7 @@ interface Segment {
   icon: React.ElementType;
 }
 
-const customerData: Segment[] = [
-  { name: "Returning", value: 1580, color: "#8b5cf6", icon: UserCheck },
-  { name: "New", value: 420, color: "#10b981", icon: UserPlus },
-  { name: "Inactive", value: 210, color: "#64748b", icon: UserX },
-  { name: "VIP", value: 107, color: "#f59e0b", icon: Users },
-];
 
-const total = customerData.reduce((sum, d) => sum + d.value, 0);
 
 const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
   if (!active || !payload?.length) return null;
@@ -51,7 +44,38 @@ const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
   );
 };
 
-export default function CustomerInsights() {
+export default function CustomerInsights({ insights }: { insights: any[] }) {
+  if (!insights || insights.length === 0) return null;
+
+  // Map the backend insight data to our frontend format (adding colors and icons)
+  const mappedData: Segment[] = insights.map((insight) => {
+    let color = "#8b5cf6"; // Default purple
+    let icon = Users;
+
+    if (insight.name === "Returning") {
+      color = "#8b5cf6";
+      icon = UserCheck;
+    } else if (insight.name === "New") {
+      color = "#10b981";
+      icon = UserPlus;
+    } else if (insight.name === "VIP") {
+      color = "#f59e0b";
+      icon = Users;
+    } else if (insight.name === "Inactive") {
+      color = "#64748b";
+      icon = UserX;
+    }
+
+    return {
+      name: insight.name,
+      value: insight.value,
+      color,
+      icon,
+    };
+  });
+
+  const total = mappedData.reduce((sum, d) => sum + d.value, 0);
+
   return (
     <Card className="glass-effect border-gradient overflow-hidden">
       <CardHeader className="pb-2">
@@ -69,7 +93,7 @@ export default function CustomerInsights() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={customerData}
+                  data={mappedData}
                   cx="50%"
                   cy="50%"
                   innerRadius={48}
@@ -78,7 +102,7 @@ export default function CustomerInsights() {
                   dataKey="value"
                   strokeWidth={0}
                 >
-                  {customerData.map((entry, index) => (
+                  {mappedData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -98,7 +122,7 @@ export default function CustomerInsights() {
 
           {/* Legend */}
           <div className="flex-1 space-y-3">
-            {customerData.map((segment, idx) => (
+            {mappedData.map((segment, idx) => (
               <motion.div
                 key={segment.name}
                 initial={{ opacity: 0, x: 8 }}

@@ -1,7 +1,6 @@
-/**
- * Premium Profile Page
- */
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,14 +11,15 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
+import useAuth from "@/hooks/useAuth";
 import { motion } from "framer-motion";
 import {
+  Bell,
   Camera,
+  Globe,
   Key,
   Lock,
   Mail,
@@ -27,23 +27,24 @@ import {
   Save,
   Shield,
   User,
-  Bell,
-  Globe,
 } from "lucide-react";
-import { GetServerSideProps } from "next";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import jwt from "jsonwebtoken";
 
-interface ProfileProps {
-  initialName: string;
-  initialEmail: string;
-}
+const Profile = () => {
+  const { user } = useAuth();
+  const [name, setName] = useState(user?.name || "Admin User");
+  const [email, setEmail] = useState(user?.email || "admin@example.com");
+  const [phone, setPhone] = useState(user?.phone || "");
 
-const Profile = ({ initialName, initialEmail }: ProfileProps) => {
-  const [name, setName] = useState(initialName || "Admin User");
-  const [email, setEmail] = useState(initialEmail || "admin@example.com");
-  const [phone, setPhone] = useState("+1 (555) 123-4567");
+
+  useEffect(() => {
+    if (user) {
+      setName(user.name || "");
+      setEmail(user.email || "");
+      setPhone(user.phone || "");
+    }
+  }, [user]);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -353,23 +354,5 @@ const Profile = ({ initialName, initialEmail }: ProfileProps) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const token = context.req.cookies.token || "";
-  let initialName = "";
-  let initialEmail = "";
-
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const decoded: any = jwt.decode(token);
-    if (decoded) {
-      initialName = decoded.name || "";
-      initialEmail = decoded.email || "";
-    }
-  } catch {
-    // Token decode failed, use defaults
-  }
-
-  return { props: { initialName, initialEmail } };
-};
 
 export default Profile;

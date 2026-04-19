@@ -154,7 +154,7 @@ const Returns = () => {
         />
         <StatsCard
           title="Refunded"
-          value={`$${totalRefunded.toFixed(2)}`}
+          value={`£${totalRefunded.toFixed(2)}`}
           icon={DollarSign}
           gradient="gradient-emerald"
           glowClass="glow-emerald"
@@ -233,7 +233,7 @@ const Returns = () => {
                       {item.reason}
                     </TableCell>
                     <TableCell className="text-sm font-semibold">
-                      ${item.amount.toFixed(2)}
+                      £{item.amount.toFixed(2)}
                     </TableCell>
                     <TableCell>
                       <Badge

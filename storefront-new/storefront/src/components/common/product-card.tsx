@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import type { Product } from "@/lib/types";
+import { formatGBP } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Heart, ShoppingBag, Star } from "lucide-react";
 import Image from "next/image";
@@ -19,12 +20,6 @@ interface ProductCardProps {
 export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, hasWishlistItem } = useWishlist();
-
-  const formatGBP = (value?: number) =>
-    new Intl.NumberFormat("en-GB", {
-      style: "currency",
-      currency: "GBP",
-    }).format(value ?? 0);
 
   const primaryImage = product.images?.[0] || "/icons8-image-100.png";
   const categoryName =

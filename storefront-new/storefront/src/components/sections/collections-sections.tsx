@@ -21,10 +21,8 @@ interface CollectionViewModel {
 export function CollectionsSection() {
   const { data: productsData, isLoading, error } = useProducts(12, 1, false);
   const { data: categoriesData = [] } = useCategories();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const products = productsData?.products ?? [];
-
   const collections = useMemo<CollectionViewModel[]>(() => {
+    const products = productsData?.products ?? [];
     if (!products.length) return [];
     const grouped = new Map<string, number>();
     const getCategoryName = (product: Product) =>
@@ -54,7 +52,7 @@ export function CollectionsSection() {
         layout: index === 0 ? "large" : "medium",
       };
     });
-  }, [products, categoriesData]);
+  }, [productsData, categoriesData]);
 
   if (isLoading) {
     return (
@@ -110,7 +108,18 @@ export function CollectionsSection() {
               viewport={{ once: true }}
               transition={{ delay: index * 0.12, duration: 0.5 }}
             >
-              <Link href={`/products?category=${collection.title}`}>
+              {(() => {
+                const matchingCategory = categoriesData.find(
+                  (category) => category.name === collection.title,
+                );
+                const params = new URLSearchParams();
+                if (matchingCategory?.id) {
+                  params.set("categoryId", matchingCategory.id);
+                }
+                params.set("category", collection.title);
+
+                return (
+                  <Link href={`/products?${params.toString()}`}>
                 <div
                   className={`relative overflow-hidden rounded-2xl cursor-pointer ${
                     collection.layout === "large"
@@ -161,7 +170,9 @@ export function CollectionsSection() {
                   {/* Violet hover wash */}
                   <div className="absolute inset-0 bg-rose-600/0 group-hover:bg-rose-600/10 transition-colors duration-500" />
                 </div>
-              </Link>
+                  </Link>
+                );
+              })()}
             </motion.div>
           ))}
         </div>

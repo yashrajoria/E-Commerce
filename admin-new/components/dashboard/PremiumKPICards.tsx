@@ -28,7 +28,7 @@ const stats: KPIStat[] = [
   {
     title: "Total Revenue",
     value: 42835,
-    prefix: "$",
+    prefix: "£",
     trend: 12.5,
     icon: Wallet,
     gradient: "from-violet-600 via-purple-600 to-indigo-600",
@@ -86,7 +86,53 @@ const itemVariants = {
   },
 };
 
-export default function PremiumKPICards() {
+export default function PremiumKPICards({ data }: { data: any }) {
+  if (!data) return null;
+
+  const stats: KPIStat[] = [
+    {
+      title: "Total Revenue",
+      value: data.totalRevenue?.value || 0,
+      prefix: "£",
+      trend: data.totalRevenue?.trend || 0,
+      icon: Wallet,
+      gradient: "from-violet-600 via-purple-600 to-indigo-600",
+      glowColor: "shadow-violet-500/20",
+      sparkColor: "#c4b5fd",
+      sparkData: [28, 35, 32, 40, 38, 45, 52, 48, 55, 60, 58, 65], // Can make dynamic later
+    },
+    {
+      title: "Total Orders",
+      value: data.totalOrders?.value || 0,
+      trend: data.totalOrders?.trend || 0,
+      icon: ShoppingCart,
+      gradient: "from-emerald-600 via-teal-600 to-cyan-600",
+      glowColor: "shadow-emerald-500/20",
+      sparkColor: "#6ee7b7",
+      sparkData: [40, 42, 38, 50, 45, 55, 48, 52, 60, 58, 62, 68],
+    },
+    {
+      title: "Total Products",
+      value: data.totalProducts?.value || 0,
+      trend: data.totalProducts?.trend || 0,
+      icon: Package,
+      gradient: "from-amber-500 via-orange-500 to-yellow-500",
+      glowColor: "shadow-amber-500/20",
+      sparkColor: "#fcd34d",
+      sparkData: [20, 25, 22, 28, 30, 32, 35, 33, 38, 36, 40, 42],
+    },
+    {
+      title: "Active Users",
+      value: data.activeUsers?.value || 0,
+      trend: data.activeUsers?.trend || 0,
+      icon: Users,
+      gradient: "from-blue-600 via-indigo-600 to-violet-600",
+      glowColor: "shadow-blue-500/20",
+      sparkColor: "#93c5fd",
+      sparkData: [50, 55, 60, 58, 65, 70, 68, 75, 72, 80, 78, 85],
+    },
+  ];
+
   return (
     <motion.div
       variants={containerVariants}

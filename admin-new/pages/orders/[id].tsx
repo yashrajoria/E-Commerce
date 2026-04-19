@@ -285,7 +285,7 @@ const OrderDetailsPage = () => {
         />
         <StatsCard
           title="Total"
-          value={`$${order.total.toFixed(2)}`}
+          value={`£${order.total.toFixed(2)}`}
           icon={DollarSign}
           gradient="gradient-emerald"
           glowClass="glow-emerald"
@@ -380,11 +380,11 @@ const OrderDetailsPage = () => {
                         {it.sku}
                       </TableCell>
                       <TableCell className="text-sm">
-                        ${it.price.toFixed(2)}
+                        £{it.price.toFixed(2)}
                       </TableCell>
                       <TableCell className="text-sm">{it.quantity}</TableCell>
                       <TableCell className="text-sm text-right font-medium">
-                        ${(it.price * it.quantity).toFixed(2)}
+                        £{(it.price * it.quantity).toFixed(2)}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -402,26 +402,26 @@ const OrderDetailsPage = () => {
             <CardContent className="pt-4 space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span>${order.subtotal.toFixed(2)}</span>
+                <span>£{order.subtotal.toFixed(2)}</span>
               </div>
               {order.tax > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Tax</span>
-                  <span>${order.tax.toFixed(2)}</span>
+                  <span>£{order.tax.toFixed(2)}</span>
                 </div>
               )}
               {order.discount > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Discount</span>
                   <span className="text-emerald-400">
-                    -${order.discount.toFixed(2)}
+                    -£{order.discount.toFixed(2)}
                   </span>
                 </div>
               )}
               <Separator className="bg-white/[0.06]" />
               <div className="flex justify-between text-lg font-bold">
                 <span>Total</span>
-                <span className="text-gradient">${order.total.toFixed(2)}</span>
+                <span className="text-gradient">£{order.total.toFixed(2)}</span>
               </div>
             </CardContent>
           </Card>

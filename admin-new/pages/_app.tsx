@@ -4,10 +4,13 @@ import type { AppProps } from "next/app";
 import { Toaster } from "sonner";
 import { ErrorBoundary } from "react-error-boundary";
 import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useAuth from "@/hooks/useAuth";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { motion, AnimatePresence } from "framer-motion";
+import { setupGlobalAxiosInterceptors } from "@/lib/axios-interceptor";
+import { ContextualAIAssistant } from "@/components/ai/ContextualAIAssistant";
+import { resolveAIPageContext } from "@/lib/ai-contextual-assistant";
 
 /** Premium error fallback with glassmorphism styling */
 function ErrorFallback({
@@ -112,20 +115,58 @@ export default function App({ Component, pageProps, router }: AppProps) {
     "/returns",
     "/reviews",
     "/profile",
+    "/analytics",
+    "/marketing",
+    "/support",
+    "/shipping",
+    "/categories",
+    "/activity-logs",
   ];
 
   const needsAuth = protectedPrefixes.some((p) => router.asPath.startsWith(p));
+  const surfaceTheme = needsAuth ? "theme-admin" : "theme-storefront";
+  const pageAIContext = useMemo(
+    () =>
+      resolveAIPageContext({
+        pathname: router.pathname,
+        asPath: router.asPath,
+        query: router.query,
+      }),
+    [router.asPath, router.pathname, router.query],
+  );
+  const shouldRenderContextualAssistant =
+    needsAuth &&
+    authenticated &&
+    router.pathname !== "/dashboard/ai-insights" &&
+    Boolean(pageAIContext);
 
   useEffect(() => {
-    if (!loading && needsAuth && !authenticated) {
-      // redirect unauthenticated users to the sign-in page
-      router.replace("/sign-in");
-    }
-  }, [loading, authenticated, needsAuth, router]);
+    // Setup global Axios 401 interceptor
+    setupGlobalAxiosInterceptors(router);
+  }, [router]);
+
+  useEffect(() => {
+    document.documentElement.classList.remove("theme-admin", "theme-storefront");
+    document.body.classList.remove("theme-admin", "theme-storefront");
+    document.documentElement.classList.add(surfaceTheme);
+    document.body.classList.add(surfaceTheme);
+
+    return () => {
+      document.documentElement.classList.remove("theme-admin", "theme-storefront");
+      document.body.classList.remove("theme-admin", "theme-storefront");
+    };
+  }, [surfaceTheme]);
+
+  // useEffect(() => {
+  //   if (!loading && needsAuth && !authenticated) {
+  //     // redirect unauthenticated users to the sign-in page
+  //     router.replace("/");
+  //   }
+  // }, [loading, authenticated, needsAuth, router]);
 
   if (needsAuth && loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className={`${surfaceTheme} min-h-screen flex items-center justify-center`}>
         <LoadingSpinner />
       </div>
     );
@@ -133,28 +174,33 @@ export default function App({ Component, pageProps, router }: AppProps) {
 
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
-      <RouteProgressBar />
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          className:
-            "glass-effect-strong border border-white/[0.08] text-foreground",
-          duration: 4000,
-        }}
-        closeButton
-        richColors
-      />
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={router.asPath}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          <Component {...pageProps} />
-        </motion.div>
-      </AnimatePresence>
+      <div className={surfaceTheme}>
+        <RouteProgressBar />
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            className:
+              "glass-effect-strong border border-white/[0.08] text-foreground",
+            duration: 4000,
+          }}
+          closeButton
+          richColors
+        />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={router.asPath}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Component {...pageProps} />
+          </motion.div>
+        </AnimatePresence>
+        {shouldRenderContextualAssistant && pageAIContext ? (
+          <ContextualAIAssistant context={pageAIContext} />
+        ) : null}
+      </div>
     </ErrorBoundary>
   );
 }

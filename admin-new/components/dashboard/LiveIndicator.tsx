@@ -15,17 +15,17 @@ export function LiveIndicator({
 }: LiveIndicatorProps) {
   return (
     <div
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 ${className}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[hsla(191,73%,56%,0.1)] border border-[hsla(191,73%,56%,0.2)] ${className}`}
     >
       <span className="relative flex h-2 w-2">
         <motion.span
-          className="absolute inline-flex h-full w-full rounded-full bg-emerald-400"
+          className="absolute inline-flex h-full w-full rounded-full bg-[hsl(191,73%,60%)]"
           animate={{ scale: [1, 1.5, 1], opacity: [1, 0, 1] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         />
-        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-[hsl(191,73%,60%)]" />
       </span>
-      <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">
+      <span className="text-[11px] font-semibold text-[hsl(191,73%,72%)] uppercase tracking-wider">
         {label}
       </span>
     </div>

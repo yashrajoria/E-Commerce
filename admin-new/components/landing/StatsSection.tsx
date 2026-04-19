@@ -14,7 +14,7 @@ const stats = [
   {
     icon: TrendingUp,
     value: 50,
-    prefix: "$",
+    prefix: "£",
     suffix: "M+",
     label: "Revenue Processed",
     description: "In total transaction volume",

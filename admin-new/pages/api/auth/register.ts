@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
+import { getResponseInfo } from "@/lib/error";
 
 const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
 
@@ -24,6 +25,10 @@ export default async function handler(
   if (req.method !== "POST")
     return res.status(405).json({ message: "Method not allowed" });
 
+  if (!API_URL) {
+    return res.status(500).json({ message: "NEXT_PUBLIC_NEW_API_URL is not configured" });
+  }
+
   try {
     const response = await axios.post(`${API_URL}auth/register`, req.body, {
       headers: { "Content-Type": "application/json" },
@@ -31,33 +36,24 @@ export default async function handler(
     });
 
     const setCookie = response.headers["set-cookie"] as string[] | undefined;
-    console.debug("[register proxy] Raw Set-Cookie from backend:", setCookie);
 
     if (setCookie && setCookie.length > 0) {
       const sanitized = sanitizeSetCookies(setCookie);
-      console.debug("[register proxy] Sanitized Set-Cookie:", sanitized);
       res.setHeader("Set-Cookie", sanitized);
-    } else {
-      console.warn(
-        "[register proxy] No Set-Cookie header received from backend",
-      );
     }
 
     return res.status(response.status).json(response.data);
-  } catch (err: any) {
-    const errSetCookie = err?.response?.headers?.["set-cookie"] as
-      | string[]
-      | undefined;
+  } catch (err: unknown) {
+    const { headers, status, data } = getResponseInfo(err);
+    const errSetCookie =
+      typeof headers === "object" && headers !== null && "set-cookie" in (headers as { [k: string]: unknown })
+        ? (headers as { [k: string]: unknown })["set-cookie"] as string[] | undefined
+        : undefined;
     if (errSetCookie && errSetCookie.length > 0) {
       res.setHeader("Set-Cookie", sanitizeSetCookies(errSetCookie));
     }
 
-    console.error(
-      "Auth proxy error (register):",
-      err?.response?.data || err.message,
-    );
-    return res
-      .status(err?.response?.status || 500)
-      .json({ message: err?.response?.data || "Auth error" });
+    console.error("Auth register proxy error:", err);
+    return res.status(status || 500).json({ message: data ?? "Auth error" });
   }
 }

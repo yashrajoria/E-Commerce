@@ -6,6 +6,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  type DragEndEvent,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -37,7 +38,7 @@ interface ImageItem {
 
 interface ProductImageUploadProps {
   images: ImageItem[];
-  setImages: (images: ImageItem[]) => void;
+  setImages: React.Dispatch<React.SetStateAction<ImageItem[]>>;
 }
 
 export default function ProductImageUpload({
@@ -78,18 +79,20 @@ export default function ProductImageUpload({
       setImages([...images, ...newImages]);
 
       // start upload per-file (cancellable, with per-file progress)
-      newImages.forEach((localImg, idx) => {
+      newImages.forEach((localImg) => {
         const { file, id: localId } = localImg;
 
         const { promise, cancel } = uploadSingleFile(file, undefined, (p) => {
-          setImages((prev) =>
-            prev.map((it) => (it.id === localId ? { ...it, progress: p } : it)),
+          setImages((prev: ImageItem[]) =>
+            prev.map((it: ImageItem) =>
+              it.id === localId ? { ...it, progress: p } : it,
+            ),
           );
         });
 
         // save cancel handler and mark uploading
-        setImages((prev) =>
-          prev.map((it) =>
+        setImages((prev: ImageItem[]) =>
+          prev.map((it: ImageItem) =>
             it.id === localId
               ? { ...it, cancel, uploading: true, failed: false }
               : it,
@@ -98,8 +101,8 @@ export default function ProductImageUpload({
 
         promise
           .then((uploadedUrl) => {
-            setImages((prev) =>
-              prev.map((it) =>
+            setImages((prev: ImageItem[]) =>
+              prev.map((it: ImageItem) =>
                 it.id === localId
                   ? {
                       ...it,
@@ -116,8 +119,8 @@ export default function ProductImageUpload({
           .catch((err) => {
             console.error("Upload error:", err);
             toast.error("Image upload failed");
-            setImages((prev) =>
-              prev.map((it) =>
+            setImages((prev: ImageItem[]) =>
+              prev.map((it: ImageItem) =>
                 it.id === localId
                   ? { ...it, failed: true, uploading: false, cancel: undefined }
                   : it,
@@ -132,8 +135,8 @@ export default function ProductImageUpload({
     setImages(images.filter((img) => img.id !== id));
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleDragEnd = (event: any) => {
+  
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
@@ -196,13 +199,12 @@ export default function ProductImageUpload({
                     uploaded={img.uploaded}
                     uploading={img.uploading}
                     failed={img.failed}
-                    cancel={img.cancel}
                     onRemove={() => handleRemove(img.id)}
                     onCancel={() => {
                       if (img.cancel) {
                         img.cancel();
-                        setImages((prev) =>
-                          prev.map((it) =>
+                        setImages((prev: ImageItem[]) =>
+                          prev.map((it: ImageItem) =>
                             it.id === img.id
                               ? {
                                   ...it,
@@ -222,15 +224,15 @@ export default function ProductImageUpload({
                         file,
                         undefined,
                         (p) => {
-                          setImages((prev) =>
-                            prev.map((it) =>
+                          setImages((prev: ImageItem[]) =>
+                            prev.map((it: ImageItem) =>
                               it.id === img.id ? { ...it, progress: p } : it,
                             ),
                           );
                         },
                       );
-                      setImages((prev) =>
-                        prev.map((it) =>
+                      setImages((prev: ImageItem[]) =>
+                        prev.map((it: ImageItem) =>
                           it.id === img.id
                             ? { ...it, cancel, uploading: true, failed: false }
                             : it,
@@ -238,8 +240,8 @@ export default function ProductImageUpload({
                       );
                       promise
                         .then((uploadedUrl) => {
-                          setImages((prev) =>
-                            prev.map((it) =>
+                          setImages((prev: ImageItem[]) =>
+                            prev.map((it: ImageItem) =>
                               it.id === img.id
                                 ? {
                                     ...it,
@@ -256,8 +258,8 @@ export default function ProductImageUpload({
                         .catch((err) => {
                           console.error("Retry upload error:", err);
                           toast.error("Retry upload failed");
-                          setImages((prev) =>
-                            prev.map((it) =>
+                          setImages((prev: ImageItem[]) =>
+                            prev.map((it: ImageItem) =>
                               it.id === img.id
                                 ? {
                                     ...it,
@@ -292,7 +294,6 @@ function SortableImage({
   uploaded,
   uploading,
   failed,
-  cancel,
   onRemove,
   onCancel,
   onRetry,
@@ -303,7 +304,6 @@ function SortableImage({
   uploaded?: boolean;
   uploading?: boolean;
   failed?: boolean;
-  cancel?: () => void;
   onRemove: () => void;
   onCancel: () => void;
   onRetry: () => void;

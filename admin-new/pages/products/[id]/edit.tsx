@@ -1,3 +1,4 @@
+import type { Product } from "@/types/shared";
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
 import ProductInformation from "@/components/products/ProductInformation";
 import { useProduct } from "@/hooks/useProduct";
@@ -12,21 +13,25 @@ export default function EditProductPage() {
   const router = useRouter();
   const { id } = router.query as { id?: string };
   const { product, loading } = useProduct(id as string);
-  const [uploadedImages, setUploadedImages] = useState<any[]>([]);
+  const [uploadedImages, setUploadedImages] = useState<
+    { file: File | null; preview?: string; url?: string }[]
+  >([]);
   const [imagePreview, setImagePreview] = useState<File | null>(null);
 
   // prepare initialData for form when product is loaded
-  const initialData = product
+  const p = product as Product | undefined;
+  const initialData = p
     ? {
-        name: (product as any).name,
-        category: (product as any).category || [],
-        price: (product as any).price || 0,
-        quantity: (product as any).quantity || 0,
-        description: (product as any).description || "",
-        images: (product as any).images || [],
-        brand: (product as any).brand || "",
-        sku: (product as any).sku || "",
-        is_featured: (product as any).is_featured || false,
+        name: p.name,
+        category: p.category_ids || [],
+        price: p.price || 0,
+        quantity: p.quantity || 0,
+        description: p.description || "",
+        images: p.images || [],
+        brand: p.brand || "",
+        sku: p.sku || "",
+        is_featured:
+          (p && (p as { is_featured?: boolean }).is_featured) || false,
       }
     : undefined;
 
@@ -39,17 +44,16 @@ export default function EditProductPage() {
   );
 
   useEffect(() => {
-    if (product && (product as any).images) {
+    if (p && p.images) {
       setUploadedImages(
-        (product as any).images.map((url: string) => ({
+        p.images.map((url: string) => ({
           file: null,
           url,
           preview: url,
         })),
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [product]);
+  }, [p]);
 
   if (loading) {
     return (
@@ -68,7 +72,7 @@ export default function EditProductPage() {
   }
 
   const handleSubmit = form.handleSubmit(async (data) => {
-    await updateSingleProduct(id as string, data as any);
+    await updateSingleProduct(id as string, data);
     router.push(`/products/${id}`);
   });
 
@@ -124,7 +128,9 @@ export default function EditProductPage() {
   );
 }
 
-export async function getServerSideProps(ctx: any) {
+import type { GetServerSidePropsContext } from "next";
+
+export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { requireAuth } = await import("@/lib/ssrAuth");
   return requireAuth(ctx);
 }

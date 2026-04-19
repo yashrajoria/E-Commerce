@@ -20,6 +20,8 @@ export interface Category {
   icon: string;
   image: string;
   productCount: number;
+  directProductCount?: number;
+  totalProductCount?: number;
 }
 
 export interface CartItem extends Product {

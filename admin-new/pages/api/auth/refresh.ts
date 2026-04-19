@@ -1,7 +1,25 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
+import { getResponseInfo } from "@/lib/error";
 
 const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
+
+function sanitizeSetCookies(raw: string[]): string[] {
+  const isProd = process.env.NODE_ENV === "production";
+
+  return raw.map((cookie) => {
+    let c = cookie;
+    c = c.replace(/;?\s*Domain=[^;]*/gi, "");
+    if (!isProd) {
+      c = c.replace(/;?\s*Secure/gi, "");
+      c = c.replace(/SameSite=None/gi, "SameSite=Lax");
+    }
+    if (!/Path=/i.test(c)) {
+      c += "; Path=/";
+    }
+    return c;
+  });
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -9,6 +27,11 @@ export default async function handler(
 ) {
   if (req.method !== "POST")
     return res.status(405).json({ message: "Method not allowed" });
+
+  if (!API_URL) {
+    return res.status(500).json({ message: "NEXT_PUBLIC_NEW_API_URL is not configured" });
+  }
+
   try {
     const response = await axios.post(
       `${API_URL}auth/refresh`,
@@ -23,17 +46,21 @@ export default async function handler(
     if (setCookie && setCookie.length)
       res.setHeader(
         "Set-Cookie",
-        setCookie.map((c) => c.replace(/;?\s*Domain=[^;]*/gi, "")),
+        sanitizeSetCookies(setCookie),
       );
 
     return res.status(response.status).json(response.data);
-  } catch (err: any) {
-    console.error(
-      "Auth refresh proxy error:",
-      err?.response?.data || err.message,
-    );
-    return res
-      .status(err?.response?.status || 500)
-      .json({ message: err?.response?.data || "Refresh error" });
+  } catch (err: unknown) {
+    const { headers, status, data } = getResponseInfo(err);
+    const errSetCookie =
+      typeof headers === "object" && headers !== null && "set-cookie" in (headers as { [k: string]: unknown })
+        ? (headers as { [k: string]: unknown })["set-cookie"] as string[] | undefined
+        : undefined;
+    if (errSetCookie && errSetCookie.length) {
+      res.setHeader("Set-Cookie", sanitizeSetCookies(errSetCookie));
+    }
+
+    console.error("Auth refresh proxy error:", err);
+    return res.status(status || 500).json({ message: data ?? "Refresh error" });
   }
 }

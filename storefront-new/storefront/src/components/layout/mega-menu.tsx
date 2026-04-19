@@ -4,10 +4,10 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronRight, Home, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import * as LucideIcons from "lucide-react";
 import { useCategories } from "@/hooks/useCategories";
 import Image from "next/image";
 import Link from "next/link";
+import { getLucideIcon } from "@/lib/utils";
 
 interface MegaMenuProps {
   isOpen: boolean;
@@ -97,13 +97,7 @@ export function MegaMenu({ isOpen, onClose }: MegaMenuProps) {
                 {!isLoading &&
                   !error &&
                   categories.map((category, index) => {
-                    const IconComponent =
-                      (
-                        LucideIcons as unknown as Record<
-                          string,
-                          React.ComponentType<{ className?: string }>
-                        >
-                      )[category.icon] || LucideIcons.Package;
+                    const IconComponent = getLucideIcon(category.icon);
 
                     return (
                       <motion.div
@@ -113,7 +107,7 @@ export function MegaMenu({ isOpen, onClose }: MegaMenuProps) {
                         transition={{ delay: index * 0.05 + 0.1 }}
                       >
                         <Link
-                          href={`/products?category=${category.name}`}
+                          href={`/products?categoryId=${encodeURIComponent(category.id)}&category=${encodeURIComponent(category.name)}`}
                           onClick={onClose}
                           className="flex items-center gap-3 mx-3 px-3 py-2.5 rounded-lg hover:bg-muted/50 transition-colors group"
                         >

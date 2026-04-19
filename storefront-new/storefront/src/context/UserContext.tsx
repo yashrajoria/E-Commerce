@@ -18,10 +18,10 @@ interface User {
   totalOrders?: number;
   totalSpent?: number;
   // optional fields returned by various API shapes
-  orders?: any;
-  wishlist?: any[];
-  wishlists?: any[];
-  profile?: { [key: string]: any };
+  orders?: unknown;
+  wishlist?: unknown[];
+  wishlists?: unknown[];
+  profile?: Record<string, unknown>;
   role: string;
 }
 
@@ -53,15 +53,36 @@ export function UserProvider({ children }: UserProviderProps) {
 
       if (authStatus.authenticated) {
         // If authenticated, fetch full user data
-        const userData: User = await getUserData();
-        setUser(userData);
-        setIsAuthenticated(true);
+        try {
+          const userData: User = await getUserData();
+          setUser(userData);
+          setIsAuthenticated(true);
+        } catch (err) {
+          const status =
+            (err as { response?: { status?: number } })?.response?.status;
+
+          // Don't flip auth state to false on rate-limit spikes.
+          if (status === 429) {
+            setIsAuthenticated(true);
+            return;
+          }
+
+          throw err;
+        }
       } else {
         // Not authenticated
         setUser(null);
         setIsAuthenticated(false);
       }
     } catch (err) {
+      const status =
+        (err as { response?: { status?: number } })?.response?.status;
+
+      // Keep current auth state when backend temporarily rate-limits auth checks.
+      if (status === 429) {
+        return;
+      }
+
       console.error("[UserContext] Failed to fetch user:", err);
       // If any error occurs, treat as not authenticated
       setUser(null);

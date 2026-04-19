@@ -1,5 +1,5 @@
 import { Clock, RefreshCw, Truck, CheckCircle, XCircle } from "lucide-react";
-import { OrderStatus, Order, SortConfig, OrdersFilter } from "@/types/orders";
+import type { OrderStatus, Order, SortConfig, OrdersFilter } from "@/types/shared";
 
 // Status icons mapping
 export const statusIcons = {
@@ -23,8 +23,12 @@ export const getStatusBadgeStyle = (status: OrderStatus) => {
 };
 
 // Format date helper
-export const formatDate = (dateString: string) => {
+export const formatDate = (dateString?: string | null) => {
+  if (!dateString) return "N/A";
+  
   const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "N/A";
+
   return new Intl.DateTimeFormat("en-US", {
     year: "numeric",
     month: "short",
@@ -41,13 +45,19 @@ export const filterOrders = (
   sortConfig: SortConfig,
 ) => {
   const filteredOrders = orders.filter((order) => {
+    const search = (filter.search ?? "").toLowerCase();
     const matchesSearch =
-      order.order_number.toLowerCase().includes(filter.search.toLowerCase()) ||
-      order.customer.name.toLowerCase().includes(filter.search.toLowerCase()) ||
-      order.customer.email.toLowerCase().includes(filter.search.toLowerCase());
+      (order.order_number ?? "")
+        .toLowerCase()
+        .includes(search) ||
+      (order.customer?.name ?? "")
+        .toLowerCase()
+        .includes(search) ||
+      (order.customer?.email ?? "")
+        .toLowerCase()
+        .includes(search);
 
-    const matchesStatus =
-      filter.status === "all" || order.status === filter.status;
+    const matchesStatus = filter.status === "all" || (order.status ?? "") === filter.status;
 
     return matchesSearch && matchesStatus;
   });
@@ -59,12 +69,16 @@ export const filterOrders = (
     switch (sortConfig.key) {
       case "date":
         return (
-          (new Date(a.date).getTime() - new Date(b.date).getTime()) * direction
+          (new Date(a.date ?? 0).getTime() - new Date(b.date ?? 0).getTime()) *
+          direction
         );
       case "total":
-        return (a.amount - b.amount) * direction;
+        return ((a.amount ?? 0) - (b.amount ?? 0)) * direction;
       case "customer":
-        return a.customer.name.localeCompare(b.customer.name) * direction;
+        return (
+          (a.customer?.name ?? "").localeCompare(b.customer?.name ?? "") *
+          direction
+        );
       default:
         return 0;
     }

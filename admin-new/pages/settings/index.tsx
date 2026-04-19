@@ -45,7 +45,7 @@ const Settings = () => {
   const [storeAddress, setStoreAddress] = useState(
     "123 Commerce St, Business City, BC 12345",
   );
-  const [currency, setCurrency] = useState("USD");
+  const [currency, setCurrency] = useState("GBP");
   const [language, setLanguage] = useState("en");
   const [timezone, setTimezone] = useState("America/New_York");
   const [maintenanceMode, setMaintenanceMode] = useState(false);
@@ -127,10 +127,7 @@ const Settings = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="glass-effect-strong border-white/[0.08]">
-                        <SelectItem value="USD">USD ($)</SelectItem>
-                        <SelectItem value="EUR">EUR (€)</SelectItem>
                         <SelectItem value="GBP">GBP (£)</SelectItem>
-                        <SelectItem value="INR">INR (₹)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -319,26 +316,26 @@ const Settings = () => {
                 {[
                   {
                     method: "Standard Shipping",
-                    price: "$5.99",
+                    price: "£5.99",
                     time: "5-7 business days",
                     enabled: true,
                   },
                   {
                     method: "Express Shipping",
-                    price: "$12.99",
+                    price: "£12.99",
                     time: "2-3 business days",
                     enabled: true,
                   },
                   {
                     method: "Overnight Shipping",
-                    price: "$24.99",
+                    price: "£24.99",
                     time: "Next business day",
                     enabled: false,
                   },
                   {
                     method: "Free Shipping",
                     price: "Free",
-                    time: "Orders over $50",
+                    time: "Orders over £50",
                     enabled: true,
                   },
                 ].map((s) => (
