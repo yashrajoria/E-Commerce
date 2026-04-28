@@ -14,7 +14,7 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   const API_URL =
-    process.env.NEXT_PUBLIC_NEW_API_URL || "http://172.16.13.94:8080";
+    process.env.NEXT_PUBLIC_NEW_API_URL || "http://172.16.14.242:8080";
 
   if (req.method === "GET") {
     try {
@@ -61,7 +61,9 @@ export default async function handler(
     } catch (err: unknown) {
       console.error("Error creating category:", err);
       const { status, data } = getResponseInfo(err);
-      return res.status(status || 500).json(data ?? { message: "Error creating category" });
+      return res
+        .status(status || 500)
+        .json(data ?? { message: "Error creating category" });
     }
   } else {
     return res.status(405).json({ message: "Method not allowed" });

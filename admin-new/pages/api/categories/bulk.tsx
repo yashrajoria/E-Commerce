@@ -14,7 +14,7 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   const API_URL =
-    process.env.NEXT_PUBLIC_NEW_API_URL || "http://172.16.13.94:8080";
+    process.env.NEXT_PUBLIC_NEW_API_URL || "http://172.16.14.242:8080";
 
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method not allowed" });
@@ -51,7 +51,11 @@ export default async function handler(
     // If bulk endpoint not available, fall back to creating items one by one
     const { status: respStatus } = getResponseInfo(err);
     if (respStatus === 404 || respStatus === 405) {
-      const results: Array<{ status: number; data?: unknown; error?: unknown }> = [];
+      const results: Array<{
+        status: number;
+        data?: unknown;
+        error?: unknown;
+      }> = [];
       for (const it of items) {
         try {
           const r = await axios.post(`${API_URL}categories/`, it, {
@@ -64,13 +68,18 @@ export default async function handler(
           results.push({ status: r.status, data: r.data });
         } catch (e: unknown) {
           const { status: s, data: errData } = getResponseInfo(e);
-          results.push({ status: s ?? 500, error: errData ?? (e instanceof Error ? e.message : String(e)) });
+          results.push({
+            status: s ?? 500,
+            error: errData ?? (e instanceof Error ? e.message : String(e)),
+          });
         }
       }
       return res.status(207).json({ results });
     }
 
     const { status, data } = getResponseInfo(err);
-    return res.status(status ?? 500).json(data ?? { message: "Bulk upload failed" });
+    return res
+      .status(status ?? 500)
+      .json(data ?? { message: "Bulk upload failed" });
   }
 }
