@@ -1,73 +1,34 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import axios from "axios";
-import { getResponseInfo } from "@/lib/error";
-
-const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
-
-function sanitizeSetCookies(raw: string[]): string[] {
-  const isProd = process.env.NODE_ENV === "production";
-
-  return raw.map((cookie) => {
-    let c = cookie;
-
-    // 1. Remove Domain — let the browser default to the request origin
-    c = c.replace(/;?\s*Domain=[^;]*/gi, "");
-
-    if (!isProd) {
-      // 2. Remove Secure (cannot set Secure cookies over http://localhost)
-      c = c.replace(/;?\s*Secure/gi, "");
-
-      // 3. If SameSite=None was present, downgrade to Lax (None requires Secure)
-      c = c.replace(/SameSite=None/gi, "SameSite=Lax");
-    }
-
-    // 4. Ensure Path=/ so the cookie is sent on all routes
-    if (!/Path=/i.test(c)) {
-      c += "; Path=/";
-    }
-
-    return c;
-  });
-}
+import { proxyRequest } from "@ecommerce/shared";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  if (req.method !== "POST")
+  if (req.method !== "POST") {
     return res.status(405).json({ message: "Method not allowed" });
+  }
 
   try {
-    const response = await axios.post(`${API_URL}auth/login`, req.body, {
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: req.headers.cookie || "",
-      },
-      withCredentials: true,
+    const { password: _password, ...sanitizedBody } =
+      (req.body || {}) as Record<string, unknown>;
+    console.debug("[login proxy] Request body (sanitized):", sanitizedBody);
+    console.debug("[login proxy] Incoming cookies:", req.headers.cookie || "<none>");
+
+    const response = await proxyRequest({
+      req,
+      targetPath: "/auth/login",
+      sanitizeSetCookie: true,
     });
 
-    const setCookie = response.headers["set-cookie"] as string[] | undefined;
-
-    if (setCookie && setCookie.length > 0) {
-      const sanitized = sanitizeSetCookies(setCookie);
-      res.setHeader("Set-Cookie", sanitized);
-    } else {
-      console.warn("[login proxy] No Set-Cookie header received from backend");
+    console.debug("[login proxy] Backend response status:", response.status);
+    for (const [header, value] of Object.entries(response.headers)) {
+      res.setHeader(header, value);
     }
 
-    return res.status(response.status).json(response.data);
-  } catch (err: unknown) {
-    // If backend returned Set-Cookie even on error (e.g. 401), relay it
-    const { headers, status, data } = getResponseInfo(err);
-    const errSetCookie =
-      typeof headers === "object" && headers !== null && "set-cookie" in (headers as { [k: string]: unknown })
-        ? (headers as { [k: string]: unknown })["set-cookie"] as string[] | undefined
-        : undefined;
-    if (errSetCookie && errSetCookie.length > 0) {
-      res.setHeader("Set-Cookie", sanitizeSetCookies(errSetCookie));
-    }
-
+    return res.status(response.status).send(response.body);
+  } catch (err) {
     console.error("Auth proxy error (login):", err);
-    return res.status(status || 500).json({ message: data ?? "Auth error" });
+    return res.status(500).json({ message: "Auth error" });
   }
 }

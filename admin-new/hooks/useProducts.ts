@@ -40,7 +40,7 @@ export const useProducts = (query: any) => {
         }
 
         const res = await axios.get(
-          `/api/products?${params.toString()}`,
+          `/api/admin/products?${params.toString()}`,
           {
             headers: {
               "Content-Type": "application/json",

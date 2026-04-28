@@ -1,61 +1,55 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import axios from "axios";
-import { getResponseInfo } from "@/lib/error";
-
-const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
-
-function sanitizeSetCookies(raw: string[]): string[] {
-  const isProd = process.env.NODE_ENV === "production";
-  return raw.map((cookie) => {
-    let c = cookie;
-    c = c.replace(/;?\s*Domain=[^;]*/gi, "");
-    if (!isProd) {
-      c = c.replace(/;?\s*Secure/gi, "");
-      c = c.replace(/SameSite=None/gi, "SameSite=Lax");
-    }
-    if (!/Path=/i.test(c)) c += "; Path=/";
-    return c;
-  });
-}
+import { proxyRequest } from "@ecommerce/shared";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  if (req.method !== "POST")
+  if (req.method !== "POST") {
     return res.status(405).json({ message: "Method not allowed" });
+  }
+
+  console.debug("register called", {
+    body: sanitizeForLog(req.body),
+    cookiePresent: !!req.headers.cookie,
+  });
 
   try {
-    const response = await axios.post(`${API_URL}auth/register`, req.body, {
-      headers: { "Content-Type": "application/json" },
-      withCredentials: true,
+    const modifiedReq = {
+      ...req,
+      body:
+        typeof req.body === "string"
+          ? JSON.stringify({ ...JSON.parse(req.body), role: "admin" })
+          : { ...req.body, role: "admin" },
+    };
+
+    const response = await proxyRequest({
+      req: modifiedReq as any,
+      targetPath: "/bff/admin/users",
+      sanitizeSetCookie: true,
     });
 
-    const setCookie = response.headers["set-cookie"] as string[] | undefined;
-    console.debug("[register proxy] Raw Set-Cookie from backend:", setCookie);
-
-    if (setCookie && setCookie.length > 0) {
-      const sanitized = sanitizeSetCookies(setCookie);
-      console.debug("[register proxy] Sanitized Set-Cookie:", sanitized);
-      res.setHeader("Set-Cookie", sanitized);
-    } else {
-      console.warn(
-        "[register proxy] No Set-Cookie header received from backend",
-      );
+    for (const [header, value] of Object.entries(response.headers)) {
+      res.setHeader(header, value);
     }
 
-    return res.status(response.status).json(response.data);
-  } catch (err: unknown) {
-    const { headers, status, data } = getResponseInfo(err);
-    const errSetCookie =
-      typeof headers === "object" && headers !== null && "set-cookie" in (headers as { [k: string]: unknown })
-        ? (headers as { [k: string]: unknown })["set-cookie"] as string[] | undefined
-        : undefined;
-    if (errSetCookie && errSetCookie.length > 0) {
-      res.setHeader("Set-Cookie", sanitizeSetCookies(errSetCookie));
-    }
+    console.debug("[register] backend response", { status: response.status });
+    console.debug("[register] backend response body", { body: response });
+    return res.status(response.status).send(response.body);
+  } catch (err) {
+    console.error("Register proxy error:", err);
+    return res.status(500).json({ message: "Registration failed" });
+  }
+}
 
-    console.error("Auth register proxy error:", err);
-    return res.status(status || 500).json({ message: data ?? "Auth error" });
+function sanitizeForLog(body: unknown) {
+  if (!body || typeof body !== "object") return body;
+  try {
+    const copy = { ...(body as Record<string, unknown>) };
+    if ("password" in copy) copy.password = "***REDACTED***";
+    if ("code" in copy) copy.code = "***REDACTED***";
+    return copy;
+  } catch {
+    return "<unserializable>";
   }
 }

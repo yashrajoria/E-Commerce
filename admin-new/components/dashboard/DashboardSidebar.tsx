@@ -33,9 +33,17 @@ import {
   Headphones,
   Bot,
 } from "lucide-react";
+import {
+  AdminIcon,
+  ProductIcon,
+  OrdersIcon,
+  CustomersIcon,
+  AnalyticsIcon,
+  CategoryIcon,
+} from "@ecommerce/shared/src/components/icons";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import useAuth from "@/hooks/useAuth";
+import { useAuth } from "@ecommerce/shared";
 
 interface NavItem {
   icon: ElementType;
@@ -196,7 +204,7 @@ const fetchBadgeCountsFromFallbackEndpoints = async (
   if (typeof nextCounts.products !== "number") {
     pendingFetches.push(
       axios
-        .get("/api/products?page=1&perPage=1", {
+        .get("/api/admin/products?page=1&perPage=1", {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
         })
@@ -213,7 +221,7 @@ const fetchBadgeCountsFromFallbackEndpoints = async (
   if (typeof nextCounts.orders !== "number") {
     pendingFetches.push(
       axios
-        .get("/api/orders?page=1&limit=1", {
+        .get("/api/admin/orders?page=1&limit=1", {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
         })
@@ -230,7 +238,7 @@ const fetchBadgeCountsFromFallbackEndpoints = async (
   if (typeof nextCounts.customers !== "number") {
     pendingFetches.push(
       axios
-        .get("/api/customers?page=1&page_size=1", {
+        .get("/api/admin/customers?page=1&page_size=1", {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
         })
@@ -247,7 +255,7 @@ const fetchBadgeCountsFromFallbackEndpoints = async (
   if (typeof nextCounts.inventory !== "number") {
     pendingFetches.push(
       axios
-        .get("/api/inventory?page=1&page_size=1", {
+        .get("/api/admin/inventory?page=1&page_size=1", {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
         })
@@ -275,7 +283,7 @@ const fetchSidebarBadgeCounts = async (): Promise<BadgeCounts> => {
   let nextCounts: BadgeCounts = {};
 
   try {
-    const dashboardResponse = await axios.get("/api/dashboard", {
+    const dashboardResponse = await axios.get("/api/admin/dashboard", {
       headers: { "Content-Type": "application/json" },
       withCredentials: true,
     });
@@ -338,13 +346,13 @@ const DashboardSidebar = () => {
   const navItems: NavItem[] = useMemo(
     () => [
       {
-        icon: LayoutDashboard,
+        icon: AdminIcon,
         label: "Dashboard",
         path: "/dashboard",
         section: "Main",
       },
       {
-        icon: BarChart3,
+        icon: AnalyticsIcon,
         label: "Analytics",
         path: "/analytics",
         section: "Main",
@@ -356,28 +364,28 @@ const DashboardSidebar = () => {
         section: "Main",
       },
       {
-        icon: Package,
+        icon: ProductIcon,
         label: "Products",
         path: "/products",
         badge: badgeCounts.products,
         section: "Commerce",
       },
       {
-        icon: ShoppingCart,
+        icon: OrdersIcon,
         label: "Orders",
         path: "/orders",
         badge: badgeCounts.orders,
         section: "Commerce",
       },
       {
-        icon: Users,
+        icon: CustomersIcon,
         label: "Customers",
         path: "/customers",
         badge: badgeCounts.customers,
         section: "Commerce",
       },
       {
-        icon: Tag,
+        icon: CategoryIcon,
         label: "Categories",
         path: "/categories",
         section: "Commerce",

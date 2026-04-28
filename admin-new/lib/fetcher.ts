@@ -1,4 +1,4 @@
-import axiosInstance from "./axios-interceptor";
+import { axiosInstance } from "@ecommerce/shared";
 
 /**
  * Shared fetcher for SWR using the existing axios instance.

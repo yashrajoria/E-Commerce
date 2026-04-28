@@ -117,7 +117,7 @@ export default function BulkUpload({
                 }));
 
                 await axios.post(
-                  "/api/categories/bulk",
+                  "/api/admin/categories/bulk",
                   { items: payload },
                   { withCredentials: true },
                 );
@@ -125,7 +125,7 @@ export default function BulkUpload({
                 setIsBulkOpen(false);
                 window.location.reload();
               } catch (err) {
-                console.error(err);
+                // logger.error("CSV parse error", { err });
                 toast.error("Bulk upload failed");
               }
             }}

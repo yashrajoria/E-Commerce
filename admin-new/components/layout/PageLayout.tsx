@@ -9,7 +9,8 @@ import {
 } from "@/components/ui/tooltip";
 import { LiveIndicator } from "@/components/dashboard/LiveIndicator";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, Search, Menu, X } from "lucide-react";
+import { Bell, Search, LogOut } from "lucide-react";
+import { MenuIcon, CloseIcon, SearchIcon } from "@ecommerce/shared/src/components/icons";
 import Head from "next/head";
 import Link from "next/link";
 import { useState, ReactNode } from "react";
@@ -85,7 +86,7 @@ const PageLayout = ({
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-label="Toggle menu"
               >
-                {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+                {mobileMenuOpen ? <CloseIcon size={18} /> : <MenuIcon size={18} />}
               </button>
               <div className="hidden sm:flex items-center gap-2 text-sm">
                 <Link
@@ -117,7 +118,7 @@ const PageLayout = ({
             {/* Center: Search */}
             <div className="flex-1 max-w-md mx-auto hidden md:block">
               <div className="relative">
-                <Search
+                <SearchIcon
                   size={15}
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 />
@@ -162,10 +163,11 @@ const PageLayout = ({
                 variant="ghost"
                 size="icon"
                 className="h-9 w-9 rounded-xl hover:bg-white/[0.06] text-muted-foreground"
+                aria-label="Sign out"
                 onClick={async () => {
                   try {
                     await axios.post(
-                      "/api/auth/logout",
+                      "/api/admin/auth/logout",
                       {},
                       { withCredentials: true },
                     );
@@ -177,7 +179,7 @@ const PageLayout = ({
                   }
                 }}
               >
-                Sign Out
+                <LogOut size={16} />
               </Button>
             </div>
           </div>

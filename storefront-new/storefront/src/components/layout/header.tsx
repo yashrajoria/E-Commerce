@@ -3,7 +3,7 @@
 import { useCart } from "@/context/CartContext";
 import { useUser } from "@/context/UserContext";
 import { useWishlist } from "@/context/WishlistContext";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   Heart,
   Menu,
@@ -40,6 +40,7 @@ export function Header() {
   const { wishlist } = useWishlist();
   const { user } = useUser();
   const loggedIn = !!user;
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => setMounted(true), []);
 
@@ -67,7 +68,7 @@ export function Header() {
             ? "glass border-b border-border/40 shadow-sm"
             : "bg-background/80 backdrop-blur-md border-b border-transparent"
         }`}
-        initial={{ y: -100 }}
+        initial={reduceMotion ? false : { y: -100 }}
         animate={{ y: 0 }}
         transition={{ type: "spring", stiffness: 260, damping: 28 }}
       >
@@ -100,24 +101,39 @@ export function Header() {
               {/* Search */}
               <div className="relative mr-2">
                 <Input
+                  aria-label="Search products"
                   placeholder="Search products..."
                   className="w-[260px] lg:w-[320px] pl-10 pr-4 h-10 rounded-full bg-muted/60 border-transparent focus:border-ring/30 focus:bg-background transition-all duration-300"
                 />
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search aria-hidden className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               </div>
 
               {/* Wishlist */}
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label={
+                  wishlist.length > 0
+                    ? `Wishlist, ${wishlist.length} items`
+                    : "Open wishlist"
+                }
+                aria-haspopup="dialog"
                 className="relative h-10 w-10 rounded-full hover:bg-muted/60 cursor-pointer transition-colors duration-200"
                 onClick={() => setIsWishlistOpen(true)}
               >
-                <Heart className="h-[18px] w-[18px]" />
+                <Heart className="h-[18px] w-[18px]" aria-hidden />
                 {wishlist.length > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-linear-to-r from-rose-500 to-pink-500 text-[10px] text-white font-medium flex items-center justify-center shadow-sm">
-                    {wishlist.length}
-                  </span>
+                  <>
+                    <span
+                      aria-hidden="true"
+                      className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-linear-to-r from-rose-500 to-pink-500 text-[10px] text-white font-medium flex items-center justify-center shadow-sm"
+                    >
+                      {wishlist.length}
+                    </span>
+                    <span className="sr-only" aria-live="polite">
+                      {wishlist.length} items in wishlist
+                    </span>
+                  </>
                 )}
               </Button>
 
@@ -125,14 +141,28 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label={
+                  cartItemCount > 0
+                    ? `Cart, ${cartItemCount} items`
+                    : "Open cart"
+                }
+                aria-haspopup="dialog"
                 className="relative h-10 w-10 rounded-full hover:bg-muted/60 cursor-pointer transition-colors duration-200"
                 onClick={() => setIsCartOpen(true)}
               >
-                <ShoppingBag className="h-[18px] w-[18px]" />
+                <ShoppingBag className="h-[18px] w-[18px]" aria-hidden />
                 {cartItemCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-linear-to-r from-rose-600 to-amber-500 text-[10px] text-white font-medium flex items-center justify-center shadow-sm">
-                    {cartItemCount}
-                  </span>
+                  <>
+                    <span
+                      aria-hidden="true"
+                      className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-linear-to-r from-rose-600 to-amber-500 text-[10px] text-white font-medium flex items-center justify-center shadow-sm"
+                    >
+                      {cartItemCount}
+                    </span>
+                    <span className="sr-only" aria-live="polite">
+                      {cartItemCount} items in cart
+                    </span>
+                  </>
                 )}
               </Button>
 
@@ -144,10 +174,12 @@ export function Header() {
               >
                 <Button
                   variant="ghost"
+                  aria-haspopup="menu"
+                  aria-expanded={loggedIn ? isAccountOpen : undefined}
                   className="h-10 rounded-full px-4 hover:bg-muted/60 cursor-pointer transition-colors duration-200 text-sm font-medium"
                   onClick={() => !loggedIn && setIsLoginOpen(true)}
                 >
-                  <User className="h-[18px] w-[18px] mr-2" />
+                  <User className="h-[18px] w-[18px] mr-2" aria-hidden />
                   {loggedIn ? "Account" : "Sign In"}
                 </Button>
                 {loggedIn && (
@@ -162,6 +194,7 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label="Toggle theme"
                 className="h-10 w-10 rounded-full hover:bg-muted/60 transition-colors duration-200"
                 onClick={toggleTheme}
               >
@@ -174,9 +207,9 @@ export function Header() {
                     transition={{ duration: 0.2 }}
                   >
                     {theme === "dark" ? (
-                      <Sun className="h-[18px] w-[18px]" />
+                      <Sun className="h-[18px] w-[18px]" aria-hidden />
                     ) : (
-                      <Moon className="h-[18px] w-[18px]" />
+                      <Moon className="h-[18px] w-[18px]" aria-hidden />
                     )}
                   </motion.div>
                 </AnimatePresence>
@@ -188,31 +221,41 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label="Open search"
                 className="h-10 w-10 rounded-full"
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
               >
-                <Search className="h-[18px] w-[18px]" />
+                <Search className="h-[18px] w-[18px]" aria-hidden />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label={
+                  cartItemCount > 0 ? `Cart, ${cartItemCount} items` : "Open cart"
+                }
                 className="relative h-10 w-10 rounded-full"
                 onClick={() => setIsCartOpen(true)}
               >
-                <ShoppingBag className="h-[18px] w-[18px]" />
+                <ShoppingBag className="h-[18px] w-[18px]" aria-hidden />
                 {cartItemCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-linear-to-r from-rose-600 to-amber-500 text-[10px] text-white font-medium flex items-center justify-center">
-                    {cartItemCount}
-                  </span>
+                  <>
+                    <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-linear-to-r from-rose-600 to-amber-500 text-[10px] text-white font-medium flex items-center justify-center">
+                      {cartItemCount}
+                    </span>
+                    <span className="sr-only" aria-live="polite">
+                      {cartItemCount} items in cart
+                    </span>
+                  </>
                 )}
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
+                aria-label="Open menu"
                 className="h-10 w-10 rounded-full"
                 onClick={() => setIsMenuOpen(true)}
               >
-                <Menu className="h-5 w-5" />
+                <Menu className="h-5 w-5" aria-hidden />
               </Button>
             </div>
           </div>

@@ -45,7 +45,7 @@ export async function uploadFiles(
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     // Request a presigned URL from our proxy
-    const presignUrl = `/api/products/presign${sku ? `?sku=${encodeURIComponent(sku)}` : ""}`;
+    const presignUrl = `/api/admin/products/presign${sku ? `?sku=${encodeURIComponent(sku)}` : ""}`;
     const presignRes = await axios.get<PresignResponse>(presignUrl, {
       withCredentials: true,
     });
@@ -86,7 +86,7 @@ export function uploadSingleFile(
 
   const promise = new Promise<string>(async (resolve, reject) => {
     try {
-      const presignUrl = `/api/products/presign${sku ? `?sku=${encodeURIComponent(sku)}` : ""}`;
+      const presignUrl = `/api/admin/products/presign${sku ? `?sku=${encodeURIComponent(sku)}` : ""}`;
       const presignRes = await axios.get<PresignResponse>(presignUrl, { withCredentials: true });
       const presign = presignRes.data;
 

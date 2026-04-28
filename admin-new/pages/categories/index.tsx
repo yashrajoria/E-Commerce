@@ -87,7 +87,7 @@ const Categories = () => {
         is_active: newCategoryActive,
       };
 
-      await axios.post("/api/categories", payload, { withCredentials: true });
+      await axios.post("/api/admin/categories", payload, { withCredentials: true });
       toast.success("Category created successfully!");
       setNewCategoryName("");
       setNewCategoryParent(null);
@@ -107,7 +107,7 @@ const Categories = () => {
     if (!editCategoryName.trim() || !selectedCategory) return;
     try {
       await axios.put(
-        `/api/categories/${selectedCategory.id}`,
+        `/api/admin/categories/${selectedCategory.id}`,
         { name: editCategoryName },
         { withCredentials: true },
       );
@@ -122,7 +122,7 @@ const Categories = () => {
   const handleDeleteCategory = async () => {
     if (!selectedCategory) return;
     try {
-      await axios.delete(`/api/categories/${selectedCategory.id}`, {
+      await axios.delete(`/api/admin/categories/${selectedCategory.id}`, {
         withCredentials: true,
       });
       toast.success("Category deleted successfully!");

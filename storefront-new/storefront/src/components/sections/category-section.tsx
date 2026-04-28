@@ -47,7 +47,9 @@ export function CategoriesSection({
 
   if (error) return null;
 
-  const filtered = categories.filter((c) =>
+  const safeCategories = Array.isArray(categories) ? categories : [];
+
+  const filtered = safeCategories.filter((c) =>
     c.name.toLowerCase().includes(filter.toLowerCase()),
   );
 

@@ -1,12 +1,14 @@
 "use client";
 
+import React, { useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Heart, HeartOff, ShoppingBag, X } from "lucide-react";
 import Image from "next/image";
+import { formatGBP, trapFocus } from "@/lib/utils";
 
 interface WishlistDrawerProps {
   isOpen: boolean;
@@ -17,11 +19,31 @@ export function WishlistDrawer({ isOpen, onClose }: WishlistDrawerProps) {
   const { addToCart } = useCart();
   const { wishlist, removeFromWishlist, clearWishlist } = useWishlist();
 
-  const formatGBP = (value?: number) =>
-    new Intl.NumberFormat("en-GB", {
-      style: "currency",
-      currency: "GBP",
-    }).format(value ?? 0);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const prevFocused = useRef<HTMLElement | null>(null);
+  const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (!isOpen) return;
+    prevFocused.current = document.activeElement as HTMLElement;
+    setTimeout(() => {
+      const first = panelRef.current?.querySelector<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      first?.focus();
+    }, 0);
+
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "Tab") trapFocus(panelRef.current, e);
+    };
+
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      prevFocused.current?.focus();
+    };
+  }, [isOpen, onClose]);
 
   return (
     <AnimatePresence>
@@ -30,19 +52,20 @@ export function WishlistDrawer({ isOpen, onClose }: WishlistDrawerProps) {
           {/* Backdrop */}
           <motion.div
             className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
-            initial={{ opacity: 0 }}
+            initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
             onClick={onClose}
           />
 
           {/* Panel */}
           <motion.div
+            ref={panelRef}
             className="fixed top-0 right-0 h-full w-[420px] max-w-[92vw] bg-background border-l border-border/50 z-50 shadow-2xl"
-            initial={{ x: 440 }}
+            initial={reduceMotion ? { x: 0 } : { x: 440 }}
             animate={{ x: 0 }}
-            exit={{ x: 440 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            exit={reduceMotion ? { x: 0 } : { x: 440 }}
+            transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 30 }}
           >
             <div className="flex flex-col h-full">
               {/* Header */}

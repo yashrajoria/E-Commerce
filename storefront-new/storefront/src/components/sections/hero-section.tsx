@@ -7,6 +7,7 @@ import { ArrowRight, Shield, Sparkles, Truck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { formatGBP } from "@/lib/utils";
 
 /* ── Typewriter hook ─────────────────────────── */
 const typewriterPhrases = [
@@ -94,12 +95,6 @@ function FloatingParticle({
 export function HeroSection() {
   const { data } = useProducts(3, 1, true);
   const products = data?.products ?? [];
-  const formatGBP = (value?: number) =>
-    new Intl.NumberFormat("en-GB", {
-      style: "currency",
-      currency: "GBP",
-    }).format(value ?? 0);
-
   const typed = useTypewriter(typewriterPhrases);
 
   return (

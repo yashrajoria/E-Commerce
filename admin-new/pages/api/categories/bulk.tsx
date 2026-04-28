@@ -14,7 +14,7 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   const API_URL =
-    process.env.NEXT_PUBLIC_NEW_API_URL || "http://localhost:8080/";
+    process.env.NEXT_PUBLIC_NEW_API_URL || "http://172.16.13.94:8080";
 
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method not allowed" });

@@ -272,7 +272,9 @@ console.log({autoCreateCategories})
 
   const handleUpload = async (file: File) => {
     try {
-      const response = await axios.post("/api/upload", file);
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await axios.post("/api/upload", formData);
       toast.success("File uploaded successfully!");
       return response.data;
     } catch (error) {

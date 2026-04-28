@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useEffect, useState, useRef } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   X,
   Mail,
@@ -33,6 +33,7 @@ import {
 } from "../ui/input-otp";
 import { useUser } from "@/context/UserContext";
 import { PasswordStrengthIndicator } from "./PasswordStrengthIndicator";
+import { trapFocus } from "@/lib/utils";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -47,6 +48,9 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [fullNameError, setFullNameError] = useState<string | null>(null);
   const [isOtp, setIsOtp] = useState(false);
   const { showError, showSuccess } = useToast();
   const [otpValue, setOtpValue] = useState("");
@@ -58,6 +62,11 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   } | null>(null);
   const { refetchUser } = useUser();
 
+  const modalRef = useRef<HTMLDivElement | null>(null);
+  const otpRef = useRef<HTMLDivElement | null>(null);
+  const prevFocused = useRef<HTMLElement | null>(null);
+  const reduceMotion = useReducedMotion();
+
   useEffect(() => {
     if (isLogin && !isOtp) {
       onCloseOtp();
@@ -66,8 +75,55 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
       setPassword("");
       setShowPassword(false);
       setIsLogin(true);
+      setEmailError(null);
+      setPasswordError(null);
+      setFullNameError(null);
     }
   }, [isLogin, isOpen, isOtp]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    prevFocused.current = document.activeElement as HTMLElement;
+    setTimeout(() => {
+      const first = modalRef.current?.querySelector<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      first?.focus();
+    }, 0);
+
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "Tab") trapFocus(modalRef.current, e);
+    };
+
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      prevFocused.current?.focus();
+    };
+  }, [isOpen, onClose]);
+
+  useEffect(() => {
+    if (!isOtp) return;
+    prevFocused.current = document.activeElement as HTMLElement;
+    setTimeout(() => {
+      const first = otpRef.current?.querySelector<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      first?.focus();
+    }, 0);
+
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onCloseOtp();
+      if (e.key === "Tab") trapFocus(otpRef.current, e);
+    };
+
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      prevFocused.current?.focus();
+    };
+  }, [isOtp]);
 
   const onCloseOtp = () => {
     setIsOtp(false);
@@ -77,9 +133,26 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    // reset errors
+    setEmailError(null);
+    setPasswordError(null);
+    setFullNameError(null);
 
-    if (email === "" || password === "" || (!isLogin && fullName === "")) {
-      showError("Please fill all the fields");
+    let hasError = false;
+    if (email.trim() === "") {
+      setEmailError("Please enter your email");
+      hasError = true;
+    }
+    if (password.trim() === "") {
+      setPasswordError("Please enter your password");
+      hasError = true;
+    }
+    if (!isLogin && fullName.trim() === "") {
+      setFullNameError("Please enter your full name");
+      hasError = true;
+    }
+    if (hasError) {
+      showError("Please fix the highlighted fields");
       setLoading(false);
       return;
     }
@@ -185,16 +258,17 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
           <>
             <motion.div
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-              initial={{ opacity: 0 }}
+              initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
               onClick={onClose}
             >
               <motion.div
+                ref={modalRef}
                 className="bg-background/95 backdrop-blur-xl rounded-3xl border border-border/50 shadow-2xl w-full max-w-md p-8 relative overflow-hidden"
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                initial={reduceMotion ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                exit={reduceMotion ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.9, y: 20 }}
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="absolute inset-0 bg-linear-to-br from-rose-500/5 via-amber-500/5 to-rose-500/5 pointer-events-none" />
@@ -211,9 +285,9 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 <div className="text-center mb-8 relative z-10">
                   <motion.div
                     className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-linear-to-br from-rose-600 to-amber-500 flex items-center justify-center"
-                    initial={{ scale: 0 }}
+                    initial={reduceMotion ? { scale: 1 } : { scale: 0 }}
                     animate={{ scale: 1 }}
-                    transition={{ delay: 0.2, type: "spring" }}
+                    transition={reduceMotion ? { duration: 0 } : { delay: 0.2, type: "spring" }}
                   >
                     <Shield className="h-8 w-8 text-white" />
                   </motion.div>
@@ -273,7 +347,14 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                         onChange={(e) => setFullName(e.target.value)}
                         className="mt-2 h-12"
                         required
+                        aria-invalid={!!fullNameError}
+                        aria-describedby={fullNameError ? "fullname-error" : undefined}
                       />
+                      {fullNameError && (
+                        <p id="fullname-error" className="text-sm text-destructive mt-2" role="alert">
+                          {fullNameError}
+                        </p>
+                      )}
                     </div>
                   )}
 
@@ -290,8 +371,15 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="Enter your email address"
                         className="pl-12 h-12"
+                        aria-invalid={!!emailError}
+                        aria-describedby={emailError ? "email-error" : undefined}
                       />
                     </div>
+                    {emailError && (
+                      <p id="email-error" className="text-sm text-destructive mt-2" role="alert">
+                        {emailError}
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -307,6 +395,8 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                         className="pl-12 h-12"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        aria-invalid={!!passwordError}
+                        aria-describedby={passwordError ? "password-error" : undefined}
                       />
                       <Button
                         type="button"
@@ -338,6 +428,12 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                         Forgot password?
                       </Button>
                     </div>
+                  )}
+
+                  {passwordError && (
+                    <p id="password-error" className="text-sm text-destructive mt-2" role="alert">
+                      {passwordError}
+                    </p>
                   )}
 
                   <Button
@@ -387,18 +483,18 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
           <>
             <motion.div
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-              initial={{ opacity: 0 }}
+              initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
               onClick={onCloseOtp}
             >
               <motion.div
+                ref={otpRef}
                 className="bg-background/95 backdrop-blur-xl rounded-3xl border border-border/50 shadow-2xl w-full max-w-sm p-8 relative overflow-hidden"
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                initial={reduceMotion ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                onClick={(e) => e.stopPropagation()}
-              >
+                exit={reduceMotion ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.9, y: 20 }}
+                onClick={(e) => e.stopPropagation()}>
                 <div className="absolute inset-0 bg-linear-to-br from-emerald-500/5 via-rose-500/5 to-amber-500/5 pointer-events-none" />
 
                 <Button

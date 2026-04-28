@@ -24,6 +24,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react"; // Imported useEffect
 import type { Product } from "@/lib/types";
+import { formatGBP } from "@/lib/utils";
 
 export default function SearchPage() {
   const router = useRouter();
@@ -36,12 +37,6 @@ export default function SearchPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [productCount, setProductCount] = useState(12);
   const { data: categories = [] } = useCategories();
-  const formatGBP = (value?: number) =>
-    new Intl.NumberFormat("en-GB", {
-      style: "currency",
-      currency: "GBP",
-    }).format(value ?? 0);
-
   // Set page from URL query on initial load
   const [page, setPage] = useState(Number(router.query.page) || 1);
 

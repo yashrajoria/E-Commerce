@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import type { Product } from "@/lib/types";
+import { formatGBP } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Heart, ShoppingBag, Star } from "lucide-react";
 import Image from "next/image";
@@ -19,12 +20,6 @@ interface ProductCardProps {
 export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, hasWishlistItem } = useWishlist();
-
-  const formatGBP = (value?: number) =>
-    new Intl.NumberFormat("en-GB", {
-      style: "currency",
-      currency: "GBP",
-    }).format(value ?? 0);
 
   const primaryImage = product.images?.[0] || "/icons8-image-100.png";
   const categoryName =
@@ -133,6 +128,8 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
                 size="icon"
                 className="h-9 w-9 rounded-full"
                 onClick={handleWishlistToggle}
+                aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                aria-pressed={isWishlisted}
               >
                 <Heart
                   className={`h-4 w-4 ${
@@ -196,6 +193,8 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
             size="icon"
             className="absolute top-3 right-3 z-10 h-9 w-9 rounded-full glass opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0 shadow-md"
             onClick={handleWishlistToggle}
+            aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+            aria-pressed={isWishlisted}
           >
             <Heart
               className={`h-4 w-4 transition-colors ${

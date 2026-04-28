@@ -24,8 +24,10 @@ const EditProductDialog: React.FC<EditProductDialogProps> = ({
   open,
   onOpenChange,
 }) => {
-  console.log({ product });
-  // console.log("sAVE", handleSave);
+  // Debug: product state for development
+  if (process.env.NODE_ENV === 'development') {
+    // logger.debug('EditProductModal product state:', { product });
+  }
   const [, setFormData] = useState<Partial<Product>>({});
   const [imageFiles, setImageFiles] = useState<File[]>([]);
 

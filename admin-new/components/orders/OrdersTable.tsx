@@ -17,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatDate } from "@/lib/utils";
 import { getStatusBadgeStyle, statusIcons } from "@/lib/orders";
 import type { Order, SortConfig } from "@/types/shared";
 import { motion } from "framer-motion";
@@ -44,19 +45,7 @@ export const OrdersTable = ({
   onStatusUpdate,
   onRowClick,
 }: OrdersTableProps) => {
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "-";
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "-";
-    return new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    })?.format(date);
-  };
-  console.log("Recd", orders);
+  // logger.debug("orders received", { orders });
 
   return (
     <>
@@ -143,7 +132,7 @@ export const OrdersTable = ({
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   {/* <span>{formatDate(order?.createdAt)}</span> */}
-                  <span>{formatDate(order?.CreatedAt)}</span>
+                  <span>{formatDate(order?.CreatedAt, "-")}</span>
                 </div>
               </TableCell>
               <TableCell>${order?.Amount?.toFixed(2)}</TableCell>

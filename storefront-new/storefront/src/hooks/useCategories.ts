@@ -11,9 +11,30 @@ export interface Category {
   productCount: number;
 }
 
+type CategoryApiItem = Category & { _id?: string };
+
+type CategoriesResponse =
+  | CategoryApiItem[]
+  | {
+      categories?: CategoryApiItem[];
+      data?: CategoryApiItem[];
+      results?: CategoryApiItem[];
+    };
+
+const normalizeCategories = (payload: CategoriesResponse): Category[] => {
+  const categories = Array.isArray(payload)
+    ? payload
+    : payload.categories ?? payload.data ?? payload.results ?? [];
+
+  return categories.map((category) => ({
+    ...category,
+    id: category.id ?? category._id ?? "",
+  }));
+};
+
 const fetchCategories = async (): Promise<Category[]> => {
   const response = await axiosInstance.get(API_ROUTES.CATEGORIES.ALL);
-  return response.data;
+  return normalizeCategories(response.data as CategoriesResponse);
 };
 
 export function useCategories() {

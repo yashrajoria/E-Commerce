@@ -125,9 +125,13 @@ export function Footer() {
               <ul className="space-y-2.5">
                 {links.map((link) => (
                   <li key={link}>
-                    <button className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 text-left">
+                    <a
+                      href="#"
+                      onClick={(e) => e.preventDefault()}
+                      className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 block"
+                    >
                       {link}
-                    </button>
+                    </a>
                   </li>
                 ))}
               </ul>
@@ -146,15 +150,27 @@ export function Footer() {
                 reserved.
               </span>
               <div className="flex gap-4">
-                <button className="hover:text-foreground transition-colors">
+                <a
+                  href="#"
+                  onClick={(e) => e.preventDefault()}
+                  className="hover:text-foreground transition-colors"
+                >
                   Privacy
-                </button>
-                <button className="hover:text-foreground transition-colors">
+                </a>
+                <a
+                  href="#"
+                  onClick={(e) => e.preventDefault()}
+                  className="hover:text-foreground transition-colors"
+                >
                   Terms
-                </button>
-                <button className="hover:text-foreground transition-colors">
+                </a>
+                <a
+                  href="#"
+                  onClick={(e) => e.preventDefault()}
+                  className="hover:text-foreground transition-colors"
+                >
                   Cookies
-                </button>
+                </a>
               </div>
             </div>
 
@@ -164,6 +180,7 @@ export function Footer() {
                   key={social.label}
                   href={social.href}
                   aria-label={social.label}
+                  onClick={(e) => social.href === "#" && e.preventDefault()}
                   className="h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all duration-200"
                 >
                   <social.icon className="h-4 w-4" />

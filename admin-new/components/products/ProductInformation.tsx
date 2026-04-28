@@ -27,11 +27,12 @@ import { MultiSelectCombobox } from "./MultiSelectCombobox";
 import Image from "next/image";
 import { Switch } from "../ui/switch";
 
+import type { UploadedImage } from "@ecommerce/shared/src/types/common";
+
 type ProductInformationProps = {
   type?: string;
   handleImageUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  uploadedImages?: any[];
+  uploadedImages?: UploadedImage[];
   removeImage?: (index: number) => void;
 };
 
