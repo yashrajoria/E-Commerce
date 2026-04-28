@@ -148,7 +148,7 @@ export function OrderHistory({ orders: ordersProp }: { orders?: unknown }) {
       },
       enabled: Boolean(id),
       staleTime: 5 * 60 * 1000,
-      retry: (failureCount, error) => {
+      retry: (failureCount: number, error: unknown) => {
         const axiosError = error as AxiosError;
         if (axiosError.response?.status === 429) return false;
         return failureCount < 2;

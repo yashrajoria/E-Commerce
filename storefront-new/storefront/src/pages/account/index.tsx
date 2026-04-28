@@ -71,7 +71,7 @@ export default function AccountPage() {
     return cur as unknown;
   };
   useEffect(() => {
-    const baseProfile = (user?.profile ?? {}) as Record<string, any>;
+    const baseProfile = (user?.profile ?? {}) as Record<string, unknown>;
     setProfile({
       name: safeString(user?.name ?? baseProfile.name),
       email: safeString(user?.email ?? baseProfile.email),
@@ -90,10 +90,10 @@ export default function AccountPage() {
       const updates: Partial<typeof profile> = {};
 
       const original = {
-        name: safeString(user?.name ?? (user?.profile as any)?.name),
-        email: safeString(user?.email ?? (user?.profile as any)?.email),
+        name: safeString(user?.name ?? (user?.profile as Record<string, unknown>)?.name),
+        email: safeString(user?.email ?? (user?.profile as Record<string, unknown>)?.email),
         phone_number: safeString(
-          user?.phone_number ?? (user?.profile as any)?.phone_number,
+          user?.phone_number ?? (user?.profile as Record<string, unknown>)?.phone_number,
         ),
       };
 
@@ -109,7 +109,7 @@ export default function AccountPage() {
 
       await updateUserData(updates);
       await refetchUser();
-    } catch (error) {
+    } catch {
       // logger.error("Error updating profile:", { error });
       showError("Could not update profile. Please try again.");
     }
@@ -135,7 +135,7 @@ export default function AccountPage() {
       setNewPassword("");
       setConfirmPassword("");
       showSuccess("Password updated successfully");
-    } catch (err) {
+    } catch {
       // logger.error("Error loading profile", { err });
       showError("Error updating password");
     }
@@ -207,7 +207,7 @@ export default function AccountPage() {
                     <p className="font-medium">
                       {(() => {
                         const d = safeDateFrom(
-                          user?.created_at ?? (user?.profile as any)?.created_at,
+                          user?.created_at ?? (user?.profile as Record<string, unknown>)?.created_at,
                         );
                         return d ? d.toLocaleDateString("en-US", { year: "numeric", month: "long" }) : "—";
                       })()}
@@ -216,13 +216,13 @@ export default function AccountPage() {
                   <div>
                     <span className="text-white/60">Total Orders</span>
                     <p className="font-medium">
-                      {safeNumber(getNested((user as any)?.orders, "meta", "total_orders"))}
+                      {safeNumber(getNested((user as Record<string, unknown>)?.orders, "meta", "total_orders"))}
                     </p>
                   </div>
                   <div>
                     <span className="text-white/60">Wishlist</span>
                     <p className="font-medium">
-                      {(user as any)?.wishlist?.length ?? localWishlist.length ?? 0}
+                      {((user as Record<string, unknown>)?.wishlist as unknown[])?.length ?? localWishlist.length ?? 0}
                     </p>
                   </div>
                   <div>

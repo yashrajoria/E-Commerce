@@ -5,7 +5,7 @@
 
 import React from 'react';
 
-interface IconProps extends React.SVGAttributes<SVGSVGElement> {
+export interface IconProps extends React.SVGAttributes<SVGSVGElement> {
   size?: number;
   className?: string;
 }

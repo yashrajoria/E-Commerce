@@ -24,7 +24,6 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react"; // Imported useEffect
 import type { Product } from "@/lib/types";
-import { formatGBP } from "@/lib/utils";
 
 export default function SearchPage() {
   const router = useRouter();

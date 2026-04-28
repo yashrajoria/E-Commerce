@@ -20,9 +20,9 @@ import {
   SearchIcon,
   MenuIcon,
   CloseIcon,
-} from "@ecommerce/shared";
   CheckIcon,
-} from '@ecommerce/shared/src/components/icons';
+  ChevronRightIcon,
+} from "@ecommerce/shared";
 
 interface IconShowcaseProps {
   size?: number;

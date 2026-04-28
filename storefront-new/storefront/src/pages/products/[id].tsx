@@ -27,7 +27,7 @@ export default function ProductPage() {
   const id = Array.isArray(router.query.id)
     ? router.query.id[0]
     : router.query.id;
-  const { data: product, isLoading, error } = useProductById(id);
+  const { data: product, isLoading } = useProductById(id);
   const { addToWishlist, removeFromWishlist, hasWishlistItem } = useWishlist();
 
   const rating = product?.rating ?? 0;
@@ -80,8 +80,8 @@ export default function ProductPage() {
           text: `Check out this product: ${product?.name}`,
           url: window.location.href,
         })
-        .catch((error) => {
-          // logger.error("Error sharing product", { error });
+        .catch(() => {
+          // ignore
         });
     } else {
       showInfo("Web Share API is not supported in your browser.");
@@ -102,7 +102,7 @@ export default function ProductPage() {
     );
   }
 
-  if (error || !product) {
+  if (!product) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center max-w-sm rounded-2xl border bg-card p-8 shadow-sm">

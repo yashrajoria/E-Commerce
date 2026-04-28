@@ -5,6 +5,8 @@ import {
   // updatePassword is not exposed as the same name in shared; use shared API if available
   // For parity, map to shared endpoint names where appropriate
 } from "@ecommerce/shared";
+import { axiosInstance } from "@/utils/axiosInstance";
+import { API_ROUTES } from "../pages/api/constants/apiRoutes";
 
 type AuthStatus = { authenticated: boolean } & Record<string, unknown>;
 

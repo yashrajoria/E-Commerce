@@ -8,7 +8,7 @@ export function getLucideIcon(name?: string | null) {
   const fallback = LucideIcons.Package as ComponentType<LucideProps>;
   if (!name) return fallback;
 
-  const iconMap = LucideIcons as Record<
+  const iconMap = LucideIcons as unknown as Record<
     string,
     ComponentType<LucideProps>
   >;

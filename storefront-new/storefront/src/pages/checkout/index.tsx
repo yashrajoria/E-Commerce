@@ -3,6 +3,7 @@
 import { AnimatePresence } from "framer-motion";
 import { ArrowLeft, ChevronRight, Lock, Mail, MapPin, Truck } from "lucide-react";
 import Head from "next/head";
+import Link from "next/link";
 import { STEP_META } from "@/components/checkout/checkoutConstants";
 import { CompletedCard, ProgressDots } from "@/components/checkout/CheckoutComponents";
 import { formatGBP } from "@/components/checkout/checkoutUtils";
@@ -77,12 +78,12 @@ export default function CheckoutPage() {
               >
                 Go Back
               </button>
-              <a
+              <Link
                 href="/products"
                 className="inline-flex items-center justify-center rounded-full bg-linear-to-r from-rose-600 to-amber-500 px-4 py-2 text-sm font-medium text-white"
               >
                 Browse Products
-              </a>
+              </Link>
             </div>
           </div>
         </div>

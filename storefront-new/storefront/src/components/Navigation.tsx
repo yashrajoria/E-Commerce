@@ -6,7 +6,7 @@ import {
   SearchIcon,
   MenuIcon,
 } from "@ecommerce/shared";
-import { StorefrontLogo } from "./storefront-logo";
+import { StorefrontLogo } from "./common/storefront-logo";
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);

@@ -7,7 +7,6 @@ import { ArrowRight, Shield, Sparkles, Truck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { formatGBP } from "@/lib/utils";
 
 /* ── Typewriter hook ─────────────────────────── */
 const typewriterPhrases = [

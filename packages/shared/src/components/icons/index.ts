@@ -68,7 +68,6 @@ export {
   Layers,
   Link,
   List,
-  Load,
   LoaderCircle,
   Lock,
   LogOut,
