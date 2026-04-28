@@ -351,7 +351,7 @@ export default function ProductPage() {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span>Brand:</span>
-                      <span>SuperStore</span>
+                      <span>ShopSwift</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Model:</span>
