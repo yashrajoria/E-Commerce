@@ -26,31 +26,6 @@ interface RevenueData {
   expenses: number;
 }
 
-const monthlyData: RevenueData[] = [
-  { name: "Jan", revenue: 18500, profit: 8400, expenses: 10100 },
-  { name: "Feb", revenue: 22000, profit: 10200, expenses: 11800 },
-  { name: "Mar", revenue: 28000, profit: 14000, expenses: 14000 },
-  { name: "Apr", revenue: 32000, profit: 16800, expenses: 15200 },
-  { name: "May", revenue: 29500, profit: 15200, expenses: 14300 },
-  { name: "Jun", revenue: 36000, profit: 19500, expenses: 16500 },
-  { name: "Jul", revenue: 42000, profit: 23100, expenses: 18900 },
-  { name: "Aug", revenue: 38000, profit: 20400, expenses: 17600 },
-  { name: "Sep", revenue: 45000, profit: 25200, expenses: 19800 },
-  { name: "Oct", revenue: 48000, profit: 27600, expenses: 20400 },
-  { name: "Nov", revenue: 52000, profit: 30800, expenses: 21200 },
-  { name: "Dec", revenue: 58000, profit: 35400, expenses: 22600 },
-];
-
-const weeklyData: RevenueData[] = [
-  { name: "Mon", revenue: 6200, profit: 3200, expenses: 3000 },
-  { name: "Tue", revenue: 7800, profit: 4100, expenses: 3700 },
-  { name: "Wed", revenue: 8100, profit: 4400, expenses: 3700 },
-  { name: "Thu", revenue: 7200, profit: 3800, expenses: 3400 },
-  { name: "Fri", revenue: 9600, profit: 5200, expenses: 4400 },
-  { name: "Sat", revenue: 8200, profit: 4500, expenses: 3700 },
-  { name: "Sun", revenue: 5800, profit: 3000, expenses: 2800 },
-];
-
 const CustomTooltip = ({
   active,
   payload,
@@ -89,7 +64,7 @@ const CustomTooltip = ({
 
 type Period = "weekly" | "monthly";
 
-export default function PremiumRevenueChart({ data }: { data: any }) {
+export default function PremiumRevenueChart({ data }: { data: { monthly: RevenueData[]; weekly: RevenueData[] } }) {
   const [period, setPeriod] = useState<Period>("monthly");
   
   if (!data) return null;

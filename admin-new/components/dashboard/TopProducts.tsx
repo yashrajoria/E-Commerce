@@ -20,48 +20,7 @@ interface TopProduct {
   image?: string;
 }
 
-const topProducts: TopProduct[] = [
-  {
-    name: "Premium Wireless Headphones",
-    category: "Electronics",
-    revenue: 12480,
-    units: 312,
-    trend: 18.5,
-    fill: 100,
-  },
-  {
-    name: "Leather Executive Watch",
-    category: "Accessories",
-    revenue: 9850,
-    units: 197,
-    trend: 12.3,
-    fill: 79,
-  },
-  {
-    name: "Organic Cotton T-Shirt",
-    category: "Apparel",
-    revenue: 7620,
-    units: 508,
-    trend: 8.7,
-    fill: 61,
-  },
-  {
-    name: "Smart Fitness Tracker",
-    category: "Electronics",
-    revenue: 6340,
-    units: 158,
-    trend: -2.1,
-    fill: 51,
-  },
-  {
-    name: "Artisan Coffee Beans",
-    category: "Food & Beverage",
-    revenue: 4890,
-    units: 652,
-    trend: 22.4,
-    fill: 39,
-  },
-];
+
 
 const rankColors = [
   "from-amber-400 to-yellow-500",

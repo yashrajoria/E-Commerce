@@ -1,5 +1,4 @@
 import { Clock, RefreshCw, Truck, CheckCircle, XCircle } from "lucide-react";
-import { formatDate } from "@/lib/utils";
 import type { OrderStatus, Order, SortConfig, OrdersFilter } from "@/types/shared";
 
 // Status icons mapping

@@ -25,7 +25,7 @@ import { toast } from "sonner";
 const ITEMS_PER_PAGE = 10;
 
 const Categories = () => {
-  const { categories, loading } = useCategories();
+  const { categories, loading, refresh } = useCategories();
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -97,7 +97,7 @@ const Categories = () => {
       setNewCategoryLevel(1);
       setNewCategoryActive(true);
       setIsAddOpen(false);
-      window.location.reload();
+      refresh();
     } catch {
       toast.error("Failed to create category");
     }
@@ -113,7 +113,7 @@ const Categories = () => {
       );
       toast.success("Category updated successfully!");
       setIsEditOpen(false);
-      window.location.reload();
+      refresh();
     } catch {
       toast.error("Failed to update category");
     }
@@ -127,7 +127,7 @@ const Categories = () => {
       });
       toast.success("Category deleted successfully!");
       setIsDeleteOpen(false);
-      window.location.reload();
+      refresh();
     } catch {
       toast.error("Failed to delete category");
     }
@@ -160,7 +160,7 @@ const Categories = () => {
           />
 
           {/* Bulk Upload Dialog */}
-          <BulkUpload isBulkOpen={isBulkOpen} setIsBulkOpen={setIsBulkOpen} />
+          <BulkUpload isBulkOpen={isBulkOpen} setIsBulkOpen={setIsBulkOpen} onRefresh={refresh} />
         </>
       }
     >

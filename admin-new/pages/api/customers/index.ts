@@ -32,9 +32,13 @@ export default async function handler(
     const meta = apiRes?.data?.meta || {};
 
     res.status(200).json({ users, meta });
-  } catch (error: any) {
-    console.error("Error fetching customers:", error?.response?.data || error.message);
-    const status = error?.response?.status || 500;
-    res.status(status).json({ error: "Failed to fetch customers" });
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error("Error fetching customers:", error.response?.data || error.message);
+      const status = error.response?.status || 500;
+      return res.status(status).json({ error: "Failed to fetch customers" });
+    }
+    console.error("Unexpected error fetching customers:", error);
+    res.status(500).json({ error: "Failed to fetch customers" });
   }
 }

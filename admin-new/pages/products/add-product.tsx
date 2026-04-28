@@ -127,7 +127,7 @@ const AddProductPage = () => {
               <ProductInformation
                 type="create"
                 handleImageUpload={handleImageUpload}
-                uploadedImages={uploadedImages}
+                uploadedImages={uploadedImages as unknown as import("@ecommerce/shared/src/types/common").UploadedImage[]}
                 removeImage={removeImage}
               />
 

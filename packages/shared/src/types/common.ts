@@ -30,6 +30,7 @@ export interface UploadedImage {
   publicId: string;
   secure_url: string;
   format: string;
+  preview?: string;
   width?: number;
   height?: number;
   bytes?: number;

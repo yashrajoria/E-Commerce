@@ -105,7 +105,7 @@ export const OrdersTable = ({
               onClick={() => onRowClick(order.id ?? order._id ?? "")}
             >
               <TableCell className="font-medium">
-                {order.OrderNumber || order.ID || "Order Not Found"}
+                {order.order_number || order.id || order._id || "Order Not Found"}
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-3">
@@ -114,9 +114,11 @@ export const OrdersTable = ({
                       <AvatarImage src={order?.customer?.avatar} />
                       <AvatarFallback>
                         {order?.customer?.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
+                          ? order.customer.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")
+                          : "???"}
                       </AvatarFallback>
                     </Avatar>
                   </div>
@@ -135,12 +137,12 @@ export const OrdersTable = ({
                   <span>{formatDate(order?.CreatedAt, "-")}</span>
                 </div>
               </TableCell>
-              <TableCell>£{order?.Amount?.toFixed(2)}</TableCell>
+              <TableCell>£{order?.amount?.toFixed(2)}</TableCell>
               <TableCell>
-                {typeof order.OrderItems === "number"
-                  ? order.OrderItems
-                  : Array.isArray(order.OrderItems)
-                    ? order.OrderItems.length
+                {typeof order.items === "number"
+                  ? order.items
+                  : Array.isArray(order.items)
+                    ? order.items.length
                     : ""}
               </TableCell>
               <TableCell>

@@ -25,7 +25,7 @@ interface Activity {
 
 
 
-export default function RecentActivity({ activities }: { activities: any[] }) {
+export default function RecentActivity({ activities }: { activities: Array<{ id: string; type: string; description: string; time: string; variant: string }> }) {
   if (!activities || activities.length === 0) return null;
 
   const mappedActivities: Activity[] = activities.map((act) => {

@@ -26,12 +26,10 @@ import {
   UserX,
   DollarSign,
 } from "lucide-react";
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useAdminUsers } from "@/lib/hooks/useAdminData";
 import type {
-  Customer,
   CustomerFilter,
-  CustomerStatus,
 } from "@/types/customers";
 
 const ITEMS_PER_PAGE = 10;
@@ -56,23 +54,23 @@ const Customers = () => {
     if (filter.search) {
       const q = filter.search.toLowerCase();
       result = result.filter(
-        (c: any) =>
-          c.name?.toLowerCase().includes(q) ||
-          c.email?.toLowerCase().includes(q),
+        (c: Record<string, unknown>) =>
+          (c.name as string)?.toLowerCase().includes(q) ||
+          (c.email as string)?.toLowerCase().includes(q),
       );
     }
     if (filter.status !== "all")
-      result = result.filter((c: any) => c.status === filter.status);
-    result.sort((a: any, b: any) => {
+      result = result.filter((c: Record<string, unknown>) => c.status === filter.status);
+    result.sort((a: Record<string, unknown>, b: Record<string, unknown>) => {
       const order = filter.sortOrder === "asc" ? 1 : -1;
-      if (filter.sortBy === "name") return a.name.localeCompare(b.name) * order;
+      if (filter.sortBy === "name") return (a.name as string).localeCompare(b.name as string) * order;
       if (filter.sortBy === "totalOrders")
         return (
-          ((a.stats?.totalOrders || 0) - (b.stats?.totalOrders || 0)) * order
+          ((((a.stats as Record<string, unknown>)?.totalOrders as number) || 0) - (((b.stats as Record<string, unknown>)?.totalOrders as number) || 0)) * order
         );
       if (filter.sortBy === "totalSpent")
         return (
-          ((a.stats?.totalSpent || 0) - (b.stats?.totalSpent || 0)) * order
+          ((((a.stats as Record<string, unknown>)?.totalSpent as number) || 0) - (((b.stats as Record<string, unknown>)?.totalSpent as number) || 0)) * order
         );
       return 0;
     });
@@ -87,10 +85,10 @@ const Customers = () => {
 
   const totalCustomerCount = meta?.total || users.length;
 
-  const activeCount = Array.isArray(users) ? users.filter((c: any) => c.status === "active").length : 0;
-  const inactiveCount = Array.isArray(users) ? users.filter((c: any) => c.status === "inactive").length : 0;
+  const activeCount = Array.isArray(users) ? users.filter((c: Record<string, unknown>) => c.status === "active").length : 0;
+  const inactiveCount = Array.isArray(users) ? users.filter((c: Record<string, unknown>) => c.status === "inactive").length : 0;
   const totalRevenue = Array.isArray(users)
-    ? users.reduce((sum: number, c: any) => sum + (c.stats?.totalSpent || 0), 0)
+    ? users.reduce((sum: number, c: Record<string, unknown>) => sum + (((c.stats as Record<string, unknown>)?.totalSpent as number) || 0), 0)
     : 0;
 
   return (
@@ -205,8 +203,8 @@ const Customers = () => {
                     sortBy: key as CustomerFilter["sortBy"],
                   }))
                 }
-                onCustomerClick={(id) => {
-                  // logger.debug("Customer clicked:", { id });
+                onCustomerClick={() => {
+                  // logger.debug("Customer clicked");
                 }}
               />
             </div>

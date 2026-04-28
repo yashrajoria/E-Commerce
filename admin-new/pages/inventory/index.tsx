@@ -25,17 +25,8 @@ import {
   RefreshCw,
   Download,
 } from "lucide-react";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useAdminInventory } from "@/lib/hooks/useAdminData";
-
-interface InventoryItem {
-  product_id: string;
-  available: number;
-  reserved: number;
-  threshold: number;
-  updated_at: string;
-  status: "in-stock" | "low" | "out";
-}
 
 const statusConfig: Record<string, { label: string; class: string }> = {
   "in-stock": {
@@ -68,15 +59,16 @@ const Inventory = () => {
   // Add status to each item (mimic old logic)
   const inventoryItems = useMemo(() => {
     if (!Array.isArray(inventory)) return [];
-    return inventory.map((item: any) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (inventory as any[]).map((item) => ({
       ...item,
       status: getStockStatus(item),
     }));
   }, [inventory]);
 
   const filtered = useMemo(() => {
-    return inventoryItems.filter((item) => {
-      const matchesSearch = item.product_id
+    return inventoryItems.filter((item: Record<string, unknown>) => {
+      const matchesSearch = (item.product_id as string)
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
       if (activeTab === "all") return matchesSearch;
@@ -84,10 +76,10 @@ const Inventory = () => {
     });
   }, [inventoryItems, searchQuery, activeTab]);
 
-  const inStockCount = inventoryItems.filter((i) => i.status === "in-stock").length;
-  const lowStockCount = inventoryItems.filter((i) => i.status === "low").length;
-  const outOfStockCount = inventoryItems.filter((i) => i.status === "out").length;
-  const totalStock = inventoryItems.reduce((sum, i) => sum + i.available, 0);
+  const inStockCount = inventoryItems.filter((i: Record<string, unknown>) => i.status === "in-stock").length;
+  const lowStockCount = inventoryItems.filter((i: Record<string, unknown>) => i.status === "low").length;
+  const outOfStockCount = inventoryItems.filter((i: Record<string, unknown>) => i.status === "out").length;
+  const totalStock = inventoryItems.reduce((sum: number, i: Record<string, unknown>) => sum + (i.available as number), 0);
 
   return (
     <PageLayout
@@ -120,34 +112,34 @@ const Inventory = () => {
       >
         <StatsCard
           title="Total Stock"
-          value={loading ? "—" : totalStock}
+          value={isLoading ? "—" : totalStock}
           icon={Warehouse}
           gradient="gradient-purple"
           glowClass="glow-purple"
         />
         <StatsCard
           title="In Stock"
-          value={loading ? "—" : inStockCount}
+          value={isLoading ? "—" : inStockCount}
           icon={Package}
           gradient="gradient-emerald"
           glowClass="glow-emerald"
         />
         <StatsCard
           title="Low Stock"
-          value={loading ? "—" : lowStockCount}
+          value={isLoading ? "—" : lowStockCount}
           icon={TrendingDown}
           gradient="gradient-amber"
         />
         <StatsCard
           title="Out of Stock"
-          value={loading ? "—" : outOfStockCount}
+          value={isLoading ? "—" : outOfStockCount}
           icon={AlertTriangle}
           gradient="gradient-rose"
         />
       </motion.section>
 
       {/* Low Stock Alerts */}
-      {!loading && lowStockCount + outOfStockCount > 0 && (
+      {!isLoading && lowStockCount + outOfStockCount > 0 && (
         <motion.section variants={pageItem}>
           <Card className="glass-effect border-amber-500/10 overflow-hidden">
             <CardHeader className="pb-3">
