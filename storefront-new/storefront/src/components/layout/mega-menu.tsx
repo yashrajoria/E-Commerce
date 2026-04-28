@@ -71,10 +71,14 @@ export function MegaMenu({ isOpen, onClose }: MegaMenuProps) {
                 <Link
                   href="/"
                   onClick={onClose}
-                  className="text-lg font-bold tracking-tight"
+                  className="flex items-center space-x-2.5"
                 >
-                  <span className="text-gradient-premium">Luxe</span>
-                  <span className="text-foreground/80">Store</span>
+                  <div className="h-7 w-7 rounded-lg bg-linear-to-br from-rose-600 to-amber-500 flex items-center justify-center shadow-md">
+                    <span className="text-white font-bold text-[10px]">S</span>
+                  </div>
+                  <span className="font-semibold text-lg tracking-tight text-gradient-premium">
+                    ShopSwift
+                  </span>
                 </Link>
                 <Button
                   variant="ghost"
