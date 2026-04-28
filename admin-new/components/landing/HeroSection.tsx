@@ -6,6 +6,9 @@ import {
   Zap,
   TrendingUp,
   ChevronDown,
+  Lock,
+  Globe,
+  Database,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -15,280 +18,274 @@ interface HeroSectionProps {
 
 const trustBadges = [
   { icon: Shield, label: "Enterprise Security" },
-  { icon: Zap, label: "99.9% Uptime" },
-  { icon: TrendingUp, label: "10,000+ Stores" },
+  { icon: Globe, label: "Global Infrastructure" },
+  { icon: Database, label: "Real-time Syncing" },
 ];
 
 export default function HeroSection({ onGetStarted }: HeroSectionProps) {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-      {/* Animated Grid Background */}
-      <div className="absolute inset-0 dot-grid opacity-40" />
-
-      {/* Gradient Mesh */}
-      <div className="absolute inset-0 gradient-mesh" />
-
-      {/* Radial Glow Orbs */}
-      <motion.div
-        className="absolute top-1/4 -left-32 w-[500px] h-[500px] rounded-full"
-        style={{
-          background:
-            "radial-gradient(circle, hsla(263,70%,58%,0.15) 0%, transparent 70%)",
-        }}
-        animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute bottom-1/4 -right-32 w-[400px] h-[400px] rounded-full"
-        style={{
-          background:
-            "radial-gradient(circle, hsla(160,84%,39%,0.1) 0%, transparent 70%)",
-        }}
-        animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.7, 0.4] }}
-        transition={{
-          duration: 10,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 2,
-        }}
-      />
-
-      {/* Floating Geometric Shapes */}
-      <motion.div
-        className="absolute top-[15%] right-[10%] w-20 h-20 border border-purple-500/20 rounded-xl"
-        animate={{ rotate: 360, y: [0, -15, 0] }}
-        transition={{
-          rotate: { duration: 20, repeat: Infinity, ease: "linear" },
-          y: { duration: 6, repeat: Infinity, ease: "easeInOut" },
-        }}
-        style={{ filter: "blur(1px)" }}
-      />
-      <motion.div
-        className="absolute bottom-[20%] left-[8%] w-14 h-14 border border-emerald-500/15 rounded-full"
-        animate={{ rotate: -360, y: [0, -20, 0] }}
-        transition={{
-          rotate: { duration: 25, repeat: Infinity, ease: "linear" },
-          y: { duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 },
-        }}
-        style={{ filter: "blur(1px)" }}
-      />
-      <motion.div
-        className="absolute top-[40%] left-[15%] w-3 h-3 bg-purple-500/30 rounded-full"
-        animate={{ y: [0, -30, 0], opacity: [0.3, 0.8, 0.3] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute top-[30%] right-[20%] w-2 h-2 bg-emerald-500/30 rounded-full"
-        animate={{ y: [0, -25, 0], opacity: [0.2, 0.6, 0.2] }}
-        transition={{
-          duration: 4,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 1.5,
-        }}
-      />
-
-      {/* Main Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        {/* Announcement Badge */}
+    <section className="relative min-h-[95vh] flex items-center justify-center overflow-hidden pt-28 pb-16">
+      {/* ── Background Elements ── */}
+      <div className="absolute inset-0 z-0">
+        {/* Subtle grid with fade */}
+        <div 
+          className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07]" 
+          style={{ 
+            backgroundImage: `linear-gradient(to right, #888 1px, transparent 1px), linear-gradient(to bottom, #888 1px, transparent 1px)`,
+            backgroundSize: '60px 60px',
+            maskImage: 'radial-gradient(circle at center, black, transparent 80%)'
+          }} 
+        />
+        
+        {/* Deep ambient glows */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          className="absolute top-1/4 -left-32 w-[600px] h-[600px] rounded-full blur-[120px]"
+          style={{
+            background: "radial-gradient(circle, hsla(23, 83%, 58%, 0.08) 0%, transparent 70%)",
+          }}
+          animate={{ 
+            scale: [1, 1.1, 1],
+            opacity: [0.3, 0.5, 0.3],
+            x: [0, 20, 0] 
+          }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-1/4 -right-32 w-[500px] h-[500px] rounded-full blur-[100px]"
+          style={{
+            background: "radial-gradient(circle, hsla(191, 73%, 56%, 0.06) 0%, transparent 70%)",
+          }}
+          animate={{ 
+            scale: [1, 1.2, 1],
+            opacity: [0.2, 0.4, 0.2],
+            x: [0, -30, 0]
+          }}
+          transition={{
+            duration: 15,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2,
+          }}
+        />
+      </div>
+
+      <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        {/* ── Announcement Badge ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex justify-center mb-8"
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="flex justify-center mb-10"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-effect border border-purple-500/20 text-sm text-purple-300">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500" />
-            </span>
-            Now with AI-powered analytics
-            <ArrowRight className="h-3.5 w-3.5" />
+          <div className="group inline-flex items-center gap-2.5 px-4 py-2 rounded-full glass-effect border border-white/[0.08] text-sm font-medium text-foreground/80 hover:bg-white/[0.04] transition-all cursor-pointer">
+            <span className="flex h-2 w-2 rounded-full bg-primary" />
+            <span className="text-xs uppercase tracking-[0.1em] font-semibold">Introducing V2.0</span>
+            <div className="w-[1px] h-3 bg-white/10 mx-1" />
+            <span>AI-Powered Inventory Prediction</span>
+            <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
           </div>
         </motion.div>
 
-        {/* Headline */}
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
+        {/* ── Main Headline ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.3 }}
-          className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[1.05] max-w-5xl mx-auto"
+          transition={{ duration: 0.7, delay: 0.2 }}
+          className="space-y-6"
         >
-          Manage Your <span className="text-shimmer">E-Commerce</span>
-          <br />
-          <span className="text-gradient">Empire</span>
-        </motion.h1>
+          <h1 className="text-6xl sm:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.95] max-w-5xl mx-auto">
+            The <span className="text-gradient">Intelligence</span> Layer for Your <span className="text-foreground/90 italic serif font-medium">Business</span>
+          </h1>
+          <p className="mt-8 text-xl sm:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-light">
+            An industrial-grade e-commerce engine designed for high-growth brands. 
+            Powerful metrics, predictive analytics, and effortless operations.
+          </p>
+        </motion.div>
 
-        {/* Subheadline */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
-        >
-          Powerful analytics, seamless operations, and real-time insights — all
-          in one beautiful dashboard. The admin panel that scales with you.
-        </motion.p>
-
-        {/* CTA Buttons */}
+        {/* ── Action Buttons ── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.7 }}
-          className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-5"
         >
           <Button
             onClick={onGetStarted}
             size="lg"
-            className="gradient-purple text-white border-0 rounded-xl shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.03] transition-all duration-300 text-base font-semibold px-8 h-13 btn-glow-pulse"
+            className="h-14 px-10 bg-primary text-white hover:bg-primary/90 rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all text-base font-semibold group"
           >
-            Start Free Trial
-            <ArrowRight className="ml-2 h-4.5 w-4.5" />
+            Deploy Dashboard
+            <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
           </Button>
           <Button
             variant="outline"
             size="lg"
-            className="rounded-xl border-white/[0.1] bg-white/[0.03] hover:bg-white/[0.06] text-foreground h-13 px-8 text-base font-medium transition-all duration-300"
+            className="h-14 px-10 rounded-2xl border-white/[0.1] bg-white/[0.02] hover:bg-white/[0.05] text-foreground text-base font-medium transition-all"
             onClick={() =>
               document
                 .querySelector("#preview")
                 ?.scrollIntoView({ behavior: "smooth" })
             }
           >
-            <Play className="mr-2 h-4 w-4 fill-current" />
-            Watch Demo
+            <Play className="mr-2 h-4 w-4 fill-current text-primary" />
+            Live Preview
           </Button>
         </motion.div>
 
-        {/* Trust Badges */}
+        {/* ── Trust & Security ── */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 1 }}
-          className="mt-16 flex flex-wrap items-center justify-center gap-6 sm:gap-8"
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="mt-20 pt-10 border-t border-white/[0.04] flex flex-wrap items-center justify-center gap-x-10 gap-y-6"
         >
           {trustBadges.map((badge) => (
             <div
               key={badge.label}
-              className="flex items-center gap-2 text-sm text-muted-foreground/70"
+              className="flex items-center gap-3 text-sm text-muted-foreground/60 hover:text-muted-foreground transition-colors group cursor-default"
             >
-              <badge.icon className="h-4 w-4 text-purple-400/60" />
-              {badge.label}
+              <div className="w-8 h-8 rounded-lg bg-white/[0.03] flex items-center justify-center group-hover:bg-white/[0.06] transition-colors">
+                <badge.icon className="h-4 w-4 text-primary/60" />
+              </div>
+              <span className="font-medium tracking-wide">{badge.label}</span>
             </div>
           ))}
         </motion.div>
 
-        {/* Dashboard Preview Floating Card */}
+        {/* ── Floating Dashboard Preview (The "Wow" Element) ── */}
         <motion.div
-          initial={{ opacity: 0, y: 60 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1.2, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-20 relative mx-auto max-w-5xl"
+          initial={{ opacity: 0, scale: 0.9, y: 40 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ 
+            duration: 1, 
+            delay: 0.8, 
+            ease: [0.22, 1, 0.36, 1] 
+          }}
+          className="mt-24 relative max-w-5xl mx-auto group"
         >
-          {/* Glow behind the card */}
-          <div className="absolute -inset-4 bg-gradient-to-r from-purple-500/10 via-transparent to-emerald-500/10 rounded-3xl blur-2xl" />
-
-          {/* Mock Dashboard */}
-          <div className="relative glass-effect-strong rounded-2xl border border-white/[0.08] overflow-hidden shadow-2xl shadow-black/40">
-            {/* Title Bar */}
-            <div className="flex items-center gap-2 px-5 py-3 border-b border-white/[0.06]">
-              <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-red-500/60" />
-                <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
-                <div className="w-3 h-3 rounded-full bg-green-500/60" />
+          {/* Multi-layered shadows and glows */}
+          <div className="absolute -inset-10 bg-primary/10 rounded-[3rem] blur-[80px] opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+          <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-transparent to-accent/20 rounded-3xl blur-md opacity-50" />
+          
+          <div className="relative glass-effect-strong rounded-3xl border border-white/[0.1] overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)]">
+            {/* Browser-style Title Bar */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.05] bg-white/[0.02]">
+              <div className="flex gap-2">
+                <div className="w-3 h-3 rounded-full bg-white/10" />
+                <div className="w-3 h-3 rounded-full bg-white/10" />
+                <div className="w-3 h-3 rounded-full bg-white/10" />
               </div>
-              <div className="flex-1 text-center">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-white/[0.04] text-xs text-muted-foreground">
-                  admin.yourstore.com/dashboard
-                </div>
+              <div className="px-4 py-1 rounded-full bg-white/[0.04] text-[10px] font-mono text-muted-foreground/60 tracking-wider">
+                CHANNELS • GLOBAL • SECURE
               </div>
+              <div className="w-12" />
             </div>
 
-            {/* Dashboard Content Mock */}
-            <div className="p-6 space-y-4">
-              {/* KPI Row */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {/* Mock Dashboard Content with high visual fidelity */}
+            <div className="p-8 space-y-8 bg-gradient-to-br from-transparent to-primary/[0.02]">
+              {/* Top Metrics Row */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  {
-                    label: "Revenue",
-                    value: "£48,250",
-                    change: "+12.5%",
-                    color: "purple",
-                  },
-                  {
-                    label: "Orders",
-                    value: "1,284",
-                    change: "+8.3%",
-                    color: "emerald",
-                  },
-                  {
-                    label: "Customers",
-                    value: "3,642",
-                    change: "+15.2%",
-                    color: "blue",
-                  },
-                  {
-                    label: "Conversion",
-                    value: "3.24%",
-                    change: "+2.1%",
-                    color: "amber",
-                  },
-                ].map((kpi) => (
+                  { label: "Net Revenue", value: "£42.8k", trend: "+12%", color: "text-primary" },
+                  { label: "Conversion", value: "3.24%", trend: "+0.8%", color: "text-accent" },
+                  { label: "Avg. Ticket", value: "£154", trend: "-2%", color: "text-muted-foreground" },
+                  { label: "Active Subs", value: "1,284", trend: "+24%", color: "text-emerald-400" },
+                ].map((kpi, i) => (
                   <motion.div
                     key={kpi.label}
-                    className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4"
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{
-                      duration: 0.5,
-                      delay: 1.5 + Math.random() * 0.3,
-                    }}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.2 + (i * 0.1) }}
+                    className="p-5 rounded-2xl bg-white/[0.03] border border-white/[0.05] flex flex-col items-start"
                   >
-                    <p className="text-xs text-muted-foreground">{kpi.label}</p>
-                    <p className="text-xl font-bold mt-1">{kpi.value}</p>
-                    <p className="text-xs text-emerald-400 mt-1">
-                      {kpi.change}
-                    </p>
+                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold mb-2">{kpi.label}</span>
+                    <span className="text-2xl font-bold mb-1">{kpi.value}</span>
+                    <span className={`text-[10px] font-bold ${kpi.trend.startsWith('+') ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {kpi.trend} vs LY
+                    </span>
                   </motion.div>
                 ))}
               </div>
 
-              {/* Chart Area Mock */}
-              <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-4 h-40 flex items-end gap-1">
-                {Array.from({ length: 24 }).map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="flex-1 rounded-t-sm bg-gradient-to-t from-purple-500/40 to-purple-500/10"
-                    initial={{ height: 0 }}
-                    animate={{
-                      height: `${20 + Math.sin(i * 0.5) * 30 + Math.random() * 50}%`,
-                    }}
-                    transition={{
-                      duration: 0.8,
-                      delay: 1.8 + i * 0.05,
-                      ease: "easeOut",
-                    }}
-                  />
-                ))}
+              {/* Main Visual Component: Abstract Chart */}
+              <div className="grid lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 rounded-2xl bg-white/[0.02] border border-white/[0.05] p-6 h-64 relative overflow-hidden">
+                  <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                      <span className="text-xs font-bold tracking-tight uppercase">Performance Stream</span>
+                    </div>
+                    <div className="flex gap-1">
+                      {[1,2,3,4,5].map(j => <div key={j} className="w-1 h-3 rounded-full bg-white/10" />)}
+                    </div>
+                  </div>
+                  
+                  {/* CSS Chart bars */}
+                  <div className="flex items-end gap-2 h-32">
+                    {Array.from({ length: 30 }).map((_, i) => (
+                      <motion.div
+                        key={i}
+                        className="flex-1 rounded-t-sm bg-primary/20"
+                        initial={{ height: 0 }}
+                        animate={{ 
+                          height: `${30 + Math.sin(i * 0.4) * 40 + Math.random() * 30}%`,
+                          backgroundColor: i > 20 ? 'rgba(var(--primary), 0.4)' : 'rgba(var(--primary), 0.1)'
+                        }}
+                        transition={{ 
+                          duration: 1.5, 
+                          delay: 1.5 + (i * 0.03),
+                          ease: "circOut" 
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Side Utility Panel */}
+                <div className="rounded-2xl border border-dashed border-white/10 p-6 flex flex-col justify-between">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Lock className="w-4 h-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-tight">Access Control</p>
+                        <p className="text-[10px] text-muted-foreground">Admin-only layer active</p>
+                      </div>
+                    </div>
+                    <div className="h-[1px] bg-white/5 w-full" />
+                    <div className="space-y-2">
+                      {[1,2,3].map(s => (
+                        <div key={s} className="flex items-center justify-between">
+                          <div className="w-1/2 h-2 rounded-full bg-white/5" />
+                          <div className="w-1/4 h-2 rounded-full bg-primary/20" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="sm" className="w-full text-[10px] uppercase tracking-widest font-bold opacity-50">
+                    Configuration required
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
         </motion.div>
       </div>
 
-      {/* Scroll Indicator */}
+      {/* Floating Scroll Indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 2.5 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        transition={{ delay: 3 }}
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
       >
+        <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40 font-bold">Discover</span>
         <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-        >
-          <ChevronDown className="h-6 w-6 text-muted-foreground/40" />
-        </motion.div>
+          animate={{ y: [0, 6, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="w-[1px] h-10 bg-gradient-to-b from-primary/50 to-transparent"
+        />
       </motion.div>
     </section>
   );
