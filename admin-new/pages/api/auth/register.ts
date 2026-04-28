@@ -14,6 +14,7 @@ export default async function handler(
     cookiePresent: !!req.headers.cookie,
   });
 
+  const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
   if (!API_URL) {
     return res.status(500).json({ message: "NEXT_PUBLIC_NEW_API_URL is not configured" });
   }
@@ -28,7 +29,7 @@ export default async function handler(
     };
 
     const response = await proxyRequest({
-      req: modifiedReq as any,
+      req: modifiedReq as unknown as NextApiRequest,
       targetPath: "/bff/admin/users",
       sanitizeSetCookie: true,
     });
