@@ -37,9 +37,13 @@ export default async function handler(
       // console.log({ orders });
       // console.log({ meta });
       res.status(200).json({ orders, meta });
-    } catch (error: any) {
-      console.error("Orders proxy error:", error.response?.data || error.message);
-      res.status(error.response?.status || 500).json({ error: error.response?.data || "Internal server error" });
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Orders proxy error:", error.response?.data || error.message);
+        return res.status(error.response?.status || 500).json({ error: error.response?.data || "Internal server error" });
+      }
+      console.error("Unexpected orders proxy error:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   }
 }
