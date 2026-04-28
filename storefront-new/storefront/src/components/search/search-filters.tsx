@@ -47,7 +47,7 @@ export function SearchFilters({
   onClearAll,
 }: SearchFiltersProps) {
   const brands = [
-    "SuperStore",
+    "ShopSwift",
     "TechPro",
     "StyleMax",
     "HomeComfort",
