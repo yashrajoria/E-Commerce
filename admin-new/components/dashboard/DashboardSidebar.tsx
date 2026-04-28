@@ -32,11 +32,6 @@ import {
   Users,
 } from "lucide-react";
 import {
-  AdminIcon,
-  ProductIcon,
-  OrdersIcon,
-  CustomersIcon,
-  AnalyticsIcon,
   CategoryIcon,
 } from "@ecommerce/shared";
 import Link from "next/link";
