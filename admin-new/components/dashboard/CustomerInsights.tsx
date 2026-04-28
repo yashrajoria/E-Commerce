@@ -22,29 +22,7 @@ interface Segment {
 
 
 
-const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
-  if (!active || !payload?.length) return null;
-  const data = payload[0];
-  return (
-    <div className="glass-effect-strong rounded-xl p-3 min-w-[120px] border border-white/10">
-      <div className="flex items-center gap-2">
-        <div
-          className="w-2.5 h-2.5 rounded-full"
-          style={{ backgroundColor: data.payload.color }}
-        />
-        <span className="text-xs font-medium text-foreground">{data.name}</span>
-      </div>
-      <p className="text-sm font-bold text-foreground mt-1">
-        {(data.value as number).toLocaleString()} customers
-      </p>
-      <p className="text-[10px] text-muted-foreground">
-        {(((data.value as number) / total) * 100).toFixed(1)}% of total
-      </p>
-    </div>
-  );
-};
-
-export default function CustomerInsights({ insights }: { insights: any[] }) {
+export default function CustomerInsights({ insights }: { insights: Array<{ name: string; value: number }> }) {
   if (!insights || insights.length === 0) return null;
 
   // Map the backend insight data to our frontend format (adding colors and icons)
@@ -106,7 +84,27 @@ export default function CustomerInsights({ insights }: { insights: any[] }) {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={({ active, payload }: TooltipProps<number, string>) => {
+                  if (!active || !payload?.length) return null;
+                  const data = payload[0];
+                  return (
+                    <div className="glass-effect-strong rounded-xl p-3 min-w-[120px] border border-white/10">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-2.5 h-2.5 rounded-full"
+                          style={{ backgroundColor: (data.payload as Segment).color }}
+                        />
+                        <span className="text-xs font-medium text-foreground">{data.name}</span>
+                      </div>
+                      <p className="text-sm font-bold text-foreground mt-1">
+                        {(data.value as number).toLocaleString()} customers
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {(((data.value as number) / total) * 100).toFixed(1)}% of total
+                      </p>
+                    </div>
+                  );
+                }} />
               </PieChart>
             </ResponsiveContainer>
             {/* Center label */}
