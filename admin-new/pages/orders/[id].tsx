@@ -112,7 +112,8 @@ interface ODetail {
 
 const OrderDetailsPage = () => {
   const router = useRouter();
-  const { id: orderId } = router.query;
+  const { id } = router.query;
+  const orderId = Array.isArray(id) ? id[0] : id;
   const [order, setOrder] = useState<ODetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
