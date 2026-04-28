@@ -40,7 +40,7 @@ import {
   CustomersIcon,
   AnalyticsIcon,
   CategoryIcon,
-} from "@ecommerce/shared/src/components/icons";
+} from "@ecommerce/shared";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@ecommerce/shared";

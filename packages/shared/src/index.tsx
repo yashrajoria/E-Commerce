@@ -60,3 +60,23 @@ export {
   SelectValue,
 } from "./components/ui/select";
 export { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
+export {
+  AdminIcon,
+  StorefrontIcon,
+  LogoIcon,
+  ProductIcon,
+  CategoryIcon,
+  OrdersIcon,
+  CustomersIcon,
+  AnalyticsIcon,
+  SettingsIcon,
+  CartIcon,
+  WishlistIcon,
+  SearchIcon,
+  MenuIcon,
+  CloseIcon,
+  ChevronRightIcon,
+  CheckIcon,
+  icons,
+  type IconProps,
+} from "./components/icons/index";

@@ -5,7 +5,7 @@ import {
   WishlistIcon,
   SearchIcon,
   MenuIcon,
-} from "@ecommerce/shared/src/components/icons";
+} from "@ecommerce/shared";
 import { StorefrontLogo } from "./storefront-logo";
 
 export default function Navigation() {

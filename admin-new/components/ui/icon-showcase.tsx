@@ -20,7 +20,7 @@ import {
   SearchIcon,
   MenuIcon,
   CloseIcon,
-  ChevronRightIcon,
+} from "@ecommerce/shared";
   CheckIcon,
 } from '@ecommerce/shared/src/components/icons';
 

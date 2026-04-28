@@ -1,11 +1,11 @@
 /**
- * Logo Component
- * Used in header/sidebar for branding
+ * Admin Logo Component
+ * Used in header/sidebar for branding with visual badge
  */
 
 import React from 'react';
 import Link from 'next/link';
-import { LogoIcon } from '@ecommerce/shared/src/components/icons';
+import { LogoIcon } from '@ecommerce/shared';
 
 interface LogoProps {
   href?: string;
@@ -16,9 +16,9 @@ interface LogoProps {
 }
 
 const sizeMap = {
-  sm: 28,
-  md: 32,
-  lg: 40,
+  sm: { icon: 20, badge: 32, text: 'text-sm' },
+  md: { icon: 24, badge: 40, text: 'text-base' },
+  lg: { icon: 28, badge: 48, text: 'text-lg' },
 };
 
 export const Logo: React.FC<LogoProps> = ({
@@ -28,14 +28,25 @@ export const Logo: React.FC<LogoProps> = ({
   showText = true,
   className = '',
 }) => {
-  const iconSize = sizeMap[size];
+  const sizes = sizeMap[size];
   
   return (
-    <Link href={href} className={`flex items-center gap-2 hover:opacity-80 transition-opacity ${className}`}>
-      <LogoIcon size={iconSize} />
+    <Link href={href} className={`flex items-center gap-2.5 hover:opacity-85 transition-opacity ${className}`}>
+      {/* Logo Badge with gradient background */}
+      <div 
+        className="relative flex items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-purple-700 shadow-md hover:shadow-lg transition-shadow"
+        style={{ width: sizes.badge, height: sizes.badge }}
+      >
+        <LogoIcon 
+          size={sizes.icon}
+          className="drop-shadow-sm"
+        />
+      </div>
+      
+      {/* App Name */}
       {showText && (
         <div>
-          <div className="font-bold text-sm text-foreground">
+          <div className={`font-bold text-foreground ${sizes.text}`}>
             {appName}
           </div>
           <div className="text-xs text-muted-foreground">Admin Panel</div>

@@ -1,11 +1,11 @@
 /**
  * Storefront Logo Component
- * Used in storefront header for branding
+ * Used in storefront header for branding with visual logo badge
  */
 
 import React from 'react';
 import Link from 'next/link';
-import { StorefrontIcon } from '@ecommerce/shared/src/components/icons';
+import { StorefrontIcon } from '@ecommerce/shared';
 
 interface StorefrontLogoProps {
   href?: string;
@@ -16,25 +16,38 @@ interface StorefrontLogoProps {
 }
 
 const sizeMap = {
-  sm: 24,
-  md: 28,
-  lg: 32,
+  sm: { icon: 20, badge: 32, text: 'text-sm' },
+  md: { icon: 24, badge: 40, text: 'text-base' },
+  lg: { icon: 28, badge: 48, text: 'text-lg' },
 };
 
 export const StorefrontLogo: React.FC<StorefrontLogoProps> = ({
   href = '/',
-  appName = 'ShopHub',
+  appName = 'ShopSwift',
   size = 'md',
   showText = true,
   className = '',
 }) => {
-  const iconSize = sizeMap[size];
+  const sizes = sizeMap[size];
   
   return (
-    <Link href={href} className={`flex items-center gap-2 hover:opacity-80 transition-opacity ${className}`}>
-      <StorefrontIcon size={iconSize} className="text-yellow-500" />
+    <Link href={href} className={`flex items-center gap-2.5 hover:opacity-85 transition-opacity ${className}`}>
+      {/* Logo Badge with gradient background */}
+      <div 
+        className="relative flex items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-red-500 shadow-md hover:shadow-lg transition-shadow"
+        style={{ width: sizes.badge, height: sizes.badge }}
+      >
+        <StorefrontIcon 
+          size={sizes.icon} 
+          className="text-white drop-shadow-sm" 
+        />
+      </div>
+      
+      {/* App Name */}
       {showText && (
-        <div className="font-bold text-foreground">{appName}</div>
+        <div className={`font-bold text-foreground ${sizes.text}`}>
+          {appName}
+        </div>
       )}
     </Link>
   );

@@ -10,7 +10,7 @@ import {
 import { LiveIndicator } from "@/components/dashboard/LiveIndicator";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bell, Search, LogOut } from "lucide-react";
-import { MenuIcon, CloseIcon, SearchIcon } from "@ecommerce/shared/src/components/icons";
+import { MenuIcon, CloseIcon, SearchIcon } from "@ecommerce/shared";
 import Head from "next/head";
 import Link from "next/link";
 import { useState, ReactNode } from "react";
