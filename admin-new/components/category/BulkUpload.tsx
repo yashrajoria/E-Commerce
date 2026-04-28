@@ -14,9 +14,11 @@ import { DialogHeader, DialogFooter } from "../ui/dialog";
 export default function BulkUpload({
   isBulkOpen,
   setIsBulkOpen,
+  onRefresh,
 }: {
   isBulkOpen: boolean;
   setIsBulkOpen: (open: boolean) => void;
+  onRefresh?: () => void;
 }) {
   return (
     <Dialog open={isBulkOpen} onOpenChange={setIsBulkOpen}>
@@ -123,9 +125,13 @@ export default function BulkUpload({
                 );
                 toast.success("Bulk categories uploaded");
                 setIsBulkOpen(false);
-                window.location.reload();
-              } catch (err) {
-                // logger.error("CSV parse error", { err });
+                if (onRefresh) {
+                  onRefresh();
+                } else {
+                  window.location.reload();
+                }
+              } catch {
+                // logger.error("CSV parse error");
                 toast.error("Bulk upload failed");
               }
             }}
