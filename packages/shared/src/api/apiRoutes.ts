@@ -52,6 +52,11 @@ export const API_ROUTES = {
       route(`/user/payment/status/by-order/${id}`),
     VERIFY: route('/user/payment/verify-payment'),
   },
+  
+  PROMOTIONS: {
+    VALIDATE: route('/user/promotions/validate'),
+    LIST: route('/user/promotions'), // Admin only via /bff/admin/promotions
+  },
 };
 
 export default API_ROUTES;
