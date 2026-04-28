@@ -35,14 +35,15 @@ const Profile = () => {
   const { user } = useAuth();
   const [name, setName] = useState(user?.name || "Admin User");
   const [email, setEmail] = useState(user?.email || "admin@example.com");
-  const [phone, setPhone] = useState(user?.phone || "");
+  const [phone, setPhone] = useState<string>("");
 
 
   useEffect(() => {
     if (user) {
       setName(user.name || "");
       setEmail(user.email || "");
-      setPhone(user.phone || "");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setPhone((user as any).phone || "");
     }
   }, [user]);
   const [currentPassword, setCurrentPassword] = useState("");
