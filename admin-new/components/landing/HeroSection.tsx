@@ -164,10 +164,18 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
           className="mt-24 relative max-w-5xl mx-auto group"
         >
           {/* Multi-layered shadows and glows */}
-          <div className="absolute -inset-10 bg-primary/10 rounded-[3rem] blur-[80px] opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-          <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-transparent to-accent/20 rounded-3xl blur-md opacity-50" />
+          <motion.div 
+            className="absolute -inset-20 bg-primary/20 rounded-[4rem] blur-[100px] z-0"
+            animate={{ 
+              opacity: [0.1, 0.25, 0.1],
+              scale: [0.8, 1.1, 0.8]
+            }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <div className="absolute -inset-10 bg-primary/10 rounded-[3rem] blur-[80px] opacity-0 group-hover:opacity-100 transition-opacity duration-1000 z-0" />
+          <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-transparent to-accent/20 rounded-3xl blur-md opacity-50 z-0" />
           
-          <div className="relative glass-effect-strong rounded-3xl border border-white/[0.1] overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)]">
+          <div className="relative glass-effect-strong rounded-3xl border border-white/[0.1] overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] z-10">
             {/* Browser-style Title Bar */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.05] bg-white/[0.02]">
               <div className="flex gap-2">
