@@ -5,7 +5,7 @@ import { Toaster } from "sonner";
 import { ErrorBoundary } from "react-error-boundary";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
-import useAuth from "@/hooks/useAuth";
+import { useAuth, axiosInstance, setAPIErrorHandler, AuthProvider } from "@ecommerce/shared";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { motion, AnimatePresence } from "framer-motion";
 import { setupGlobalAxiosInterceptors } from "@/lib/axios-interceptor";
@@ -101,7 +101,7 @@ function RouteProgressBar() {
   );
 }
 
-export default function App({ Component, pageProps, router }: AppProps) {
+function AppContent({ Component, pageProps, router }: AppProps) {
   const { loading, authenticated } = useAuth();
 
   // pages/prefixes that should require an authenticated session
@@ -141,9 +141,26 @@ export default function App({ Component, pageProps, router }: AppProps) {
     Boolean(pageAIContext);
 
   useEffect(() => {
-    // Setup global Axios 401 interceptor
-    setupGlobalAxiosInterceptors(router);
-  }, [router]);
+    // Setup global Axios error handler for toasts
+    setAPIErrorHandler((type, message) => {
+      if (type === 'FORBIDDEN') {
+        toast.error(message);
+      } else if (type === 'RATE_LIMITED') {
+        toast.error(message);
+      } else if (type === 'SERVER_ERROR') {
+        toast.error(message);
+      }
+    });
+
+    // Handle logout event for redirection
+    const handleLogout = () => {
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      }
+    };
+    window.addEventListener('logout', handleLogout);
+    return () => window.removeEventListener('logout', handleLogout);
+  }, []);
 
   useEffect(() => {
     document.documentElement.classList.remove("theme-admin", "theme-storefront");
@@ -202,5 +219,13 @@ export default function App({ Component, pageProps, router }: AppProps) {
         ) : null}
       </div>
     </ErrorBoundary>
+  );
+}
+
+export default function App(props: AppProps) {
+  return (
+    <AuthProvider>
+      <AppContent {...props} />
+    </AuthProvider>
   );
 }

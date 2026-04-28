@@ -1,0 +1,5 @@
+node_modules
+*.md
+*.log
+*.err
+*.env

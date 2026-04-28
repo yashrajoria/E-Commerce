@@ -184,7 +184,7 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
       try {
         const [toolsResult, statusResult] = await Promise.allSettled([
           fetchAgentTools(),
-          axios.get("/api/auth/status", {
+          axios.get("/api/admin/auth/status", {
             withCredentials: true,
             timeout: 6000,
           }),

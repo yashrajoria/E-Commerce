@@ -65,7 +65,7 @@ const SingleCategory = ({
           Add Category
         </Button>
       </DialogTrigger>
-      <DialogContent className="glass-effect-strong border-white/[0.08]">
+      <DialogContent className="glass-effect-strong border-white/8">
         <DialogHeader>
           <DialogTitle className="text-gradient">New Category</DialogTitle>
           <DialogDescription>Create a new product category</DialogDescription>
@@ -87,7 +87,7 @@ const SingleCategory = ({
               <select
                 value={newCategoryParent || ""}
                 onChange={(e) => setNewCategoryParent(e.target.value || null)}
-                className="w-full bg-white/[0.04] border-white/[0.08] rounded-xl h-9 px-3"
+                className="w-full bg-white/4 border-white/8 rounded-xl h-9 px-3"
               >
                   <option value="">None</option>
                   {Array.isArray(categories) &&

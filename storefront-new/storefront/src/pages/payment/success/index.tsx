@@ -48,7 +48,7 @@ interface NormalizedItem {
 // ---------------------------------------------------------------------------
 function LoadingState() {
   return (
-    <div className="min-h-[360px] flex flex-col items-center justify-center">
+    <div className="min-h-90 flex flex-col items-center justify-center">
       <Loader className="h-14 w-14 text-blue-600 animate-spin" />
       <h2 className="mt-6 text-2xl font-semibold text-gray-900">
         Verifying your payment…
@@ -62,7 +62,7 @@ function LoadingState() {
 function AnimatedCheckmark() {
   return (
     <svg
-      className="h-28 w-28 flex-shrink-0"
+      className="h-28 w-28 shrink-0"
       viewBox="0 0 120 120"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -99,6 +99,7 @@ function PaymentSuccessContent() {
   );
   const [message, setMessage] = useState<string>("");
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [paymentId, setPaymentId] = useState<string | null>(null);
   const [purchasedItems, setPurchasedItems] = useState<NormalizedItem[]>([]);
   const [orderTotal, setOrderTotal] = useState<number>(0);
   const [orderId, setOrderId] = useState<string | null>(null);
@@ -122,6 +123,11 @@ function PaymentSuccessContent() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     setSessionId(params.get("session_id"));
+    setPaymentId(
+      params.get("payment_id") ??
+        params.get("payment_intent") ??
+        params.get("pi"),
+    );
   }, []);
 
   // 2. Verify payment when sessionId is ready
@@ -138,17 +144,22 @@ function PaymentSuccessContent() {
 
     (async () => {
       try {
+        const verifyPaymentId = paymentId ?? sessionId;
         const resp = await axiosInstance.post(
           API_ROUTES.PAYMENT.VERIFY,
-          { session_id: sessionId, payment_id: sessionId },
+          { session_id: sessionId, payment_id: verifyPaymentId },
           { withCredentials: true },
         );
 
         if (!mounted) return;
         const data = resp.data ?? {};
 
+        const paymentStatus = String(data.payment_status ?? "").toLowerCase();
+        const verifyStatus = String(data.status ?? "").toLowerCase();
         const paid =
-          data.payment_status === "paid" || data.payment_status === "succeeded";
+          paymentStatus === "paid" ||
+          paymentStatus === "succeeded" ||
+          verifyStatus === "success";
 
         const resolvedOrderId = data.order_id ?? data.session_id ?? sessionId;
         setOrderId(resolvedOrderId);
@@ -238,7 +249,7 @@ function PaymentSuccessContent() {
     return () => {
       mounted = false;
     };
-  }, [sessionId]); // clearCart intentionally excluded via ref
+  }, [paymentId, sessionId]); // clearCart intentionally excluded via ref
 
   // Truncate order ID for display
   const truncatedId = useMemo(() => {
@@ -339,7 +350,7 @@ function PaymentSuccessContent() {
                       key={it.id}
                       className="flex justify-between text-sm text-gray-600"
                     >
-                      <span className="truncate max-w-[180px]">
+                      <span className="truncate max-w-45">
                         {it.name}{" "}
                         <span className="text-gray-400">x{it.quantity}</span>
                       </span>
@@ -359,7 +370,7 @@ function PaymentSuccessContent() {
           <div className="flex gap-3">
             <a
               href="#"
-              className="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-gradient-to-r from-rose-600 to-amber-500 text-white text-sm font-medium rounded-md shadow hover:opacity-90 transition-opacity"
+              className="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-linear-to-r from-rose-600 to-amber-500 text-white text-sm font-medium rounded-md shadow hover:opacity-90 transition-opacity"
             >
               Download Receipt
             </a>
@@ -381,7 +392,7 @@ function PaymentSuccessContent() {
             <dl className="mt-4 space-y-2 text-sm text-gray-600">
               <div className="flex justify-between">
                 <dt className="font-medium text-gray-700">Email</dt>
-                <dd className="truncate max-w-[180px]">{user?.email ?? "—"}</dd>
+                <dd className="truncate max-w-45">{user?.email ?? "—"}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="font-medium text-gray-700">Payment Method</dt>
@@ -410,7 +421,7 @@ function PaymentSuccessContent() {
                   key={label}
                   className="flex items-center gap-3 text-sm text-gray-600"
                 >
-                  <Icon className="h-5 w-5 text-rose-600 flex-shrink-0" />
+                  <Icon className="h-5 w-5 text-rose-600 shrink-0" />
                   {label}
                 </li>
               ))}

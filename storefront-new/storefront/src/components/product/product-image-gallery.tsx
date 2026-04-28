@@ -1,18 +1,20 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
 interface ProductImageGalleryProps {
   images: string[];
+  alt?: string;
 }
 
-export function ProductImageGallery({ images }: ProductImageGalleryProps) {
+export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   if (!images.length) {
     return (
@@ -34,24 +36,33 @@ export function ProductImageGallery({ images }: ProductImageGalleryProps) {
     <div className="space-y-4">
       {/* Main Image */}
       <div className="relative aspect-square overflow-hidden rounded-2xl bg-muted">
-        <motion.div
+        <motion.button
+          type="button"
           key={selectedImage}
-          className="absolute inset-0"
-          initial={{ opacity: 0 }}
+          className="absolute inset-0 p-0 m-0 border-0 bg-transparent"
+          initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
+          transition={reduceMotion ? { duration: 0 } : { duration: 0.3 }}
           onClick={() => setIsZoomed(!isZoomed)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setIsZoomed(!isZoomed);
+            }
+          }}
+          aria-pressed={isZoomed}
+          aria-label={isZoomed ? "Exit zoom" : "Zoom image"}
         >
           <Image
             src={images[selectedImage]}
-            alt="Product"
+            alt={alt ? `${alt} ${selectedImage + 1}` : `Product image ${selectedImage + 1}`}
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
             className={`object-cover cursor-zoom-in transition-transform duration-300 ${
               isZoomed ? "scale-150" : "scale-100"
             }`}
           />
-        </motion.div>
+        </motion.button>
 
         {/* Navigation Arrows */}
         {images.length > 1 && (
@@ -95,6 +106,7 @@ export function ProductImageGallery({ images }: ProductImageGalleryProps) {
                   index === selectedImage ? "bg-white" : "bg-white/50"
                 }`}
                 onClick={() => setSelectedImage(index)}
+                aria-label={`Go to image ${index + 1}`}
               />
             ))}
           </div>
@@ -113,8 +125,9 @@ export function ProductImageGallery({ images }: ProductImageGalleryProps) {
                   : "border-transparent"
               }`}
               onClick={() => setSelectedImage(index)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              {...(!reduceMotion
+                ? { whileHover: { scale: 1.05 }, whileTap: { scale: 0.95 } }
+                : {})}
             >
               <Image
                 src={image}

@@ -6,6 +6,7 @@ import { Heart, ShoppingCart, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useWishlist } from "@/context/WishlistContext";
+import { formatCurrency } from "@ecommerce/shared";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -14,12 +15,6 @@ export function WishlistItems() {
   const wishlistItems = wishlist;
   const currency = process.env.NEXT_PUBLIC_CURRENCY ?? "GBP";
   const locale = process.env.NEXT_PUBLIC_LOCALE ?? "en-GB";
-  const formatCurrency = (value?: number) =>
-    new Intl.NumberFormat(locale, {
-      style: "currency",
-      currency,
-    }).format(value ?? 0);
-
   return (
     <motion.div
       className="space-y-6"
@@ -81,11 +76,11 @@ export function WishlistItems() {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
                     <span className="font-bold">
-                      {formatCurrency(item.price)}
+                      {formatCurrency(item.price, { currency, locale })}
                     </span>
                     {item.originalPrice && (
                       <span className="text-sm text-muted-foreground line-through">
-                        {formatCurrency(item.originalPrice)}
+                        {formatCurrency(item.originalPrice, { currency, locale })}
                       </span>
                     )}
                   </div>

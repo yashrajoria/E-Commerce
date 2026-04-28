@@ -80,7 +80,9 @@ export default function ProductPage() {
           text: `Check out this product: ${product?.name}`,
           url: window.location.href,
         })
-        .catch((error) => console.error("Error sharing", error));
+        .catch((error) => {
+          // logger.error("Error sharing product", { error });
+        });
     } else {
       showInfo("Web Share API is not supported in your browser.");
     }

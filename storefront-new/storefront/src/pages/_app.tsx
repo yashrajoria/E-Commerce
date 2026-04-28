@@ -1,4 +1,5 @@
 import "@/styles/globals.css";
+import { useEffect } from "react";
 import { ThemeProvider } from "next-themes";
 import type { AppProps } from "next/app";
 import { Inter } from "next/font/google";
@@ -8,9 +9,12 @@ import { UserProvider } from "@/context/UserContext";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import Head from "next/head";
-import { useState } from "react";
+
+import { setAPIErrorHandler, axiosInstance } from "@ecommerce/shared";
+import { toast as sharedToast } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
+const queryClient = new QueryClient();
 
 export default function App({ Component, pageProps }: AppProps) {
   const [queryClient] = useState(
@@ -32,6 +36,13 @@ export default function App({ Component, pageProps }: AppProps) {
         },
       }),
   );
+
+  useEffect(() => {
+    setAPIErrorHandler((type, message) => {
+      sharedToast.error(message);
+    });
+  }, []);
+
   return (
     <>
       <Head>

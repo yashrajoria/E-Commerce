@@ -44,7 +44,7 @@ const OTPVerificationDialog = ({
 
     try {
       await axios.post(
-        "/api/auth/verify-otp",
+        "/api/admin/auth/verify-otp",
         {
           email,
           code: value,
@@ -72,7 +72,7 @@ const OTPVerificationDialog = ({
 
     try {
       // Replace with real resend endpoint if available
-      await axios.post("/api/auth/resend-otp", { email });
+      await axios.post("/api/admin/auth/resend-otp", { email });
       setValue("");
       toast.success("New OTP code sent to your email");
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

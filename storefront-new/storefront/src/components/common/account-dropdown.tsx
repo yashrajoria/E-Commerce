@@ -5,7 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useUser } from "@/context/UserContext";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import React, { useEffect, useRef } from "react";
+import { trapFocus } from "@/lib/utils";
 import {
   Bell,
   ChevronRight,
@@ -49,6 +51,31 @@ export function AccountDropdown({
   onClose,
 }: // setLoggedIn,
 AccountDropdownProps) {
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const prevFocused = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    prevFocused.current = document.activeElement as HTMLElement;
+    setTimeout(() => {
+      const first = panelRef.current?.querySelector<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      first?.focus();
+    }, 0);
+
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "Tab") trapFocus(panelRef.current, e);
+    };
+
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      prevFocused.current?.focus();
+    };
+  }, [isOpen, onClose]);
+  const reduceMotion = useReducedMotion();
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const { user, signOut } = useUser();
   const getInitials = (name?: string | null) =>
@@ -157,7 +184,6 @@ AccountDropdownProps) {
     if (signOut) {
       await signOut();
     }
-
     router.push("/");
     onClose();
   };
@@ -177,11 +203,12 @@ AccountDropdownProps) {
 
           {/* Dropdown */}
           <motion.div
+            ref={panelRef}
             className="absolute top-full right-0 mt-2 w-96 z-50"
-            initial={{ opacity: 0, scale: 0.95, y: -10 }}
+            initial={reduceMotion ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.95, y: -10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -10 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
+            exit={reduceMotion ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.95, y: -10 }}
+            transition={reduceMotion ? { duration: 0 } : { duration: 0.2, ease: "easeOut" }}
           >
             <div className="bg-background/95 backdrop-blur-xl rounded-2xl border border-border/50 shadow-2xl overflow-hidden">
               {/* Gradient Background (match Account header: rose -> amber) */}

@@ -19,6 +19,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import { formatGBP } from "@/lib/utils";
 import Image from "next/image";
 import Head from "next/head";
 import { useRouter } from "next/navigation";
@@ -30,12 +31,6 @@ export default function CartPage() {
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
   const [promoMessage, setPromoMessage] = useState<string | null>(null);
   const router = useRouter();
-
-  const formatGBP = (value?: number) =>
-    new Intl.NumberFormat("en-GB", {
-      style: "currency",
-      currency: "GBP",
-    }).format(value ?? 0);
 
   const handleUpdateQuantity = (id: string, newQuantity: number) => {
     if (newQuantity <= 0) {

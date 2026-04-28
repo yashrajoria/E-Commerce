@@ -62,11 +62,11 @@ export const useOrders = (query: OrdersQuery) => {
       try {
         if (orderId) {
           const key = `order:${orderId}`;
-          const res = await fetchOrdersOnce(key, `/api/orders/${orderId}`);
+          const res = await fetchOrdersOnce(key, `/api/admin/orders/${orderId}`);
           if (!isActive) return;
           setOrders((res?.data as unknown[]) || []);
         } else {
-          const url = `/api/orders?page=${page}&limit=${perPage}`;
+          const url = `/api/admin/orders?page=${page}&limit=${perPage}`;
           const key = `orders:${page}:${perPage}`;
           const res = await fetchOrdersOnce(key, url);
           const payload: OrdersApiResponse | null =

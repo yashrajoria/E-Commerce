@@ -1,6 +1,10 @@
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
 import StatsCard from "@/components/ui/stats-card";
-import { EmptyState, TableSkeleton, ErrorState } from "@/components/admin/shared/DataStates";
+import {
+  EmptyState,
+  TableSkeleton,
+  ErrorState,
+} from "@/components/admin/shared/DataStates";
 import { CustomersFilters } from "@/components/customers/CustomersFilters";
 import { CustomersTable } from "@/components/customers/CustomersTable";
 // import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -32,7 +36,6 @@ import type {
 
 const ITEMS_PER_PAGE = 10;
 
-
 const Customers = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [filter, setFilter] = useState<CustomerFilter>({
@@ -42,8 +45,11 @@ const Customers = () => {
     sortOrder: "asc",
   });
 
-  const { users, meta, error, isLoading, mutate } = useAdminUsers(currentPage, ITEMS_PER_PAGE);
-
+  const { users, meta, error, isLoading, mutate } = useAdminUsers(
+    currentPage,
+    ITEMS_PER_PAGE,
+  );
+  // logger.debug("users loaded", { users });
   // Filtering and sorting (client-side, as before)
   const filteredCustomers = useMemo(() => {
     let result = Array.isArray(users) ? [...users] : [];
@@ -51,7 +57,8 @@ const Customers = () => {
       const q = filter.search.toLowerCase();
       result = result.filter(
         (c: any) =>
-          c.name?.toLowerCase().includes(q) || c.email?.toLowerCase().includes(q),
+          c.name?.toLowerCase().includes(q) ||
+          c.email?.toLowerCase().includes(q),
       );
     }
     if (filter.status !== "all")
@@ -60,9 +67,13 @@ const Customers = () => {
       const order = filter.sortOrder === "asc" ? 1 : -1;
       if (filter.sortBy === "name") return a.name.localeCompare(b.name) * order;
       if (filter.sortBy === "totalOrders")
-        return ((a.stats?.totalOrders || 0) - (b.stats?.totalOrders || 0)) * order;
+        return (
+          ((a.stats?.totalOrders || 0) - (b.stats?.totalOrders || 0)) * order
+        );
       if (filter.sortBy === "totalSpent")
-        return ((a.stats?.totalSpent || 0) - (b.stats?.totalSpent || 0)) * order;
+        return (
+          ((a.stats?.totalSpent || 0) - (b.stats?.totalSpent || 0)) * order
+        );
       return 0;
     });
     return result;
@@ -194,7 +205,9 @@ const Customers = () => {
                     sortBy: key as CustomerFilter["sortBy"],
                   }))
                 }
-                onCustomerClick={(id) => console.log("Customer clicked:", id)}
+                onCustomerClick={(id) => {
+                  // logger.debug("Customer clicked:", { id });
+                }}
               />
             </div>
           </motion.section>

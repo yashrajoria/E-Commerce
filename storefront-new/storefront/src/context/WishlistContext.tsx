@@ -1,11 +1,12 @@
+import * as React from "react";
 import {
   createContext,
-  useContext,
+  ReactNode,
   useEffect,
   useMemo,
-  useState,
-  ReactNode,
+  useState
 } from "react";
+
 import type { Product } from "@/lib/types";
 
 export type WishlistItem = Product;
@@ -91,7 +92,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 }
 
 export function useWishlist() {
-  const context = useContext(WishlistContext);
+  const context = React.useContext(WishlistContext);
   if (!context) {
     throw new Error("useWishlist must be used within a WishlistProvider");
   }
