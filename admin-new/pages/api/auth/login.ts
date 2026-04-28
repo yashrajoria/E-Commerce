@@ -10,7 +10,7 @@ export default async function handler(
   }
 
   try {
-    const { password: _password, ...sanitizedBody } =
+    const { ...sanitizedBody } =
       (req.body || {}) as Record<string, unknown>;
     console.debug("[login proxy] Request body (sanitized):", sanitizedBody);
     console.debug("[login proxy] Incoming cookies:", req.headers.cookie || "<none>");
