@@ -268,20 +268,35 @@ export function useCheckout(): CheckoutState {
     if (currentStep > 1) goToStep((currentStep - 1) as StepId);
   }, [currentStep, goToStep]);
 
-  const applyPromo = useCallback(() => {
+  const applyPromo = useCallback(async () => {
     if (!promoCode.trim()) {
       setPromoError("Enter a promo code");
       return;
     }
-    if (promoCode.trim().toUpperCase() === "SAVE10") {
-      setDiscount(0.1);
-      setPromoError("");
-      showSuccess("Promo applied — 10% off!");
-    } else {
+    try {
+      const res = await axiosInstance.post(API_ROUTES.PROMOTIONS.VALIDATE, {
+        code: promoCode,
+        cart_total: subtotal,
+      });
+
+      const { valid, discount_amount, message } = res.data;
+      if (valid) {
+        // Calculate the relative discount for the local state multiplier
+        setDiscount(subtotal > 0 ? discount_amount / subtotal : 0);
+        setPromoError("");
+        showSuccess("Promo applied successfully!");
+      } else {
+        setDiscount(0);
+        setPromoError(message || "Invalid promo code");
+      }
+    } catch (err: unknown) {
       setDiscount(0);
-      setPromoError("Invalid promo code");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const error = err as any;
+      const msg = error.response?.data?.error || "Failed to validate promo code";
+      setPromoError(msg);
     }
-  }, [promoCode, showSuccess]);
+  }, [promoCode, subtotal, showSuccess]);
 
   const completeOrder = useCallback(async () => {
     if (cart.length === 0) {
