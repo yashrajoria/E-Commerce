@@ -57,16 +57,18 @@ const Products = () => {
     isLoading: productsLoading,
     mutate,
   } = useAdminProducts(currentPage, perPage, searchQuery);
-  const totalPages = meta?.totalPages || 1;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const totalPages = (meta as any)?.totalPages || 1;
   const isLoading = productsLoading || categoriesLoading;
-  const productsCount = meta?.total || 0;
-  const productList = Array.isArray(products) ? products : [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const productsCount = (meta as any)?.total || 0;
+  const productList = (Array.isArray(products) ? products : []) as Product[];
 
   // Client-side filters
   const handleToggleOutOfStock = () => setShowOutOfStock((s) => !s);
   const displayedProducts =
-    productList.filter((p: { quantity: number }) =>
-      showOutOfStock ? true : p.quantity > 0,
+    productList.filter((p: Product) =>
+      showOutOfStock ? true : (p.quantity || 0) > 0,
     ) || [];
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -124,7 +126,7 @@ const Products = () => {
         <StatsCard
           title="In Stock"
           value={
-            productList.filter((p: { quantity: number }) => p.quantity > 0)
+            productList.filter((p: Product) => (p.quantity || 0) > 0)
               ?.length || 0
           }
           icon={Package}
@@ -134,7 +136,7 @@ const Products = () => {
         <StatsCard
           title="Out of Stock"
           value={
-            productList.filter((p: { quantity: number }) => p.quantity <= 0)
+            productList.filter((p: Product) => (p.quantity || 0) <= 0)
               ?.length || 0
           }
           icon={AlertTriangle}
@@ -262,7 +264,7 @@ const Products = () => {
                                 <Image
                                   src={product.images[0]}
                                   width={100}
-                                  alt={product.name}
+                                  alt={product.name || "Product image"}
                                   className="h-full w-full object-cover"
                                 />
                               ) : (
@@ -300,12 +302,12 @@ const Products = () => {
                           <Badge
                             variant="outline"
                             className={
-                              product.quantity >= 1
+                              (product.quantity || 0) >= 1
                                 ? "bg-emerald-400/10 text-emerald-400 border-emerald-400/20"
                                 : "bg-amber-400/10 text-amber-400 border-amber-400/20"
                             }
                           >
-                            {product.quantity >= 1
+                            {(product.quantity || 0) >= 1
                               ? "In Stock"
                               : "Out of Stock"}
                           </Badge>

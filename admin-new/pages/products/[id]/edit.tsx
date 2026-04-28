@@ -98,7 +98,7 @@ export default function EditProductPage() {
                 }));
                 setUploadedImages((prev) => [...prev, ...newImages]);
               }}
-              uploadedImages={uploadedImages}
+              uploadedImages={uploadedImages as unknown as import("@ecommerce/shared/src/types/common").UploadedImage[]}
               removeImage={(i) =>
                 setUploadedImages((prev) => prev.filter((_, idx) => idx !== i))
               }
