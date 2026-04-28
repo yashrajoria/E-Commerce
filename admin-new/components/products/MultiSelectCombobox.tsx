@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Category } from "@/types/shared";
 import { X, Check, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,7 @@ export function MultiSelectCombobox({
 }: {
   value: string[];
   onChange: (value: string[]) => void;
-  categories: { _id: string; name: string }[];
+  categories: Category[];
 }) {
   const [open, setOpen] = React.useState(false);
 
@@ -68,18 +69,20 @@ export function MultiSelectCombobox({
               </CommandEmpty>
               <CommandGroup className="max-h-64 overflow-auto">
                 {categories.map((category) => {
-                  const isSelected = value.includes(category.name);
+                  const name = category.name ?? "";
+                  const id = category._id ?? name;
+                  const isSelected = value.includes(name);
                   return (
                     <CommandItem
-                      key={category._id}
-                      value={category.name}
+                      key={id}
+                      value={name}
                       onSelect={() => {
                         if (isSelected) {
                           onChange(
-                            value.filter((item) => item !== category.name),
+                            value.filter((item) => item !== name),
                           );
                         } else {
-                          onChange([...value, category.name]);
+                          onChange([...value, name]);
                         }
                         setOpen(true);
                       }}
@@ -94,7 +97,7 @@ export function MultiSelectCombobox({
                       >
                         {isSelected && <Check className="h-3 w-3 text-white" />}
                       </div>
-                      <span className="text-sm">{category.name}</span>
+                      <span className="text-sm">{name}</span>
                     </CommandItem>
                   );
                 })}

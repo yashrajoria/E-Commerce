@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useProducts } from "@/hooks/useProducts";
+import { formatGBP } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -52,12 +53,6 @@ export function FeaturedProducts() {
   const products = data?.products ?? [];
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, hasWishlistItem } = useWishlist();
-
-  const formatGBP = (value?: number) =>
-    new Intl.NumberFormat("en-GB", {
-      style: "currency",
-      currency: "GBP",
-    }).format(value ?? 0);
 
   if (isLoading) {
     return (
@@ -106,6 +101,9 @@ export function FeaturedProducts() {
             <h2 className="text-3xl lg:text-4xl font-bold tracking-tight">
               Featured Products
             </h2>
+            <p className="mt-2 max-w-xl text-muted-foreground">
+              A tighter edit of best sellers, high-rated picks, and seasonal arrivals chosen to reduce browsing time.
+            </p>
           </div>
           <Link href="/products">
             <Button
@@ -196,8 +194,8 @@ export function FeaturedProducts() {
 
                   {/* Product Info */}
                   <div className="p-4 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">
+                    <div className="flex items-start justify-between gap-3">
+                      <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium line-clamp-1">
                         {typeof product.category === "string"
                           ? product.category
                           : product.category?.name}

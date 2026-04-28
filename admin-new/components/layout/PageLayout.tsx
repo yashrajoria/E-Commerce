@@ -1,7 +1,3 @@
-/**
- * Premium Page Layout – Shared wrapper for all admin pages.
- * Provides sidebar, top header bar, breadcrumbs, and page-level animations.
- */
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,10 +9,14 @@ import {
 } from "@/components/ui/tooltip";
 import { LiveIndicator } from "@/components/dashboard/LiveIndicator";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, Search, Menu, X } from "lucide-react";
+import { Bell, Search, LogOut } from "lucide-react";
+import { MenuIcon, CloseIcon, SearchIcon } from "@ecommerce/shared";
 import Head from "next/head";
 import Link from "next/link";
 import { useState, ReactNode } from "react";
+import axios from "axios";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 // ── Page-level animation variants (same as dashboard) ──
 export const pageContainer = {
@@ -61,6 +61,7 @@ const PageLayout = ({
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const router = useRouter();
   return (
     <div className="flex min-h-screen bg-background">
       <Head>
@@ -85,7 +86,7 @@ const PageLayout = ({
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-label="Toggle menu"
               >
-                {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+                {mobileMenuOpen ? <CloseIcon size={18} /> : <MenuIcon size={18} />}
               </button>
               <div className="hidden sm:flex items-center gap-2 text-sm">
                 <Link
@@ -117,7 +118,7 @@ const PageLayout = ({
             {/* Center: Search */}
             <div className="flex-1 max-w-md mx-auto hidden md:block">
               <div className="relative">
-                <Search
+                <SearchIcon
                   size={15}
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 />
@@ -158,6 +159,28 @@ const PageLayout = ({
                 <Search size={16} />
               </Button>
               {headerActions}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 rounded-xl hover:bg-white/[0.06] text-muted-foreground"
+                aria-label="Sign out"
+                onClick={async () => {
+                  try {
+                    await axios.post(
+                      "/api/admin/auth/logout",
+                      {},
+                      { withCredentials: true },
+                    );
+                    toast.success("Signed out");
+                    router.replace("/");
+                  } catch (e) {
+                    console.error("Logout failed", e);
+                    toast.error("Sign out failed");
+                  }
+                }}
+              >
+                <LogOut size={16} />
+              </Button>
             </div>
           </div>
 

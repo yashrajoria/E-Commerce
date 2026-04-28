@@ -1,6 +1,3 @@
-/**
- * Premium Product Detail Page
- */
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
 import StatsCard from "@/components/ui/stats-card";
 import ProductImageGallery from "@/components/product-details/ProductImageGallery";
@@ -21,20 +18,29 @@ import {
   Trash2,
 } from "lucide-react";
 import { useRouter } from "next/router";
+import type { GetServerSidePropsContext } from "next";
 import { useState } from "react";
+import { useProductForm } from "@/hooks/useProductForm";
+import type { Product } from "@/types/shared";
 
 const ProductDetailPage = () => {
   const router = useRouter();
   const { id } = router.query;
   const { product, loading } = useProduct(id as string);
   const [isEditing, setIsEditing] = useState(false);
+  const { deleteSingleProduct } = useProductForm(
+    () => {},
+    () => {},
+    [],
+    null,
+  );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const p: any = Array.isArray(product) ? product[0] : product;
+  const p: Product | undefined = Array.isArray(product) ? product[0] : product;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-  const handleInputChange = (_field: string, _value: any) => {
+  const handleInputChange = (_field: string, _value: unknown) => {
     // handle input changes for edit mode
+    void _field;
+    void _value;
   };
 
   if (loading) {
@@ -84,6 +90,19 @@ const ProductDetailPage = () => {
     );
   }
 
+  const handleDelete = async () => {
+    const ok = window.confirm(
+      "Delete this product? This action cannot be undone.",
+    );
+    if (!ok) return;
+    try {
+      await deleteSingleProduct(p?._id || (id as string));
+      router.push("/products");
+    } catch (e) {
+      console.error("Delete failed", e);
+    }
+  };
+
   return (
     <PageLayout
       title={p.name || "Product Details"}
@@ -106,6 +125,7 @@ const ProductDetailPage = () => {
             variant="outline"
             size="sm"
             className="gap-2 text-xs border-red-500/20 text-red-400 hover:bg-red-500/10 rounded-xl h-8"
+            onClick={handleDelete}
           >
             <Trash2 size={13} />
             Delete
@@ -120,7 +140,7 @@ const ProductDetailPage = () => {
       >
         <StatsCard
           title="Price"
-          value={`$${p.price?.toFixed(2) || "0.00"}`}
+          value={`£${p.price?.toFixed(2) || "0.00"}`}
           icon={DollarSign}
           gradient="gradient-emerald"
           glowClass="glow-emerald"
@@ -171,12 +191,12 @@ const ProductDetailPage = () => {
                 <Badge
                   variant="outline"
                   className={
-                    p.quantity > 0
+                    (p.quantity ?? 0) > 0
                       ? "bg-emerald-400/10 text-emerald-400 border-emerald-400/20"
                       : "bg-red-400/10 text-red-400 border-red-400/20"
                   }
                 >
-                  {p.quantity > 0 ? "In Stock" : "Out of Stock"}
+                  {(p.quantity ?? 0) > 0 ? "In Stock" : "Out of Stock"}
                 </Badge>
               </div>
             </CardHeader>
@@ -203,7 +223,7 @@ const ProductDetailPage = () => {
                     Regular Price
                   </span>
                   <span className="text-lg font-bold text-gradient">
-                    ${p.price?.toFixed(2)}
+                    £{p.price?.toFixed(2)}
                   </span>
                 </div>
                 {p.compareAtPrice && (
@@ -212,7 +232,7 @@ const ProductDetailPage = () => {
                       Compare At
                     </span>
                     <span className="text-sm line-through text-muted-foreground">
-                      ${p.compareAtPrice?.toFixed(2)}
+                      £{p.compareAtPrice?.toFixed(2)}
                     </span>
                   </div>
                 )}
@@ -248,3 +268,8 @@ const ProductDetailPage = () => {
 };
 
 export default ProductDetailPage;
+
+export async function getServerSideProps(ctx: GetServerSidePropsContext) {
+  const { requireAuth } = await import("@/lib/ssrAuth");
+  return requireAuth(ctx);
+}

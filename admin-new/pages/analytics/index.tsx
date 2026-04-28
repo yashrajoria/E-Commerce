@@ -79,23 +79,25 @@ const trafficSources = [
   { source: "Referral", visitors: 1600, percentage: 7 },
 ];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (!active || !payload?.length) return null;
+type TooltipEntry = { color?: string; name?: string; value?: number | string };
+const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipEntry[]; label?: string }) => {
+  if (!active || !Array.isArray(payload) || payload.length === 0) return null;
   return (
-    <div className="glass-effect-strong rounded-lg p-3 border border-white/[0.08] text-sm">
+    <div className="glass-effect-strong rounded-lg p-3 border border-white/8 text-sm">
       <p className="font-medium mb-1">{label}</p>
-      {payload.map(
-        (entry: { color: string; name: string; value: number }, i: number) => (
-          <p key={i} className="text-xs" style={{ color: entry.color }}>
-            {entry.name}:{" "}
-            {typeof entry.value === "number" &&
-            entry.name.toLowerCase().includes("revenue")
-              ? `$${entry.value.toLocaleString()}`
-              : entry.value.toLocaleString()}
+      {payload.map((entry, i) => {
+        const name = entry?.name ?? "";
+        const value = entry?.value ?? "";
+        const color = entry?.color ?? undefined;
+        const formatted = typeof value === "number" && name.toLowerCase().includes("revenue")
+          ? `£${value.toLocaleString()}`
+          : String(value).toLocaleString();
+        return (
+          <p key={i} className="text-xs" style={{ color }}>
+            {name}: {formatted}
           </p>
-        ),
-      )}
+        );
+      })}
     </div>
   );
 };
@@ -110,7 +112,7 @@ const Analytics = () => {
           <Button
             variant="outline"
             size="sm"
-            className="gap-2 text-xs border-white/[0.08] hover:bg-white/[0.04] rounded-xl h-8 hidden sm:flex"
+            className="gap-2 text-xs border-white/8 hover:bg-white/4 rounded-xl h-8 hidden sm:flex"
           >
             <Calendar size={13} />
             Last 30 Days
@@ -118,7 +120,7 @@ const Analytics = () => {
           <Button
             variant="outline"
             size="sm"
-            className="gap-2 text-xs border-white/[0.08] hover:bg-white/[0.04] rounded-xl h-8"
+            className="gap-2 text-xs border-white/8 hover:bg-white/4 rounded-xl h-8"
           >
             <Download size={13} />
             Export
@@ -133,7 +135,7 @@ const Analytics = () => {
       >
         <StatsCard
           title="Total Revenue"
-          value="$306,200"
+          value="£306,200"
           icon={DollarSign}
           trend={{ value: 18.2, label: "vs last year" }}
           gradient="gradient-purple"
@@ -149,7 +151,7 @@ const Analytics = () => {
         />
         <StatsCard
           title="Avg Order Value"
-          value="$43.13"
+          value="£43.13"
           icon={Target}
           trend={{ value: 5.1, label: "vs last year" }}
           gradient="gradient-gold"
@@ -188,7 +190,7 @@ const Analytics = () => {
 
           {/* Revenue Tab */}
           <TabsContent value="revenue" className="space-y-6 mt-6">
-            <Card className="glass-effect border-white/[0.06]">
+            <Card className="glass-effect border-white/6">
               <CardHeader>
                 <CardTitle className="text-lg">Revenue Overview</CardTitle>
                 <CardDescription>
@@ -231,7 +233,7 @@ const Analytics = () => {
                       <YAxis
                         stroke="rgba(255,255,255,0.3)"
                         fontSize={12}
-                        tickFormatter={(v) => `$${v / 1000}k`}
+                        tickFormatter={(v) => `£${v / 1000}k`}
                       />
                       <Tooltip content={<CustomTooltip />} />
                       <Area
@@ -251,7 +253,7 @@ const Analytics = () => {
 
           {/* Orders Tab */}
           <TabsContent value="orders" className="space-y-6 mt-6">
-            <Card className="glass-effect border-white/[0.06]">
+            <Card className="glass-effect border-white/6">
               <CardHeader>
                 <CardTitle className="text-lg">Order Volume</CardTitle>
                 <CardDescription>
@@ -298,7 +300,7 @@ const Analytics = () => {
           <TabsContent value="products" className="space-y-6 mt-6">
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
               {/* Category Breakdown */}
-              <Card className="glass-effect border-white/[0.06] lg:col-span-2">
+              <Card className="glass-effect border-white/6 lg:col-span-2">
                 <CardHeader>
                   <CardTitle className="text-lg">Sales by Category</CardTitle>
                 </CardHeader>
@@ -346,7 +348,7 @@ const Analytics = () => {
               </Card>
 
               {/* Top Products */}
-              <Card className="glass-effect border-white/[0.06] lg:col-span-3">
+              <Card className="glass-effect border-white/6 lg:col-span-3">
                 <CardHeader>
                   <CardTitle className="text-lg">Top Products</CardTitle>
                   <CardDescription>
@@ -360,7 +362,7 @@ const Analytics = () => {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.05 }}
-                      className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] transition-colors border border-white/[0.04]"
+                      className="flex items-center justify-between p-3 rounded-xl bg-white/2 hover:bg-white/4 transition-colors border border-white/4"
                     >
                       <div className="flex items-center gap-3">
                         <div className="h-8 w-8 rounded-lg gradient-purple flex items-center justify-center text-white text-xs font-bold">
@@ -375,7 +377,7 @@ const Analytics = () => {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-semibold">
-                          ${product.revenue.toLocaleString()}
+                          £{product.revenue.toLocaleString()}
                         </p>
                         <div
                           className={`flex items-center gap-1 text-xs ${product.trend > 0 ? "text-emerald-400" : "text-red-400"}`}
@@ -397,7 +399,7 @@ const Analytics = () => {
 
           {/* Traffic Tab */}
           <TabsContent value="traffic" className="space-y-6 mt-6">
-            <Card className="glass-effect border-white/[0.06]">
+            <Card className="glass-effect border-white/6">
               <CardHeader>
                 <CardTitle className="text-lg">Traffic Sources</CardTitle>
                 <CardDescription>Where your visitors come from</CardDescription>
@@ -420,13 +422,13 @@ const Analytics = () => {
                         </span>
                         <Badge
                           variant="outline"
-                          className="text-xs border-white/[0.08]"
+                          className="text-xs border-white/8"
                         >
                           {source.percentage}%
                         </Badge>
                       </div>
                     </div>
-                    <div className="h-2 bg-white/[0.04] rounded-full overflow-hidden">
+                    <div className="h-2 bg-white/4 rounded-full overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${source.percentage}%` }}

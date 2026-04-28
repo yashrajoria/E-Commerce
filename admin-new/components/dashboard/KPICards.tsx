@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 
 export default function KPICards() {
   const kpis = [
-    { label: "Total Sales", value: "$14,200" },
+    { label: "Total Sales", value: "£14,200" },
     { label: "New Orders", value: "32" },
     { label: "Visitors", value: "1,024" },
     { label: "New Customers", value: "12" },

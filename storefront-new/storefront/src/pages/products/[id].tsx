@@ -14,8 +14,10 @@ import { useProductById } from "@/hooks/useProducts";
 import { motion } from "framer-motion";
 import { Heart, Minus, Plus, Share2, ShoppingBag, Star } from "lucide-react";
 import Head from "next/head";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { formatGBP } from "@/lib/utils";
 
 export default function ProductPage() {
   const [quantity, setQuantity] = useState(1);
@@ -25,7 +27,7 @@ export default function ProductPage() {
   const id = Array.isArray(router.query.id)
     ? router.query.id[0]
     : router.query.id;
-  const { data: product, isLoading, error } = useProductById(id);
+  const { data: product, isLoading } = useProductById(id);
   const { addToWishlist, removeFromWishlist, hasWishlistItem } = useWishlist();
 
   const rating = product?.rating ?? 0;
@@ -35,13 +37,16 @@ export default function ProductPage() {
       ? product.category
       : product.category?.name
     : "";
+  const categoryId =
+    product && typeof product.category !== "string"
+      ? product.category?.id
+      : undefined;
   const isWishlisted = product ? hasWishlistItem(product.id) : false;
 
-  const formatGBP = (value?: number) =>
-    new Intl.NumberFormat("en-GB", {
-      style: "currency",
-      currency: "GBP",
-    }).format(value ?? 0);
+  // Use `inStock` from `Product` type if provided; default to false
+  const isOutOfStock = product ? product.inStock === false : false;
+
+  // use shared formatter from utils
 
   const { addToCart } = useCart();
 
@@ -75,24 +80,53 @@ export default function ProductPage() {
           text: `Check out this product: ${product?.name}`,
           url: window.location.href,
         })
-        .catch((error) => console.error("Error sharing", error));
+        .catch(() => {
+          // ignore
+        });
     } else {
       showInfo("Web Share API is not supported in your browser.");
     }
   };
 
   if (!router.isReady || isLoading) {
-    return <div className="min-h-screen">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="text-center max-w-sm">
+          <div className="mx-auto mb-4 h-12 w-12 rounded-full border-4 border-rose-200 border-t-rose-600 animate-spin" />
+          <h1 className="text-xl font-semibold">Loading product details</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Fetching the latest product information.
+          </p>
+        </div>
+      </div>
+    );
   }
 
-  if (error || !product) {
-    return <div className="min-h-screen">Failed to load product.</div>;
+  if (!product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="text-center max-w-sm rounded-2xl border bg-card p-8 shadow-sm">
+          <h1 className="text-xl font-semibold">Failed to load product</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            The product could not be loaded right now. Please try again.
+          </p>
+          <div className="mt-6 flex items-center justify-center gap-3">
+            <Button asChild variant="outline">
+              <Link href="/products">Back to products</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/">Go home</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen">
       <Head>
-        <title>{product.name} | Storefront</title>
+        <title>{product.name} | ShopSwift</title>
         <meta
           name="description"
           content={
@@ -101,7 +135,7 @@ export default function ProductPage() {
           }
         />
         <link rel="canonical" href={`${siteUrl}/products/${id}`} />
-        <meta property="og:title" content={`${product.name} | Storefront`} />
+        <meta property="og:title" content={`${product.name} | ShopSwift`} />
         <meta
           property="og:description"
           content={
@@ -132,15 +166,31 @@ export default function ProductPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="text-sm text-muted-foreground">
-              <span className="hover:text-rose-600 cursor-pointer">Home</span>
+            <nav
+              aria-label="Breadcrumb"
+              className="text-sm text-muted-foreground"
+            >
+              <Link href="/" className="hover:text-rose-600">
+                Home
+              </Link>
               <span className="mx-2">/</span>
-              <span className="hover:text-rose-600 cursor-pointer">
-                {categoryName}
-              </span>
+              {categoryName ? (
+                <Link
+                  href={
+                    categoryId
+                      ? `/products?categoryId=${encodeURIComponent(categoryId)}&category=${encodeURIComponent(categoryName)}`
+                      : `/products?category=${encodeURIComponent(categoryName)}`
+                  }
+                  className="hover:text-rose-600"
+                >
+                  {categoryName}
+                </Link>
+              ) : (
+                <span className="hover:text-rose-600">Category</span>
+              )}
               <span className="mx-2">/</span>
-              <span>{product?.name}</span>
-            </div>
+              <span aria-current="page">{product?.name}</span>
+            </nav>
 
             <div>
               <h1 className="text-3xl font-bold mb-2">{product?.name}</h1>
@@ -196,8 +246,9 @@ export default function ProductPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                   disabled={quantity <= 1}
+                  aria-label="Decrease quantity"
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
@@ -205,12 +256,18 @@ export default function ProductPage() {
                   type="number"
                   className="w-16 text-center border-0"
                   value={quantity}
-                  onChange={(e) => setQuantity(parseInt(e.target.value))}
+                  min={1}
+                  aria-label="Quantity"
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value, 10);
+                    setQuantity(Number.isNaN(v) ? 1 : Math.max(1, v));
+                  }}
                 />
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setQuantity(quantity + 1)}
+                  onClick={() => setQuantity((q) => q + 1)}
+                  aria-label="Increase quantity"
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -218,11 +275,14 @@ export default function ProductPage() {
 
               <Button
                 size="lg"
-                className="flex-1 rounded-full bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 shadow-lg shadow-rose-500/20"
+                className="flex-1 rounded-full bg-linear-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 shadow-lg shadow-rose-500/20"
                 onClick={handleAddToCart}
+                disabled={isOutOfStock}
+                aria-disabled={isOutOfStock}
+                aria-label={isOutOfStock ? "Out of stock" : "Add to bag"}
               >
                 <ShoppingBag className="h-4 w-4 mr-2" />
-                Add to Bag
+                {isOutOfStock ? "Out of stock" : "Add to Bag"}
               </Button>
 
               <Button
@@ -333,14 +393,14 @@ export default function ProductPage() {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <h5 className="font-medium mb-2">Standard Delivery</h5>
-                    <p className="text-sm text-muted-foreground">
-                      5-7 business days - Free on orders over $50
+                      <p className="text-sm text-muted-foreground">
+                        5-7 business days - Free on orders over {formatGBP(50)}
                     </p>
                   </div>
                   <div>
                     <h5 className="font-medium mb-2">Express Delivery</h5>
-                    <p className="text-sm text-muted-foreground">
-                      2-3 business days - $9.99
+                      <p className="text-sm text-muted-foreground">
+                        2-3 business days - {formatGBP(9.99)}
                     </p>
                   </div>
                 </div>

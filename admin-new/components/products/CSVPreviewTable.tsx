@@ -7,11 +7,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ImageIcon } from "lucide-react";
 import Image from "next/image";
-
-export default function CSVPreviewTable({ csvData }: { csvData: any[] }) {
+export default function CSVPreviewTable({ csvData }: { csvData: Record<string, unknown>[] }) {
   return (
     <div className="rounded-lg border overflow-hidden">
       <div className="bg-gray-50 dark:bg-gray-800/50 p-4 border-b">
@@ -36,13 +34,15 @@ export default function CSVPreviewTable({ csvData }: { csvData: any[] }) {
             {csvData.map((product, index) => (
               <TableRow key={index}>
                 <TableCell className="font-medium">{index + 1}</TableCell>
-                <TableCell>{product.Name}</TableCell>
+                <TableCell>{String((product as Record<string, unknown>).Name ?? (product as Record<string, unknown>).name ?? "")}</TableCell>
                 <TableCell>
-                  {product.ImageURL ? (
+                  {(product as Record<string, unknown>).ImageURL ? (
                     <div className="h-12 w-12 rounded-md overflow-hidden border border-gray-200 dark:border-gray-800">
                       <Image
-                        src={product.ImageURL || "/placeholder.svg"}
-                        alt={product.Name}
+                        src={String((product as Record<string, unknown>).ImageURL) || "/placeholder.svg"}
+                        alt={String((product as Record<string, unknown>).Name ?? (product as Record<string, unknown>).name ?? "")}
+                        width={100}
+                        height={100}
                         className="h-full w-full object-cover"
                       />
                     </div>
@@ -52,10 +52,10 @@ export default function CSVPreviewTable({ csvData }: { csvData: any[] }) {
                     </div>
                   )}
                 </TableCell>
-                <TableCell>${product.price}</TableCell>
-                <TableCell>{product.Quantity}</TableCell>
+                <TableCell>${String((product as Record<string, unknown>).price ?? (product as Record<string, unknown>).Price ?? "0.00")}</TableCell>
+                <TableCell>{String((product as Record<string, unknown>).Quantity ?? (product as Record<string, unknown>).quantity ?? "0")}</TableCell>
                 <TableCell className="max-w-[200px] truncate">
-                  {product.Description}
+                  {String((product as Record<string, unknown>).Description ?? (product as Record<string, unknown>).description ?? "")}
                 </TableCell>
               </TableRow>
             ))}

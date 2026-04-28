@@ -74,7 +74,7 @@ export function Footer() {
                 placeholder="Enter your email"
                 className="rounded-full h-11 bg-background"
               />
-              <Button className="rounded-full h-11 px-6 bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 text-white shadow-lg shadow-rose-500/20">
+              <Button className="rounded-full h-11 px-6 bg-linear-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 text-white shadow-lg shadow-rose-500/20">
                 Subscribe
                 <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
@@ -89,11 +89,11 @@ export function Footer() {
           {/* Brand */}
           <div className="lg:col-span-2 space-y-5">
             <Link href="/" className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-rose-600 to-amber-500 flex items-center justify-center shadow-lg shadow-rose-500/20">
+              <div className="h-9 w-9 rounded-xl bg-linear-to-br from-rose-600 to-amber-500 flex items-center justify-center shadow-lg shadow-rose-500/20">
                 <span className="text-white font-bold text-sm">S</span>
               </div>
               <span className="font-semibold text-xl tracking-tight">
-                Storefront
+                ShopSwift
               </span>
             </Link>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">
@@ -125,9 +125,13 @@ export function Footer() {
               <ul className="space-y-2.5">
                 {links.map((link) => (
                   <li key={link}>
-                    <button className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 text-left">
+                    <a
+                      href="#"
+                      onClick={(e) => e.preventDefault()}
+                      className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 block"
+                    >
                       {link}
-                    </button>
+                    </a>
                   </li>
                 ))}
               </ul>
@@ -142,19 +146,31 @@ export function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex flex-col md:flex-row items-center gap-2 md:gap-6 text-sm text-muted-foreground">
               <span>
-                &copy; {new Date().getFullYear()} Storefront. All rights
+                &copy; {new Date().getFullYear()} ShopSwift. All rights
                 reserved.
               </span>
               <div className="flex gap-4">
-                <button className="hover:text-foreground transition-colors">
+                <a
+                  href="#"
+                  onClick={(e) => e.preventDefault()}
+                  className="hover:text-foreground transition-colors"
+                >
                   Privacy
-                </button>
-                <button className="hover:text-foreground transition-colors">
+                </a>
+                <a
+                  href="#"
+                  onClick={(e) => e.preventDefault()}
+                  className="hover:text-foreground transition-colors"
+                >
                   Terms
-                </button>
-                <button className="hover:text-foreground transition-colors">
+                </a>
+                <a
+                  href="#"
+                  onClick={(e) => e.preventDefault()}
+                  className="hover:text-foreground transition-colors"
+                >
                   Cookies
-                </button>
+                </a>
               </div>
             </div>
 
@@ -164,6 +180,7 @@ export function Footer() {
                   key={social.label}
                   href={social.href}
                   aria-label={social.label}
+                  onClick={(e) => social.href === "#" && e.preventDefault()}
                   className="h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all duration-200"
                 >
                   <social.icon className="h-4 w-4" />
@@ -176,3 +193,4 @@ export function Footer() {
     </footer>
   );
 }
+

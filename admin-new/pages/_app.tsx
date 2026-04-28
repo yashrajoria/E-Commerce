@@ -4,8 +4,13 @@ import type { AppProps } from "next/app";
 import { Toaster } from "sonner";
 import { ErrorBoundary } from "react-error-boundary";
 import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useAuth, axiosInstance, setAPIErrorHandler, AuthProvider } from "@ecommerce/shared";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { motion, AnimatePresence } from "framer-motion";
+import { setupGlobalAxiosInterceptors } from "@/lib/axios-interceptor";
+import { ContextualAIAssistant } from "@/components/ai/ContextualAIAssistant";
+import { resolveAIPageContext } from "@/lib/ai-contextual-assistant";
 
 /** Premium error fallback with glassmorphism styling */
 function ErrorFallback({
@@ -96,31 +101,131 @@ function RouteProgressBar() {
   );
 }
 
-export default function App({ Component, pageProps, router }: AppProps) {
+function AppContent({ Component, pageProps, router }: AppProps) {
+  const { loading, authenticated } = useAuth();
+
+  // pages/prefixes that should require an authenticated session
+  const protectedPrefixes = [
+    "/products",
+    "/orders",
+    "/dashboard",
+    "/customers",
+    "/settings",
+    "/inventory",
+    "/returns",
+    "/reviews",
+    "/profile",
+    "/analytics",
+    "/marketing",
+    "/support",
+    "/shipping",
+    "/categories",
+    "/activity-logs",
+  ];
+
+  const needsAuth = protectedPrefixes.some((p) => router.asPath.startsWith(p));
+  const surfaceTheme = needsAuth ? "theme-admin" : "theme-storefront";
+  const pageAIContext = useMemo(
+    () =>
+      resolveAIPageContext({
+        pathname: router.pathname,
+        asPath: router.asPath,
+        query: router.query,
+      }),
+    [router.asPath, router.pathname, router.query],
+  );
+  const shouldRenderContextualAssistant =
+    needsAuth &&
+    authenticated &&
+    router.pathname !== "/dashboard/ai-insights" &&
+    Boolean(pageAIContext);
+
+  useEffect(() => {
+    // Setup global Axios error handler for toasts
+    setAPIErrorHandler((type, message) => {
+      if (type === 'FORBIDDEN') {
+        toast.error(message);
+      } else if (type === 'RATE_LIMITED') {
+        toast.error(message);
+      } else if (type === 'SERVER_ERROR') {
+        toast.error(message);
+      }
+    });
+
+    // Handle logout event for redirection
+    const handleLogout = () => {
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      }
+    };
+    window.addEventListener('logout', handleLogout);
+    return () => window.removeEventListener('logout', handleLogout);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.remove("theme-admin", "theme-storefront");
+    document.body.classList.remove("theme-admin", "theme-storefront");
+    document.documentElement.classList.add(surfaceTheme);
+    document.body.classList.add(surfaceTheme);
+
+    return () => {
+      document.documentElement.classList.remove("theme-admin", "theme-storefront");
+      document.body.classList.remove("theme-admin", "theme-storefront");
+    };
+  }, [surfaceTheme]);
+
+  // useEffect(() => {
+  //   if (!loading && needsAuth && !authenticated) {
+  //     // redirect unauthenticated users to the sign-in page
+  //     router.replace("/");
+  //   }
+  // }, [loading, authenticated, needsAuth, router]);
+
+  if (needsAuth && loading) {
+    return (
+      <div className={`${surfaceTheme} min-h-screen flex items-center justify-center`}>
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
-      <RouteProgressBar />
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          className:
-            "glass-effect-strong border border-white/[0.08] text-foreground",
-          duration: 4000,
-        }}
-        closeButton
-        richColors
-      />
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={router.asPath}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          <Component {...pageProps} />
-        </motion.div>
-      </AnimatePresence>
+      <div className={surfaceTheme}>
+        <RouteProgressBar />
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            className:
+              "glass-effect-strong border border-white/[0.08] text-foreground",
+            duration: 4000,
+          }}
+          closeButton
+          richColors
+        />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={router.asPath}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Component {...pageProps} />
+          </motion.div>
+        </AnimatePresence>
+        {shouldRenderContextualAssistant && pageAIContext ? (
+          <ContextualAIAssistant context={pageAIContext} />
+        ) : null}
+      </div>
     </ErrorBoundary>
+  );
+}
+
+export default function App(props: AppProps) {
+  return (
+    <AuthProvider>
+      <AppContent {...props} />
+    </AuthProvider>
   );
 }

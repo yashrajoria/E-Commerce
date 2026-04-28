@@ -1,14 +1,15 @@
 import axios from "axios";
+import { getResponseInfo } from "@/lib/error";
 import { NextApiRequest, NextApiResponse } from "next";
 
-// Utility function to extract token from cookies
-const extractTokenFromCookies = (cookieHeader: string | undefined): string => {
+// Utility function to extract auth cookie (prefer __session, fallback to token)
+const extractAuthCookie = (cookieHeader: string | undefined): string => {
   if (!cookieHeader) return "";
-  const tokenCookie = cookieHeader
-    .split(";")
-    .find((c) => c.trim().startsWith("token="))
-    ?.trim();
-  return tokenCookie || "";
+  const parts = cookieHeader.split(";").map((c) => c.trim());
+  const session = parts.find((c) => c.startsWith("__session="));
+  if (session) return session;
+  const token = parts.find((c) => c.startsWith("token="));
+  return token || "";
 };
 
 export default async function handler(
@@ -17,7 +18,7 @@ export default async function handler(
 ) {
   const { id } = req.query;
   console.log("ID", id);
-  const tokenCookie = extractTokenFromCookies(req.headers.cookie);
+  const tokenCookie = extractAuthCookie(req.headers.cookie);
   const baseUrl = process.env.NEXT_PUBLIC_NEW_API_URL;
 
   if (!baseUrl) {
@@ -80,18 +81,15 @@ export default async function handler(
       }
 
       default:
-        res.setHeader("Allow", ["GET", "PUT", "POST", "DELETE"]);
-        return res
-          .status(405)
-          .json({ message: `Method ${req.method} Not Allowed` });
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (err: any) {
-    console.error("API error:", err?.response?.data || err.message);
-    const status = err?.response?.status || 500;
-    const errorData = err?.response?.data || {
-      message: "Internal Server Error",
-    };
-    return res.status(status).json(errorData);
+          res.setHeader("Allow", ["GET", "PUT", "POST", "DELETE"]);
+          return res
+            .status(405)
+            .json({ message: `Method ${req.method} Not Allowed` });
+      }
+  } catch (err: unknown) {
+    console.error("API error:", err);
+    const { status, data } = getResponseInfo(err);
+    const errorData = data ?? { message: "Internal Server Error" };
+    return res.status(status || 500).json(errorData);
   }
 }

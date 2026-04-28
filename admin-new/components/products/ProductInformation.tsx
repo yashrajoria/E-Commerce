@@ -25,12 +25,14 @@ import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { MultiSelectCombobox } from "./MultiSelectCombobox";
 import Image from "next/image";
+import { Switch } from "../ui/switch";
+
+import type { UploadedImage } from "@ecommerce/shared/src/types/common";
 
 type ProductInformationProps = {
   type?: string;
   handleImageUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  uploadedImages?: any[];
+  uploadedImages?: UploadedImage[];
   removeImage?: (index: number) => void;
 };
 
@@ -203,6 +205,78 @@ const ProductInformation: React.FC<ProductInformationProps> = ({
               />
             </div>
 
+            {/* Brand & SKU Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {/* Brand */}
+              <FormField
+                control={form.control}
+                name="brand"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                      <Layers className="h-3.5 w-3.5 text-sky-400" />
+                      Brand
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Brand name"
+                        className="h-11 bg-white/[0.03] border-white/[0.08] rounded-xl"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* SKU */}
+              <FormField
+                control={form.control}
+                name="sku"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                      <Hash className="h-3.5 w-3.5 text-amber-400" />
+                      SKU
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="SKU (stock keeping unit)"
+                        className="h-11 bg-white/[0.03] border-white/[0.08] rounded-xl"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Featured Toggle */}
+            <FormField
+              control={form.control}
+              name="is_featured"
+              render={({ field }) => (
+                <FormItem className="flex items-center justify-between">
+                  <div>
+                    <FormLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      Featured
+                    </FormLabel>
+                    <p className="text-xs text-muted-foreground">
+                      Mark product as featured
+                    </p>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={!!field.value}
+                      onCheckedChange={(val: boolean) => field.onChange(val)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             {/* Category */}
             <FormField
               control={form.control}
@@ -214,7 +288,7 @@ const ProductInformation: React.FC<ProductInformationProps> = ({
                     Categories
                   </FormLabel>
                   <FormControl>
-                    <MultiSelectCombobox
+                      <MultiSelectCombobox
                       value={
                         Array.isArray(field.value)
                           ? field.value

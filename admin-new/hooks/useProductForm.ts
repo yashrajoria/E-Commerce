@@ -1,9 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import z from "zod";
+import uploadFiles from "./useUpload";
+import type React from "react";
 
 // Define form schema for single product
 const singleProductSchema = z.object({
@@ -24,13 +26,19 @@ const singleProductSchema = z.object({
     .positive("quantity must be a positive number"),
   description: z.string().optional(),
   images: z.array(z.string()).optional(),
+  brand: z.string().optional(),
+  sku: z.string().optional(),
+  is_featured: z.boolean().optional(),
 });
 
+export type UploadedImage = { file: File | null; url?: string; name?: string; preview?: string };
+
 export function useProductForm(
-  setImagePreview: any,
-  setUploadedImages: any,
-  images: any,
-  imagePreview: any,
+  setImagePreview: React.Dispatch<React.SetStateAction<File | null>>,
+  setUploadedImages: React.Dispatch<React.SetStateAction<UploadedImage[]>>,
+  images: UploadedImage[],
+  imagePreview: File | null,
+  initialData?: Partial<z.infer<typeof singleProductSchema>>,
 ) {
   const form = useForm<z.infer<typeof singleProductSchema>>({
     resolver: zodResolver(singleProductSchema),
@@ -41,6 +49,10 @@ export function useProductForm(
       quantity: 0,
       description: "",
       images: [],
+      brand: "",
+      sku: "",
+      is_featured: false,
+      ...initialData,
     },
   });
 
@@ -54,22 +66,30 @@ export function useProductForm(
       formData.append("price", data.price.toString());
       formData.append("quantity", data.quantity.toString());
       formData.append("description", data.description || "");
+      if (data.brand) formData.append("brand", data.brand);
+      if (data.sku) formData.append("sku", data.sku);
+      if (typeof data.is_featured !== "undefined")
+        formData.append("is_featured", String(data.is_featured));
 
+      // If files are provided, try presign+upload flow and send image URLs instead
       if (images && images.length > 0) {
-        images.forEach((img: any) => {
-          if (img.file instanceof File) {
-            formData.append("images", img.file);
-          }
-        });
+        const files = images
+          .map((img: unknown) => (img && typeof img === "object" ? (img as Record<string, unknown>).file : undefined))
+          .filter((f: unknown): f is File => f instanceof File);
+        if (files.length > 0) {
+          const urls = await uploadFiles(files, data.sku);
+          formData.append("image_urls", JSON.stringify(urls));
+        }
       } else if (imagePreview instanceof File) {
-        formData.append("images", imagePreview);
+        const urls = await uploadFiles([imagePreview], data.sku);
+        formData.append("image_urls", JSON.stringify(urls));
       }
 
       for (const pair of formData.entries()) {
         console.log(pair[0], pair[1]);
       }
 
-      const res = await axios.post("/api/products", formData, {
+      const res = await axios.post("/api/admin/products", formData, {
         withCredentials: true,
       });
 
@@ -81,7 +101,7 @@ export function useProductForm(
 
       form.reset();
       setImagePreview(null);
-      setUploadedImages(null);
+      setUploadedImages([]);
       return res;
     } catch (error) {
       console.error("Error submitting product:", error);
@@ -96,9 +116,21 @@ export function useProductForm(
     try {
       // console.log({ data });
       console.log({ productId });
-      const id = (productId as any)._id || productId;
-      console.log(id);
-      const res = await axios.put(`/api/products/${productId}`, data, {
+      const id = typeof productId === "string" ? productId : (productId as { _id?: string })?._id || "";
+
+      // If there are new files in images, upload them first and include image_urls
+      const files = images
+        ? images.map((img: any) => img.file).filter((f: unknown): f is File => f instanceof File)
+        : [];
+
+      const payload: Record<string, unknown> = { ...data };
+
+      if (files.length > 0) {
+        const urls = await uploadFiles(files, data.sku);
+        (payload as Record<string, unknown>)["image_urls"] = urls;
+      }
+
+      const res = await axios.put(`/api/admin/products/${id}`, payload, {
         withCredentials: true,
       });
 
@@ -115,7 +147,7 @@ export function useProductForm(
   const deleteSingleProduct = async (productId: string) => {
     try {
       console.log({ productId });
-      const res = await axios.delete(`/api/products/${productId}`, {
+      const res = await axios.delete(`/api/admin/products/${productId}`, {
         withCredentials: true,
       });
       console.log(res);

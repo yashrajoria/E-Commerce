@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,7 @@ import { FcGoogle } from "react-icons/fc";
 import { toast } from "sonner";
 import axios from "axios";
 import { useRouter } from "next/router";
+import { getResponseInfo, getErrorMessage } from "@/lib/error";
 
 type AuthView = "login" | "register" | "otp" | "success";
 
@@ -110,6 +111,10 @@ export default function AuthModal({
     [onClose, initialView],
   );
 
+  useEffect(() => {
+    if (open) setView(initialView);
+  }, [open, initialView]);
+
   const passwordStrength = useMemo(
     () => getPasswordStrength(registerData.password),
     [registerData.password],
@@ -121,15 +126,23 @@ export default function AuthModal({
     setIsLoading(true);
     try {
       const res = await axios.post(
-        "http://localhost:8080/auth/login",
-        { ...loginData, role: "admin" },
-        { headers: { "Content-Type": "application/json" } },
+        "/api/admin/auth/login",
+        { ...loginData },
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        },
       );
       toast.success("Successfully signed in");
       if (res.status === 200) router.push("/dashboard");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      const msg = error?.response?.data?.message || "Invalid credentials";
+    } catch (error: unknown) {
+      const { data } = getResponseInfo(error);
+      const msg =
+        typeof data === "object" &&
+        data !== null &&
+        "message" in (data as Record<string, unknown>)
+          ? String((data as Record<string, unknown>).message)
+          : getErrorMessage(error) || "Invalid credentials";
       toast.error(msg);
     } finally {
       setIsLoading(false);
@@ -148,17 +161,43 @@ export default function AuthModal({
     }
     setIsLoading(true);
     try {
-      await axios.post("http://localhost:8080/auth/register", {
+      const sanitized = {
         name: registerData.name,
         email: registerData.email,
-        password: registerData.password,
-        role: "admin",
+        storeName: registerData.storeName,
+      };
+      console.debug("[AuthModal] register start", {
+        endpoint: "/api/admin/auth/register",
+        payload: sanitized,
+      });
+
+      const res = await axios.post(
+        "/api/admin/auth/register",
+        {
+          name: registerData.name,
+          email: registerData.email,
+          password: registerData.password,
+          role: "admin",
+        },
+        { withCredentials: true },
+      );
+
+      console.debug("[AuthModal] register response", {
+        status: res.status,
+        data: res.data,
       });
       toast.success("Verification code sent to your email");
       setView("otp");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Registration failed");
+    } catch (error: unknown) {
+      console.error("[AuthModal] register error:", error);
+      const { data } = getResponseInfo(error);
+      const msg =
+        typeof data === "object" &&
+        data !== null &&
+        "message" in (data as Record<string, unknown>)
+          ? String((data as Record<string, unknown>).message)
+          : getErrorMessage(error) || "Registration failed";
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
@@ -172,7 +211,7 @@ export default function AuthModal({
     setIsLoading(true);
     try {
       await axios.post(
-        "/api/auth/verify-otp",
+        "/api/admin/auth/verify-otp",
         { email: registerData.email, code: otpValue },
         {
           headers: { "Content-Type": "application/json" },
@@ -195,7 +234,9 @@ export default function AuthModal({
   const handleResendOTP = async () => {
     setIsResending(true);
     try {
-      await axios.post("/api/auth/resend-otp", { email: registerData.email });
+      await axios.post("/api/admin/auth/resend-otp", {
+        email: registerData.email,
+      });
       setOtpValue("");
       toast.success("New code sent to your email");
     } catch {

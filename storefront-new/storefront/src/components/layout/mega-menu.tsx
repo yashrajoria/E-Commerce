@@ -1,13 +1,13 @@
 "use client";
 
-import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useEffect, useRef } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { X, ChevronRight, Home, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import * as LucideIcons from "lucide-react";
 import { useCategories } from "@/hooks/useCategories";
 import Image from "next/image";
 import Link from "next/link";
+import { getLucideIcon, trapFocus } from "@/lib/utils";
 
 interface MegaMenuProps {
   isOpen: boolean;
@@ -17,6 +17,32 @@ interface MegaMenuProps {
 export function MegaMenu({ isOpen, onClose }: MegaMenuProps) {
   const { data: categories = [], isLoading, error } = useCategories();
 
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const prevFocused = useRef<HTMLElement | null>(null);
+  const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (!isOpen) return;
+    prevFocused.current = document.activeElement as HTMLElement;
+    setTimeout(() => {
+      const first = panelRef.current?.querySelector<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      first?.focus();
+    }, 0);
+
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "Tab") trapFocus(panelRef.current, e);
+    };
+
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      prevFocused.current?.focus();
+    };
+  }, [isOpen, onClose]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -24,19 +50,20 @@ export function MegaMenu({ isOpen, onClose }: MegaMenuProps) {
           {/* Backdrop */}
           <motion.div
             className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 md:hidden"
-            initial={{ opacity: 0 }}
+            initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
             onClick={onClose}
           />
 
           {/* Panel */}
           <motion.div
+            ref={panelRef}
             className="fixed top-0 left-0 h-full w-80 bg-background border-r border-border/50 z-50 shadow-2xl md:hidden"
-            initial={{ x: -320 }}
+            initial={reduceMotion ? { x: 0 } : { x: -320 }}
             animate={{ x: 0 }}
-            exit={{ x: -320 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            exit={reduceMotion ? { x: 0 } : { x: -320 }}
+            transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 30 }}
           >
             <div className="flex flex-col h-full">
               {/* Header */}
@@ -97,13 +124,7 @@ export function MegaMenu({ isOpen, onClose }: MegaMenuProps) {
                 {!isLoading &&
                   !error &&
                   categories.map((category, index) => {
-                    const IconComponent =
-                      (
-                        LucideIcons as unknown as Record<
-                          string,
-                          React.ComponentType<{ className?: string }>
-                        >
-                      )[category.icon] || LucideIcons.Package;
+                    const IconComponent = getLucideIcon(category.icon);
 
                     return (
                       <motion.div
@@ -113,7 +134,7 @@ export function MegaMenu({ isOpen, onClose }: MegaMenuProps) {
                         transition={{ delay: index * 0.05 + 0.1 }}
                       >
                         <Link
-                          href={`/products?category=${category.name}`}
+                          href={`/products?categoryId=${encodeURIComponent(category.id)}&category=${encodeURIComponent(category.name)}`}
                           onClick={onClose}
                           className="flex items-center gap-3 mx-3 px-3 py-2.5 rounded-lg hover:bg-muted/50 transition-colors group"
                         >

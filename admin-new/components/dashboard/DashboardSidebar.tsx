@@ -1,9 +1,6 @@
-/**
- * PremiumSidebar – Ultra-premium glassmorphism sidebar with
- * animated navigation, notification badges, quick actions, and responsive collapse
- */
-import { useState, useMemo } from "react";
+import { type ElementType, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
+import axios from "axios";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,58 +31,361 @@ import {
   Truck,
   Activity,
   Headphones,
+  Bot,
 } from "lucide-react";
+import {
+  AdminIcon,
+  ProductIcon,
+  OrdersIcon,
+  CustomersIcon,
+  AnalyticsIcon,
+  CategoryIcon,
+} from "@ecommerce/shared";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@ecommerce/shared";
 
 interface NavItem {
-  icon: React.ElementType;
+  icon: ElementType;
   label: string;
   path: string;
   badge?: number;
   section?: string;
 }
 
+type BadgeCounts = {
+  products?: number;
+  orders?: number;
+  customers?: number;
+  inventory?: number;
+};
+
+type BadgeCacheEntry = {
+  expiresAt: number;
+  value: BadgeCounts;
+};
+
+const SIDEBAR_BADGE_CACHE_KEY = "admin-sidebar-badge-counts";
+const SIDEBAR_BADGE_CACHE_TTL_MS = 5 * 60 * 1000;
+
+let badgeCountsMemoryCache: BadgeCacheEntry | null = null;
+
+const getCountValue = (...candidates: unknown[]) => {
+  for (const candidate of candidates) {
+    const value = Number(candidate);
+    if (Number.isFinite(value) && value >= 0) {
+      return value;
+    }
+  }
+
+  return undefined;
+};
+
+
+const hasAllBadgeCounts = (counts: BadgeCounts) =>
+  [counts.products, counts.orders, counts.customers, counts.inventory].every(
+    (value) => typeof value === "number",
+  );
+
+const readCachedBadgeCounts = (): BadgeCounts | null => {
+  const now = Date.now();
+
+  if (badgeCountsMemoryCache && badgeCountsMemoryCache.expiresAt > now) {
+    return badgeCountsMemoryCache.value;
+  }
+
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const raw = window.sessionStorage.getItem(SIDEBAR_BADGE_CACHE_KEY);
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as BadgeCacheEntry;
+    if (parsed.expiresAt <= now) {
+      window.sessionStorage.removeItem(SIDEBAR_BADGE_CACHE_KEY);
+      return null;
+    }
+
+    badgeCountsMemoryCache = parsed;
+    return parsed.value;
+  } catch {
+    window.sessionStorage.removeItem(SIDEBAR_BADGE_CACHE_KEY);
+    return null;
+  }
+};
+
+const writeCachedBadgeCounts = (value: BadgeCounts) => {
+  const hasAnyCount = Object.values(value).some(
+    (candidate) => typeof candidate === "number",
+  );
+  if (!hasAnyCount) {
+    return;
+  }
+
+  const entry: BadgeCacheEntry = {
+    value,
+    expiresAt: Date.now() + SIDEBAR_BADGE_CACHE_TTL_MS,
+  };
+
+  badgeCountsMemoryCache = entry;
+
+  if (typeof window !== "undefined") {
+    window.sessionStorage.setItem(SIDEBAR_BADGE_CACHE_KEY, JSON.stringify(entry));
+  }
+};
+
+const extractDashboardBadgeCounts = (payload: unknown): BadgeCounts => {
+  const obj = (typeof payload === "object" && payload !== null) ? (payload as Record<string, unknown>) : {};
+  const dashboard = typeof obj.data === "object" && obj.data !== null ? obj.data as Record<string, unknown> : obj;
+  const kpis = typeof dashboard.kpis === "object" && dashboard.kpis !== null
+    ? dashboard.kpis as Record<string, unknown>
+    : typeof dashboard.overview === "object" && dashboard.overview !== null && typeof (dashboard.overview as Record<string, unknown>).kpis === "object"
+      ? ((dashboard.overview as Record<string, unknown>).kpis as Record<string, unknown>)
+      : typeof dashboard.metrics === "object" && dashboard.metrics !== null
+        ? dashboard.metrics as Record<string, unknown>
+        : undefined;
+  const totals = typeof dashboard.totals === "object" && dashboard.totals !== null
+    ? dashboard.totals as Record<string, unknown>
+    : typeof dashboard.counts === "object" && dashboard.counts !== null
+      ? dashboard.counts as Record<string, unknown>
+      : typeof dashboard.summary === "object" && dashboard.summary !== null
+        ? dashboard.summary as Record<string, unknown>
+        : undefined;
+  const inventorySummary = typeof dashboard.inventorySummary === "object" && dashboard.inventorySummary !== null
+    ? dashboard.inventorySummary as Record<string, unknown>
+    : typeof dashboard.inventory === "object" && dashboard.inventory !== null
+      ? dashboard.inventory as Record<string, unknown>
+      : undefined;
+
+  return {
+    products: getCountValue(
+      kpis && typeof kpis.totalProducts === "object" && kpis.totalProducts !== null ? (kpis.totalProducts as Record<string, unknown>).value : undefined,
+      totals && typeof totals.products !== "undefined" ? totals.products : undefined,
+      dashboard.totalProducts,
+      dashboard.productsCount,
+      dashboard.productCount,
+    ),
+    orders: getCountValue(
+      kpis && typeof kpis.totalOrders === "object" && kpis.totalOrders !== null ? (kpis.totalOrders as Record<string, unknown>).value : undefined,
+      totals && typeof totals.orders !== "undefined" ? totals.orders : undefined,
+      dashboard.totalOrders,
+      dashboard.ordersCount,
+      dashboard.orderCount,
+    ),
+    customers: getCountValue(
+      kpis && typeof kpis.totalCustomers === "object" && kpis.totalCustomers !== null ? (kpis.totalCustomers as Record<string, unknown>).value : undefined,
+      kpis && typeof kpis.customers === "object" && kpis.customers !== null ? (kpis.customers as Record<string, unknown>).value : undefined,
+      totals && typeof totals.customers !== "undefined" ? totals.customers : undefined,
+      dashboard.totalCustomers,
+      dashboard.customersCount,
+      dashboard.customerCount,
+    ),
+    inventory: getCountValue(
+      kpis && typeof kpis.totalInventory === "object" && kpis.totalInventory !== null ? (kpis.totalInventory as Record<string, unknown>).value : undefined,
+      inventorySummary && typeof inventorySummary.totalSkus !== "undefined" ? inventorySummary.totalSkus : undefined,
+      inventorySummary && typeof inventorySummary.totalItems !== "undefined" ? inventorySummary.totalItems : undefined,
+      totals && typeof totals.inventory !== "undefined" ? totals.inventory : undefined,
+      dashboard.inventoryCount,
+      dashboard.totalInventory,
+    ),
+  };
+};
+
+const fetchBadgeCountsFromFallbackEndpoints = async (
+  currentCounts: BadgeCounts,
+): Promise<BadgeCounts> => {
+  const nextCounts = { ...currentCounts };
+  const pendingFetches: Promise<void>[] = [];
+
+  if (typeof nextCounts.products !== "number") {
+    pendingFetches.push(
+      axios
+        .get("/api/admin/products?page=1&perPage=1", {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        })
+        .then((response) => {
+          nextCounts.products = getCountValue(
+            response.data?.meta?.total,
+            response.data?.products?.length,
+          );
+        })
+        .catch(() => undefined),
+    );
+  }
+
+  if (typeof nextCounts.orders !== "number") {
+    pendingFetches.push(
+      axios
+        .get("/api/admin/orders?page=1&limit=1", {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        })
+        .then((response) => {
+          nextCounts.orders = getCountValue(
+            response.data?.meta?.total,
+            response.data?.orders?.length,
+          );
+        })
+        .catch(() => undefined),
+    );
+  }
+
+  if (typeof nextCounts.customers !== "number") {
+    pendingFetches.push(
+      axios
+        .get("/api/admin/customers?page=1&page_size=1", {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        })
+        .then((response) => {
+          nextCounts.customers = getCountValue(
+            response.data?.meta?.total,
+            response.data?.users?.length,
+          );
+        })
+        .catch(() => undefined),
+    );
+  }
+
+  if (typeof nextCounts.inventory !== "number") {
+    pendingFetches.push(
+      axios
+        .get("/api/admin/inventory?page=1&page_size=1", {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        })
+        .then((response) => {
+          nextCounts.inventory = getCountValue(
+            response.data?.meta?.total,
+            response.data?.inventory?.length,
+          );
+        })
+        .catch(() => undefined),
+    );
+  }
+
+  await Promise.all(pendingFetches);
+
+  return nextCounts;
+};
+
+const fetchSidebarBadgeCounts = async (): Promise<BadgeCounts> => {
+  const cachedCounts = readCachedBadgeCounts();
+  if (cachedCounts) {
+    return cachedCounts;
+  }
+
+  let nextCounts: BadgeCounts = {};
+
+  try {
+    const dashboardResponse = await axios.get("/api/admin/dashboard", {
+      headers: { "Content-Type": "application/json" },
+      withCredentials: true,
+    });
+    nextCounts = extractDashboardBadgeCounts(dashboardResponse.data);
+  } catch {
+    nextCounts = {};
+  }
+
+  if (!hasAllBadgeCounts(nextCounts)) {
+    nextCounts = await fetchBadgeCountsFromFallbackEndpoints(nextCounts);
+  }
+
+  writeCachedBadgeCounts(nextCounts);
+  return nextCounts;
+};
+
+
 const DashboardSidebar = () => {
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
+  const [badgeCounts, setBadgeCounts] = useState<BadgeCounts>(
+    () => readCachedBadgeCounts() ?? {},
+  );
+  const { user, loading: userLoading } = useAuth();
+
+  // Helper for user initials
+  const getInitials = (name?: string) => {
+    if (!name) return "?";
+    const parts = name.trim().split(" ");
+    if (parts.length === 1) return parts[0][0]?.toUpperCase() || "?";
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchBadgeCounts = async () => {
+      try {
+        const counts = await fetchSidebarBadgeCounts();
+        if (!isMounted) {
+          return;
+        }
+
+        setBadgeCounts(counts);
+      } catch {
+        if (!isMounted) {
+          return;
+        }
+        setBadgeCounts({});
+      }
+    };
+
+    void fetchBadgeCounts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const navItems: NavItem[] = useMemo(
     () => [
       {
-        icon: LayoutDashboard,
+        icon: AdminIcon,
         label: "Dashboard",
         path: "/dashboard",
         section: "Main",
       },
       {
-        icon: BarChart3,
+        icon: AnalyticsIcon,
         label: "Analytics",
         path: "/analytics",
         section: "Main",
       },
       {
-        icon: Package,
+        icon: Bot,
+        label: "AI Insights",
+        path: "/dashboard/ai-insights",
+        section: "Main",
+      },
+      {
+        icon: ProductIcon,
         label: "Products",
         path: "/products",
-        badge: 12,
+        badge: badgeCounts.products,
         section: "Commerce",
       },
       {
-        icon: ShoppingCart,
+        icon: OrdersIcon,
         label: "Orders",
         path: "/orders",
-        badge: 5,
+        badge: badgeCounts.orders,
         section: "Commerce",
       },
       {
-        icon: Users,
+        icon: CustomersIcon,
         label: "Customers",
         path: "/customers",
+        badge: badgeCounts.customers,
         section: "Commerce",
       },
       {
-        icon: Tag,
+        icon: CategoryIcon,
         label: "Categories",
         path: "/categories",
         section: "Commerce",
@@ -106,6 +406,7 @@ const DashboardSidebar = () => {
         icon: Layers,
         label: "Inventory",
         path: "/inventory",
+        badge: badgeCounts.inventory,
         section: "Finance",
       },
       {
@@ -145,7 +446,12 @@ const DashboardSidebar = () => {
         section: "System",
       },
     ],
-    [],
+    [
+      badgeCounts.customers,
+      badgeCounts.inventory,
+      badgeCounts.orders,
+      badgeCounts.products,
+    ],
   );
 
   // Group items by section
@@ -400,17 +706,17 @@ const DashboardSidebar = () => {
           >
             <div className="relative shrink-0">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-sm font-bold">
-                A
+                {userLoading ? "..." : getInitials(user?.name)}
               </div>
               <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[hsl(var(--sidebar-background))]" />
             </div>
             {!collapsed && (
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">
-                  Admin User
+                  {userLoading ? "Loading..." : user?.name || "Unknown User"}
                 </p>
                 <p className="text-[11px] text-muted-foreground truncate">
-                  admin@shopswift.com
+                  {userLoading ? "" : user?.email || "No email"}
                 </p>
               </div>
             )}

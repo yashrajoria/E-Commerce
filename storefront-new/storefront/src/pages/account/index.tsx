@@ -13,8 +13,10 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUser } from "@/context/UserContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { useToast } from "@/hooks/use-toast";
 import { updatePassword, updateUserData } from "@/lib/user";
+import { formatGBP } from "@/lib/utils";
 import { motion } from "framer-motion";
 import {
   Bell,
@@ -34,22 +36,46 @@ import Head from "next/head";
 export default function AccountPage() {
   const [activeTab, setActiveTab] = useState("profile");
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const { user, loading } = useUser();
+  const { user, loading, signOut, refetchUser } = useUser();
+  const { wishlist: localWishlist } = useWishlist();
   const [profile, setProfile] = useState({
     name: "",
     email: "",
     phone_number: "",
   });
-
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const router = useRouter();
+  const safeString = (v: unknown) => (v == null ? "" : String(v));
+  const safeDateFrom = (v: unknown): Date | null => {
+    if (v == null) return null;
+    if (typeof v === "string" || typeof v === "number") {
+      const d = new Date(v);
+      return Number.isFinite(d.getTime()) ? d : null;
+    }
+    return null;
+  };
+  const safeNumber = (v: unknown) => {
+    if (v == null) return 0;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const getNested = (obj: unknown, ...keys: string[]) => {
+    let cur = obj as unknown;
+    for (const k of keys) {
+      if (!cur || typeof cur !== "object") return undefined;
+      cur = (cur as Record<string, unknown>)[k];
+    }
+    return cur as unknown;
+  };
   useEffect(() => {
+    const baseProfile = (user?.profile ?? {}) as Record<string, unknown>;
     setProfile({
-      name: user?.name ?? "",
-      email: user?.email ?? "",
-      phone_number: user?.phone_number ?? "",
+      name: safeString(user?.name ?? baseProfile.name),
+      email: safeString(user?.email ?? baseProfile.email),
+      phone_number: safeString(user?.phone_number ?? baseProfile.phone_number),
     });
     const tabQuery = router.query.tab;
     const tab = Array.isArray(tabQuery) ? tabQuery[0] : tabQuery;
@@ -63,9 +89,17 @@ export default function AccountPage() {
       // Compare each field with original user data, include only changed fields
       const updates: Partial<typeof profile> = {};
 
-      if (data.name !== user?.name) updates.name = data.name;
-      if (data.email !== user?.email) updates.email = data.email;
-      if (data.phone_number !== user?.phone_number)
+      const original = {
+        name: safeString(user?.name ?? (user?.profile as Record<string, unknown>)?.name),
+        email: safeString(user?.email ?? (user?.profile as Record<string, unknown>)?.email),
+        phone_number: safeString(
+          user?.phone_number ?? (user?.profile as Record<string, unknown>)?.phone_number,
+        ),
+      };
+
+      if (data.name !== original.name) updates.name = data.name;
+      if (data.email !== original.email) updates.email = data.email;
+      if (data.phone_number !== original.phone_number)
         updates.phone_number = data.phone_number;
 
       // If no changes, avoid API call
@@ -74,19 +108,21 @@ export default function AccountPage() {
       }
 
       await updateUserData(updates);
-    } catch (error) {
-      console.error("Error updating profile:", error);
+      await refetchUser();
+    } catch {
+      // logger.error("Error updating profile:", { error });
+      showError("Could not update profile. Please try again.");
     }
   };
 
-  const { showError } = useToast();
+  const { showError, showSuccess } = useToast();
   const handleChangePassword = async (
     oldPassword: string,
     newPassword: string,
     confirmPassword: string,
   ) => {
     if (newPassword !== confirmPassword) {
-      alert("New password and confirm password do not match");
+      showError("New password and confirm password do not match");
       return;
     }
     if (!oldPassword || !newPassword) {
@@ -95,9 +131,12 @@ export default function AccountPage() {
     }
     try {
       await updatePassword(oldPassword, newPassword);
-      // Optionally clear password inputs here
-    } catch (err) {
-      console.error(err);
+      setPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      showSuccess("Password updated successfully");
+    } catch {
+      // logger.error("Error loading profile", { err });
       showError("Error updating password");
     }
   };
@@ -105,13 +144,13 @@ export default function AccountPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Head>
-          <title>Storefront | Account</title>
+          <title>ShopSwift | Account</title>
           <meta
             name="description"
             content="Manage your profile, orders, and preferences."
           />
           <link rel="canonical" href={`${siteUrl}/account`} />
-          <meta property="og:title" content="Storefront | Account" />
+          <meta property="og:title" content="ShopSwift | Account" />
           <meta
             property="og:description"
             content="Manage your profile, orders, and preferences."
@@ -128,13 +167,13 @@ export default function AccountPage() {
   return (
     <div className="min-h-screen">
       <Head>
-        <title>Storefront | Account</title>
+        <title>ShopSwift | Account</title>
         <meta
           name="description"
           content="Manage your profile, orders, and preferences."
         />
         <link rel="canonical" href={`${siteUrl}/account`} />
-        <meta property="og:title" content="Storefront | Account" />
+        <meta property="og:title" content="ShopSwift | Account" />
         <meta
           property="og:description"
           content="Manage your profile, orders, and preferences."
@@ -150,10 +189,10 @@ export default function AccountPage() {
           transition={{ duration: 0.6 }}
         >
           {/* Profile Header */}
-          <div className="bg-gradient-to-r from-rose-600 to-amber-500 rounded-2xl p-8 mb-8 text-white">
+          <div className="bg-linear-to-r from-rose-600 to-amber-500 rounded-2xl p-8 mb-8 text-white">
             <div className="flex items-center space-x-6">
               <Avatar className="w-24 h-24 border-4 border-white/20">
-                <AvatarImage src={user?.avatar} />
+                <AvatarImage src={user?.avatar ?? undefined} />
                 <AvatarFallback className="text-2xl">
                   {user?.name?.charAt(0)}
                 </AvatarFallback>
@@ -166,25 +205,30 @@ export default function AccountPage() {
                   <div>
                     <span className="text-white/60">Member since</span>
                     <p className="font-medium">
-                      {user?.created_at
-                        ? new Date(user.created_at).toLocaleDateString(
-                            "en-US",
-                            {
-                              year: "numeric",
-                              month: "long",
-                            },
-                          )
-                        : "—"}
+                      {(() => {
+                        const d = safeDateFrom(
+                          user?.created_at ?? (user?.profile as Record<string, unknown>)?.created_at,
+                        );
+                        return d ? d.toLocaleDateString("en-US", { year: "numeric", month: "long" }) : "—";
+                      })()}
                     </p>
                   </div>
                   <div>
                     <span className="text-white/60">Total Orders</span>
-                    <p className="font-medium">{user?.totalOrders || 0}</p>
+                    <p className="font-medium">
+                      {safeNumber(getNested((user as Record<string, unknown>)?.orders, "meta", "total_orders"))}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-white/60">Wishlist</span>
+                    <p className="font-medium">
+                      {((user as Record<string, unknown>)?.wishlist as unknown[])?.length ?? localWishlist.length ?? 0}
+                    </p>
                   </div>
                   <div>
                     <span className="text-white/60">Total Spent</span>
                     <p className="font-medium">
-                      ${user?.totalSpent?.toFixed(2) || 0}
+                      {formatGBP(safeNumber(user?.totalSpent))}
                     </p>
                   </div>
                 </div>
@@ -200,7 +244,7 @@ export default function AccountPage() {
             onValueChange={setActiveTab}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-6 mb-8">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 mb-8">
               <TabsTrigger
                 value="profile"
                 className="flex items-center space-x-2"
@@ -344,7 +388,7 @@ export default function AccountPage() {
             </TabsContent>
 
             <TabsContent value="orders">
-              <OrderHistory />
+              <OrderHistory orders={user?.orders} />
             </TabsContent>
 
             <TabsContent value="wishlist">
@@ -369,7 +413,7 @@ export default function AccountPage() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center space-x-4">
-                        <div className="w-12 h-8 bg-gradient-to-r from-blue-600 to-blue-800 rounded flex items-center justify-center text-white text-xs font-bold">
+                        <div className="w-12 h-8 bg-linear-to-r from-blue-600 to-blue-800 rounded flex items-center justify-center text-white text-xs font-bold">
                           VISA
                         </div>
                         <div>
@@ -439,6 +483,10 @@ export default function AccountPage() {
                     <Button
                       variant="outline"
                       className="text-destructive border-destructive"
+                      onClick={async () => {
+                        await signOut();
+                        router.push("/");
+                      }}
                     >
                       <LogOut className="h-4 w-4 mr-2" />
                       Sign Out

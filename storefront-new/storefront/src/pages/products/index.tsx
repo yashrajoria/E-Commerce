@@ -28,14 +28,30 @@ import type { Product } from "@/lib/types";
 export default function SearchPage() {
   const router = useRouter();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const DEFAULT_MAX_PRICE = 500000;
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [priceRange, setPriceRange] = useState([0, 500000]);
+  const [priceRange, setPriceRange] = useState([0, DEFAULT_MAX_PRICE]);
+  const [appliedPriceRange, setAppliedPriceRange] = useState([
+    0,
+    DEFAULT_MAX_PRICE,
+  ]);
   const [sortBy, setSortBy] = useState("relevance");
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [selectedRating, setSelectedRating] = useState<number | null>(null);
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const [onSaleOnly, setOnSaleOnly] = useState(false);
+  const [freeShippingOnly, setFreeShippingOnly] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showFilters, setShowFilters] = useState(false);
   const [productCount, setProductCount] = useState(12);
   const { data: categories = [] } = useCategories();
+  const selectedCategoryId = useMemo(() => {
+    if (!selectedCategory) return undefined;
+    const match = categories.find((c) => c.name === selectedCategory);
+    return match?.id;
+  }, [categories, selectedCategory]);
   const formatGBP = (value?: number) =>
     new Intl.NumberFormat("en-GB", {
       style: "currency",
@@ -45,67 +61,116 @@ export default function SearchPage() {
   // Set page from URL query on initial load
   const [page, setPage] = useState(Number(router.query.page) || 1);
 
-  const { data, isLoading, error } = useProducts(productCount, page);
-  const products = useMemo(
-    () => data?.products ?? ([] as Product[]),
-    [data?.products],
-  );
-
-  // If backend returns prices in minor units (pence/cents), detect and adjust
-  // the UI price range to a sensible default based on loaded products.
+  // Debounce backend search calls to avoid one request per keystroke.
   useEffect(() => {
-    if (products.length && priceRange[0] === 0 && priceRange[1] === 500) {
-      const maxRaw = Math.max(...products.map((p) => p.price ?? 0));
-      const max = maxRaw > 1000 ? Math.ceil(maxRaw / 100) : Math.ceil(maxRaw);
-      setPriceRange([0, Math.max(500, max)]);
-    }
-  }, [products, priceRange]);
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Debounce slider-driven range updates to avoid many backend calls while dragging.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAppliedPriceRange(priceRange);
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [priceRange]);
+
+  const { data, isLoading, error } = useProducts(productCount, page, {
+    categoryId: selectedCategoryId,
+    minPrice: appliedPriceRange[0],
+    maxPrice: appliedPriceRange[1],
+    sortBy,
+    search: debouncedSearchQuery.trim() || undefined,
+    brands: selectedBrands.length ? selectedBrands : undefined,
+    minRating: selectedRating ?? undefined,
+    inStock: inStockOnly || undefined,
+    onSale: onSaleOnly || undefined,
+    freeShipping: freeShippingOnly || undefined,
+  });
+  const categoriesWithCounts = categories;
   const filteredProducts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-    let list = products.filter((product) => {
-      // Normalize price: if prices are returned in minor units (e.g. pence),
-      // convert to major units for UI comparisons.
-      const productPrice =
-        typeof product.price === "number" && product.price > 1000
-          ? product.price / 100
-          : product.price;
+    let list = (data?.products ?? []).filter((product) => {
+      const categoryName =
+        typeof product.category === "string"
+          ? product.category
+          : (product.category?.name ?? "");
 
       const matchesQuery =
         query.length === 0 ||
         (product.name && product.name.toLowerCase().includes(query)) ||
-        (typeof product.category === "string" &&
-          product.category.toLowerCase().includes(query));
+        categoryName.toLowerCase().includes(query);
 
-      const matchesCategory =
+      const matchesCategoryFallback =
+        !selectedCategoryId ||
         selectedCategory.length === 0 ||
-        (typeof product.category === "string"
-          ? product.category === selectedCategory
-          : product.category?.name === selectedCategory);
+        categoryName === selectedCategory;
 
-      const matchesPrice =
-        (typeof productPrice === "number" ? productPrice : 0) >=
-          priceRange[0] &&
-        (typeof productPrice === "number" ? productPrice : 0) <= priceRange[1];
+      const productBrand = (product as Product & { brand?: string }).brand;
+      const matchesBrand =
+        selectedBrands.length === 0 ||
+        (typeof productBrand === "string" && selectedBrands.includes(productBrand));
 
-      return matchesQuery && matchesCategory && matchesPrice;
+      const matchesRating =
+        selectedRating === null || (product.rating ?? 0) >= selectedRating;
+
+      const matchesInStock = !inStockOnly || product.inStock !== false;
+
+      const matchesOnSale =
+        !onSaleOnly ||
+        (typeof product.originalPrice === "number" &&
+          typeof product.price === "number" &&
+          product.originalPrice > product.price);
+
+      // Shipping eligibility is not exposed on product payload yet.
+      const matchesFreeShipping = !freeShippingOnly;
+
+      return (
+        matchesQuery &&
+        matchesCategoryFallback &&
+        matchesBrand &&
+        matchesRating &&
+        matchesInStock &&
+        matchesOnSale &&
+        matchesFreeShipping
+      );
     });
 
-    switch (sortBy) {
-      case "price-low":
-        list = [...list].sort((a, b) => a.price - b.price);
-        break;
-      case "price-high":
-        list = [...list].sort((a, b) => b.price - a.price);
-        break;
-      case "rating":
-        list = [...list].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
-        break;
-      default:
-        break;
+    if (sortBy === "rating") {
+      list = [...list].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
     }
 
     return list;
-  }, [products, searchQuery, selectedCategory, priceRange, sortBy]);
+  }, [
+    data?.products,
+    searchQuery,
+    selectedCategoryId,
+    selectedCategory,
+    selectedBrands,
+    selectedRating,
+    inStockOnly,
+    onSaleOnly,
+    freeShippingOnly,
+    sortBy,
+  ]);
+
+  // If backend returns prices in minor units (pence/cents), detect and adjust
+  // the UI price range to a sensible default based on loaded products.
+  useEffect(() => {
+    if (
+      filteredProducts.length &&
+      priceRange[0] === 0 &&
+      priceRange[1] === DEFAULT_MAX_PRICE
+    ) {
+      const maxRaw = Math.max(...filteredProducts.map((p) => p.price ?? 0));
+      const max = maxRaw > 1000 ? Math.ceil(maxRaw / 100) : Math.ceil(maxRaw);
+      setPriceRange([0, Math.max(500, max)]);
+    }
+  }, [filteredProducts, priceRange, DEFAULT_MAX_PRICE]);
 
   const totalPages = data?.meta?.totalPages ?? 1;
   // Effect to update state if URL changes (e.g., browser back/forward)
@@ -114,6 +179,48 @@ export default function SearchPage() {
       setPage(Number(router.query.page));
     }
   }, [router.query.page]);
+
+  // Sync initial category filter from URL when navigating from category links.
+  useEffect(() => {
+    if (typeof router.query.categoryId === "string") {
+      const matched = categories.find((category) => category.id === router.query.categoryId);
+      if (matched) {
+        setSelectedCategory(matched.name);
+        return;
+      }
+    }
+
+    if (typeof router.query.category === "string") {
+      setSelectedCategory(router.query.category);
+    }
+  }, [router.query.category, router.query.categoryId, categories]);
+
+  // Reset to first page when filters change.
+  useEffect(() => {
+    setPage(1);
+  }, [
+    debouncedSearchQuery,
+    selectedCategory,
+    appliedPriceRange,
+    sortBy,
+    selectedBrands,
+    selectedRating,
+    inStockOnly,
+    onSaleOnly,
+    freeShippingOnly,
+  ]);
+
+  const clearAllFilters = () => {
+    setSearchQuery("");
+    setSelectedCategory("");
+    setPriceRange([0, DEFAULT_MAX_PRICE]);
+    setSortBy("relevance");
+    setSelectedBrands([]);
+    setSelectedRating(null);
+    setInStockOnly(false);
+    setOnSaleOnly(false);
+    setFreeShippingOnly(false);
+  };
 
   const handlePageChange = (newPage: number) => {
     // Prevent going to page 0 or below or beyond total pages
@@ -133,13 +240,13 @@ export default function SearchPage() {
   return (
     <div className="min-h-screen">
       <Head>
-        <title>Storefront | Products</title>
+        <title>ShopSwift | Products</title>
         <meta
           name="description"
           content="Browse our latest products, filter by category, and find the best deals."
         />
         <link rel="canonical" href={`${siteUrl}/products`} />
-        <meta property="og:title" content="Storefront | Products" />
+        <meta property="og:title" content="ShopSwift | Products" />
         <meta
           property="og:description"
           content="Browse our latest products, filter by category, and find the best deals."
@@ -196,11 +303,11 @@ export default function SearchPage() {
                 Category: {selectedCategory} ×
               </Badge>
             )}
-            {(priceRange[0] > 0 || priceRange[1] < 500000) && (
+            {(priceRange[0] > 0 || priceRange[1] < DEFAULT_MAX_PRICE) && (
               <Badge
                 variant="secondary"
                 className="cursor-pointer rounded-full"
-                onClick={() => setPriceRange([0, 500000])}
+                onClick={() => setPriceRange([0, DEFAULT_MAX_PRICE])}
               >
                 Price: {formatGBP(priceRange[0])} - {formatGBP(priceRange[1])} ×
               </Badge>
@@ -271,11 +378,22 @@ export default function SearchPage() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <SearchFilters
-              categories={categories}
+              categories={categoriesWithCounts}
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
               priceRange={priceRange}
               onPriceRangeChange={setPriceRange}
+              selectedBrands={selectedBrands}
+              onBrandsChange={setSelectedBrands}
+              selectedRating={selectedRating}
+              onRatingChange={setSelectedRating}
+              inStockOnly={inStockOnly}
+              onInStockChange={setInStockOnly}
+              onSaleOnly={onSaleOnly}
+              onOnSaleChange={setOnSaleOnly}
+              freeShippingOnly={freeShippingOnly}
+              onFreeShippingChange={setFreeShippingOnly}
+              onClearAll={clearAllFilters}
             />
           </motion.aside>
 

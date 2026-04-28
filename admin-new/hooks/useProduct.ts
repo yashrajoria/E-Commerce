@@ -1,9 +1,8 @@
-// hooks/useCategories.ts
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export const useProduct = (productId: string) => {
   console.log({ productId });
   const [product, setProduct] = useState<
@@ -24,7 +23,7 @@ export const useProduct = (productId: string) => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await axios.get(`/api/products/${productId}`, {
+        const res = await axios.get(`/api/admin/products/${productId}`, {
           headers: {
             "Content-Type": "application/json",
           },

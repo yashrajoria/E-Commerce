@@ -4,17 +4,7 @@ import { AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { FormProvider } from "react-hook-form";
 import ProductInformation from "./ProductInformation";
-
-interface Product {
-  _id: string;
-  name: string;
-  category: string;
-  price: number;
-  quantity: number;
-  status: string;
-  images: string[];
-  description: string;
-}
+import type { Product } from "@/types/shared";
 
 // interface EditProductDialogProps {
 //   product: Product | null;
@@ -34,8 +24,10 @@ const EditProductDialog: React.FC<EditProductDialogProps> = ({
   open,
   onOpenChange,
 }) => {
-  console.log({ product });
-  // console.log("sAVE", handleSave);
+  // Debug: product state for development
+  if (process.env.NODE_ENV === 'development') {
+    // logger.debug('EditProductModal product state:', { product });
+  }
   const [, setFormData] = useState<Partial<Product>>({});
   const [imageFiles, setImageFiles] = useState<File[]>([]);
 

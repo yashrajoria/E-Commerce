@@ -1,14 +1,11 @@
-/**
- * Premium Products List Page
- */
+import { ErrorState, TableSkeleton } from "@/components/admin/shared/DataStates";
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
-import StatsCard from "@/components/ui/stats-card";
-import EmptyState from "@/components/ui/empty-state";
 import ProductCard from "@/components/products/ProductCard";
 import ProductsFilters from "@/components/products/ProductFilters";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/admin/shared/DataStates";
 import {
   Pagination,
   PaginationContent,
@@ -17,6 +14,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import StatsCard from "@/components/ui/stats-card";
 import {
   Table,
   TableBody,
@@ -25,21 +23,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { useCategories } from "@/hooks/useCategory";
-import { useProducts } from "@/hooks/useProducts";
+import { useAdminProducts } from "@/lib/hooks/useAdminData";
+import type { Product } from "@/types/shared";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  AlertTriangle,
+  DollarSign,
+  Download,
   Edit,
   Package,
   Plus,
-  DollarSign,
-  AlertTriangle,
-  Download,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import Image from "next/image";
 
 const PRODUCTS_PER_PAGE = 12;
 
@@ -50,18 +48,26 @@ const Products = () => {
   const [perPage, setPerPage] = useState(PRODUCTS_PER_PAGE);
   const [showOutOfStock, setShowOutOfStock] = useState(true);
 
-  const query = { page: currentPage, perPage, search: searchQuery };
+  // const query = { page: currentPage, limit: perPage, search: searchQuery }; // (unused)
   const { categories, loading: categoriesLoading } = useCategories();
-  const { products, loading: productsLoading, meta } = useProducts(query);
+  const {
+    products,
+    meta,
+    error: productsError,
+    isLoading: productsLoading,
+    mutate,
+  } = useAdminProducts(currentPage, perPage, searchQuery);
   const totalPages = meta?.totalPages || 1;
   const isLoading = productsLoading || categoriesLoading;
   const productsCount = meta?.total || 0;
+  const productList = Array.isArray(products) ? products : [];
 
   // Client-side filters
   const handleToggleOutOfStock = () => setShowOutOfStock((s) => !s);
-  const displayedProducts = products.filter((p: { quantity: number }) =>
-    showOutOfStock ? true : p.quantity > 0,
-  );
+  const displayedProducts =
+    productList.filter((p: { quantity: number }) =>
+      showOutOfStock ? true : p.quantity > 0,
+    ) || [];
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -72,8 +78,8 @@ const Products = () => {
     setPerPage(parseInt(value, 10));
     setCurrentPage(1);
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-  const handleEditProduct = (_product: any) => {
+  const handleEditProduct = (product: Product | null) => {
+    void product;
     /* open edit modal */
   };
 
@@ -118,7 +124,8 @@ const Products = () => {
         <StatsCard
           title="In Stock"
           value={
-            products.filter((p: { quantity: number }) => p.quantity > 0).length
+            productList.filter((p: { quantity: number }) => p.quantity > 0)
+              ?.length || 0
           }
           icon={Package}
           gradient="gradient-emerald"
@@ -127,7 +134,8 @@ const Products = () => {
         <StatsCard
           title="Out of Stock"
           value={
-            products.filter((p: { quantity: number }) => p.quantity <= 0).length
+            productList.filter((p: { quantity: number }) => p.quantity <= 0)
+              ?.length || 0
           }
           icon={AlertTriangle}
           gradient="gradient-rose"
@@ -164,21 +172,29 @@ const Products = () => {
             variants={pageItem}
             className="flex items-center justify-center py-16"
           >
-            <LoadingSpinner />
+            <TableSkeleton rows={viewMode === "grid" ? 3 : 8} cols={viewMode === "grid" ? 4 : 6} />
           </motion.section>
-        ) : products.length === 0 ? (
+        ) : productsError ? (
+          <motion.section key="error" variants={pageItem}>
+            <div className="glass-effect rounded-xl">
+              <ErrorState message={productsError.message} onRetry={() => mutate()} />
+            </div>
+          </motion.section>
+        ) : (products?.length || 0) === 0 ? (
           <motion.section key="empty" variants={pageItem}>
             <div className="glass-effect rounded-xl">
               <EmptyState
-                icon={Package}
                 title="No products found"
                 description={
                   searchQuery
                     ? "Try adjusting your search terms"
                     : "Get started by adding your first product"
                 }
-                actionLabel="Add Product"
-                onAction={() => {}}
+                action={
+                  <Button asChild>
+                    <Link href="/products/add-product">Add Product</Link>
+                  </Button>
+                }
               />
             </div>
           </motion.section>
@@ -188,7 +204,7 @@ const Products = () => {
             variants={pageItem}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
           >
-            {displayedProducts.map((product, index) => (
+            {displayedProducts.map((product: Product, index: number) => (
               <motion.div
                 key={product._id}
                 initial={{ opacity: 0, y: 20 }}
@@ -231,7 +247,7 @@ const Products = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {displayedProducts.map((product, index) => (
+                    {displayedProducts.map((product: Product, index: number) => (
                       <motion.tr
                         key={product._id}
                         initial={{ opacity: 0, x: -20 }}
@@ -245,6 +261,7 @@ const Products = () => {
                               {product.images?.[0] ? (
                                 <Image
                                   src={product.images[0]}
+                                  width={100}
                                   alt={product.name}
                                   className="h-full w-full object-cover"
                                 />
@@ -274,7 +291,7 @@ const Products = () => {
                           </Badge>
                         </TableCell>
                         <TableCell className="font-semibold text-sm">
-                          ${product.price?.toFixed(2)}
+                          £{product.price?.toFixed(2)}
                         </TableCell>
                         <TableCell className="text-sm">
                           {product.quantity}
@@ -361,3 +378,10 @@ const Products = () => {
 };
 
 export default Products;
+
+import type { GetServerSidePropsContext } from "next";
+
+export async function getServerSideProps(ctx: GetServerSidePropsContext) {
+  const { requireAuth } = await import("@/lib/ssrAuth");
+  return requireAuth(ctx);
+}
