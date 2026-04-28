@@ -292,7 +292,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                     <Shield className="h-8 w-8 text-white" />
                   </motion.div>
                   <h2 className="text-3xl font-bold mb-2 text-gradient-premium">
-                    {isLogin ? "Welcome Back" : "Join LuxeStore"}
+                    {isLogin ? "Welcome Back" : "Join ShopSwift"}
                   </h2>
                   <p className="text-muted-foreground">
                     {isLogin
