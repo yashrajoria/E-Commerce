@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Sparkles } from "lucide-react";
+import { Menu, X, Terminal, Cpu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface NavbarProps {
@@ -9,10 +9,10 @@ interface NavbarProps {
 }
 
 const navLinks = [
-  { label: "Features", href: "#features" },
-  { label: "Preview", href: "#preview" },
-  { label: "Pricing", href: "#pricing" },
-  { label: "Testimonials", href: "#testimonials" },
+  { label: "Infrastructure", href: "#features" },
+  { label: "Operations", href: "#preview" },
+  { label: "Governance", href: "#testimonials" },
+  { label: "Scalability", href: "#pricing" },
 ];
 
 export default function Navbar({ onLogin, onSignUp }: NavbarProps) {
@@ -39,34 +39,34 @@ export default function Navbar({ onLogin, onSignUp }: NavbarProps) {
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           scrolled
-            ? "glass-effect-strong shadow-lg shadow-black/20"
-            : "bg-transparent"
+            ? "glass-effect-strong py-4"
+            : "bg-transparent py-6"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 md:h-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
             {/* Logo */}
             <motion.a
               href="#"
-              className="flex items-center gap-2.5 group"
+              className="flex items-center gap-3 group"
               whileHover={{ scale: 1.02 }}
             >
-              <div className="h-9 w-9 rounded-xl gradient-purple flex items-center justify-center shadow-lg shadow-purple-500/20">
-                <Sparkles className="h-4.5 w-4.5 text-white" />
+              <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 group-hover:rotate-6 transition-transform">
+                <Cpu className="h-5 w-5 text-white" />
               </div>
-              <span className="text-lg font-bold tracking-tight">
-                <span className="text-gradient">Admin</span>
-                <span className="text-foreground/70">Panel</span>
-              </span>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold tracking-[0.2em] leading-none uppercase">ShopSwift</span>
+                <span className="text-xs font-light text-muted-foreground tracking-widest uppercase">Admin Pro</span>
+              </div>
             </motion.a>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-1">
+            <nav className="hidden lg:flex items-center gap-1">
               {navLinks.map((link) => (
                 <button
                   key={link.href}
                   onClick={() => scrollTo(link.href)}
-                  className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-white/[0.04]"
+                  className="px-5 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60 hover:text-primary transition-all rounded-lg"
                 >
                   {link.label}
                 </button>
@@ -74,26 +74,25 @@ export default function Navbar({ onLogin, onSignUp }: NavbarProps) {
             </nav>
 
             {/* Desktop Actions */}
-            <div className="hidden md:flex items-center gap-3">
-              <Button
-                variant="ghost"
+            <div className="hidden md:flex items-center gap-6">
+              <button
                 onClick={onLogin}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-white/[0.04]"
+                className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
               >
-                Log In
-              </Button>
+                Access System
+              </button>
               <Button
                 onClick={onSignUp}
-                className="gradient-purple text-white border-0 rounded-xl shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.02] transition-all duration-300 text-sm font-medium px-5"
+                className="h-11 px-8 bg-white/[0.03] border border-white/10 hover:bg-white/[0.06] text-white rounded-xl shadow-lg transition-all text-xs font-bold uppercase tracking-widest"
               >
-                Get Started Free
+                Initialize Instance
               </Button>
             </div>
 
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-white/[0.05] text-foreground"
+              className="lg:hidden p-2 rounded-lg hover:bg-white/[0.05] text-foreground transition-colors"
               aria-label="Toggle menu"
             >
               {mobileOpen ? (
@@ -110,41 +109,41 @@ export default function Navbar({ onLogin, onSignUp }: NavbarProps) {
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-x-0 top-16 z-40 glass-effect-strong border-b border-white/[0.06] md:hidden"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed inset-x-0 top-[72px] z-40 glass-effect-strong border-b border-white/[0.06] lg:hidden overflow-hidden shadow-2xl"
           >
-            <div className="px-4 py-6 space-y-1">
+            <div className="px-6 py-8 space-y-2">
               {navLinks.map((link) => (
                 <button
                   key={link.href}
                   onClick={() => scrollTo(link.href)}
-                  className="block w-full text-left px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-white/[0.04] rounded-lg transition-colors"
+                  className="block w-full text-left px-4 py-4 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-primary hover:bg-white/[0.02] rounded-xl transition-all"
                 >
                   {link.label}
                 </button>
               ))}
-              <div className="pt-4 space-y-2 border-t border-white/[0.06]">
+              <div className="pt-6 mt-6 space-y-4 border-t border-white/[0.06]">
                 <Button
                   variant="ghost"
                   onClick={() => {
                     setMobileOpen(false);
                     onLogin();
                   }}
-                  className="w-full justify-center text-muted-foreground"
+                  className="w-full h-14 justify-center text-xs font-bold uppercase tracking-widest"
                 >
-                  Log In
+                  Access System
                 </Button>
                 <Button
                   onClick={() => {
                     setMobileOpen(false);
                     onSignUp();
                   }}
-                  className="w-full gradient-purple text-white border-0 rounded-xl"
+                  className="w-full h-14 bg-primary text-white border-0 rounded-xl text-xs font-bold uppercase tracking-widest shadow-xl shadow-primary/20"
                 >
-                  Get Started Free
+                  Initialize Instance
                 </Button>
               </div>
             </div>

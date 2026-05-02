@@ -123,7 +123,7 @@ function AppContent({ Component, pageProps, router }: AppProps) {
   ];
 
   const needsAuth = protectedPrefixes.some((p) => router.asPath.startsWith(p));
-  const surfaceTheme = needsAuth ? "theme-admin" : "theme-storefront";
+  const surfaceTheme = "theme-admin";
   const pageAIContext = useMemo(
     () =>
       resolveAIPageContext({

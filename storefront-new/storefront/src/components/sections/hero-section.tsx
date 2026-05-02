@@ -94,17 +94,45 @@ function FloatingParticle({
 export function HeroSection() {
   const { data } = useProducts(3, 1, true);
   const products = data?.products ?? [];
-  const spotlightProduct = products[0];
+  // const spotlightProduct = products[0];
   const formatGBP = (value?: number) =>
     new Intl.NumberFormat("en-GB", {
       style: "currency",
       currency: "GBP",
     }).format(value ?? 0);
+
+  // Fallback products for initial wow factor if API is empty or images are broken
+  const fallbackProducts = [
+    {
+      id: "fallback-1",
+      name: "Heritage Chronograph",
+      price: 1250,
+      images: ["/products/watch.png"],
+    },
+    {
+      id: "fallback-2",
+      name: "Acoustic Pro Max",
+      price: 349,
+      images: ["/products/headphones.png"],
+    },
+    {
+      id: "fallback-3",
+      name: "Cloud Walker Sneakers",
+      price: 180,
+      images: ["/products/sneakers.png"],
+    },
+  ];
+
+  const displayProducts =
+    products && products.length > 0 ? products : fallbackProducts;
+  const spotlightProduct = displayProducts[0];
+
   const heroStats = [
     { value: "12k+", label: "Curated products" },
     { value: "48h", label: "Fast dispatch" },
     { value: "4.9/5", label: "Customer rating" },
   ];
+
   const typed = useTypewriter(typewriterPhrases);
 
   return (
@@ -153,7 +181,7 @@ export function HeroSection() {
 
         {/* Subtle grid pattern */}
         <div
-          className="absolute inset-0 opacity-[0.025] dark:opacity-[0.035]"
+          className="absolute inset-0 opacity-[0.015] dark:opacity-[0.025]"
           style={{
             backgroundImage: `radial-gradient(circle, currentColor 1px, transparent 1px)`,
             backgroundSize: "40px 40px",
@@ -288,52 +316,69 @@ export function HeroSection() {
             />
 
             {/* Floating product cards */}
-            {products.length > 0 &&
-              products.slice(0, 3).map((product, index) => {
+            {displayProducts.length > 0 &&
+              displayProducts.slice(0, 3).map((product, index) => {
                 const positions = [
-                  { top: "5%", left: "10%", width: "220px" },
-                  { top: "35%", right: "5%", width: "200px" },
-                  { bottom: "8%", left: "20%", width: "210px" },
+                  { top: "2%", left: "5%", width: "220px" },
+                  { top: "30%", right: "8%", width: "200px" },
+                  { bottom: "12%", left: "15%", width: "210px" },
                 ];
                 const pos = positions[index] || positions[0];
 
                 return (
-                  <motion.div
+                  <Link
                     key={product.id || index}
-                    className="absolute glass rounded-2xl p-4 shadow-xl shadow-black/5 dark:shadow-black/20 premium-card gradient-border"
+                    href={`/products/${product.id}`}
+                    className="absolute z-20 group"
                     style={{ ...pos }}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{
-                      opacity: 1,
-                      y: [0, -8, 0],
-                    }}
-                    transition={{
-                      delay: 0.4 + index * 0.15,
-                      duration: 0.6,
-                      y: {
-                        duration: 4 + index * 0.8,
-                        repeat: Infinity,
-                        repeatType: "reverse",
-                        ease: "easeInOut",
-                      },
-                    }}
                   >
-                    <div className="relative w-full aspect-square rounded-xl overflow-hidden mb-3">
-                      <Image
-                        src={product.images?.[0] || "/icons8-image-100.png"}
-                        alt={product.name}
-                        fill
-                        sizes="220px"
-                        className="object-cover"
-                      />
-                    </div>
-                    <h3 className="font-medium text-sm line-clamp-1">
-                      {product.name}
-                    </h3>
-                    <p className="text-rose-600 dark:text-rose-400 font-semibold text-sm mt-0.5">
-                      {formatGBP(product.price)}
-                    </p>
-                  </motion.div>
+                    <motion.div
+                      className="glass rounded-2xl p-4 shadow-xl shadow-black/5 dark:shadow-black/20 premium-card gradient-border overflow-hidden"
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{
+                        opacity: 1,
+                        y: [0, -12, 0],
+                        rotate: [0, index % 2 === 0 ? 1 : -1, 0],
+                      }}
+                      transition={{
+                        delay: 0.4 + index * 0.15,
+                        duration: 0.6,
+                        y: {
+                          duration: 5 + index * 1.2,
+                          repeat: Infinity,
+                          repeatType: "reverse",
+                          ease: "easeInOut",
+                        },
+                        rotate: {
+                          duration: 7 + index * 2,
+                          repeat: Infinity,
+                          repeatType: "reverse",
+                          ease: "easeInOut",
+                        },
+                      }}
+                    >
+                      <div className="relative w-full aspect-square rounded-xl overflow-hidden mb-3">
+                        <Image
+                          src={product.images?.[0] || "/icons8-image-100.png"}
+                          alt={product.name}
+                          fill
+                          sizes="220px"
+                          className="object-cover transition-transform duration-500 group-hover:scale-110"
+                          priority={index === 0}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                      <h3 className="font-medium text-sm line-clamp-1 group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
+                        {product.name}
+                      </h3>
+                      <div className="flex items-center justify-between mt-1">
+                        <p className="text-rose-600 dark:text-rose-400 font-semibold text-sm">
+                          {formatGBP(product.price)}
+                        </p>
+                        <ArrowRight className="w-3.5 h-3.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-rose-600 dark:text-rose-400" />
+                      </div>
+                    </motion.div>
+                  </Link>
                 );
               })}
 
@@ -347,7 +392,9 @@ export function HeroSection() {
                 <div className="flex items-start gap-4">
                   <div className="relative h-16 w-16 overflow-hidden rounded-2xl shrink-0 bg-muted">
                     <Image
-                      src={spotlightProduct.images?.[0] || "/icons8-image-100.png"}
+                      src={
+                        spotlightProduct.images?.[0] || "/icons8-image-100.png"
+                      }
                       alt={spotlightProduct.name}
                       fill
                       sizes="64px"
@@ -366,7 +413,10 @@ export function HeroSection() {
                     </p>
                   </div>
                 </div>
-                <Link href={`/products/${spotlightProduct.id}`} className="mt-4 inline-flex text-sm font-medium text-rose-600 dark:text-rose-400 hover:underline">
+                <Link
+                  href={`/products/${spotlightProduct.id}`}
+                  className="mt-4 inline-flex text-sm font-medium text-rose-600 dark:text-rose-400 hover:underline"
+                >
                   View details
                   <ArrowRight className="ml-1.5 h-4 w-4" />
                 </Link>

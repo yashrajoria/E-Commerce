@@ -24,6 +24,7 @@ import { WishlistDrawer } from "../common/wishlist-drawer";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { MegaMenu } from "./mega-menu";
+import { useRouter } from "next/router";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -57,6 +58,16 @@ export function Header() {
 
   // Compute total cart items (sum of quantities)
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
+
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && searchQuery.trim()) {
+      router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearchOpen(false);
+    }
+  };
 
   if (!mounted) return null;
 
@@ -103,9 +114,15 @@ export function Header() {
                 <Input
                   aria-label="Search products"
                   placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleSearch}
                   className="w-[260px] lg:w-[320px] pl-10 pr-4 h-10 rounded-full bg-muted/60 border-transparent focus:border-ring/30 focus:bg-background transition-all duration-300"
                 />
-                <Search aria-hidden className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search
+                  aria-hidden
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+                />
               </div>
 
               {/* Wishlist */}
@@ -231,7 +248,9 @@ export function Header() {
                 variant="ghost"
                 size="icon"
                 aria-label={
-                  cartItemCount > 0 ? `Cart, ${cartItemCount} items` : "Open cart"
+                  cartItemCount > 0
+                    ? `Cart, ${cartItemCount} items`
+                    : "Open cart"
                 }
                 className="relative h-10 w-10 rounded-full"
                 onClick={() => setIsCartOpen(true)}
@@ -274,6 +293,9 @@ export function Header() {
                   <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Search products..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={handleSearch}
                     className="w-full pl-10 pr-10 h-11 rounded-full"
                     autoFocus
                   />

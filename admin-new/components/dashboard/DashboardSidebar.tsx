@@ -26,13 +26,12 @@ import {
   Activity,
   Headphones,
   Bot,
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  Users,
 } from "lucide-react";
 import {
-  AdminIcon,
-  ProductIcon,
-  OrdersIcon,
-  CustomersIcon,
-  AnalyticsIcon,
   CategoryIcon,
 } from "@ecommerce/shared";
 import Link from "next/link";
@@ -340,13 +339,13 @@ const DashboardSidebar = () => {
   const navItems: NavItem[] = useMemo(
     () => [
       {
-        icon: AdminIcon,
+        icon: LayoutDashboard,
         label: "Dashboard",
         path: "/dashboard",
         section: "Main",
       },
       {
-        icon: AnalyticsIcon,
+        icon: Activity,
         label: "Analytics",
         path: "/analytics",
         section: "Main",
@@ -358,21 +357,21 @@ const DashboardSidebar = () => {
         section: "Main",
       },
       {
-        icon: ProductIcon,
+        icon: Package,
         label: "Products",
         path: "/products",
         badge: badgeCounts.products,
         section: "Commerce",
       },
       {
-        icon: OrdersIcon,
+        icon: ShoppingCart,
         label: "Orders",
         path: "/orders",
         badge: badgeCounts.orders,
         section: "Commerce",
       },
       {
-        icon: CustomersIcon,
+        icon: Users,
         label: "Customers",
         path: "/customers",
         badge: badgeCounts.customers,

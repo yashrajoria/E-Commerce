@@ -3,7 +3,7 @@ import path from "path";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  transpilePackages: ['@ecommerce/shared'],
+  transpilePackages: ["@ecommerce/shared"],
   reactStrictMode: true,
   webpack: (config) => {
     // Avoid overriding React resolution here; let Next/npm handle it to prevent
@@ -20,18 +20,16 @@ const nextConfig: NextConfig = {
       { protocol: "http", hostname: "localhost" },
       { protocol: "https", hostname: "shopswift.s3.amazonaws.com" },
       { protocol: "https", hostname: "cdn.example.com" },
-            { protocol: "https", hostname: "picsum.photos" },
-
+      { protocol: "https", hostname: "picsum.photos" },
 
       // Allow images served from localstack (used in local integration tests)
       { protocol: "http", hostname: "localstack", port: "4566" },
-      
     ],
   },
   outputFileTracingRoot: path.join(__dirname, "..", ".."),
   async rewrites() {
     const apiBaseUrl =
-      process.env.NEXT_PUBLIC_API_BASE_URL || "http://172.16.13.94:8080";
+      process.env.NEXT_PUBLIC_API_BASE_URL || "http://172.16.14.242:8080";
     return {
       fallback: [
         {
