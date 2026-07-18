@@ -16,8 +16,18 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@ecommerce/*": ["packages/*/src/*"],
-      "@ecommerce/shared": ["packages/shared/src"]
+      "@ecommerce/shared": ["packages/shared/src"],
+      "@ecommerce/shared/*": ["packages/shared/src/*"]
     }
-  }
+  },
+  "include": ["types/**/*.ts"],
+  "exclude": [
+    "node_modules",
+    "**/node_modules",
+    "**/dist",
+    "**/.next",
+    "admin-new",
+    "storefront-new",
+    "packages"
+  ]
 }
