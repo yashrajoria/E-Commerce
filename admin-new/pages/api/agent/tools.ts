@@ -1,10 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 import { getAdminApiBaseUrl } from "@/lib/backendUrl";
+import { withAdminApi } from "@/lib/requireAdminApi";
 
 const toolsTargets = ["bff/admin/agent/tools", "bff/agent/tools"];
 
-export default async function handler(
+async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
@@ -60,3 +61,5 @@ export default async function handler(
     });
   }
 }
+
+export default withAdminApi(handler);

@@ -5,6 +5,7 @@ import { getAdminApiBaseUrl } from "@/lib/backendUrl";
 import FormData from "form-data";
 import formidable from "formidable";
 import fs from "fs";
+import { withAdminApi } from "@/lib/requireAdminApi";
 
 export const config = {
   api: {
@@ -232,7 +233,7 @@ async function handleBulkUpload(req: NextApiRequest, res: NextApiResponse) {
   res.status(response.status).json(response.data);
 }
 
-export default async function handler(
+async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
@@ -257,3 +258,5 @@ export default async function handler(
     return res.status(status || 500).json({ message: message || "Server error" });
   }
 }
+
+export default withAdminApi(handler);

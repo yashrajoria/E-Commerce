@@ -1,8 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 import { getAdminApiBaseUrl } from "@/lib/backendUrl";
+import { withAdminApi } from "@/lib/requireAdminApi";
 
-export default async function handler(
+async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
@@ -39,3 +40,5 @@ export default async function handler(
     res.status(500).json({ success: false, error: "Internal server error" });
   }
 }
+
+export default withAdminApi(handler);

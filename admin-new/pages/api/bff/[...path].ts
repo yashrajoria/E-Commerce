@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { proxyRequest } from "@ecommerce/shared";
+import { withAdminApi } from "@/lib/requireAdminApi";
 
 /** Only admin BFF surfaces may be reached through this catch-all. */
 const ALLOWED_PREFIXES = [
@@ -28,10 +29,7 @@ function isAllowedBffPath(targetPath: string): boolean {
   );
 }
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   const pathParam = req.query.path;
   if (!pathParam) return res.status(400).json({ message: "Missing path" });
 
@@ -40,10 +38,6 @@ export default async function handler(
 
   if (!isAllowedBffPath(targetPath)) {
     return res.status(403).json({ message: "Forbidden BFF path" });
-  }
-
-  if (!req.headers.cookie) {
-    return res.status(401).json({ message: "Authentication required" });
   }
 
   try {
@@ -63,3 +57,5 @@ export default async function handler(
     return res.status(500).json({ message: "BFF proxy error" });
   }
 }
+
+export default withAdminApi(handler);

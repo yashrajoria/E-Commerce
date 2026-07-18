@@ -158,7 +158,8 @@ export function StepReview({
                 )}
                 {discount > 0 && (
                   <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-2 font-medium">
-                    SAVE10 applied — 10% discount!
+                    {promoCode.trim() || "Promo"} applied —{" "}
+                    {formatGBP(discountAmount)} off
                   </p>
                 )}
               </motion.div>

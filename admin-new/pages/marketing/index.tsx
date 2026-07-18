@@ -35,22 +35,57 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
-import { Megaphone, Tag, Plus, Copy, DollarSign, Users } from "lucide-react";
-import { useState } from "react";
+import { Megaphone, Tag, Plus, Copy, DollarSign, Users, Loader2 } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useAdminCoupons } from "@/lib/hooks/useAdminData";
 import { TableSkeleton, EmptyState, ErrorState } from "@/components/admin/shared/DataStates";
 import { toast } from "sonner";
+import axios from "axios";
+import { getErrorMessage, getResponseInfo } from "@/lib/error";
+
 type CouponRecord = {
   id?: string | number;
   code?: string;
-  type?: "percentage" | "fixed" | string;
+  type?: "percentage" | "flat" | "fixed" | "freeshipping" | string;
   discount?: number | string;
+  value?: number | string;
   usageCount?: number;
+  used_count?: number;
   maxUses?: number;
+  usage_limit?: number;
   startDate?: string;
   endDate?: string;
+  expires_at?: string;
+  created_at?: string;
   status?: string;
+  active?: boolean;
 };
+
+function normalizeCoupon(raw: CouponRecord): CouponRecord {
+  const active =
+    typeof raw.active === "boolean"
+      ? raw.active
+      : raw.status === "active"
+        ? true
+        : raw.status === "expired"
+          ? false
+          : Boolean(raw.active ?? raw.status);
+  const expiresAt = raw.expires_at || raw.endDate;
+  const expired =
+    expiresAt && !Number.isNaN(new Date(expiresAt).getTime())
+      ? new Date(expiresAt).getTime() < Date.now()
+      : false;
+
+  return {
+    ...raw,
+    discount: raw.discount ?? raw.value ?? 0,
+    usageCount: raw.usageCount ?? raw.used_count ?? 0,
+    maxUses: raw.maxUses ?? raw.usage_limit ?? 0,
+    startDate: raw.startDate ?? raw.created_at,
+    endDate: raw.endDate ?? raw.expires_at,
+    status: expired ? "expired" : active ? "active" : raw.status || "inactive",
+  };
+}
 
 const campaigns = [
   { name: "Winter Sale 2024", status: "active", reach: 12500, conversions: 340, revenue: 8500 },
@@ -73,16 +108,91 @@ const formatDate = (raw?: string) => {
 
 const Marketing = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [newCode, setNewCode] = useState("");
   const [newDiscount, setNewDiscount] = useState("");
   const [newType, setNewType] = useState<"percentage" | "fixed">("percentage");
+  const [newExpiresAt, setNewExpiresAt] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 30);
+    return d.toISOString().slice(0, 10);
+  });
 
-  const handleCreateCoupon = () => {
-    if (!newCode || !newDiscount) return;
-    toast.success(`Coupon "${newCode}" created successfully!`);
-    setIsCreateOpen(false);
-    setNewCode("");
-    setNewDiscount("");
+  const { coupons, error, isLoading, mutate } = useAdminCoupons();
+  const couponRows = useMemo(
+    () =>
+      (Array.isArray(coupons) ? coupons : []).map((c) =>
+        normalizeCoupon(c as CouponRecord),
+      ),
+    [coupons],
+  );
+  const activeCoupons = couponRows.filter((c) => c.status === "active").length;
+  const totalUsage = couponRows.reduce((sum, c) => sum + (c.usageCount || 0), 0);
+
+  const handleCreateCoupon = async () => {
+    const code = newCode.trim().toUpperCase();
+    const value = Number(newDiscount);
+
+    if (code.length < 3) {
+      toast.error("Coupon code must be at least 3 characters");
+      return;
+    }
+    if (!Number.isFinite(value) || value < 0) {
+      toast.error("Enter a valid discount value");
+      return;
+    }
+    if (newType === "percentage" && value > 100) {
+      toast.error("Percentage discount cannot exceed 100");
+      return;
+    }
+    if (!newExpiresAt) {
+      toast.error("Expiry date is required");
+      return;
+    }
+
+    const expiresAt = new Date(`${newExpiresAt}T23:59:59.000Z`);
+    if (Number.isNaN(expiresAt.getTime()) || expiresAt.getTime() <= Date.now()) {
+      toast.error("Expiry date must be in the future");
+      return;
+    }
+
+    setCreating(true);
+    try {
+      await axios.post(
+        "/bff/admin/coupons",
+        {
+          code,
+          // Backend expects "flat", UI label is "fixed".
+          type: newType === "fixed" ? "flat" : "percentage",
+          value,
+          min_order_value: 0,
+          usage_limit: 0,
+          expires_at: expiresAt.toISOString(),
+        },
+        { withCredentials: true },
+      );
+      toast.success(`Coupon "${code}" created successfully`);
+      setIsCreateOpen(false);
+      setNewCode("");
+      setNewDiscount("");
+      setNewType("percentage");
+      await mutate();
+    } catch (err: unknown) {
+      const { data } = getResponseInfo(err);
+      const apiMessage =
+        data &&
+        typeof data === "object" &&
+        "error" in (data as Record<string, unknown>)
+          ? String((data as { error?: unknown }).error)
+          : data &&
+              typeof data === "object" &&
+              "message" in (data as Record<string, unknown>)
+            ? String((data as { message?: unknown }).message)
+            : getErrorMessage(err);
+      toast.error(apiMessage || "Failed to create coupon");
+    } finally {
+      setCreating(false);
+    }
   };
 
   const handleCopyCode = (code?: string) => {
@@ -90,11 +200,6 @@ const Marketing = () => {
     navigator.clipboard.writeText(code);
     toast.success(`Copied "${code}" to clipboard`);
   };
-
-  const { coupons, error, isLoading, mutate } = useAdminCoupons();
-  const couponRows = (Array.isArray(coupons) ? coupons : []) as CouponRecord[];
-  const activeCoupons = couponRows.filter((c) => c.status === "active").length;
-  const totalUsage = couponRows.reduce((sum, c) => sum + (c.usageCount || 0), 0);
 
   return (
     <PageLayout
@@ -145,10 +250,19 @@ const Marketing = () => {
                     </SelectTrigger>
                     <SelectContent className="glass-effect-strong border-white/[0.08]">
                       <SelectItem value="percentage">Percentage (%)</SelectItem>
-                      <SelectItem value="fixed">Fixed ($)</SelectItem>
+                      <SelectItem value="fixed">Fixed (£)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm">Expires on</Label>
+                <Input
+                  type="date"
+                  value={newExpiresAt}
+                  onChange={(e) => setNewExpiresAt(e.target.value)}
+                  className="bg-white/[0.04] border-white/[0.08] rounded-xl"
+                />
               </div>
             </div>
             <DialogFooter>
@@ -156,11 +270,23 @@ const Marketing = () => {
                 variant="outline"
                 onClick={() => setIsCreateOpen(false)}
                 className="rounded-xl border-white/[0.08]"
+                disabled={creating}
               >
                 Cancel
               </Button>
-              <Button onClick={handleCreateCoupon} className="gradient-purple text-white border-0 rounded-xl">
-                Create
+              <Button
+                onClick={() => void handleCreateCoupon()}
+                disabled={creating}
+                className="gradient-purple text-white border-0 rounded-xl"
+              >
+                {creating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Creating…
+                  </>
+                ) : (
+                  "Create"
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -265,7 +391,9 @@ const Marketing = () => {
                         const discountText =
                           coupon.type === "percentage"
                             ? `${coupon.discount || 0}%`
-                            : `£${coupon.discount || 0}`;
+                            : coupon.type === "freeshipping"
+                              ? "Free shipping"
+                              : `£${coupon.discount || 0}`;
 
                         return (
                           <TableRow

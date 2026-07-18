@@ -2,8 +2,9 @@ import axios from "axios";
 import { getBackendBaseUrl } from "@ecommerce/shared";
 import { getResponseInfo } from "@/lib/error";
 import { NextApiRequest, NextApiResponse } from "next";
+import { withAdminApi } from "@/lib/requireAdminApi";
 
-export default async function handler(
+async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
@@ -78,3 +79,5 @@ export default async function handler(
       .json(data ?? { message: "Product proxy error" });
   }
 }
+
+export default withAdminApi(handler);

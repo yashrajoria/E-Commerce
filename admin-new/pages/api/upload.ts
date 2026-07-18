@@ -5,6 +5,7 @@ import { getAdminApiBaseUrl } from "@/lib/backendUrl";
 import FormData from "form-data";
 import formidable from "formidable";
 import fs from "fs";
+import { withAdminApi } from "@/lib/requireAdminApi";
 
 export const config = {
   api: { bodyParser: false },
@@ -23,7 +24,7 @@ const parseForm = (req: NextApiRequest): Promise<{ fields: Record<string, unknow
 const extractSessionCookie = (req: NextApiRequest): string =>
   req.headers.cookie?.trim() || "";
 
-export default async function handler(
+async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
@@ -70,3 +71,5 @@ export default async function handler(
     return res.status(status || 500).json({ message: data ?? "Upload failed" });
   }
 }
+
+export default withAdminApi(handler);
