@@ -55,9 +55,10 @@ export function sanitizeSetCookies(raw: string[]) {
       nextCookie = nextCookie.replace(/SameSite=None/gi, "SameSite=Lax");
     }
 
-    if (!/Path=/i.test(nextCookie)) {
-      nextCookie += "; Path=/";
-    }
+    // Always Path=/ so cookies reach Next.js API proxies (e.g. /api/admin/auth/*),
+    // not only backend paths like /auth/refresh.
+    nextCookie = nextCookie.replace(/;?\s*Path=[^;]*/gi, "");
+    nextCookie += "; Path=/";
 
     return nextCookie;
   });

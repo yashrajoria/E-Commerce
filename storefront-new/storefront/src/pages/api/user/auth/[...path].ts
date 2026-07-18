@@ -23,9 +23,14 @@ export default async function handler(
   }
 
   try {
+    // Refresh must hit the public BFF route — gateway `/auth/refresh` requires
+    // a valid access JWT, which is already expired when refresh is needed.
+    const targetPath =
+      actionPath === "refresh" ? "/bff/auth/refresh" : `/auth/${actionPath}`;
+
     const proxied = await proxyRequest({
       req,
-      targetPath: `/auth/${actionPath}`,
+      targetPath,
       sanitizeSetCookie: true,
       sanitizeRequestBody: true,
     });

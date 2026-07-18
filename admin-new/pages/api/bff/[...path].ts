@@ -12,6 +12,9 @@ const ALLOWED_PREFIXES = [
   "admin/customers",
   "admin/agent",
   "admin/promotions",
+  "admin/coupons",
+  "admin/notifications",
+  "admin/reports",
   "admin/analytics",
   "admin/upload",
 ] as const;
