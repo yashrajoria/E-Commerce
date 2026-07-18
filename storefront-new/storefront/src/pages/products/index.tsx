@@ -1,5 +1,3 @@
-"use client";
-
 import { ProductCard } from "@/components/common/product-card";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
@@ -22,10 +20,15 @@ import { motion } from "framer-motion";
 import { Filter, Grid, List, Search } from "lucide-react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react"; // Imported useEffect
-import type { Product } from "@/lib/types";
+import { useEffect, useMemo, useState } from "react";
+import type { GetServerSideProps } from "next";
+import { fetchProductsSsr, type SsrProductsResponse } from "@/lib/ssrProducts";
 
-export default function SearchPage() {
+type SearchPageProps = {
+  initialCatalog: SsrProductsResponse | null;
+};
+
+export default function SearchPage({ initialCatalog }: SearchPageProps) {
   const router = useRouter();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const DEFAULT_MAX_PRICE = 500000;
@@ -61,6 +64,18 @@ export default function SearchPage() {
   // Set page from URL query on initial load
   const [page, setPage] = useState(Number(router.query.page) || 1);
 
+  // Hydrate search + category from URL (header search, category links).
+  useEffect(() => {
+    if (!router.isReady) return;
+    if (typeof router.query.search === "string") {
+      setSearchQuery(router.query.search);
+      setDebouncedSearchQuery(router.query.search);
+    }
+    if (typeof router.query.sortBy === "string") {
+      setSortBy(router.query.sortBy);
+    }
+  }, [router.isReady, router.query.search, router.query.sortBy]);
+
   // Debounce backend search calls to avoid one request per keystroke.
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -79,84 +94,46 @@ export default function SearchPage() {
     return () => clearTimeout(timer);
   }, [priceRange]);
 
-  const { data, isLoading, error } = useProducts(productCount, page, {
-    categoryId: selectedCategoryId,
-    minPrice: appliedPriceRange[0],
-    maxPrice: appliedPriceRange[1],
-    sortBy,
-    search: debouncedSearchQuery.trim() || undefined,
-    brands: selectedBrands.length ? selectedBrands : undefined,
-    minRating: selectedRating ?? undefined,
-    inStock: inStockOnly || undefined,
-    onSale: onSaleOnly || undefined,
-    freeShipping: freeShippingOnly || undefined,
-  });
+  const { data, isLoading, error } = useProducts(
+    productCount,
+    page,
+    {
+      categoryId: selectedCategoryId,
+      minPrice: appliedPriceRange[0],
+      maxPrice: appliedPriceRange[1],
+      sortBy,
+      search: debouncedSearchQuery.trim() || undefined,
+      brands: selectedBrands.length ? selectedBrands : undefined,
+      minRating: selectedRating ?? undefined,
+      inStock: inStockOnly || undefined,
+      onSale: onSaleOnly || undefined,
+      freeShipping: freeShippingOnly || undefined,
+    },
+    {
+      initialData:
+        page === 1 &&
+        !debouncedSearchQuery &&
+        !selectedCategoryId &&
+        !selectedBrands.length &&
+        selectedRating == null &&
+        !inStockOnly &&
+        !onSaleOnly &&
+        !freeShippingOnly &&
+        sortBy === "relevance"
+          ? (initialCatalog ?? undefined)
+          : undefined,
+    },
+  );
   const categoriesWithCounts = categories;
+  // Filters are sent to the API; trust paginated server results.
+  // Only client-sort by rating when the backend sort map has no rating option.
   const filteredProducts = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
-    let list = (data?.products ?? []).filter((product) => {
-      const categoryName =
-        typeof product.category === "string"
-          ? product.category
-          : (product.category?.name ?? "");
-
-      const matchesQuery =
-        query.length === 0 ||
-        (product.name && product.name.toLowerCase().includes(query)) ||
-        categoryName.toLowerCase().includes(query);
-
-      const matchesCategoryFallback =
-        !selectedCategoryId ||
-        selectedCategory.length === 0 ||
-        categoryName === selectedCategory;
-
-      const productBrand = (product as Product & { brand?: string }).brand;
-      const matchesBrand =
-        selectedBrands.length === 0 ||
-        (typeof productBrand === "string" && selectedBrands.includes(productBrand));
-
-      const matchesRating =
-        selectedRating === null || (product.rating ?? 0) >= selectedRating;
-
-      const matchesInStock = !inStockOnly || product.inStock !== false;
-
-      const matchesOnSale =
-        !onSaleOnly ||
-        (typeof product.originalPrice === "number" &&
-          typeof product.price === "number" &&
-          product.originalPrice > product.price);
-
-      // Shipping eligibility is not exposed on product payload yet.
-      const matchesFreeShipping = !freeShippingOnly;
-
-      return (
-        matchesQuery &&
-        matchesCategoryFallback &&
-        matchesBrand &&
-        matchesRating &&
-        matchesInStock &&
-        matchesOnSale &&
-        matchesFreeShipping
-      );
-    });
-
+    const list = data?.products ?? [];
     if (sortBy === "rating") {
-      list = [...list].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+      return [...list].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
     }
-
     return list;
-  }, [
-    data?.products,
-    searchQuery,
-    selectedCategoryId,
-    selectedCategory,
-    selectedBrands,
-    selectedRating,
-    inStockOnly,
-    onSaleOnly,
-    freeShippingOnly,
-    sortBy,
-  ]);
+  }, [data?.products, sortBy]);
 
   // If backend returns prices in minor units (pence/cents), detect and adjust
   // the UI price range to a sensible default based on loaded products.
@@ -317,7 +294,7 @@ export default function SearchPage() {
           {/* Results Info & Controls */}
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              {filteredProducts.length} results found
+              {data?.meta?.total ?? filteredProducts.length} products found
               {searchQuery && ` for "${searchQuery}"`}
             </p>
             <div className="flex items-center gap-3">
@@ -400,9 +377,41 @@ export default function SearchPage() {
           {/* Products Grid */}
           <div className="flex-1">
             {isLoading ? (
-              <p>Loading products...</p>
+              <div
+                className={`grid gap-6 ${
+                  viewMode === "grid"
+                    ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                    : "grid-cols-1"
+                }`}
+              >
+                {Array.from({ length: productCount > 12 ? 12 : productCount }).map(
+                  (_, i) => (
+                    <div
+                      key={i}
+                      className="rounded-2xl border border-border/60 overflow-hidden"
+                    >
+                      <div className="aspect-square bg-muted/40 animate-pulse" />
+                      <div className="p-4 space-y-3">
+                        <div className="h-3 w-1/3 bg-muted/50 rounded animate-pulse" />
+                        <div className="h-4 w-3/4 bg-muted/50 rounded animate-pulse" />
+                        <div className="h-5 w-1/4 bg-muted/50 rounded animate-pulse" />
+                      </div>
+                    </div>
+                  ),
+                )}
+              </div>
             ) : error ? (
-              <p>Error loading products.</p>
+              <div className="text-center py-16 rounded-2xl border border-border/60 bg-card/50">
+                <h3 className="text-xl font-semibold mb-2">
+                  Couldn’t load products
+                </h3>
+                <p className="text-muted-foreground mb-6">
+                  Something went wrong. Please try again.
+                </p>
+                <Button onClick={() => router.reload()} className="rounded-full">
+                  Retry
+                </Button>
+              </div>
             ) : filteredProducts.length === 0 ? (
               <motion.div
                 className="text-center py-16"
@@ -410,13 +419,19 @@ export default function SearchPage() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.6 }}
               >
-                <div className="text-6xl mb-4">🔍</div>
                 <h3 className="text-xl font-semibold mb-2">
                   No products found
                 </h3>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground mb-6">
                   Try adjusting your search criteria or browse our categories
                 </p>
+                <Button
+                  onClick={clearAllFilters}
+                  variant="outline"
+                  className="rounded-full"
+                >
+                  Clear filters
+                </Button>
               </motion.div>
             ) : (
               <motion.div
@@ -508,3 +523,19 @@ export default function SearchPage() {
     </div>
   );
 }
+
+export const getServerSideProps: GetServerSideProps<SearchPageProps> = async (
+  ctx,
+) => {
+  const page = Number(ctx.query.page) || 1;
+  const initialCatalog = await fetchProductsSsr({
+    page: page > 0 ? page : 1,
+    perPage: 12,
+  });
+
+  return {
+    props: {
+      initialCatalog,
+    },
+  };
+};

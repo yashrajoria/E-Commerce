@@ -86,7 +86,6 @@ export function useProductForm(
       }
 
       for (const pair of formData.entries()) {
-        console.log(pair[0], pair[1]);
       }
 
       const res = await axios.post("/api/admin/products", formData, {
@@ -114,8 +113,6 @@ export function useProductForm(
     data: z.infer<typeof singleProductSchema>,
   ) => {
     try {
-      // console.log({ data });
-      console.log({ productId });
       const id = typeof productId === "string" ? productId : (productId as { _id?: string })?._id || "";
 
       // If there are new files in images, upload them first and include image_urls
@@ -146,13 +143,10 @@ export function useProductForm(
   };
   const deleteSingleProduct = async (productId: string) => {
     try {
-      console.log({ productId });
       const res = await axios.delete(`/api/admin/products/${productId}`, {
         withCredentials: true,
       });
-      console.log(res);
     } catch (err) {
-      console.log(err);
     }
   };
   return {

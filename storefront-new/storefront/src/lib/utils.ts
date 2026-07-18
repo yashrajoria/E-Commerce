@@ -1,17 +1,45 @@
 export { cn, formatGBP, trapFocus } from "@ecommerce/shared";
 
-import * as LucideIcons from "lucide-react";
-import type { LucideProps } from "lucide-react";
+import {
+  Baby,
+  Book,
+  Camera,
+  Car,
+  Gift,
+  Headphones,
+  Heart,
+  Home,
+  Laptop,
+  Package,
+  Shirt,
+  ShoppingBag,
+  Smartphone,
+  Star,
+  Watch,
+  type LucideProps,
+} from "lucide-react";
 import type { ComponentType } from "react";
 
+/** Explicit icon map — avoid `import * as lucide-react` (bundle bloat). */
+const ICON_MAP: Record<string, ComponentType<LucideProps>> = {
+  Package,
+  Shirt,
+  Home,
+  Smartphone,
+  Watch,
+  ShoppingBag,
+  Heart,
+  Star,
+  Laptop,
+  Camera,
+  Headphones,
+  Baby,
+  Car,
+  Book,
+  Gift,
+};
+
 export function getLucideIcon(name?: string | null) {
-  const fallback = LucideIcons.Package as ComponentType<LucideProps>;
-  if (!name) return fallback;
-
-  const iconMap = LucideIcons as unknown as Record<
-    string,
-    ComponentType<LucideProps>
-  >;
-
-  return iconMap[name] || fallback;
+  if (!name) return Package;
+  return ICON_MAP[name] || Package;
 }

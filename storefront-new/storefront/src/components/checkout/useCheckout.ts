@@ -21,12 +21,21 @@ async function pollForPaymentUrl(id: string): Promise<string> {
       );
       const { status, checkout_url } = res.data;
       const statusStr = typeof status === "string" ? status.toUpperCase() : "";
-      if (checkout_url) return checkout_url;
-      if (statusStr === "URL_READY") return checkout_url;
-      if (statusStr === "FAILED")
+      const url =
+        typeof checkout_url === "string" && checkout_url.trim().length > 0
+          ? checkout_url.trim()
+          : "";
+
+      if (url) return url;
+      // URL_READY without a URL is not success — keep polling.
+      if (statusStr === "FAILED") {
         throw new Error("Payment failed during processing.");
-    } catch {
-      // swallow poll errors; retry loop handles it
+      }
+    } catch (err) {
+      if (err instanceof Error && err.message.startsWith("Payment failed")) {
+        throw err;
+      }
+      // swallow transient poll errors; retry loop handles it
     }
     attempts++;
     await new Promise((resolve) => setTimeout(resolve, delay));
@@ -308,26 +317,58 @@ export function useCheckout(): CheckoutState {
       return;
     }
     setIsProcessing(true);
-    try {
-      await axiosInstance.delete(API_ROUTES.CART.CLEAR);
 
-      const addRes = await axiosInstance.post(API_ROUTES.CART.ADD, {
-        items: cart.map((item) => ({
-          product_id: item.id,
-          quantity: item.quantity,
-        })),
-      });
-      if (addRes.status !== 200) {
-        showError("Failed to update cart. Please try again.");
+    const cartSnapshot = cart.map((item) => ({ ...item }));
+
+    try {
+      // Sync cart to server without destroying local state if sync fails.
+      try {
+        await axiosInstance.delete(API_ROUTES.CART.CLEAR);
+        const addRes = await axiosInstance.post(API_ROUTES.CART.ADD, {
+          items: cartSnapshot.map((item) => ({
+            product_id: item.id,
+            quantity: item.quantity,
+          })),
+        });
+        if (addRes.status !== 200) {
+          showError("Failed to update cart. Please try again.");
+          return;
+        }
+      } catch {
+        showError("Failed to sync cart. Please try again.");
         return;
       }
+
       const idempotencyKey =
         typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
           ? crypto.randomUUID()
           : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+      const checkoutPayload = {
+        shipping_method: shippingMethod,
+        shipping_address: {
+          email: shippingDetails.email,
+          phone: shippingDetails.phone,
+          first_name: shippingDetails.firstName,
+          last_name: shippingDetails.lastName,
+          line1: shippingDetails.address,
+          city: shippingDetails.city,
+          state: shippingDetails.state,
+          postal_code: shippingDetails.zipCode,
+          country: shippingDetails.country || "GB",
+        },
+        contact: {
+          email: shippingDetails.email,
+          phone: shippingDetails.phone,
+        },
+        ...(promoCode.trim()
+          ? { promo_code: promoCode.trim() }
+          : {}),
+      };
+
       const checkoutRes = await axiosInstance.post(
         API_ROUTES.CART.CHECKOUT,
-        {},
+        checkoutPayload,
         {
           headers: {
             "Idempotency-Key": idempotencyKey,
@@ -344,13 +385,6 @@ export function useCheckout(): CheckoutState {
       if (checkoutUrl && typeof checkoutUrl === "string") {
         try {
           window.location.assign(checkoutUrl);
-          setTimeout(() => {
-            try {
-              window.open(checkoutUrl, "_blank");
-            } catch {
-              // swallow fallback errors
-            }
-          }, 3000);
         } catch {
           try {
             window.open(checkoutUrl, "_blank");
@@ -370,7 +404,15 @@ export function useCheckout(): CheckoutState {
     } finally {
       setIsProcessing(false);
     }
-  }, [cart, showError, showSuccess, validateStep]);
+  }, [
+    cart,
+    promoCode,
+    shippingDetails,
+    shippingMethod,
+    showError,
+    showSuccess,
+    validateStep,
+  ]);
 
   return {
     cart,

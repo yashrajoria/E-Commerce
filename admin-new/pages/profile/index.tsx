@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from "@ecommerce/shared";
+import { useAdminSession } from "@/lib/useAdminSession";
 import { motion } from "framer-motion";
 import {
   Bell,
@@ -32,18 +32,23 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const Profile = () => {
-  const { user } = useAuth();
-  const [name, setName] = useState(user?.name || "Admin User");
-  const [email, setEmail] = useState(user?.email || "admin@example.com");
+  const { user } = useAdminSession();
+  const fallbackName =
+    user?.name?.trim() ||
+    (user?.email ? user.email.split("@")[0] : "") ||
+    "Admin";
+  const [name, setName] = useState(fallbackName);
+  const [email, setEmail] = useState(user?.email || "");
   const [phone, setPhone] = useState<string>("");
-
 
   useEffect(() => {
     if (user) {
-      setName(user.name || "");
+      setName(
+        user.name?.trim() ||
+          (user.email ? user.email.split("@")[0] : "") ||
+          "Admin",
+      );
       setEmail(user.email || "");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setPhone((user as any).phone || "");
     }
   }, [user]);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -357,3 +362,11 @@ const Profile = () => {
 
 
 export default Profile;
+
+
+import type { GetServerSidePropsContext } from "next";
+
+export async function getServerSideProps(ctx: GetServerSidePropsContext) {
+  const { requireAdmin } = await import("@/lib/ssrAuth");
+  return requireAdmin(ctx);
+}

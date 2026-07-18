@@ -187,11 +187,11 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
             )}
           </div>
 
-          {/* Wishlist */}
+          {/* Wishlist — always visible on touch; hover-enhanced on desktop */}
           <Button
             variant="secondary"
             size="icon"
-            className="absolute top-3 right-3 z-10 h-9 w-9 rounded-full glass opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0 shadow-md"
+            className="absolute top-3 right-3 z-10 h-9 w-9 rounded-full glass opacity-100 translate-y-0 shadow-md sm:opacity-0 sm:translate-y-1 sm:group-hover:opacity-100 sm:group-hover:translate-y-0 transition-all duration-300"
             onClick={handleWishlistToggle}
             aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
             aria-pressed={isWishlisted}
@@ -205,8 +205,8 @@ export function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
             />
           </Button>
 
-          {/* Quick Add */}
-          <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-3 group-hover:translate-y-0">
+          {/* Quick Add — always visible on touch; hover-enhanced on desktop */}
+          <div className="absolute bottom-3 left-3 right-3 opacity-100 translate-y-0 sm:opacity-0 sm:translate-y-3 sm:group-hover:opacity-100 sm:group-hover:translate-y-0 transition-all duration-300">
             <Button
               size="sm"
               className="w-full rounded-xl bg-foreground/90 hover:bg-foreground text-background backdrop-blur-sm h-9 text-[13px] font-medium"

@@ -30,12 +30,12 @@ export const login = async (email: string, password: string) => {
   return response.data;
 };
 
-export const register = async (email: string, password: string, name?: string, role?: string) => {
+export const register = async (email: string, password: string, name?: string) => {
   const response = await axiosInstance.post(API_ROUTES.AUTH.REGISTER, {
     email,
     password,
     name,
-    role,
+    // role is never client-controlled — backend assigns the default user role
   });
   return response.data;
 };

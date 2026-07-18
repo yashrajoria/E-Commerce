@@ -37,6 +37,8 @@ const mapSortForApi = (sortBy?: string) => {
       return "price_desc";
     case "newest":
       return "created_at_desc";
+    case "rating":
+      return "rating_desc";
     default:
       return undefined;
   }
@@ -53,8 +55,11 @@ const fetchProducts = async (
     perPage: String(productCount),
   });
 
-  // include is_featured param so the API can filter when requested
-  params.append("is_featured", String(Boolean(filters?.isFeatured)));
+  // Only filter by featured when the caller explicitly asks.
+  // Sending is_featured=false was excluding featured catalog items by default.
+  if (typeof filters?.isFeatured === "boolean") {
+    params.append("is_featured", String(filters.isFeatured));
+  }
 
   const categoryId = filters?.categoryId?.trim();
   if (categoryId) {
@@ -74,6 +79,34 @@ const fetchProducts = async (
     params.append("sort", sort);
   }
 
+  const search = filters?.search?.trim();
+  if (search) {
+    params.append("search", search);
+  }
+
+  if (filters?.brands?.length) {
+    for (const brand of filters.brands) {
+      const value = brand.trim();
+      if (value) params.append("brand", value);
+    }
+  }
+
+  if (typeof filters?.minRating === "number") {
+    params.append("minRating", String(filters.minRating));
+  }
+
+  if (typeof filters?.inStock === "boolean") {
+    params.append("inStock", String(filters.inStock));
+  }
+
+  if (typeof filters?.onSale === "boolean") {
+    params.append("onSale", String(filters.onSale));
+  }
+
+  if (typeof filters?.freeShipping === "boolean") {
+    params.append("freeShipping", String(filters.freeShipping));
+  }
+
   const response = await axiosInstance.get(
     `${API_ROUTES.PRODUCTS.ALL}?${params.toString()}`,
     { signal },
@@ -81,11 +114,17 @@ const fetchProducts = async (
 
   const data = response.data as {
     meta: ProductsResponse["meta"];
-    products: Array<Product & { _id?: string }>;
+    products: Array<Product & { _id?: string }> | null;
   };
+  const products = Array.isArray(data.products) ? data.products : [];
   return {
-    meta: data.meta,
-    products: data.products.map((product) => ({
+    meta: data.meta ?? {
+      page,
+      perPage: productCount,
+      total: products.length,
+      totalPages: 1,
+    },
+    products: products.map((product) => ({
       ...product,
       id: product.id ?? product._id ?? "",
     })),
@@ -105,7 +144,10 @@ const fetchProductById = async (
   };
 };
 
-export function useProductById(id?: string | number) {
+export function useProductById(
+  id?: string | number,
+  options?: { initialData?: Product },
+) {
   return useQuery<Product, Error>({
     queryKey: ["product", id],
     queryFn: ({ signal }) => {
@@ -114,7 +156,8 @@ export function useProductById(id?: string | number) {
       }
       return fetchProductById(id, signal);
     },
-    enabled: id !== undefined && id !== null && String(id).length > 0, // ✅
+    enabled: id !== undefined && id !== null && String(id).length > 0,
+    initialData: options?.initialData,
     staleTime: 5 * 60 * 1000,
     retry: 1,
   });
@@ -124,6 +167,7 @@ export function useProducts(
   productCount?: number,
   page?: number,
   isFeaturedOrFilters?: boolean | ProductFilters,
+  options?: { initialData?: ProductsResponse },
 ) {
   const normalizedFilters: ProductFilters =
     typeof isFeaturedOrFilters === "boolean"
@@ -134,6 +178,7 @@ export function useProducts(
     queryKey: ["products", productCount ?? 12, page ?? 1, normalizedFilters],
     queryFn: ({ signal }) =>
       fetchProducts(productCount ?? 12, page ?? 1, normalizedFilters, signal),
+    initialData: options?.initialData,
     staleTime: 5 * 60 * 1000,
     placeholderData: keepPreviousData,
     retry: (failureCount, error) => {

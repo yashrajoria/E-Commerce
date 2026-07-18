@@ -1,6 +1,10 @@
 import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
 
+import { getAdminApiBaseUrl } from "@/lib/backendUrl";
+
+const API_URL = getAdminApiBaseUrl();
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
@@ -13,20 +17,19 @@ export default async function handler(
   const cookie = req.headers.cookie;
 
   try {
-    const apiRes = await axios.get(
-      `${process.env.NEXT_PUBLIC_NEW_API_URL}inventory`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Cookie: cookie,
-        },
-        params: {
-          page: parseInt(page as string, 10) || 1,
-          page_size: parseInt(page_size as string, 10) || 20,
-        },
-        withCredentials: true,
+    // Admin list requires JWT + admin. Avoid trailing-slash redirects through the gateway.
+    const apiRes = await axios.get(`${API_URL}bff/admin/inventory`, {
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookie,
       },
-    );
+      params: {
+        page: parseInt(page as string, 10) || 1,
+        page_size: parseInt(page_size as string, 10) || 20,
+      },
+      withCredentials: true,
+      maxRedirects: 0,
+    });
 
     const inventory = apiRes?.data?.inventory || [];
     const meta = apiRes?.data?.meta || {};

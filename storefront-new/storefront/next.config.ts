@@ -29,7 +29,7 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: path.join(__dirname, "..", ".."),
   async rewrites() {
     const apiBaseUrl =
-      process.env.NEXT_PUBLIC_API_BASE_URL || "http://172.16.14.242:8080";
+      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
     return {
       fallback: [
         {

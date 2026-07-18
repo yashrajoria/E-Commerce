@@ -4,7 +4,11 @@ export { Logout } from "./components/auth/Logout";
 export { useAuth, AuthProvider, type User } from "./hooks/useAuth";
 export * from "./api/auth";
 export { API_ROUTES } from "./api/apiRoutes";
-export { axiosInstance, setAPIErrorHandler } from "./utils/axiosInstance";
+export {
+  axiosInstance,
+  setAPIErrorHandler,
+  setAuthRefreshUrl,
+} from "./utils/axiosInstance";
 export type { APIErrorHandler, APIErrorType } from "./utils/axiosInstance";
 export {
   getBackendBaseUrl,

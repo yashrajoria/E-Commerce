@@ -1,5 +1,4 @@
 import Head from "next/head";
-import { GetServerSideProps } from "next";
 import { AIInsightsWorkspace } from "@/components/dashboard/ai/AIInsightsWorkspace";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 
@@ -25,8 +24,7 @@ const AIInsightsPage = () => {
 
 export default AIInsightsPage;
 
-export const getServerSideProps: GetServerSideProps = async () => {
-  return {
-    props: {},
-  };
-};
+export async function getServerSideProps(ctx: import("next").GetServerSidePropsContext) {
+  const { requireAdmin } = await import("@/lib/ssrAuth");
+  return requireAdmin(ctx);
+}

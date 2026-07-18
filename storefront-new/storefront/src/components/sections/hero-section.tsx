@@ -136,7 +136,7 @@ export function HeroSection() {
   const typed = useTypewriter(typewriterPhrases);
 
   return (
-    <section className="relative min-h-[92vh] overflow-hidden flex items-center">
+    <section className="relative min-h-[70vh] md:min-h-[92vh] overflow-hidden flex items-center py-12 md:py-0">
       {/* Warm sunset gradient background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-rose-50/70 via-background to-amber-50/50 dark:from-rose-950/30 dark:via-background dark:to-amber-950/20" />
@@ -144,14 +144,14 @@ export function HeroSection() {
         {/* Aurora overlay */}
         <div className="absolute inset-0 aurora-bg" />
 
-        {/* Ambient glow orbs */}
+        {/* Ambient glow orbs — desktop only to keep mobile light */}
         <motion.div
-          className="absolute top-1/4 -left-32 w-96 h-96 bg-rose-400/15 dark:bg-rose-500/10 rounded-full blur-[120px]"
+          className="absolute top-1/4 -left-32 w-96 h-96 bg-rose-400/15 dark:bg-rose-500/10 rounded-full blur-[120px] hidden md:block"
           animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.6, 0.4] }}
           transition={{ duration: 8, repeat: Infinity, repeatType: "reverse" }}
         />
         <motion.div
-          className="absolute bottom-1/4 -right-32 w-80 h-80 bg-amber-400/15 dark:bg-amber-500/10 rounded-full blur-[100px]"
+          className="absolute bottom-1/4 -right-32 w-80 h-80 bg-amber-400/15 dark:bg-amber-500/10 rounded-full blur-[100px] hidden md:block"
           animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
           transition={{
             duration: 6,
@@ -161,7 +161,7 @@ export function HeroSection() {
           }}
         />
         <motion.div
-          className="absolute top-2/3 left-1/3 w-64 h-64 bg-orange-300/10 dark:bg-orange-500/5 rounded-full blur-[100px]"
+          className="absolute top-2/3 left-1/3 w-64 h-64 bg-orange-300/10 dark:bg-orange-500/5 rounded-full blur-[100px] hidden md:block"
           animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }}
           transition={{
             duration: 10,
@@ -171,13 +171,15 @@ export function HeroSection() {
           }}
         />
 
-        {/* Floating particles */}
-        <FloatingParticle delay={0} size={6} x="15%" y="20%" />
-        <FloatingParticle delay={1.2} size={4} x="70%" y="15%" />
-        <FloatingParticle delay={2.5} size={8} x="85%" y="60%" />
-        <FloatingParticle delay={0.8} size={5} x="40%" y="75%" />
-        <FloatingParticle delay={3} size={3} x="60%" y="40%" />
-        <FloatingParticle delay={1.5} size={7} x="25%" y="55%" />
+        {/* Floating particles — desktop only */}
+        <div className="hidden md:contents">
+          <FloatingParticle delay={0} size={6} x="15%" y="20%" />
+          <FloatingParticle delay={1.2} size={4} x="70%" y="15%" />
+          <FloatingParticle delay={2.5} size={8} x="85%" y="60%" />
+          <FloatingParticle delay={0.8} size={5} x="40%" y="75%" />
+          <FloatingParticle delay={3} size={3} x="60%" y="40%" />
+          <FloatingParticle delay={1.5} size={7} x="25%" y="55%" />
+        </div>
 
         {/* Subtle grid pattern */}
         <div
@@ -190,16 +192,17 @@ export function HeroSection() {
       </div>
 
       <div className="container mx-auto px-4 lg:px-8 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           {/* Left Content */}
           <motion.div
-            className="space-y-10"
+            className="space-y-6 md:space-y-10"
             initial={{ opacity: 0, x: -40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* Announcement pill */}
+            {/* Announcement pill — desktop only */}
             <motion.div
+              className="hidden md:block"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
@@ -210,33 +213,38 @@ export function HeroSection() {
               </span>
             </motion.div>
 
-            {/* Headline with typewriter effect */}
-            <div className="space-y-4">
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight">
+            {/* Headline: static on mobile, typewriter from sm+ */}
+            <div className="space-y-3 md:space-y-4">
+              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight">
                 Discover Your
                 <span className="block mt-1 min-h-[1.15em]">
-                  <span className="text-gradient-premium">{typed}</span>
-                  <span className="typewriter-cursor h-[0.85em] align-middle" />
+                  <span className="text-gradient-premium md:hidden">
+                    Signature Style
+                  </span>
+                  <span className="text-gradient-premium hidden md:inline">
+                    {typed}
+                  </span>
+                  <span className="typewriter-cursor h-[0.85em] align-middle hidden md:inline-block" />
                 </span>
               </h1>
-              <p className="text-lg text-muted-foreground leading-relaxed max-w-lg">
+              <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-lg">
                 Curated collections from world-class brands. Premium quality,
                 exceptional craftsmanship, delivered to your doorstep.
               </p>
             </div>
 
-            {/* CTA Buttons */}
+            {/* CTA — one primary on mobile; dual on desktop */}
             <div className="flex flex-wrap gap-4">
-              <Link href="/products">
+              <Link href="/products" className="w-full sm:w-auto">
                 <Button
                   size="lg"
-                  className="h-13 px-8 text-white cursor-pointer bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 shadow-lg shadow-rose-500/25 hover:shadow-rose-500/40 transition-all duration-300 rounded-full text-[15px] font-medium"
+                  className="w-full sm:w-auto h-12 md:h-13 px-8 text-white cursor-pointer bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 shadow-lg shadow-rose-500/25 hover:shadow-rose-500/40 transition-all duration-300 rounded-full text-[15px] font-medium"
                 >
                   Explore Collection
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="/categories">
+              <Link href="/categories" className="hidden sm:block">
                 <Button
                   variant="outline"
                   size="lg"
@@ -247,8 +255,14 @@ export function HeroSection() {
               </Link>
             </div>
 
-            {/* Fast trust stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 max-w-2xl">
+            {/* Mobile: single trust line */}
+            <p className="flex items-center gap-2 text-sm text-muted-foreground md:hidden">
+              <Truck className="h-4 w-4 text-rose-600 shrink-0" aria-hidden />
+              Free shipping on orders over £50
+            </p>
+
+            {/* Fast trust stats — desktop only */}
+            <div className="hidden md:grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 max-w-2xl">
               {heroStats.map((stat, index) => (
                 <motion.div
                   key={stat.label}
@@ -265,8 +279,8 @@ export function HeroSection() {
               ))}
             </div>
 
-            {/* Trust indicators */}
-            <div className="flex flex-wrap gap-6 pt-4">
+            {/* Trust indicators — desktop only */}
+            <div className="hidden md:flex flex-wrap gap-6 pt-4">
               {[
                 { icon: Truck, label: "Free Shipping", sub: "Orders over £50" },
                 {

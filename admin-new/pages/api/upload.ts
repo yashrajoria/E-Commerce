@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 import { getResponseInfo } from "@/lib/error";
+import { getAdminApiBaseUrl } from "@/lib/backendUrl";
 import FormData from "form-data";
 import formidable from "formidable";
 import fs from "fs";
@@ -19,12 +20,8 @@ const parseForm = (req: NextApiRequest): Promise<{ fields: Record<string, unknow
   });
 };
 
-const extractSessionCookie = (req: NextApiRequest): string => {
-  const sessionCookie = req.headers.cookie
-    ?.split(";")
-    .find((c) => c.trim().startsWith("__session="));
-  return sessionCookie?.trim() || "";
-};
+const extractSessionCookie = (req: NextApiRequest): string =>
+  req.headers.cookie?.trim() || "";
 
 export default async function handler(
   req: NextApiRequest,
@@ -57,7 +54,7 @@ export default async function handler(
     // Proxy to backend upload endpoint
     const response = await axios({
       method: "POST",
-      url: `${process.env.NEXT_PUBLIC_NEW_API_URL}upload`,
+      url: `${getAdminApiBaseUrl()}upload`,
       data: formData,
       headers: {
         ...formData.getHeaders(),

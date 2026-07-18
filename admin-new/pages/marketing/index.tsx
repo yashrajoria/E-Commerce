@@ -352,3 +352,11 @@ const Marketing = () => {
 };
 
 export default Marketing;
+
+
+import type { GetServerSidePropsContext } from "next";
+
+export async function getServerSideProps(ctx: GetServerSidePropsContext) {
+  const { requireAdmin } = await import("@/lib/ssrAuth");
+  return requireAdmin(ctx);
+}

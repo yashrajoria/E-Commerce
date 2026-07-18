@@ -2,7 +2,9 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 import { getResponseInfo } from "@/lib/error";
 
-const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
+import { getAdminApiBaseUrl } from "@/lib/backendUrl";
+
+const API_URL = getAdminApiBaseUrl();
 
 export default async function handler(
   req: NextApiRequest,
@@ -16,9 +18,10 @@ export default async function handler(
     const sku = (req.query.sku as string) || undefined;
     const cookie = req.headers.cookie || "";
 
+    // Must use admin BFF path — public GET /products/* does not inject X-User-Role.
     const url = sku
-      ? `${API_URL}products/presign?sku=${encodeURIComponent(sku)}`
-      : `${API_URL}products/presign`;
+      ? `${API_URL}bff/admin/products/presign?sku=${encodeURIComponent(sku)}`
+      : `${API_URL}bff/admin/products/presign`;
 
     const response = await axios.get(url, {
       headers: {

@@ -69,7 +69,28 @@ export function Header() {
     }
   };
 
-  if (!mounted) return null;
+  if (!mounted) {
+    // Stable shell to avoid header flash / layout jump before theme mounts.
+    return (
+      <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b border-transparent">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="flex h-[72px] items-center justify-between">
+            <Link href="/" className="flex items-center space-x-3">
+              <div className="relative h-9 w-9 rounded-xl bg-linear-to-br from-rose-600 to-amber-500 flex items-center justify-center">
+                <span className="text-white font-bold text-sm tracking-tight">
+                  S
+                </span>
+              </div>
+              <span className="font-semibold text-xl tracking-tight text-gradient-premium">
+                ShopSwift
+              </span>
+            </Link>
+            <div className="h-10 w-32 rounded-full bg-muted/40" aria-hidden />
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <>
@@ -98,12 +119,24 @@ export function Header() {
             </Link>
 
             {/* Quick Nav */}
-            <nav className="hidden md:flex md:ml-6 lg:ml-8 items-center gap-4">
+            <nav className="hidden md:flex md:ml-6 lg:ml-8 items-center gap-5">
+              <Link
+                href="/products"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Shop
+              </Link>
               <Link
                 href="/categories"
-                className="text-sm font-medium text-gray-700 hover:text-gray-900"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 Categories
+              </Link>
+              <Link
+                href="/products?sortBy=newest"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                New
               </Link>
             </nav>
 
@@ -183,18 +216,20 @@ export function Header() {
                 )}
               </Button>
 
-              {/* Account */}
-              <div
-                className="relative"
-                onMouseEnter={() => loggedIn && setIsAccountOpen(true)}
-                onMouseLeave={() => loggedIn && setIsAccountOpen(false)}
-              >
+              {/* Account — click to toggle (not hover-only) */}
+              <div className="relative">
                 <Button
                   variant="ghost"
                   aria-haspopup="menu"
                   aria-expanded={loggedIn ? isAccountOpen : undefined}
                   className="h-10 rounded-full px-4 hover:bg-muted/60 cursor-pointer transition-colors duration-200 text-sm font-medium"
-                  onClick={() => !loggedIn && setIsLoginOpen(true)}
+                  onClick={() => {
+                    if (!loggedIn) {
+                      setIsLoginOpen(true);
+                      return;
+                    }
+                    setIsAccountOpen((open) => !open);
+                  }}
                 >
                   <User className="h-[18px] w-[18px] mr-2" aria-hidden />
                   {loggedIn ? "Account" : "Sign In"}
@@ -243,6 +278,24 @@ export function Header() {
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
               >
                 <Search className="h-[18px] w-[18px]" aria-hidden />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={
+                  wishlist.length > 0
+                    ? `Wishlist, ${wishlist.length} items`
+                    : "Open wishlist"
+                }
+                className="relative h-10 w-10 rounded-full"
+                onClick={() => setIsWishlistOpen(true)}
+              >
+                <Heart className="h-[18px] w-[18px]" aria-hidden />
+                {wishlist.length > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-linear-to-r from-rose-500 to-pink-500 text-[10px] text-white font-medium flex items-center justify-center">
+                    {wishlist.length}
+                  </span>
+                )}
               </Button>
               <Button
                 variant="ghost"

@@ -138,24 +138,48 @@ export function CartProvider({ children }: { children: ReactNode }) {
       };
 
       const serverItems = Array.isArray(payload.items) ? payload.items : [];
+      const localItems = loadLocalCart();
+      const localMap = new Map(
+        localItems.map((item) => [String(item.id), item] as const),
+      );
+
+      // Empty server cart: keep guest/local cart and push it up.
       if (serverItems.length === 0) {
-        setCart([]);
+        if (localItems.length === 0) {
+          setCart([]);
+        } else {
+          setCart(localItems);
+          try {
+            await axiosInstance.post(API_ROUTES.CART.ADD, {
+              items: localItems.map((item) => ({
+                product_id: String(item.id),
+                quantity: Math.max(1, Number(item.quantity || 1)),
+              })),
+            });
+          } catch (error) {
+            if (axios.isAxiosError(error) && error.response?.status === 401) {
+              setServerCartEnabled(false);
+            }
+          }
+        }
         setServerCartEnabled(true);
         return;
       }
 
-      const localMap = new Map(
-        loadLocalCart().map((item) => [String(item.id), item] as const),
-      );
-
+      const serverIds = new Set<string>();
       const hydrated = await Promise.all(
         serverItems.map(async (item) => {
           const productId = String(item.product_id ?? "");
-          const quantity = Math.max(1, Number(item.quantity ?? 1));
+          const serverQty = Math.max(1, Number(item.quantity ?? 1));
 
           if (!productId) return null;
+          serverIds.add(productId);
 
           const local = localMap.get(productId);
+          const quantity = local
+            ? Math.max(serverQty, Math.max(1, Number(local.quantity || 1)))
+            : serverQty;
+
           if (local) {
             return { ...local, quantity };
           }
@@ -171,8 +195,48 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }),
       );
 
-      setCart(hydrated.filter((item): item is CartItem => item !== null));
+      const merged = hydrated.filter((item): item is CartItem => item !== null);
+
+      // Guest-only lines not on the server yet.
+      for (const local of localItems) {
+        const id = String(local.id);
+        if (!serverIds.has(id)) {
+          merged.push(local);
+        }
+      }
+
+      setCart(merged);
       setServerCartEnabled(true);
+
+      // Persist merged cart when guest lines were added or quantities increased.
+      const needsPush =
+        localItems.some((local) => !serverIds.has(String(local.id))) ||
+        localItems.some((local) => {
+          const server = serverItems.find(
+            (s) => String(s.product_id) === String(local.id),
+          );
+          if (!server) return false;
+          return (
+            Math.max(1, Number(local.quantity || 1)) >
+            Math.max(1, Number(server.quantity ?? 1))
+          );
+        });
+
+      if (needsPush && merged.length > 0) {
+        try {
+          await axiosInstance.delete(API_ROUTES.CART.CLEAR);
+          await axiosInstance.post(API_ROUTES.CART.ADD, {
+            items: merged.map((item) => ({
+              product_id: String(item.id),
+              quantity: Math.max(1, Number(item.quantity || 1)),
+            })),
+          });
+        } catch (error) {
+          if (axios.isAxiosError(error) && error.response?.status === 401) {
+            setServerCartEnabled(false);
+          }
+        }
+      }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         setServerCartEnabled(false);

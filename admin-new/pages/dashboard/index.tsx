@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/tooltip";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bell, Search, Calendar, Download, Menu, X } from "lucide-react";
-import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useState, useCallback, useEffect } from "react";
 import axios from "axios";
@@ -289,10 +288,7 @@ const Dashboard = ({ name }: { name: string }) => {
 
 export default Dashboard;
 
-export const getServerSideProps: GetServerSideProps = async () => {
-  return {
-    props: {
-      name: "Admin",
-    },
-  };
-};
+export async function getServerSideProps(ctx: import("next").GetServerSidePropsContext) {
+  const { requireAdmin } = await import("@/lib/ssrAuth");
+  return requireAdmin(ctx);
+}

@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
-
-const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
+import { getAdminApiBaseUrl } from "@/lib/backendUrl";
 
 const getSessionTargets = (sessionId: string) => [
   `bff/admin/agent/session/${encodeURIComponent(sessionId)}`,
@@ -17,6 +16,12 @@ export default async function handler(
   if (typeof session_id !== "string" || !session_id.trim()) {
     return res.status(400).json({ success: false, message: "Invalid session id" });
   }
+
+  if (!req.headers.cookie) {
+    return res.status(401).json({ success: false, message: "Authentication required" });
+  }
+
+  const API_URL = getAdminApiBaseUrl();
 
   try {
     if (req.method === "GET") {
@@ -112,10 +117,10 @@ export default async function handler(
         });
       }
 
+      console.error("[agent/session] proxy failed", error.response?.status);
       return res.status(error.response?.status || 500).json({
         success: false,
         message: "Session operation failed",
-        error: error.response?.data ?? error.message,
       });
     }
 

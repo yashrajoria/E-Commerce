@@ -2,6 +2,7 @@
  * Premium Shipping Management Page
  */
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
+import { DemoDataBanner } from "@/components/admin/shared/DemoDataBanner";
 import StatsCard from "@/components/ui/stats-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -141,6 +142,7 @@ const Shipping = () => {
 
   return (
     <PageLayout title="Shipping" breadcrumbs={[{ label: "Shipping" }]}>
+      <DemoDataBanner feature="Shipping" />
       {/* KPI Stats */}
       <motion.section
         variants={pageItem}
@@ -272,3 +274,10 @@ const Shipping = () => {
 };
 
 export default Shipping;
+
+
+import type { GetServerSidePropsContext } from "next";
+export async function getServerSideProps(ctx: GetServerSidePropsContext) {
+  const { requireAdmin } = await import("@/lib/ssrAuth");
+  return requireAdmin(ctx);
+}

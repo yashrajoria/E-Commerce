@@ -1,11 +1,11 @@
 import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
+import { getAdminApiBaseUrl } from "@/lib/backendUrl";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  // console.log(req.method);
   if (req.method === "GET") {
     const query = req.query;
 
@@ -13,12 +13,11 @@ export default async function handler(
 
     const pageNumber = parseInt(page as string, 10) || 1;
     const limitNumber = parseInt(limit as string, 10) || 10;
-    // const offset = (pageNumber - 1) * limitNumber;
     const cookie = req.headers.cookie;
     
     try {
       const apiRes = await axios.get(
-        `${process.env.NEXT_PUBLIC_NEW_API_URL}orders/admin`,
+        `${getAdminApiBaseUrl()}bff/admin/orders`,
         {
           headers: {
             "Content-Type": "application/json",

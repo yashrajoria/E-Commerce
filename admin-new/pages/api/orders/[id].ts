@@ -1,5 +1,6 @@
 import axios from "axios";
 import { getResponseInfo } from "@/lib/error";
+import { getAdminApiBaseUrl } from "@/lib/backendUrl";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(
@@ -15,7 +16,7 @@ export default async function handler(
 
   try {
     const apiRes = await axios.get(
-      `${process.env.NEXT_PUBLIC_NEW_API_URL}orders/${id}`,
+      `${getAdminApiBaseUrl()}bff/admin/orders/${id}`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -25,16 +26,12 @@ export default async function handler(
       }
     );
 
-    const order = apiRes.data;
-    console.log({ order });
-    return res.status(200).json(order);
+    return res.status(200).json(apiRes.data);
   } catch (error: unknown) {
     console.error("Error fetching order:", error);
-    const { status, data } = getResponseInfo(error);
-    const errData = data ?? (error instanceof Error ? error.message : String(error));
+    const { status } = getResponseInfo(error);
     return res.status(status || 500).json({
       message: "Failed to fetch order",
-      error: errData,
     });
   }
 }

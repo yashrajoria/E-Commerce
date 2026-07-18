@@ -34,6 +34,7 @@ import {
 import { useUser } from "@/context/UserContext";
 import { PasswordStrengthIndicator } from "./PasswordStrengthIndicator";
 import { trapFocus } from "@/lib/utils";
+import Link from "next/link";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -424,8 +425,14 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                       <Button
                         variant="link"
                         className="p-0 h-auto text-rose-600 hover:text-rose-700"
+                        asChild
                       >
-                        Forgot password?
+                        <Link
+                          href="/password/request-reset"
+                          onClick={onClose}
+                        >
+                          Forgot password?
+                        </Link>
                       </Button>
                     </div>
                   )}

@@ -1,35 +1,28 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { proxyRequest } from "@ecommerce/shared";
 
-function sanitizeBody(body: unknown): unknown {
-  if (!body || typeof body !== "object") return body;
-  try {
-    const maskKeys = [
-      "password",
-      "confirmPassword",
-      "passwordConfirm",
-      "pass",
-      "token",
-      "code",
-    ];
-    if (Array.isArray(body)) {
-      return body.map((item) => sanitizeBody(item));
-    }
+/** Only admin BFF surfaces may be reached through this catch-all. */
+const ALLOWED_PREFIXES = [
+  "admin/dashboard",
+  "admin/products",
+  "admin/categories",
+  "admin/inventory",
+  "admin/orders",
+  "admin/users",
+  "admin/customers",
+  "admin/agent",
+  "admin/promotions",
+  "admin/analytics",
+  "admin/upload",
+] as const;
 
-    const result = { ...(body as Record<string, unknown>) };
-    for (const key of Object.keys(result)) {
-      const value = result[key];
-      if (maskKeys.includes(key)) {
-        result[key] = "***REDACTED***";
-      } else if (typeof value === "object") {
-        result[key] = sanitizeBody(value);
-      }
-    }
-
-    return result;
-  } catch {
-    return "<unserializable>";
-  }
+function isAllowedBffPath(targetPath: string): boolean {
+  if (!targetPath || targetPath.includes("..")) return false;
+  const normalized = targetPath.replace(/^\/+/, "").replace(/\/+$/, "");
+  return ALLOWED_PREFIXES.some(
+    (prefix) =>
+      normalized === prefix || normalized.startsWith(`${prefix}/`),
+  );
 }
 
 export default async function handler(
@@ -42,22 +35,21 @@ export default async function handler(
   const segments = Array.isArray(pathParam) ? pathParam : [pathParam];
   const targetPath = segments.join("/");
 
-  try {
-    console.debug("[BFF proxy] Incoming request", {
-      method: req.method,
-      targetPath,
-      query: req.query,
-      cookiePresent: !!req.headers.cookie,
-    });
-    console.debug("[BFF proxy] Sanitized request body:", sanitizeBody(req.body));
+  if (!isAllowedBffPath(targetPath)) {
+    return res.status(403).json({ message: "Forbidden BFF path" });
+  }
 
+  if (!req.headers.cookie) {
+    return res.status(401).json({ message: "Authentication required" });
+  }
+
+  try {
     const response = await proxyRequest({
       req,
       targetPath: `/bff/${targetPath}`,
       sanitizeSetCookie: true,
     });
 
-    console.debug("[BFF proxy] Backend response status:", response.status);
     for (const [header, value] of Object.entries(response.headers)) {
       res.setHeader(header, value);
     }

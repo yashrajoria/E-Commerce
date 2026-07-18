@@ -6,7 +6,7 @@ import {
   DialogDescription,
 } from "@radix-ui/react-dialog";
 import axios from "axios";
-import { Label } from "recharts";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { DialogHeader, DialogFooter } from "../ui/dialog";

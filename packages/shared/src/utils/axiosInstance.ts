@@ -20,6 +20,13 @@ export const setAPIErrorHandler = (handler: APIErrorHandler) => {
   errorHandler = handler;
 };
 
+/** Default storefront refresh; admin apps should override to `/api/admin/auth/refresh`. */
+let authRefreshUrl = API_ROUTES.AUTH.REFRESH;
+
+export const setAuthRefreshUrl = (url: string) => {
+  authRefreshUrl = url;
+};
+
 let isRefreshing = false;
 let failedQueue: Array<{
   resolve: (value?: unknown) => void;
@@ -45,8 +52,11 @@ axiosInstance.interceptors.response.use(
       originalRequest && 
       !originalRequest._retry &&
       // Prevent loops if refresh or login themselves fail with 401
+      !originalRequest.url?.includes(authRefreshUrl) &&
       !originalRequest.url?.includes(API_ROUTES.AUTH.REFRESH) &&
-      !originalRequest.url?.includes(API_ROUTES.AUTH.LOGIN)
+      !originalRequest.url?.includes(API_ROUTES.AUTH.LOGIN) &&
+      !originalRequest.url?.includes('/admin/auth/login') &&
+      !originalRequest.url?.includes('/admin/auth/refresh')
     ) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -62,7 +72,7 @@ axiosInstance.interceptors.response.use(
       try {
         // Use a plain axios call to the refresh endpoint to avoid cycles
         // This relies on HTTP-only cookies being sent by the browser.
-        await axios.post(API_ROUTES.AUTH.REFRESH, {}, { withCredentials: true });
+        await axios.post(authRefreshUrl, {}, { withCredentials: true });
         
         processQueue(null);
         return axiosInstance(originalRequest);

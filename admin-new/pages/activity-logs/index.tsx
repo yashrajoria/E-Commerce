@@ -2,6 +2,7 @@
  * Premium Activity Logs Page
  */
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
+import { DemoDataBanner } from "@/components/admin/shared/DemoDataBanner";
 import StatsCard from "@/components/ui/stats-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -170,7 +171,8 @@ const ActivityLogs = () => {
           size="sm"
           className="gap-2 text-xs border-white/8 hover:bg-white/4 rounded-xl h-8"
         >
-          <Download size={13} />
+          <DemoDataBanner feature="Activity logs" />
+      <Download size={13} />
           Export Logs
         </Button>
       }
@@ -309,3 +311,10 @@ const ActivityLogs = () => {
 };
 
 export default ActivityLogs;
+
+
+import type { GetServerSidePropsContext } from "next";
+export async function getServerSideProps(ctx: GetServerSidePropsContext) {
+  const { requireAdmin } = await import("@/lib/ssrAuth");
+  return requireAdmin(ctx);
+}

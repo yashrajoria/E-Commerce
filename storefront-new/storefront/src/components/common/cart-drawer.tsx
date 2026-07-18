@@ -123,14 +123,19 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               {/* Items */}
               <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
                 {cart.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full text-center">
+                  <div className="flex flex-col items-center justify-center h-full text-center px-4">
                     <ShoppingBag className="h-12 w-12 text-muted-foreground/40 mb-4" />
                     <p className="text-muted-foreground font-medium">
                       Your bag is empty
                     </p>
-                    <p className="text-sm text-muted-foreground/70 mt-1">
+                    <p className="text-sm text-muted-foreground/70 mt-1 mb-6">
                       Start adding items to see them here
                     </p>
+                    <Button asChild className="rounded-full">
+                      <Link href="/products" onClick={onClose}>
+                        Continue shopping
+                      </Link>
+                    </Button>
                   </div>
                 ) : (
                   cart.map((item) => (

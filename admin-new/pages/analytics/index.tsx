@@ -2,6 +2,7 @@
  * Premium Analytics Page
  */
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
+import { DemoDataBanner } from "@/components/admin/shared/DemoDataBanner";
 import StatsCard from "@/components/ui/stats-card";
 import {
   Card,
@@ -109,7 +110,8 @@ const Analytics = () => {
       breadcrumbs={[{ label: "Analytics" }]}
       headerActions={
         <div className="flex items-center gap-2">
-          <Button
+          <DemoDataBanner feature="Analytics" />
+      <Button
             variant="outline"
             size="sm"
             className="gap-2 text-xs border-white/8 hover:bg-white/4 rounded-xl h-8 hidden sm:flex"
@@ -448,3 +450,10 @@ const Analytics = () => {
 };
 
 export default Analytics;
+
+
+import type { GetServerSidePropsContext } from "next";
+export async function getServerSideProps(ctx: GetServerSidePropsContext) {
+  const { requireAdmin } = await import("@/lib/ssrAuth");
+  return requireAdmin(ctx);
+}

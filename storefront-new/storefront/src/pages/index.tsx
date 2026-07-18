@@ -7,7 +7,6 @@ import { CategoriesSection } from "@/components/sections/category-section";
 import { FeaturedProducts } from "@/components/sections/featured-products";
 import { CollectionsSection } from "@/components/sections/collections-sections";
 
-import { FloatingActionButton } from "@/components/layout/floating-action-button";
 import { Footer } from "@/components/layout/footer";
 import Head from "next/head";
 
@@ -35,7 +34,6 @@ export default function Home() {
         <CategoriesSection />
         <FeaturedProducts />
         <CollectionsSection />
-        <FloatingActionButton />
         <Footer />
       </main>
     </>

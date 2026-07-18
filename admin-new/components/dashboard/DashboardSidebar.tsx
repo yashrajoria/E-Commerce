@@ -36,7 +36,7 @@ import {
 } from "@ecommerce/shared";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "@ecommerce/shared";
+import { useAdminSession } from "@/lib/useAdminSession";
 
 interface NavItem {
   icon: ElementType;
@@ -300,9 +300,13 @@ const DashboardSidebar = () => {
   const [badgeCounts, setBadgeCounts] = useState<BadgeCounts>(
     () => readCachedBadgeCounts() ?? {},
   );
-  const { user, loading: userLoading } = useAuth();
+  const { user, loading: userLoading } = useAdminSession();
 
   // Helper for user initials
+  const displayName =
+    user?.name?.trim() ||
+    (user?.email ? user.email.split("@")[0] : undefined) ||
+    undefined;
   const getInitials = (name?: string) => {
     if (!name) return "?";
     const parts = name.trim().split(" ");
@@ -699,14 +703,14 @@ const DashboardSidebar = () => {
           >
             <div className="relative shrink-0">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-sm font-bold">
-                {userLoading ? "..." : getInitials(user?.name)}
+                {userLoading ? "..." : getInitials(displayName)}
               </div>
               <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[hsl(var(--sidebar-background))]" />
             </div>
             {!collapsed && (
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">
-                  {userLoading ? "Loading..." : user?.name || "Unknown User"}
+                  {userLoading ? "Loading..." : displayName || "Admin"}
                 </p>
                 <p className="text-[11px] text-muted-foreground truncate">
                   {userLoading ? "" : user?.email || "No email"}
