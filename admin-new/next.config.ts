@@ -26,11 +26,6 @@ const nextConfig: NextConfig = {
   },
   outputFileTracingRoot: path.join(__dirname, ".."),
   async rewrites() {
-    const apiBaseUrl =
-      process.env.API_BASE_URL ||
-      process.env.NEXT_PUBLIC_API_BASE_URL ||
-      process.env.NEXT_PUBLIC_NEW_API_URL ||
-      "http://localhost:8080";
     return {
       beforeFiles: [
         {
@@ -38,12 +33,8 @@ const nextConfig: NextConfig = {
           destination: "/api/bff/:path*",
         },
       ],
-      fallback: [
-        {
-          source: "/api/:path*",
-          destination: `${apiBaseUrl}/:path*`,
-        },
-      ],
+      // Intentionally no catch-all `/api/*` → backend fallback.
+      // Unmatched API routes must 404 rather than silently proxy.
     };
   },
 };
