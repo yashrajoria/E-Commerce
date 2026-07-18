@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
-
-const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
+import { getAdminApiBaseUrl } from "@/lib/backendUrl";
 
 const toolsTargets = ["bff/admin/agent/tools", "bff/agent/tools"];
 
@@ -12,6 +11,12 @@ export default async function handler(
   if (req.method !== "GET") {
     return res.status(405).json({ success: false, message: "Method not allowed" });
   }
+
+  if (!req.headers.cookie) {
+    return res.status(401).json({ success: false, message: "Authentication required" });
+  }
+
+  const API_URL = getAdminApiBaseUrl();
 
   try {
     let response;
@@ -42,10 +47,10 @@ export default async function handler(
     return res.status(response.status).json(response.data);
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
+      console.error("[agent/tools] proxy failed", error.response?.status);
       return res.status(error.response?.status || 500).json({
         success: false,
         message: "Failed to load AI tools",
-        error: error.response?.data ?? error.message,
       });
     }
 

@@ -56,7 +56,6 @@ export function useBulkUpload() {
   },
 });
   };
-console.log({csvData});
 const normalizeRow = (row: Record<string, unknown>): Record<string, string> => {
   const normalized: Record<string, string> = {};
   const keyMap: Record<string, string> = {
@@ -96,7 +95,6 @@ const validateBulkUpload = (data?: Record<string, string>[]) => {
       } else if (error instanceof Error) {
         message = error.message;
       }
-      console.log({errors})
       errors.push({ row: index + 1, error: message });
       console.error(`Validation error in row ${index + 1}:`, error);
     }
@@ -162,7 +160,6 @@ const validateBulkUpload = (data?: Record<string, string>[]) => {
     }
     
     setIsUploading(true);
-console.log({autoCreateCategories})
     try {
       const formData = new FormData();
       formData.append("file", bulkFile);

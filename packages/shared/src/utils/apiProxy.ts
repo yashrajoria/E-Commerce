@@ -1,4 +1,4 @@
-const DEFAULT_API_BASE_URL = "http://172.16.14.140:8080";
+const DEFAULT_API_BASE_URL = "http://localhost:8080";
 
 type HeaderValue = string | string[] | undefined;
 

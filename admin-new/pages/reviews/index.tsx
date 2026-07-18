@@ -2,6 +2,7 @@
  * Premium Reviews Page
  */
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
+import { DemoDataBanner } from "@/components/admin/shared/DemoDataBanner";
 import StatsCard from "@/components/ui/stats-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -135,6 +136,7 @@ const Reviews = () => {
 
   return (
     <PageLayout title="Reviews" breadcrumbs={[{ label: "Reviews" }]}>
+      <DemoDataBanner feature="Reviews" />
       {/* KPI Stats */}
       <motion.section
         variants={pageItem}
@@ -274,3 +276,10 @@ const Reviews = () => {
 };
 
 export default Reviews;
+
+
+import type { GetServerSidePropsContext } from "next";
+export async function getServerSideProps(ctx: GetServerSidePropsContext) {
+  const { requireAdmin } = await import("@/lib/ssrAuth");
+  return requireAdmin(ctx);
+}

@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -14,45 +15,56 @@ import {
   Youtube,
 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
+
+type FooterLink = { label: string; href: string };
 
 export function Footer() {
-  const footerLinks = {
+  const [email, setEmail] = useState("");
+  const { showSuccess, showError } = useToast();
+
+  const footerLinks: Record<string, FooterLink[]> = {
     Shop: [
-      "Electronics",
-      "Fashion",
-      "Home & Garden",
-      "Sports",
-      "Books",
-      "Beauty",
+      { label: "All products", href: "/products" },
+      { label: "Categories", href: "/categories" },
+      { label: "Featured", href: "/products?sortBy=newest" },
+      { label: "On sale", href: "/products" },
     ],
     "Customer Service": [
-      "Contact Us",
-      "FAQ",
-      "Shipping Info",
-      "Returns",
-      "Size Guide",
-      "Track Order",
+      { label: "My account", href: "/account" },
+      { label: "Track order", href: "/account" },
+      { label: "Shipping info", href: "/products" },
+      { label: "Returns", href: "/account" },
+      { label: "Contact", href: "mailto:hello@shopswift.co.uk" },
     ],
     Company: [
-      "About Us",
-      "Careers",
-      "Press",
-      "Investor Relations",
-      "Sustainability",
-      "Terms of Service",
+      { label: "About", href: "/" },
+      { label: "Careers", href: "/" },
+      { label: "Terms of service", href: "/account" },
+      { label: "Privacy", href: "/account" },
     ],
   };
 
   const socialLinks = [
-    { icon: Facebook, href: "#", label: "Facebook" },
-    { icon: Twitter, href: "#", label: "Twitter" },
-    { icon: Instagram, href: "#", label: "Instagram" },
-    { icon: Youtube, href: "#", label: "Youtube" },
+    { icon: Facebook, href: "https://facebook.com", label: "Facebook" },
+    { icon: Twitter, href: "https://twitter.com", label: "Twitter" },
+    { icon: Instagram, href: "https://instagram.com", label: "Instagram" },
+    { icon: Youtube, href: "https://youtube.com", label: "Youtube" },
   ];
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    const value = email.trim();
+    if (!value || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      showError("Enter a valid email address");
+      return;
+    }
+    showSuccess("Thanks — you’re on the list.");
+    setEmail("");
+  };
 
   return (
     <footer className="relative bg-foreground/[0.03] border-t">
-      {/* Newsletter Banner */}
       <div className="border-b">
         <div className="container mx-auto px-4 lg:px-8 py-12">
           <motion.div
@@ -69,24 +81,33 @@ export function Footer() {
                 discounts.
               </p>
             </div>
-            <div className="flex w-full max-w-md gap-2">
+            <form
+              onSubmit={handleSubscribe}
+              className="flex w-full max-w-md gap-2"
+            >
               <Input
+                type="email"
                 placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="rounded-full h-11 bg-background"
+                aria-label="Email for newsletter"
+                required
               />
-              <Button className="rounded-full h-11 px-6 bg-linear-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 text-white shadow-lg shadow-rose-500/20">
+              <Button
+                type="submit"
+                className="rounded-full h-11 px-6 bg-linear-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 text-white shadow-lg shadow-rose-500/20"
+              >
                 Subscribe
                 <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
-            </div>
+            </form>
           </motion.div>
         </div>
       </div>
 
-      {/* Main Footer */}
       <div className="container mx-auto px-4 lg:px-8 py-14">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
-          {/* Brand */}
           <div className="lg:col-span-2 space-y-5">
             <Link href="/" className="flex items-center gap-3">
               <div className="h-9 w-9 rounded-xl bg-linear-to-br from-rose-600 to-amber-500 flex items-center justify-center shadow-lg shadow-rose-500/20">
@@ -103,11 +124,18 @@ export function Footer() {
             <div className="space-y-2.5 text-sm text-muted-foreground">
               <div className="flex items-center gap-2.5">
                 <Phone className="h-4 w-4 text-rose-500" />
-                <span>+44 (0) 20 7123 4567</span>
+                <a href="tel:+442071234567" className="hover:text-foreground">
+                  +44 (0) 20 7123 4567
+                </a>
               </div>
               <div className="flex items-center gap-2.5">
                 <Mail className="h-4 w-4 text-rose-500" />
-                <span>hello@storefront.co.uk</span>
+                <a
+                  href="mailto:hello@shopswift.co.uk"
+                  className="hover:text-foreground"
+                >
+                  hello@shopswift.co.uk
+                </a>
               </div>
               <div className="flex items-center gap-2.5">
                 <MapPin className="h-4 w-4 text-rose-500" />
@@ -116,7 +144,6 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Link Columns */}
           {Object.entries(footerLinks).map(([title, links]) => (
             <div key={title}>
               <h4 className="font-medium text-sm mb-4 uppercase tracking-wider text-foreground/80">
@@ -124,14 +151,13 @@ export function Footer() {
               </h4>
               <ul className="space-y-2.5">
                 {links.map((link) => (
-                  <li key={link}>
-                    <a
-                      href="#"
-                      onClick={(e) => e.preventDefault()}
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
                       className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 block"
                     >
-                      {link}
-                    </a>
+                      {link.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -140,7 +166,6 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Bottom Bar */}
       <div className="border-t">
         <div className="container mx-auto px-4 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
@@ -150,27 +175,24 @@ export function Footer() {
                 reserved.
               </span>
               <div className="flex gap-4">
-                <a
-                  href="#"
-                  onClick={(e) => e.preventDefault()}
+                <Link
+                  href="/account"
                   className="hover:text-foreground transition-colors"
                 >
                   Privacy
-                </a>
-                <a
-                  href="#"
-                  onClick={(e) => e.preventDefault()}
+                </Link>
+                <Link
+                  href="/account"
                   className="hover:text-foreground transition-colors"
                 >
                   Terms
-                </a>
-                <a
-                  href="#"
-                  onClick={(e) => e.preventDefault()}
+                </Link>
+                <Link
+                  href="/account"
                   className="hover:text-foreground transition-colors"
                 >
                   Cookies
-                </a>
+                </Link>
               </div>
             </div>
 
@@ -179,8 +201,9 @@ export function Footer() {
                 <a
                   key={social.label}
                   href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={social.label}
-                  onClick={(e) => social.href === "#" && e.preventDefault()}
                   className="h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all duration-200"
                 >
                   <social.icon className="h-4 w-4" />
@@ -193,4 +216,3 @@ export function Footer() {
     </footer>
   );
 }
-

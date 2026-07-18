@@ -2,6 +2,7 @@
  * Premium Support / Help Center Page
  */
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
+import { DemoDataBanner } from "@/components/admin/shared/DemoDataBanner";
 import StatsCard from "@/components/ui/stats-card";
 import { Button } from "@/components/ui/button";
 import {
@@ -146,7 +147,8 @@ const Support = () => {
           size="sm"
           className="gap-2 text-xs gradient-purple text-white hover:opacity-90 rounded-xl h-8 border-0"
         >
-          <Plus size={13} />
+          <DemoDataBanner feature="Support" />
+      <Plus size={13} />
           New Ticket
         </Button>
       }
@@ -318,3 +320,10 @@ const Support = () => {
 };
 
 export default Support;
+
+
+import type { GetServerSidePropsContext } from "next";
+export async function getServerSideProps(ctx: GetServerSidePropsContext) {
+  const { requireAdmin } = await import("@/lib/ssrAuth");
+  return requireAdmin(ctx);
+}

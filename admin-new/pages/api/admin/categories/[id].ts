@@ -18,7 +18,7 @@ export default async function handler(
   try {
     const response = await proxyRequest({
       req,
-      targetPath: `/categories/${id}`,
+      targetPath: `/bff/admin/categories/${id}`,
     });
 
     for (const [header, value] of Object.entries(response.headers)) {

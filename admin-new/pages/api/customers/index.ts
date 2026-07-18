@@ -1,5 +1,6 @@
 import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
+import { getAdminApiBaseUrl } from "@/lib/backendUrl";
 
 export default async function handler(
   req: NextApiRequest,
@@ -13,20 +14,17 @@ export default async function handler(
   const cookie = req.headers.cookie;
 
   try {
-    const apiRes = await axios.get(
-      `${process.env.NEXT_PUBLIC_NEW_API_URL}users`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Cookie: cookie,
-        },
-        params: {
-          page: parseInt(page as string, 10) || 1,
-          page_size: parseInt(page_size as string, 10) || 20,
-        },
-        withCredentials: true,
+    const apiRes = await axios.get(`${getAdminApiBaseUrl()}bff/admin/users`, {
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookie,
       },
-    );
+      params: {
+        page: parseInt(page as string, 10) || 1,
+        page_size: parseInt(page_size as string, 10) || 20,
+      },
+      withCredentials: true,
+    });
 
     const users = apiRes?.data?.users || [];
     const meta = apiRes?.data?.meta || {};
@@ -34,7 +32,10 @@ export default async function handler(
     res.status(200).json({ users, meta });
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      console.error("Error fetching customers:", error.response?.data || error.message);
+      console.error(
+        "Error fetching customers:",
+        error.response?.status || error.message,
+      );
       const status = error.response?.status || 500;
       return res.status(status).json({ error: "Failed to fetch customers" });
     }

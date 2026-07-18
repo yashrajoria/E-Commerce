@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
+import { getAdminApiBaseUrl } from "@/lib/backendUrl";
 
 export default async function handler(
   req: NextApiRequest,
@@ -13,7 +14,7 @@ export default async function handler(
     // The Gateway routes anything starting with /bff directly down to the BFF service.
     // The admin routes in the BFF require JWT authentication and AdminRole middleware.
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_NEW_API_URL}bff/admin/dashboard`,
+      `${getAdminApiBaseUrl()}bff/admin/dashboard`,
       {
         headers: {
           cookie: req.headers.cookie || "", // Pass cookies for JWT auth

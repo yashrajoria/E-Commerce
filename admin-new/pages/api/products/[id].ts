@@ -1,60 +1,45 @@
 import axios from "axios";
+import { getBackendBaseUrl } from "@ecommerce/shared";
 import { getResponseInfo } from "@/lib/error";
 import { NextApiRequest, NextApiResponse } from "next";
-
-// Utility function to extract auth cookie (prefer __session, fallback to token)
-const extractAuthCookie = (cookieHeader: string | undefined): string => {
-  if (!cookieHeader) return "";
-  const parts = cookieHeader.split(";").map((c) => c.trim());
-  const session = parts.find((c) => c.startsWith("__session="));
-  if (session) return session;
-  const token = parts.find((c) => c.startsWith("token="));
-  return token || "";
-};
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
   const { id } = req.query;
-  console.log("ID", id);
-  const tokenCookie = extractAuthCookie(req.headers.cookie);
-  const baseUrl = process.env.NEXT_PUBLIC_NEW_API_URL;
-
-  if (!baseUrl) {
-    console.error("API URL is not defined in environment variables");
-    return res.status(500).json({ message: "Internal Server Error" });
-  }
+  const cookie = req.headers.cookie || "";
+  const baseUrl = `${getBackendBaseUrl()}/`;
 
   const axiosConfig = {
-    headers: { Cookie: tokenCookie },
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: cookie,
+    },
     withCredentials: true,
   };
 
   try {
     switch (req.method) {
       case "GET": {
-        if (!id) {
+        if (!id || Array.isArray(id)) {
           return res.status(400).json({ message: "Product ID is required" });
         }
 
-        console.log("Fetching product:", `${baseUrl}products/${id}`);
         const response = await axios.get(
-          `${baseUrl}products/${id}`,
+          `${baseUrl}bff/admin/products/${id}`,
           axiosConfig,
         );
         return res.status(response.status).json(response.data);
       }
 
       case "PUT": {
-        if (!id) {
+        if (!id || Array.isArray(id)) {
           return res.status(400).json({ message: "Product ID is required" });
         }
 
-        console.log("Updating product:", `${baseUrl}products/${id}`);
-        console.log(req.body);
         const response = await axios.put(
-          `${baseUrl}products/${id}`,
+          `${baseUrl}bff/admin/products/${id}`,
           req.body,
           axiosConfig,
         );
@@ -62,34 +47,34 @@ export default async function handler(
       }
 
       case "POST": {
-        console.log("Creating new product:", `${baseUrl}products/`);
         const response = await axios.post(
-          `${baseUrl}products/`,
+          `${baseUrl}bff/admin/products`,
           req.body,
           axiosConfig,
         );
         return res.status(response.status).json(response.data);
       }
+
       case "DELETE": {
-        console.log("Deleting product:", `${baseUrl}products/${id}`);
+        if (!id || Array.isArray(id)) {
+          return res.status(400).json({ message: "Product ID is required" });
+        }
 
         const response = await axios.delete(
-          `${baseUrl}products/${id}`,
+          `${baseUrl}bff/admin/products/${id}`,
           axiosConfig,
         );
         return res.status(response.status).json(response.data);
       }
 
       default:
-          res.setHeader("Allow", ["GET", "PUT", "POST", "DELETE"]);
-          return res
-            .status(405)
-            .json({ message: `Method ${req.method} Not Allowed` });
-      }
+        return res.status(405).json({ message: "Method not allowed" });
+    }
   } catch (err: unknown) {
-    console.error("API error:", err);
+    console.error("Product proxy error:", err);
     const { status, data } = getResponseInfo(err);
-    const errorData = data ?? { message: "Internal Server Error" };
-    return res.status(status || 500).json(errorData);
+    return res
+      .status(status || 500)
+      .json(data ?? { message: "Product proxy error" });
   }
 }

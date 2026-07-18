@@ -12,14 +12,30 @@ import { useWishlist } from "@/context/WishlistContext";
 import { useToast } from "@/hooks/use-toast";
 import { useProductById } from "@/hooks/useProducts";
 import { motion } from "framer-motion";
-import { Heart, Minus, Plus, Share2, ShoppingBag, Star } from "lucide-react";
+import {
+  Heart,
+  Minus,
+  Plus,
+  RotateCcw,
+  Share2,
+  ShoppingBag,
+  Star,
+  Truck,
+} from "lucide-react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { formatGBP } from "@/lib/utils";
+import type { Product } from "@/lib/types";
+import type { GetServerSideProps } from "next";
+import { fetchProductByIdSsr } from "@/lib/ssrProducts";
 
-export default function ProductPage() {
+type ProductPageProps = {
+  initialProduct: Product | null;
+};
+
+export default function ProductPage({ initialProduct }: ProductPageProps) {
   const [quantity, setQuantity] = useState(1);
   const router = useRouter();
   const { showSuccess, showInfo } = useToast();
@@ -27,7 +43,9 @@ export default function ProductPage() {
   const id = Array.isArray(router.query.id)
     ? router.query.id[0]
     : router.query.id;
-  const { data: product, isLoading } = useProductById(id);
+  const { data: product, isLoading } = useProductById(id, {
+    initialData: initialProduct ?? undefined,
+  });
   const { addToWishlist, removeFromWishlist, hasWishlistItem } = useWishlist();
 
   const rating = product?.rating ?? 0;
@@ -236,10 +254,11 @@ export default function ProductPage() {
               )}
             </div>
 
-            <p className="text-muted-foreground leading-relaxed">
-              {product?.description ||
-                "This is a detailed description of the product, highlighting its features, benefits, and usage."}
-            </p>
+            {product.description ? (
+              <p className="text-muted-foreground leading-relaxed">
+                {product.description}
+              </p>
+            ) : null}
 
             <div className="flex items-center space-x-4">
               <div className="flex items-center border rounded-lg">
@@ -275,7 +294,7 @@ export default function ProductPage() {
 
               <Button
                 size="lg"
-                className="flex-1 rounded-full bg-linear-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 shadow-lg shadow-rose-500/20"
+                className="hidden sm:inline-flex flex-1 rounded-full bg-linear-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 shadow-lg shadow-rose-500/20"
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
                 aria-disabled={isOutOfStock}
@@ -290,6 +309,9 @@ export default function ProductPage() {
                 size="icon"
                 className="rounded-full"
                 onClick={handleWishlistToggle}
+                aria-label={
+                  isWishlisted ? "Remove from wishlist" : "Add to wishlist"
+                }
               >
                 <Heart
                   className={`h-4 w-4 ${
@@ -303,81 +325,131 @@ export default function ProductPage() {
                 size="icon"
                 className="rounded-full"
                 onClick={handleShare}
+                aria-label="Share product"
               >
                 <Share2 className="h-4 w-4" />
               </Button>
             </div>
+
+            {/* Shipping / returns near buy — trust signals before scroll */}
+            <ul className="space-y-2 text-sm text-muted-foreground border-t border-border/60 pt-4">
+              <li className="flex items-start gap-2">
+                <Truck
+                  className="h-4 w-4 mt-0.5 text-rose-600 shrink-0"
+                  aria-hidden
+                />
+                <span>
+                  Free standard delivery on orders over {formatGBP(50)} · Express
+                  from {formatGBP(9.99)}
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <RotateCcw
+                  className="h-4 w-4 mt-0.5 text-rose-600 shrink-0"
+                  aria-hidden
+                />
+                <span>30-day returns · Easy exchanges from your account</span>
+              </li>
+              <li className="text-xs">
+                {isOutOfStock ? (
+                  <span className="text-amber-700 dark:text-amber-400">
+                    Currently out of stock
+                  </span>
+                ) : (
+                  <span className="text-emerald-700 dark:text-emerald-400">
+                    In stock
+                    {categoryName ? ` · ${categoryName}` : ""}
+                  </span>
+                )}
+              </li>
+            </ul>
           </motion.div>
         </div>
 
         <motion.div
-          className="mt-16"
+          className="mt-16 pb-24 sm:pb-0"
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
           <Tabs defaultValue="description" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="description">Description</TabsTrigger>
-              <TabsTrigger value="specifications">Specifications</TabsTrigger>
+              <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="reviews">Reviews</TabsTrigger>
-              <TabsTrigger value="shipping">Shipping</TabsTrigger>
             </TabsList>
 
             <TabsContent value="description" className="mt-6">
-              <div className="prose max-w-none">
-                <h3>Product Description</h3>
-                <p>
-                  Our {product?.name} represents the perfect blend of
-                  functionality and style. Crafted with premium materials and
-                  attention to detail, this product is designed to exceed your
-                  expectations.
-                </p>
-                <h4>Key Features:</h4>
-                <ul>
-                  <li>Premium quality materials</li>
-                  <li>Ergonomic design for comfort</li>
-                  <li>Durable construction</li>
-                  <li>Easy maintenance</li>
-                  <li>Versatile usage</li>
-                </ul>
+              <div className="prose prose-neutral dark:prose-invert max-w-none">
+                <h3 className="text-lg font-semibold mb-3">About this product</h3>
+                {product.description ? (
+                  <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                    {product.description}
+                  </p>
+                ) : (
+                  <p className="text-muted-foreground">
+                    No detailed description is available for {product.name} yet.
+                  </p>
+                )}
               </div>
             </TabsContent>
 
-            <TabsContent value="specifications" className="mt-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-semibold mb-3">General</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>Brand:</span>
-                      <span>ShopSwift</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Model:</span>
-                      <span>SS-{product?.id}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Weight:</span>
-                      <span>1.2 kg</span>
-                    </div>
+            <TabsContent value="details" className="mt-6">
+              <div className="grid md:grid-cols-2 gap-6 max-w-2xl">
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between gap-4 border-b border-border/50 py-2">
+                    <span className="text-muted-foreground">Name</span>
+                    <span className="font-medium text-right">{product.name}</span>
                   </div>
+                  {categoryName ? (
+                    <div className="flex justify-between gap-4 border-b border-border/50 py-2">
+                      <span className="text-muted-foreground">Category</span>
+                      <span className="font-medium text-right">
+                        {categoryName}
+                      </span>
+                    </div>
+                  ) : null}
+                  <div className="flex justify-between gap-4 border-b border-border/50 py-2">
+                    <span className="text-muted-foreground">Availability</span>
+                    <span className="font-medium text-right">
+                      {isOutOfStock ? "Out of stock" : "In stock"}
+                    </span>
+                  </div>
+                  {product.badge ? (
+                    <div className="flex justify-between gap-4 border-b border-border/50 py-2">
+                      <span className="text-muted-foreground">Badge</span>
+                      <span className="font-medium text-right">
+                        {product.badge}
+                      </span>
+                    </div>
+                  ) : null}
                 </div>
-                <div>
-                  <h4 className="font-semibold mb-3">Dimensions</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>Length:</span>
-                      <span>25 cm</span>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between gap-4 border-b border-border/50 py-2">
+                    <span className="text-muted-foreground">Price</span>
+                    <span className="font-medium text-right">
+                      {formatGBP(product.price)}
+                    </span>
+                  </div>
+                  {product.originalPrice ? (
+                    <div className="flex justify-between gap-4 border-b border-border/50 py-2">
+                      <span className="text-muted-foreground">Was</span>
+                      <span className="font-medium text-right line-through text-muted-foreground">
+                        {formatGBP(product.originalPrice)}
+                      </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Width:</span>
-                      <span>15 cm</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Height:</span>
-                      <span>10 cm</span>
-                    </div>
+                  ) : null}
+                  <div className="flex justify-between gap-4 border-b border-border/50 py-2">
+                    <span className="text-muted-foreground">Rating</span>
+                    <span className="font-medium text-right">
+                      {rating} / 5 ({product.reviews ?? 0} reviews)
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-4 border-b border-border/50 py-2">
+                    <span className="text-muted-foreground">SKU</span>
+                    <span className="font-medium text-right font-mono text-xs">
+                      {product.id}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -386,33 +458,48 @@ export default function ProductPage() {
             <TabsContent value="reviews" className="mt-6">
               <ProductReviews productId={product?.id} />
             </TabsContent>
-
-            <TabsContent value="shipping" className="mt-6">
-              <div className="space-y-4">
-                <h4 className="font-semibold">Shipping Information</h4>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <h5 className="font-medium mb-2">Standard Delivery</h5>
-                      <p className="text-sm text-muted-foreground">
-                        5-7 business days - Free on orders over {formatGBP(50)}
-                    </p>
-                  </div>
-                  <div>
-                    <h5 className="font-medium mb-2">Express Delivery</h5>
-                      <p className="text-sm text-muted-foreground">
-                        2-3 business days - {formatGBP(9.99)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
           </Tabs>
         </motion.div>
 
         <RelatedProducts currentProductId={product?.id} />
       </main>
 
+      {/* Sticky mobile Add to Bag */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border/80 bg-background/95 backdrop-blur-md p-3 sm:hidden safe-area-pb">
+        <div className="flex items-center gap-3 max-w-lg mx-auto">
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold truncate">{product.name}</p>
+            <p className="text-sm text-muted-foreground">
+              {formatGBP(product.price)}
+            </p>
+          </div>
+          <Button
+            size="lg"
+            className="shrink-0 rounded-full bg-linear-to-r from-rose-600 to-amber-500 px-6"
+            onClick={handleAddToCart}
+            disabled={isOutOfStock}
+            aria-label={isOutOfStock ? "Out of stock" : "Add to bag"}
+          >
+            <ShoppingBag className="h-4 w-4 mr-2" />
+            {isOutOfStock ? "Sold out" : "Add to Bag"}
+          </Button>
+        </div>
+      </div>
+
       <Footer />
     </div>
   );
 }
+
+export const getServerSideProps: GetServerSideProps<ProductPageProps> = async (
+  ctx,
+) => {
+  const rawId = ctx.params?.id;
+  const id = Array.isArray(rawId) ? rawId[0] : rawId;
+  if (!id) {
+    return { notFound: true };
+  }
+
+  const initialProduct = await fetchProductByIdSsr(id);
+  return { props: { initialProduct } };
+};

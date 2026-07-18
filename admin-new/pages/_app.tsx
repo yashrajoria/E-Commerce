@@ -5,11 +5,15 @@ import { Toaster, toast } from "sonner";
 import { ErrorBoundary } from "react-error-boundary";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
-import { useAuth, setAPIErrorHandler, AuthProvider } from "@ecommerce/shared";
+import { setAPIErrorHandler, setAuthRefreshUrl } from "@ecommerce/shared";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { motion, AnimatePresence } from "framer-motion";
 import { ContextualAIAssistant } from "@/components/ai/ContextualAIAssistant";
 import { resolveAIPageContext } from "@/lib/ai-contextual-assistant";
+import { useAdminSession, AdminSessionProvider } from "@/lib/useAdminSession";
+
+// Admin JWT refresh must not hit storefront `/api/user/auth/refresh`.
+setAuthRefreshUrl("/api/admin/auth/refresh");
 
 /** Premium error fallback with glassmorphism styling */
 function ErrorFallback({
@@ -101,9 +105,9 @@ function RouteProgressBar() {
 }
 
 function AppContent({ Component, pageProps, router }: AppProps) {
-  const { loading, authenticated } = useAuth();
+  const { loading, authenticated, isAdmin } = useAdminSession();
 
-  // pages/prefixes that should require an authenticated session
+  // pages/prefixes that should require an authenticated admin session
   const protectedPrefixes = [
     "/products",
     "/orders",
@@ -136,29 +140,28 @@ function AppContent({ Component, pageProps, router }: AppProps) {
   const shouldRenderContextualAssistant =
     needsAuth &&
     authenticated &&
+    isAdmin &&
     router.pathname !== "/dashboard/ai-insights" &&
     Boolean(pageAIContext);
 
   useEffect(() => {
-    // Setup global Axios error handler for toasts
     setAPIErrorHandler((type, message) => {
-      if (type === 'FORBIDDEN') {
+      if (type === "FORBIDDEN") {
         toast.error(message);
-      } else if (type === 'RATE_LIMITED') {
+      } else if (type === "RATE_LIMITED") {
         toast.error(message);
-      } else if (type === 'SERVER_ERROR') {
+      } else if (type === "SERVER_ERROR") {
         toast.error(message);
       }
     });
 
-    // Handle logout event for redirection
     const handleLogout = () => {
       if (typeof window !== "undefined") {
         window.location.href = "/";
       }
     };
-    window.addEventListener('logout', handleLogout);
-    return () => window.removeEventListener('logout', handleLogout);
+    window.addEventListener("logout", handleLogout);
+    return () => window.removeEventListener("logout", handleLogout);
   }, []);
 
   useEffect(() => {
@@ -173,14 +176,21 @@ function AppContent({ Component, pageProps, router }: AppProps) {
     };
   }, [surfaceTheme]);
 
-  // useEffect(() => {
-  //   if (!loading && needsAuth && !authenticated) {
-  //     // redirect unauthenticated users to the sign-in page
-  //     router.replace("/");
-  //   }
-  // }, [loading, authenticated, needsAuth, router]);
+  useEffect(() => {
+    if (!loading && needsAuth && (!authenticated || !isAdmin)) {
+      router.replace("/?error=admin_required");
+    }
+  }, [loading, authenticated, isAdmin, needsAuth, router]);
 
   if (needsAuth && loading) {
+    return (
+      <div className={`${surfaceTheme} min-h-screen flex items-center justify-center`}>
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (needsAuth && (!authenticated || !isAdmin)) {
     return (
       <div className={`${surfaceTheme} min-h-screen flex items-center justify-center`}>
         <LoadingSpinner />
@@ -223,8 +233,8 @@ function AppContent({ Component, pageProps, router }: AppProps) {
 
 export default function App(props: AppProps) {
   return (
-    <AuthProvider>
+    <AdminSessionProvider>
       <AppContent {...props} />
-    </AuthProvider>
+    </AdminSessionProvider>
   );
 }

@@ -12,7 +12,7 @@
     "build:both": "concurrently -n admin,storefront -c blue,green \"npm run build:admin\" \"npm run build:storefront\"",
     "lint:both": "concurrently -n admin,storefront -c blue,green \"npm run lint:admin\" \"npm run lint:storefront\"",
     "dev:admin": "npm run dev --workspace admin-new -- -p 3000",
-  "dev:storefront": "npm run dev --workspace storefront-new/storefront -- -p 3001",
+    "dev:storefront": "npm run dev --workspace storefront-new/storefront -- -p 3001",
     "build:admin": "npm run build --workspace admin-new",
     "build:storefront": "npm run build --workspace storefront",
     "lint:admin": "npm run lint --workspace admin-new",
@@ -22,5 +22,10 @@
     "admin-new",
     "storefront-new/storefront",
     "packages/*"
-  ]
+  ],
+  "optionalDependencies": {
+    "@tailwindcss/oxide-darwin-arm64": "^4.2.4",
+    "lightningcss-darwin-arm64": "^1.32.0",
+    "sharp": "^0.34.5"
+  }
 }

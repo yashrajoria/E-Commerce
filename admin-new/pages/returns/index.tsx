@@ -2,6 +2,7 @@
  * Premium Returns Page
  */
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
+import { DemoDataBanner } from "@/components/admin/shared/DemoDataBanner";
 import StatsCard from "@/components/ui/stats-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -128,6 +129,7 @@ const Returns = () => {
 
   return (
     <PageLayout title="Returns" breadcrumbs={[{ label: "Returns" }]}>
+      <DemoDataBanner feature="Returns" />
       {/* KPI Stats */}
       <motion.section
         variants={pageItem}
@@ -275,3 +277,10 @@ const Returns = () => {
 };
 
 export default Returns;
+
+
+import type { GetServerSidePropsContext } from "next";
+export async function getServerSideProps(ctx: GetServerSidePropsContext) {
+  const { requireAdmin } = await import("@/lib/ssrAuth");
+  return requireAdmin(ctx);
+}

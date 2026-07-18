@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 
 interface NavbarProps {
   onLogin: () => void;
-  onSignUp: () => void;
 }
 
 const navLinks = [
@@ -15,7 +14,7 @@ const navLinks = [
   { label: "Scalability", href: "#pricing" },
 ];
 
-export default function Navbar({ onLogin, onSignUp }: NavbarProps) {
+export default function Navbar({ onLogin }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -75,17 +74,11 @@ export default function Navbar({ onLogin, onSignUp }: NavbarProps) {
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-6">
-              <button
-                onClick={onLogin}
-                className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Access System
-              </button>
               <Button
-                onClick={onSignUp}
+                onClick={onLogin}
                 className="h-11 px-8 bg-white/[0.03] border border-white/10 hover:bg-white/[0.06] text-white rounded-xl shadow-lg transition-all text-xs font-bold uppercase tracking-widest"
               >
-                Initialize Instance
+                Sign In
               </Button>
             </div>
 
@@ -127,23 +120,13 @@ export default function Navbar({ onLogin, onSignUp }: NavbarProps) {
               ))}
               <div className="pt-6 mt-6 space-y-4 border-t border-white/[0.06]">
                 <Button
-                  variant="ghost"
                   onClick={() => {
                     setMobileOpen(false);
                     onLogin();
                   }}
-                  className="w-full h-14 justify-center text-xs font-bold uppercase tracking-widest"
-                >
-                  Access System
-                </Button>
-                <Button
-                  onClick={() => {
-                    setMobileOpen(false);
-                    onSignUp();
-                  }}
                   className="w-full h-14 bg-primary text-white border-0 rounded-xl text-xs font-bold uppercase tracking-widest shadow-xl shadow-primary/20"
                 >
-                  Initialize Instance
+                  Sign In
                 </Button>
               </div>
             </div>

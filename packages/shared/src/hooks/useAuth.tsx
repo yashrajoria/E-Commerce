@@ -90,8 +90,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await refetchUser();
   }, [refetchUser]);
 
-  const register = useCallback(async (email: string, password: string, name?: string, role?: string) => {
-    await apiRegister(email, password, name ?? '', role);
+  const register = useCallback(async (email: string, password: string, name?: string) => {
+    await apiRegister(email, password, name ?? '');
     await refetchUser();
   }, [refetchUser]);
 

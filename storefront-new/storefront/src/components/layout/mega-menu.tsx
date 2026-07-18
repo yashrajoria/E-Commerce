@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { X, ChevronRight, Home, User } from "lucide-react";
+import { X, ChevronRight, Home, User, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCategories } from "@/hooks/useCategories";
 import Image from "next/image";
@@ -176,9 +176,28 @@ export function MegaMenu({ isOpen, onClose }: MegaMenuProps) {
                   variant="outline"
                   className="w-full rounded-full"
                 >
+                  <Link href="/products" onClick={onClose}>
+                    Shop all
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-full rounded-full"
+                >
                   <Link href="/account" onClick={onClose}>
                     <User className="h-4 w-4 mr-2" />
                     My Account
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="w-full rounded-full"
+                >
+                  <Link href="/account?tab=wishlist" onClick={onClose}>
+                    <Heart className="h-4 w-4 mr-2" />
+                    Wishlist &amp; saved items
                   </Link>
                 </Button>
               </div>

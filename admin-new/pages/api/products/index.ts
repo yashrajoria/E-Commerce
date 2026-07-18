@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-
 import axios, { type AxiosRequestConfig } from "axios";
 import { getResponseInfo } from "@/lib/error";
+import { getAdminApiBaseUrl } from "@/lib/backendUrl";
 import FormData from "form-data";
 import formidable from "formidable";
 import fs from "fs";
@@ -12,7 +12,7 @@ export const config = {
   },
 };
 
-const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
+const API_URL = getAdminApiBaseUrl();
 
 const normalizeProductsResponse = (raw: unknown) => {
   if (!raw || typeof raw !== "object") {
@@ -58,10 +58,8 @@ const parseForm = (req: NextApiRequest): Promise<{ fields: Record<string, unknow
 };
 
 const extractSessionCookie = (req: NextApiRequest): string => {
-  const sessionCookie = req.headers.cookie
-    ?.split(";")
-    .find((c) => c.trim().startsWith("__session="));
-  return sessionCookie?.trim() || "";
+  // Forward the full cookie jar so refresh + session cookies both reach the gateway.
+  return req.headers.cookie?.trim() || "";
 };
 
 const proxyRequest = async (config: AxiosRequestConfig, cookie?: string) => {
@@ -161,8 +159,8 @@ async function handleCreateProduct(req: NextApiRequest, res: NextApiResponse) {
     // Forward __session cookie
     const sessionCookie = extractSessionCookie(req);
 
-    // Submit to Go backend
-    const response = await axios.post(`${API_URL}products`, formData, {
+    // Submit to Go backend (admin BFF so JWT role is injected)
+    const response = await axios.post(`${API_URL}bff/admin/products`, formData, {
       headers: {
         ...formData.getHeaders(),
         Cookie: sessionCookie,
@@ -178,7 +176,7 @@ async function handleCreateProduct(req: NextApiRequest, res: NextApiResponse) {
     // Normalize error using helper
     const { data } = getResponseInfo(uploadErr);
     const msg = typeof data === "string" ? data : uploadErr instanceof Error ? uploadErr.message : String(uploadErr);
-    console.log("Upload failed:", msg);
+    console.error("Upload failed:", msg);
     return res.status(500).json({ message: "Error uploading product" });
   }
 }
@@ -189,7 +187,7 @@ async function handleGetProducts(req: NextApiRequest, res: NextApiResponse) {
     const query = req.query;
     const page = query.page || 1;
     const perPage = query.perPage || 10;
-    const response = await axios.get(`${API_URL}products`, {
+    const response = await axios.get(`${API_URL}bff/admin/products`, {
       headers: {
         "Content-Type": "application/json",
         Cookie: cookie,
@@ -220,11 +218,10 @@ async function handleBulkUpload(req: NextApiRequest, res: NextApiResponse) {
   formData.append("file", fileStream, file.originalFilename || "upload.csv");
 
   const autoCreate = req.query.auto_create_categories ?? "true";
-  console.log({autoCreate})
   const cookie = extractSessionCookie(req);
   const response = await proxyRequest(
     {
-      url: `${API_URL}products/bulk?auto_create_categories=${autoCreate}`,
+      url: `${API_URL}bff/admin/products/bulk?auto_create_categories=${autoCreate}`,
       method: "POST",
       data: formData,
       headers: formData.getHeaders(),

@@ -1,6 +1,8 @@
 node_modules
 .next/*
 .env
+.env.local
+.env*.local
 # package.json
 # package-lock.json
 next-env.d.ts
@@ -8,3 +10,5 @@ robots.txt
 package-lock.json
 dev.log
 sitemap.xml
+graphify-out/
+graphify-out-next/

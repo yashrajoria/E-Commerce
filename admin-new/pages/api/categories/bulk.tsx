@@ -1,7 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-
-import axios from "axios";
-import { getResponseInfo } from "@/lib/error";
+import { proxyRequest } from "@ecommerce/shared";
 
 export const config = {
   api: {
@@ -13,20 +11,9 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  const API_URL =
-    process.env.NEXT_PUBLIC_NEW_API_URL || "http://172.16.14.242:8080";
-
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method not allowed" });
   }
-
-  const cookieHeader = req.headers.cookie;
-  const cookie = cookieHeader
-    ? cookieHeader
-        .split(";")
-        .map((c) => c.trim())
-        .find((c) => c.startsWith("__session=") || c.startsWith("token="))
-    : undefined;
 
   const items = req.body?.items;
   if (!Array.isArray(items)) {
@@ -35,51 +22,68 @@ export default async function handler(
       .json({ message: "Invalid payload: items array required" });
   }
 
-  // Try backend bulk endpoint first
+  // Prefer backend bulk endpoint.
   try {
-    const target = `${API_URL}categories/bulk`;
-    const resp = await axios.post(
-      target,
-      { items },
-      {
-        headers: { "Content-Type": "application/json", Cookie: cookie || "" },
-        withCredentials: true,
+    const response = await proxyRequest({
+      req: {
+        method: "POST",
+        url: req.url,
+        headers: req.headers,
+        body: { items },
       },
-    );
-    return res.status(resp.status).json(resp.data);
-  } catch (err: unknown) {
-    // If bulk endpoint not available, fall back to creating items one by one
-    const { status: respStatus } = getResponseInfo(err);
-    if (respStatus === 404 || respStatus === 405) {
-      const results: Array<{
-        status: number;
-        data?: unknown;
-        error?: unknown;
-      }> = [];
-      for (const it of items) {
-        try {
-          const r = await axios.post(`${API_URL}categories/`, it, {
-            headers: {
-              "Content-Type": "application/json",
-              Cookie: cookie || "",
-            },
-            withCredentials: true,
-          });
-          results.push({ status: r.status, data: r.data });
-        } catch (e: unknown) {
-          const { status: s, data: errData } = getResponseInfo(e);
-          results.push({
-            status: s ?? 500,
-            error: errData ?? (e instanceof Error ? e.message : String(e)),
-          });
-        }
-      }
-      return res.status(207).json({ results });
-    }
+      targetPath: "/bff/admin/categories/bulk",
+      sanitizeSetCookie: true,
+    });
 
-    const { status, data } = getResponseInfo(err);
-    return res
-      .status(status ?? 500)
-      .json(data ?? { message: "Bulk upload failed" });
+    if (response.status !== 404 && response.status !== 405) {
+      for (const [header, value] of Object.entries(response.headers)) {
+        res.setHeader(header, value);
+      }
+      return res.status(response.status).send(response.body);
+    }
+  } catch (err: unknown) {
+    console.warn("Bulk categories endpoint unavailable, falling back:", err);
   }
+
+  // Fall back to creating items one by one.
+  const results: Array<{
+    status: number;
+    data?: unknown;
+    error?: unknown;
+  }> = [];
+
+  for (const it of items) {
+    try {
+      const r = await proxyRequest({
+        req: {
+          method: "POST",
+          url: "/api/categories",
+          headers: req.headers,
+          body: it,
+        },
+        targetPath: "/bff/admin/categories",
+        sanitizeSetCookie: true,
+      });
+
+      let data: unknown = r.body;
+      try {
+        data = JSON.parse(r.body);
+      } catch {
+        // keep raw body
+      }
+
+      if (r.status >= 400) {
+        results.push({ status: r.status, error: data });
+      } else {
+        results.push({ status: r.status, data });
+      }
+    } catch (e: unknown) {
+      results.push({
+        status: 500,
+        error: e instanceof Error ? e.message : String(e),
+      });
+    }
+  }
+
+  return res.status(207).json({ results });
 }

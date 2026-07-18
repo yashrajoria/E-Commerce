@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Head from "next/head";
+import { useRouter } from "next/router";
+import { toast } from "sonner";
 import Navbar from "@/components/landing/Navbar";
 import HeroSection from "@/components/landing/HeroSection";
 import FeaturesSection from "@/components/landing/FeaturesSection";
@@ -14,16 +16,10 @@ import Footer from "@/components/landing/Footer";
 import AuthModal from "@/components/landing/AuthModal";
 
 export default function LandingPage() {
+  const router = useRouter();
   const [authOpen, setAuthOpen] = useState(false);
-  const [authView, setAuthView] = useState<"login" | "register">("login");
 
   const openLogin = useCallback(() => {
-    setAuthView("login");
-    setAuthOpen(true);
-  }, []);
-
-  const openSignUp = useCallback(() => {
-    setAuthView("register");
     setAuthOpen(true);
   }, []);
 
@@ -40,6 +36,25 @@ export default function LandingPage() {
     window.addEventListener("mousemove", handler);
     return () => window.removeEventListener("mousemove", handler);
   }, []);
+
+  /* Surface gate redirects like /?error=admin_required */
+  useEffect(() => {
+    if (!router.isReady) return;
+    if (router.query.error !== "admin_required") return;
+
+    toast.error("Admin access required. Please sign in with an admin account.");
+    setAuthOpen(true);
+
+    const nextQuery = { ...router.query };
+    delete nextQuery.error;
+    void router.replace(
+      { pathname: router.pathname, query: nextQuery },
+      undefined,
+      { shallow: true },
+    );
+    // Intentionally depend on the error query only to avoid replace loops.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.isReady, router.query.error]);
 
   return (
     <>
@@ -60,25 +75,25 @@ export default function LandingPage() {
         <div className="fixed inset-0 spotlight pointer-events-none z-0" />
 
         {/* Navbar */}
-        <Navbar onLogin={openLogin} onSignUp={openSignUp} />
+        <Navbar onLogin={openLogin} />
 
         {/* Page Sections */}
         <main>
-          <HeroSection onGetStarted={openSignUp} />
+          <HeroSection onGetStarted={openLogin} />
           <FeaturesSection />
           <DashboardPreview />
           <HowItWorks />
           <StatsSection />
           <TestimonialsSection />
-          <PricingSection onGetStarted={openSignUp} />
+          <PricingSection onGetStarted={openLogin} />
           <IntegrationsSection />
-          <CTASection onGetStarted={openSignUp} />
+          <CTASection onGetStarted={openLogin} />
         </main>
 
         <Footer />
 
-        {/* Auth Modal */}
-        <AuthModal open={authOpen} onClose={closeAuth} initialView={authView} />
+        {/* Auth Modal — login only (admins are seeded / invited) */}
+        <AuthModal open={authOpen} onClose={closeAuth} initialView="login" />
       </div>
     </>
   );
