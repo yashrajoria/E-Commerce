@@ -529,7 +529,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                     <InputOTP
                       maxLength={6}
                       value={otpValue}
-                      onChange={(value) => setOtpValue(value)}
+                      onChange={(value: string) => setOtpValue(value)}
                     >
                       <InputOTPGroup>
                         <InputOTPSlot

@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { proxyRequest } from "@ecommerce/shared";
 
-function sanitizeBody(body: unknown) {
+function sanitizeBody(body: unknown): unknown {
   if (!body || typeof body !== "object") return body;
   try {
     const maskKeys = [
@@ -12,9 +12,12 @@ function sanitizeBody(body: unknown) {
       "token",
       "code",
     ];
-    const clone: Record<string, unknown> | unknown[] = Array.isArray(body)
-      ? body.map((item) => sanitizeBody(item))
-      : { ...(body as Record<string, unknown>) };
+    if (Array.isArray(body)) {
+      return body.map((item) => sanitizeBody(item));
+    }
+    const clone: Record<string, unknown> = {
+      ...(body as Record<string, unknown>),
+    };
 
     for (const key of Object.keys(clone)) {
       const value = clone[key];

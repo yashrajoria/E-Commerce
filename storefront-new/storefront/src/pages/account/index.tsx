@@ -1,5 +1,3 @@
-"use client";
-
 import { AddressBook } from "@/components/account/address-book";
 import { OrderHistory } from "@/components/account/order-history";
 import { WishlistItems } from "@/components/account/wishlist-items";
@@ -30,11 +28,12 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { getSiteUrl } from "@/lib/site";
 import Head from "next/head";
 
 export default function AccountPage() {
   const [activeTab, setActiveTab] = useState("profile");
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = getSiteUrl();
   const { user, loading, signOut, refetchUser } = useUser();
   const { wishlist: localWishlist } = useWishlist();
   const [profile, setProfile] = useState({

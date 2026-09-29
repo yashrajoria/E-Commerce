@@ -49,7 +49,7 @@ const itemVariants = {
   },
 };
 
-export default function PremiumKPICards({ data }: { data: KPIData }) {
+export default function PremiumKPICards({ data }: { data?: KPIData | null }) {
   if (!data) return null;
 
   const stats: KPIStat[] = [

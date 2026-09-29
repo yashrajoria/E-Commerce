@@ -25,14 +25,22 @@ interface Activity {
 
 
 
-export default function RecentActivity({ activities }: { activities: any[] }) {
+export interface ActivityInput {
+  id?: unknown;
+  type?: unknown;
+  description?: unknown;
+  time?: unknown;
+  variant?: unknown;
+}
+
+export default function RecentActivity({ activities }: { activities?: ActivityInput[] | null }) {
   if (!activities || activities.length === 0) return null;
 
   const mappedActivities: Activity[] = activities.map((act) => {
     let icon = Clock;
-    
+
     // Naively map backend types to icons
-    const typeStr = act.type?.toLowerCase() || "";
+    const typeStr = String(act.type ?? "").toLowerCase();
     if (typeStr.includes("order")) icon = ShoppingCart;
     if (typeStr.includes("payment")) icon = Wallet;
     if (typeStr.includes("stock") || typeStr.includes("inventory") || typeStr.includes("product")) icon = Package;
@@ -41,10 +49,10 @@ export default function RecentActivity({ activities }: { activities: any[] }) {
     if (act.variant === "success") icon = CheckCircle2;
 
     return {
-      id: act.id,
-      type: act.type,
-      description: act.description,
-      time: act.time,
+      id: String(act.id ?? ""),
+      type: String(act.type ?? ""),
+      description: String(act.description ?? ""),
+      time: String(act.time ?? ""),
       icon,
       variant: act.variant as "success" | "warning" | "error" | "info" | "neutral",
     };

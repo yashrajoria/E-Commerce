@@ -1,14 +1,13 @@
 import "../styles/globals.css";
 import "../styles/app.css";
 import type { AppProps } from "next/app";
-import { Toaster } from "sonner";
+import { Toaster, toast } from "sonner";
 import { ErrorBoundary } from "react-error-boundary";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
-import { useAuth, axiosInstance, setAPIErrorHandler, AuthProvider } from "@ecommerce/shared";
+import { useAuth, setAPIErrorHandler, AuthProvider } from "@ecommerce/shared";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { motion, AnimatePresence } from "framer-motion";
-import { setupGlobalAxiosInterceptors } from "@/lib/axios-interceptor";
 import { ContextualAIAssistant } from "@/components/ai/ContextualAIAssistant";
 import { resolveAIPageContext } from "@/lib/ai-contextual-assistant";
 
@@ -174,12 +173,6 @@ function AppContent({ Component, pageProps, router }: AppProps) {
     };
   }, [surfaceTheme]);
 
-  // useEffect(() => {
-  //   if (!loading && needsAuth && !authenticated) {
-  //     // redirect unauthenticated users to the sign-in page
-  //     router.replace("/");
-  //   }
-  // }, [loading, authenticated, needsAuth, router]);
   useEffect(() => {
     if (!loading && needsAuth && !authenticated) {
       void router.replace("/");

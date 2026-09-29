@@ -1,5 +1,3 @@
-"use client";
-
 import { ProductCard } from "@/components/common/product-card";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
@@ -25,10 +23,11 @@ import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react"; // Imported useEffect
 import type { Product } from "@/lib/types";
 import { formatGBP } from "@/lib/utils";
+import { getSiteUrl } from "@/lib/site";
 
 export default function SearchPage() {
   const router = useRouter();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = getSiteUrl();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [priceRange, setPriceRange] = useState([0, 500000]);

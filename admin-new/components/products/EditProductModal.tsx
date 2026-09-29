@@ -86,7 +86,7 @@ const EditProductDialog: React.FC<EditProductDialogProps> = ({
                 <ProductInformation
                   type="edit"
                   handleImageUpload={handleImageUpload}
-                  uploadedImages={imageFiles}
+                  uploadedImages={imageFiles.map((file) => ({ file }))}
                   removeImage={removeImage}
                 />
               </div>

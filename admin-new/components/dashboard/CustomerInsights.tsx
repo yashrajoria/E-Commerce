@@ -53,7 +53,7 @@ export interface CustomerInsight {
   value: number;
 }
 
-export default function CustomerInsights({ insights }: { insights: CustomerInsight[] }) {
+export default function CustomerInsights({ insights }: { insights?: CustomerInsight[] | null }) {
   if (!insights || insights.length === 0) return null;
 
   // Map the backend insight data to our frontend format (adding colors and icons)

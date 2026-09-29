@@ -68,8 +68,11 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError);
-        // If refresh fails, they are definitely logged out
-        window.dispatchEvent(new Event('logout'));
+        // If refresh fails, they are definitely logged out.
+        // Guard for SSR where `window` is undefined.
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event('logout'));
+        }
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

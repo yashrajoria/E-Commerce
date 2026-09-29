@@ -27,7 +27,7 @@ import { MultiSelectCombobox } from "./MultiSelectCombobox";
 import Image from "next/image";
 import { Switch } from "../ui/switch";
 
-import type { UploadedImage } from "@ecommerce/shared/src/types/common";
+import type { UploadedImage } from "@/hooks/useProductForm";
 
 type ProductInformationProps = {
   type?: string;
@@ -412,7 +412,7 @@ const ProductInformation: React.FC<ProductInformationProps> = ({
                       >
                         <div className="aspect-square rounded-xl overflow-hidden bg-white/[0.03] border border-white/[0.06] ring-1 ring-white/[0.04]">
                           <Image
-                            src={image.preview || image.url}
+                            src={image.preview || image.url || "/favicon-admin.svg"}
                             alt={`Product image ${index + 1}`}
                             className="w-full h-full object-cover transition-transform duration-300 group-hover/img:scale-105"
                             width={200}

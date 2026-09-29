@@ -33,16 +33,18 @@ import { toast } from "sonner";
 
 const Profile = () => {
   const { user } = useAuth();
-  const [name, setName] = useState(user?.name || "Admin User");
-  const [email, setEmail] = useState(user?.email || "admin@example.com");
-  const [phone, setPhone] = useState(user?.phone || "");
+  const asString = (v: unknown, fallback = "") =>
+    typeof v === "string" ? v : fallback;
+  const [name, setName] = useState(asString(user?.name, "Admin User"));
+  const [email, setEmail] = useState(asString(user?.email, "admin@example.com"));
+  const [phone, setPhone] = useState(asString(user?.phone));
 
 
   useEffect(() => {
     if (user) {
-      setName(user.name || "");
-      setEmail(user.email || "");
-      setPhone(user.phone || "");
+      setName(asString(user.name, ""));
+      setEmail(asString(user.email, ""));
+      setPhone(asString(user.phone, ""));
     }
   }, [user]);
   const [currentPassword, setCurrentPassword] = useState("");

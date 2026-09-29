@@ -10,7 +10,7 @@ import { Trophy, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 
-interface TopProduct {
+export interface TopProduct {
   name: string;
   category: string;
   revenue: number;
@@ -26,7 +26,7 @@ const rankColors = [
   "from-amber-700 to-orange-700",
 ];
 
-export default function TopProducts({ products }: { products: TopProduct[] }) {
+export default function TopProducts({ products }: { products?: TopProduct[] | null }) {
   if (!products || products.length === 0) return null;
 
   return (

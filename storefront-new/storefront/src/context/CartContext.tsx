@@ -1,6 +1,5 @@
 import React, {
   createContext,
-  useContext,
   useState,
   useEffect,
   useCallback,
@@ -21,6 +20,7 @@ export interface CartItem extends Product {
 interface CartContextType {
   cart: CartItem[];
   loading: boolean;
+  isHydrated: boolean;
   syncing: boolean;
   addToCart: (item: CartItem) => void;
   removeFromCart: (id: string | number) => void;
@@ -106,15 +106,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
         CartItem & { _id?: string | number; image?: string }
       >;
 
-      return parsed.map((item) => ({
-        ...item,
-        id: item.id ?? item._id,
-        images: item.images?.length
-          ? item.images
-          : item.image
-            ? [item.image]
-            : [],
-      }));
+      return parsed
+        .map((item) => ({
+          ...item,
+          id: String(item.id ?? item._id ?? ""),
+          images: item.images?.length
+            ? item.images
+            : item.image
+              ? [item.image]
+              : [],
+        }))
+        .filter((item) => Boolean(item.id));
     } catch {
       return [] as CartItem[];
     }
@@ -209,6 +211,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     setCart(loadLocalCart());
     setLoading(false);
+    hydratedRef.current = true;
   }, [loadLocalCart]);
 
   useEffect(() => {
@@ -218,11 +221,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     void syncFromServer();
   }, [isAuthenticated, syncFromServer]);
 
-  // Save cart to localStorage whenever it changes
+  // Save cart to localStorage whenever it changes (skip until initial load
+  // completes so we never clobber the stored cart with the initial []).
+  const hydratedRef = useRef(false);
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("cart", JSON.stringify(cart));
+    if (typeof window === "undefined" || hydratedRef.current === false) {
+      return;
     }
+    localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
   const addToCart = useCallback((itemToAdd: CartItem) => {
@@ -299,6 +305,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     () => ({
       cart,
       loading,
+      isHydrated: !loading,
       syncing,
       addToCart,
       removeFromCart,

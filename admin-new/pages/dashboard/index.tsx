@@ -18,11 +18,14 @@ import {
 } from "@/components/ui/tooltip";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bell, Search, Calendar, Download, Menu, X } from "lucide-react";
-import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useState, useCallback, useEffect } from "react";
 import axios from "axios";
 import { toast } from "sonner";
+import type { KPIData } from "@/components/dashboard/PremiumKPICards";
+import type { TopProduct } from "@/components/dashboard/TopProducts";
+import type { CustomerInsight } from "@/components/dashboard/CustomerInsights";
+import type { ActivityInput } from "@/components/dashboard/RecentActivity";
 
 // ── Page-level animation variants ──
 const pageContainer = {
@@ -42,16 +45,28 @@ const pageItem = {
   },
 };
 
-interface DashboardState {
-  data: import('@ecommerce/shared/src/types/common').DashboardMetrics | null;
-  isLoading: boolean;
-  error: string | null;
+/** Shape returned by GET /api/admin/dashboard (BFF admin dashboard summary). */
+interface AdminDashboardPayload {
+  kpis?: KPIData | null;
+  revenueCharts?: unknown;
+  topProducts?: TopProduct[] | null;
+  recentActivity?: ActivityInput[] | null;
+  customerInsights?: CustomerInsight[] | null;
 }
 
-const Dashboard = ({ name }: { name: string }) => {
+const Dashboard = ({ user }: { user?: unknown }) => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
+  // Display name derived from SSR user prop (requireAuth), fallback to Admin.
+  const name =
+    (user && typeof user === "object"
+      ? String(
+          ((user as Record<string, unknown>).user as Record<string, unknown> | undefined)?.name ??
+            (user as Record<string, unknown>).name ??
+            "",
+        )
+      : "") || "Admin";
+  const [dashboardData, setDashboardData] = useState<AdminDashboardPayload | null>(
     null,
   );
   const [isLoading, setIsLoading] = useState(true);

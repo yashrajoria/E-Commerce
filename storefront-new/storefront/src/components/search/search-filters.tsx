@@ -15,17 +15,19 @@ interface SearchFiltersProps {
   onCategoryChange: (category: string) => void;
   priceRange: number[];
   onPriceRangeChange: (range: number[]) => void;
-  selectedBrands: string[];
-  onBrandsChange: (brands: string[]) => void;
-  selectedRating: number | null;
-  onRatingChange: (rating: number | null) => void;
-  inStockOnly: boolean;
-  onInStockChange: (value: boolean) => void;
-  onSaleOnly: boolean;
-  onOnSaleChange: (value: boolean) => void;
-  freeShippingOnly: boolean;
-  onFreeShippingChange: (value: boolean) => void;
-  onClearAll: () => void;
+  // Optional advanced filters. Sections render only when their handlers are
+  // provided, so pages with simpler filtering don't show dead controls.
+  selectedBrands?: string[];
+  onBrandsChange?: (brands: string[]) => void;
+  selectedRating?: number | null;
+  onRatingChange?: (rating: number | null) => void;
+  inStockOnly?: boolean;
+  onInStockChange?: (value: boolean) => void;
+  onSaleOnly?: boolean;
+  onOnSaleChange?: (value: boolean) => void;
+  freeShippingOnly?: boolean;
+  onFreeShippingChange?: (value: boolean) => void;
+  onClearAll?: () => void;
 }
 
 export function SearchFilters({
@@ -64,9 +66,11 @@ export function SearchFilters({
     >
       <div className="flex items-center justify-between">
         <h3 className="font-semibold">Filters</h3>
-        <Button variant="ghost" size="sm" onClick={onClearAll}>
-          Clear All
-        </Button>
+        {onClearAll && (
+          <Button variant="ghost" size="sm" onClick={onClearAll}>
+            Clear All
+          </Button>
+        )}
       </div>
 
       <Separator />
@@ -119,48 +123,53 @@ export function SearchFilters({
         </div>
       </div>
 
-      <Separator />
-
-      {/* Brands */}
-      <div>
-        <h4 className="font-medium mb-3">Brands</h4>
-        <div className="space-y-2">
-          {brands.map((brand) => (
-            <div key={brand} className="flex items-center space-x-2">
-              <Checkbox
-                id={brand}
-                checked={selectedBrands.includes(brand)}
-                onCheckedChange={(checked) => {
-                  if (checked === true) {
-                    onBrandsChange([...selectedBrands, brand]);
-                    return;
-                  }
-                  onBrandsChange(selectedBrands.filter((b) => b !== brand));
-                }}
-              />
-              <label htmlFor={brand} className="text-sm cursor-pointer">
-                {brand}
-              </label>
+      {/* Brands (opt-in) */}
+      {onBrandsChange && (
+        <>
+          <Separator />
+          <div>
+            <h4 className="font-medium mb-3">Brands</h4>
+            <div className="space-y-2">
+              {brands.map((brand) => (
+                <div key={brand} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={brand}
+                    checked={(selectedBrands ?? []).includes(brand)}
+                    onCheckedChange={(checked) => {
+                      const current = selectedBrands ?? [];
+                      if (checked === true) {
+                        onBrandsChange([...current, brand]);
+                        return;
+                      }
+                      onBrandsChange(current.filter((b) => b !== brand));
+                    }}
+                  />
+                  <label htmlFor={brand} className="text-sm cursor-pointer">
+                    {brand}
+                  </label>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
+        </>
+      )}
 
-      <Separator />
-
-      {/* Rating */}
-      <div>
-        <h4 className="font-medium mb-3">Customer Rating</h4>
-        <div className="space-y-2">
-          {ratings.map((rating) => (
-            <div key={rating} className="flex items-center space-x-2">
-              <Checkbox
-                id={`rating-${rating}`}
-                checked={selectedRating === rating}
-                onCheckedChange={(checked) =>
-                  onRatingChange(checked === true ? rating : null)
-                }
-              />
+      {/* Rating (opt-in) */}
+      {onRatingChange && (
+        <>
+          <Separator />
+          <div>
+            <h4 className="font-medium mb-3">Customer Rating</h4>
+            <div className="space-y-2">
+              {ratings.map((rating) => (
+                <div key={rating} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`rating-${rating}`}
+                    checked={selectedRating === rating}
+                    onCheckedChange={(checked) =>
+                      onRatingChange(checked === true ? rating : null)
+                    }
+                  />
               <label
                 htmlFor={`rating-${rating}`}
                 className="text-sm cursor-pointer flex items-center space-x-1"
@@ -183,47 +192,65 @@ export function SearchFilters({
           ))}
         </div>
       </div>
+        </>
+      )}
 
-      <Separator />
-
-      {/* Availability */}
-      <div>
-        <h4 className="font-medium mb-3">Availability</h4>
-        <div className="space-y-2">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="in-stock"
-              checked={inStockOnly}
-              onCheckedChange={(checked) => onInStockChange(checked === true)}
-            />
-            <label htmlFor="in-stock" className="text-sm cursor-pointer">
-              In Stock
-            </label>
+      {/* Availability (opt-in — renders rows only for provided handlers) */}
+      {(onInStockChange || onOnSaleChange || onFreeShippingChange) && (
+        <>
+          <Separator />
+          <div>
+            <h4 className="font-medium mb-3">Availability</h4>
+            <div className="space-y-2">
+              {onInStockChange && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="in-stock"
+                    checked={inStockOnly ?? false}
+                    onCheckedChange={(checked) =>
+                      onInStockChange(checked === true)
+                    }
+                  />
+                  <label htmlFor="in-stock" className="text-sm cursor-pointer">
+                    In Stock
+                  </label>
+                </div>
+              )}
+              {onOnSaleChange && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="on-sale"
+                    checked={onSaleOnly ?? false}
+                    onCheckedChange={(checked) =>
+                      onOnSaleChange(checked === true)
+                    }
+                  />
+                  <label htmlFor="on-sale" className="text-sm cursor-pointer">
+                    On Sale
+                  </label>
+                </div>
+              )}
+              {onFreeShippingChange && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="free-shipping"
+                    checked={freeShippingOnly ?? false}
+                    onCheckedChange={(checked) =>
+                      onFreeShippingChange(checked === true)
+                    }
+                  />
+                  <label
+                    htmlFor="free-shipping"
+                    className="text-sm cursor-pointer"
+                  >
+                    Free Shipping
+                  </label>
+                </div>
+              )}
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="on-sale"
-              checked={onSaleOnly}
-              onCheckedChange={(checked) => onOnSaleChange(checked === true)}
-            />
-            <label htmlFor="on-sale" className="text-sm cursor-pointer">
-              On Sale
-            </label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="free-shipping"
-              checked={freeShippingOnly}
-              onCheckedChange={(checked) =>
-                onFreeShippingChange(checked === true)
-              }
-            />
-            <label htmlFor="free-shipping" className="text-sm cursor-pointer">
-              Free Shipping
-            </label>
-          </div>
-        </div>
-      </div>
+        </>
+      )}
     </motion.div>
   );
 }
