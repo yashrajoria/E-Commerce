@@ -1,6 +1,10 @@
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
 import StatsCard from "@/components/ui/stats-card";
-import { EmptyState, TableSkeleton, ErrorState } from "@/components/admin/shared/DataStates";
+import {
+  EmptyState,
+  TableSkeleton,
+  ErrorState,
+} from "@/components/admin/shared/DataStates";
 import { CustomersFilters } from "@/components/customers/CustomersFilters";
 import { CustomersTable } from "@/components/customers/CustomersTable";
 // import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -22,12 +26,15 @@ import {
   UserX,
   DollarSign,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useAdminUsers } from "@/lib/hooks/useAdminData";
-import type { Customer, CustomerFilter } from "@/types/customers";
+import type {
+  Customer,
+  CustomerFilter,
+  CustomerStatus,
+} from "@/types/customers";
 
 const ITEMS_PER_PAGE = 10;
-
 
 const Customers = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -38,27 +45,35 @@ const Customers = () => {
     sortOrder: "asc",
   });
 
-  const { users, meta, error, isLoading, mutate } = useAdminUsers(currentPage, ITEMS_PER_PAGE);
-
+  const { users, meta, error, isLoading, mutate } = useAdminUsers(
+    currentPage,
+    ITEMS_PER_PAGE,
+  );
+  // logger.debug("users loaded", { users });
   // Filtering and sorting (client-side, as before)
   const filteredCustomers = useMemo(() => {
     let result = Array.isArray(users) ? [...users] : [];
     if (filter.search) {
       const q = filter.search.toLowerCase();
       result = result.filter(
-        (c: Customer) =>
-          c.name?.toLowerCase().includes(q) || c.email?.toLowerCase().includes(q),
+        (c: any) =>
+          c.name?.toLowerCase().includes(q) ||
+          c.email?.toLowerCase().includes(q),
       );
     }
     if (filter.status !== "all")
-      result = result.filter((c: Customer) => c.status === filter.status);
-    result.sort((a: Customer, b: Customer) => {
+      result = result.filter((c: any) => c.status === filter.status);
+    result.sort((a: any, b: any) => {
       const order = filter.sortOrder === "asc" ? 1 : -1;
       if (filter.sortBy === "name") return a.name.localeCompare(b.name) * order;
       if (filter.sortBy === "totalOrders")
-        return ((a.stats?.totalOrders || 0) - (b.stats?.totalOrders || 0)) * order;
+        return (
+          ((a.stats?.totalOrders || 0) - (b.stats?.totalOrders || 0)) * order
+        );
       if (filter.sortBy === "totalSpent")
-        return ((a.stats?.totalSpent || 0) - (b.stats?.totalSpent || 0)) * order;
+        return (
+          ((a.stats?.totalSpent || 0) - (b.stats?.totalSpent || 0)) * order
+        );
       return 0;
     });
     return result;
@@ -70,12 +85,14 @@ const Customers = () => {
     currentPage * ITEMS_PER_PAGE,
   );
 
-  const totalCustomerCount = meta?.total || users.length;
-
-  const activeCount = Array.isArray(users) ? users.filter((c: Customer) => c.status === "active").length : 0;
-  const inactiveCount = Array.isArray(users) ? users.filter((c: Customer) => c.status === "inactive").length : 0;
+  const activeCount = Array.isArray(users)
+    ? users.filter((c: any) => c.status === "active").length
+    : 0;
+  const inactiveCount = Array.isArray(users)
+    ? users.filter((c: any) => c.status === "inactive").length
+    : 0;
   const totalRevenue = Array.isArray(users)
-    ? users.reduce((sum: number, c: Customer) => sum + (c.stats?.totalSpent || 0), 0)
+    ? users.reduce((sum: number, c: any) => sum + (c.stats?.totalSpent || 0), 0)
     : 0;
 
   return (
@@ -109,7 +126,7 @@ const Customers = () => {
       >
         <StatsCard
           title="Total Customers"
-          value={totalCustomerCount}
+          value={users?.length}
           icon={Users}
           trend={{ value: 12.5, label: "vs last month" }}
           gradient="gradient-purple"
@@ -130,7 +147,7 @@ const Customers = () => {
         />
         <StatsCard
           title="Total Revenue"
-          value={`£${totalRevenue.toLocaleString()}`}
+          value={`$${totalRevenue.toLocaleString()}`}
           icon={DollarSign}
           gradient="gradient-blue"
         />
@@ -190,7 +207,9 @@ const Customers = () => {
                     sortBy: key as CustomerFilter["sortBy"],
                   }))
                 }
-                onCustomerClick={(id) => console.log("Customer clicked:", id)}
+                onCustomerClick={(id) => {
+                  // logger.debug("Customer clicked:", { id });
+                }}
               />
             </div>
           </motion.section>
@@ -208,26 +227,17 @@ const Customers = () => {
                   className={`rounded-xl ${currentPage === 1 ? "pointer-events-none opacity-50" : ""}`}
                 />
               </PaginationItem>
-              {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
-                let pageNum = i + 1;
-                if (totalPages > 5) {
-                  if (currentPage > 3 && currentPage < totalPages - 1)
-                    pageNum = currentPage - 2 + i;
-                  else if (currentPage >= totalPages - 1)
-                    pageNum = totalPages - 4 + i;
-                }
-                return pageNum <= totalPages ? (
-                  <PaginationItem key={pageNum}>
-                    <PaginationLink
-                      isActive={currentPage === pageNum}
-                      onClick={() => setCurrentPage(pageNum)}
-                      className={`rounded-xl ${currentPage === pageNum ? "gradient-purple text-white border-0" : ""}`}
-                    >
-                      {pageNum}
-                    </PaginationLink>
-                  </PaginationItem>
-                ) : null;
-              })}
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <PaginationItem key={i + 1}>
+                  <PaginationLink
+                    isActive={currentPage === i + 1}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`rounded-xl ${currentPage === i + 1 ? "gradient-purple text-white border-0" : ""}`}
+                  >
+                    {i + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
               <PaginationItem>
                 <PaginationNext
                   onClick={() =>

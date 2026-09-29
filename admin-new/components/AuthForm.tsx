@@ -58,7 +58,7 @@ const AuthForm = () => {
     setIsLoading(true);
     try {
       const res = await axios.post(
-        "/api/auth/login",
+        "/api/admin/auth/login",
         {
           ...signinData,
           role: "admin",
@@ -82,21 +82,24 @@ const AuthForm = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
+      const sanitized = { name: signupData.name, email: signupData.email, role: "admin" };
+      console.debug("[AuthForm] admin sign-up start", { endpoint: "/api/admin/auth/register", payload: sanitized });
       const res = await axios.post(
-        "/api/auth/register",
+        "/api/admin/auth/register",
         {
           ...signupData,
           role: "admin",
         },
-        { withCredentials: true },
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        },
       );
+      console.debug("[AuthForm] admin sign-up response", { status: res.status, data: res.data });
       toast.success("Verification email sent");
       setShowOTPVerification(true);
-      if (res.status === 200) {
-        setShowOTPVerification(false);
-        router.push("/dashboard");
-      }
     } catch (error: unknown) {
+      console.error("[AuthForm] admin sign-up error:", error);
       toast.error(getErrorMessage(error) || "Something went wrong");
     } finally {
       setIsLoading(false);

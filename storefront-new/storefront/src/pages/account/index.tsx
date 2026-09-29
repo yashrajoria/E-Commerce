@@ -1,3 +1,5 @@
+"use client";
+
 import { AddressBook } from "@/components/account/address-book";
 import { OrderHistory } from "@/components/account/order-history";
 import { WishlistItems } from "@/components/account/wishlist-items";
@@ -14,7 +16,6 @@ import { useUser } from "@/context/UserContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useToast } from "@/hooks/use-toast";
 import { updatePassword, updateUserData } from "@/lib/user";
-import { formatGBP } from "@/lib/utils";
 import { motion } from "framer-motion";
 import {
   Bell,
@@ -29,13 +30,12 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { getSiteUrl } from "@/lib/site";
 import Head from "next/head";
 
 export default function AccountPage() {
   const [activeTab, setActiveTab] = useState("profile");
-  const siteUrl = getSiteUrl();
-  const { user, loading } = useUser();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const { user, loading, signOut, refetchUser } = useUser();
   const { wishlist: localWishlist } = useWishlist();
   const [profile, setProfile] = useState({
     name: "",
@@ -70,10 +70,11 @@ export default function AccountPage() {
     return cur as unknown;
   };
   useEffect(() => {
+    const baseProfile = (user?.profile ?? {}) as Record<string, any>;
     setProfile({
-      name: safeString(user?.profile?.name),
-      email: safeString(user?.profile?.email ?? user?.email),
-      phone_number: safeString(user?.profile?.phone_number ?? user?.phone_number),
+      name: safeString(user?.name ?? baseProfile.name),
+      email: safeString(user?.email ?? baseProfile.email),
+      phone_number: safeString(user?.phone_number ?? baseProfile.phone_number),
     });
     const tabQuery = router.query.tab;
     const tab = Array.isArray(tabQuery) ? tabQuery[0] : tabQuery;
@@ -87,9 +88,17 @@ export default function AccountPage() {
       // Compare each field with original user data, include only changed fields
       const updates: Partial<typeof profile> = {};
 
-      if (data.name !== user?.name) updates.name = data.name;
-      if (data.email !== user?.email) updates.email = data.email;
-      if (data.phone_number !== user?.phone_number)
+      const original = {
+        name: safeString(user?.name ?? (user?.profile as any)?.name),
+        email: safeString(user?.email ?? (user?.profile as any)?.email),
+        phone_number: safeString(
+          user?.phone_number ?? (user?.profile as any)?.phone_number,
+        ),
+      };
+
+      if (data.name !== original.name) updates.name = data.name;
+      if (data.email !== original.email) updates.email = data.email;
+      if (data.phone_number !== original.phone_number)
         updates.phone_number = data.phone_number;
 
       // If no changes, avoid API call
@@ -98,19 +107,21 @@ export default function AccountPage() {
       }
 
       await updateUserData(updates);
+      await refetchUser();
     } catch (error) {
-      console.error("Error updating profile:", error);
+      // logger.error("Error updating profile:", { error });
+      showError("Could not update profile. Please try again.");
     }
   };
 
-  const { showError } = useToast();
+  const { showError, showSuccess } = useToast();
   const handleChangePassword = async (
     oldPassword: string,
     newPassword: string,
     confirmPassword: string,
   ) => {
     if (newPassword !== confirmPassword) {
-      alert("New password and confirm password do not match");
+      showError("New password and confirm password do not match");
       return;
     }
     if (!oldPassword || !newPassword) {
@@ -119,9 +130,12 @@ export default function AccountPage() {
     }
     try {
       await updatePassword(oldPassword, newPassword);
-      // Optionally clear password inputs here
+      setPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      showSuccess("Password updated successfully");
     } catch (err) {
-      console.error(err);
+      // logger.error("Error loading profile", { err });
       showError("Error updating password");
     }
   };
@@ -174,10 +188,10 @@ export default function AccountPage() {
           transition={{ duration: 0.6 }}
         >
           {/* Profile Header */}
-          <div className="bg-gradient-to-r from-rose-600 to-amber-500 rounded-2xl p-8 mb-8 text-white">
+          <div className="bg-linear-to-r from-rose-600 to-amber-500 rounded-2xl p-8 mb-8 text-white">
             <div className="flex items-center space-x-6">
               <Avatar className="w-24 h-24 border-4 border-white/20">
-                <AvatarImage src={user?.avatar} />
+                <AvatarImage src={user?.avatar ?? undefined} />
                 <AvatarFallback className="text-2xl">
                   {user?.name?.charAt(0)}
                 </AvatarFallback>
@@ -191,7 +205,9 @@ export default function AccountPage() {
                     <span className="text-white/60">Member since</span>
                     <p className="font-medium">
                       {(() => {
-                        const d = safeDateFrom(user?.profile?.created_at);
+                        const d = safeDateFrom(
+                          user?.created_at ?? (user?.profile as any)?.created_at,
+                        );
                         return d ? d.toLocaleDateString("en-US", { year: "numeric", month: "long" }) : "—";
                       })()}
                     </p>
@@ -199,19 +215,19 @@ export default function AccountPage() {
                   <div>
                     <span className="text-white/60">Total Orders</span>
                     <p className="font-medium">
-                      {safeNumber(getNested(user?.orders, "meta", "total_orders"))}
+                      {safeNumber(getNested((user as any)?.orders, "meta", "total_orders"))}
                     </p>
                   </div>
                   <div>
                     <span className="text-white/60">Wishlist</span>
                     <p className="font-medium">
-                      {user?.wishlist?.length ?? localWishlist.length ?? 0}
+                      {(user as any)?.wishlist?.length ?? localWishlist.length ?? 0}
                     </p>
                   </div>
                   <div>
                     <span className="text-white/60">Total Spent</span>
                     <p className="font-medium">
-                      {formatGBP(safeNumber(user?.totalSpent))}
+                      ${(user as any)?.totalSpent?.toFixed(2) || 0}
                     </p>
                   </div>
                 </div>
@@ -227,7 +243,7 @@ export default function AccountPage() {
             onValueChange={setActiveTab}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 mb-8">
+            <TabsList className="grid w-full grid-cols-6 mb-8">
               <TabsTrigger
                 value="profile"
                 className="flex items-center space-x-2"
@@ -396,7 +412,7 @@ export default function AccountPage() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center space-x-4">
-                        <div className="w-12 h-8 bg-gradient-to-r from-blue-600 to-blue-800 rounded flex items-center justify-center text-white text-xs font-bold">
+                        <div className="w-12 h-8 bg-linear-to-r from-blue-600 to-blue-800 rounded flex items-center justify-center text-white text-xs font-bold">
                           VISA
                         </div>
                         <div>
@@ -466,6 +482,10 @@ export default function AccountPage() {
                     <Button
                       variant="outline"
                       className="text-destructive border-destructive"
+                      onClick={async () => {
+                        await signOut();
+                        router.push("/");
+                      }}
                     >
                       <LogOut className="h-4 w-4 mr-2" />
                       Sign Out

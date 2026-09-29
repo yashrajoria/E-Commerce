@@ -1,4 +1,5 @@
 import { Clock, RefreshCw, Truck, CheckCircle, XCircle } from "lucide-react";
+import { formatDate } from "@/lib/utils";
 import type { OrderStatus, Order, SortConfig, OrdersFilter } from "@/types/shared";
 
 // Status icons mapping
@@ -20,22 +21,6 @@ export const getStatusBadgeStyle = (status: OrderStatus) => {
     cancelled: "bg-rose-500/10 text-rose-500 border-rose-500/20",
   };
   return styles[status] || styles.pending;
-};
-
-// Format date helper
-export const formatDate = (dateString?: string | null) => {
-  if (!dateString) return "N/A";
-  
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return "N/A";
-
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
 };
 
 // Filter and sort orders

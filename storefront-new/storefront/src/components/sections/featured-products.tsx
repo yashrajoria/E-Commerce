@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useProducts } from "@/hooks/useProducts";
+import { formatGBP } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -52,12 +53,6 @@ export function FeaturedProducts() {
   const products = data?.products ?? [];
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, hasWishlistItem } = useWishlist();
-
-  const formatGBP = (value?: number) =>
-    new Intl.NumberFormat("en-GB", {
-      style: "currency",
-      currency: "GBP",
-    }).format(value ?? 0);
 
   if (isLoading) {
     return (

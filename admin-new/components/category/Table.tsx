@@ -70,11 +70,11 @@ const CategoryTable = ({
         </motion.section>
       ) : (
         <motion.section key="table" variants={pageItem}>
-          <Card className="glass-effect overflow-hidden border-white/[0.06]">
+          <Card className="glass-effect overflow-hidden border-white/6">
             <CardContent className="p-0 overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-white/[0.04]">
+                  <TableRow className="border-white/4">
                     <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
                       Name
                     </TableHead>
@@ -93,7 +93,7 @@ const CategoryTable = ({
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.04 }}
-                      className="border-white/[0.04] hover:bg-white/[0.02] transition-colors"
+                      className="border-white/4 hover:bg-white/2 transition-colors"
                     >
                       <TableCell>
                         <div className="flex items-center gap-3">
@@ -115,7 +115,7 @@ const CategoryTable = ({
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-8 w-8 hover:bg-white/[0.06] rounded-lg"
+                            className="h-8 w-8 hover:bg-white/6 rounded-lg"
                             onClick={() => {
                               setSelectedCategory(cat);
                               setEditCategoryName(cat.name ?? "");

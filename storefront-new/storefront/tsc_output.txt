@@ -1,0 +1,16 @@
+../../packages/shared/src/components/auth/Login.tsx(2,25): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+../../packages/shared/src/components/auth/Logout.tsx(2,25): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+../../packages/shared/src/components/auth/Register.tsx(2,25): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+../../packages/shared/src/index.ts(4,39): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+src/components/common/PasswordStrengthIndicator.tsx(5,33): error TS2305: Module '"@/lib/auth"' has no exported member 'PasswordValidation'.
+src/lib/user.ts(4,3): error TS2305: Module '"@ecommerce/shared"' has no exported member 'updateUserData'.
+src/lib/user.ts(26,23): error TS2339: Property 'updatePassword' does not exist on type 'typeof import("D:/WD/Ecommerce/frontend/E-Commerce/packages/shared/src/index")'.
+src/lib/user.ts(27,27): error TS2339: Property 'updatePassword' does not exist on type 'typeof import("D:/WD/Ecommerce/frontend/E-Commerce/packages/shared/src/index")'.
+src/pages/account/index.tsx(92,55): error TS2339: Property 'name' does not exist on type '{}'.
+src/pages/account/index.tsx(93,57): error TS2339: Property 'email' does not exist on type '{}'.
+src/pages/account/index.tsx(95,48): error TS2339: Property 'phone_number' does not exist on type '{}'.
+src/pages/account/index.tsx(194,30): error TS2322: Type 'string | null | undefined' is not assignable to type 'string | Blob | undefined'.
+  Type 'null' is not assignable to type 'string | Blob | undefined'.
+src/pages/account/index.tsx(209,62): error TS2339: Property 'created_at' does not exist on type '{}'.
+src/pages/account/index.tsx(224,40): error TS2339: Property 'length' does not exist on type '{}'.
+src/pages/account/index.tsx(230,43): error TS2339: Property 'toFixed' does not exist on type '{}'.

@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import useAuth from "@/hooks/useAuth";
+import { useAuth } from "@ecommerce/shared";
 import { motion } from "framer-motion";
 import {
   Bell,

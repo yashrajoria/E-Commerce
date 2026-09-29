@@ -42,7 +42,11 @@ const pageItem = {
   },
 };
 
-type DashboardData = any;
+interface DashboardState {
+  data: import('@ecommerce/shared/src/types/common').DashboardMetrics | null;
+  isLoading: boolean;
+  error: string | null;
+}
 
 const Dashboard = ({ name }: { name: string }) => {
   const [searchOpen, setSearchOpen] = useState(false);
@@ -56,7 +60,7 @@ const Dashboard = ({ name }: { name: string }) => {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const response = await axios.get("/api/dashboard");
+        const response = await axios.get("/api/admin/dashboard");
         if (response.data && response.data.data) {
           setDashboardData(response.data.data);
         }

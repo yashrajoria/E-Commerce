@@ -168,7 +168,7 @@ const ActivityLogs = () => {
         <Button
           variant="outline"
           size="sm"
-          className="gap-2 text-xs border-white/[0.08] hover:bg-white/[0.04] rounded-xl h-8"
+          className="gap-2 text-xs border-white/8 hover:bg-white/4 rounded-xl h-8"
         >
           <Download size={13} />
           Export Logs
@@ -218,11 +218,11 @@ const ActivityLogs = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search activity..."
-                className="pl-10 bg-white/[0.04] border-white/[0.08] rounded-xl h-9"
+                className="pl-10 bg-white/4 border-white/8 rounded-xl h-9"
               />
             </div>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-40 bg-white/[0.04] border-white/[0.08] rounded-xl h-9 text-xs">
+              <SelectTrigger className="w-40 bg-white/4 border-white/8 rounded-xl h-9 text-xs">
                 <Filter className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
                 <SelectValue placeholder="Filter" />
               </SelectTrigger>

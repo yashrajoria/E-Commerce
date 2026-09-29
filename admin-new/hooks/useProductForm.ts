@@ -89,7 +89,7 @@ export function useProductForm(
         console.log(pair[0], pair[1]);
       }
 
-      const res = await axios.post("/api/products", formData, {
+      const res = await axios.post("/api/admin/products", formData, {
         withCredentials: true,
       });
 
@@ -130,7 +130,7 @@ export function useProductForm(
         (payload as Record<string, unknown>)["image_urls"] = urls;
       }
 
-      const res = await axios.put(`/api/products/${id}`, payload, {
+      const res = await axios.put(`/api/admin/products/${id}`, payload, {
         withCredentials: true,
       });
 
@@ -147,7 +147,7 @@ export function useProductForm(
   const deleteSingleProduct = async (productId: string) => {
     try {
       console.log({ productId });
-      const res = await axios.delete(`/api/products/${productId}`, {
+      const res = await axios.delete(`/api/admin/products/${productId}`, {
         withCredentials: true,
       });
       console.log(res);

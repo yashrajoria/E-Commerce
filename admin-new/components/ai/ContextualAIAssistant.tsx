@@ -123,7 +123,7 @@ export const ContextualAIAssistant = ({
 
               <div className="relative z-10 space-y-4">
                 <div className="flex items-start gap-3">
-                  <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-white/[0.08] text-[hsl(43,96%,68%)] shadow-[0_14px_30px_hsla(43,96%,56%,0.12)]">
+                  <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-white/8 text-[hsl(43,96%,68%)] shadow-[0_14px_30px_hsla(43,96%,56%,0.12)]">
                     <Bot className="size-5" aria-hidden="true" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -141,7 +141,7 @@ export const ContextualAIAssistant = ({
                         variant="ghost"
                         size="icon"
                         onClick={() => setIsOpen(false)}
-                        className="size-8 rounded-xl text-muted-foreground hover:bg-white/[0.08]"
+                        className="size-8 rounded-xl text-muted-foreground hover:bg-white/8"
                         aria-label="Close contextual AI assistant"
                       >
                         <X className="size-4" aria-hidden="true" />
@@ -158,7 +158,7 @@ export const ContextualAIAssistant = ({
                     <Badge
                       key={item}
                       variant="outline"
-                      className="border-white/15 bg-white/[0.04] text-foreground"
+                      className="border-white/15 bg-white/4 text-foreground"
                     >
                       {item}
                     </Badge>
@@ -180,7 +180,7 @@ export const ContextualAIAssistant = ({
                         key={item.id}
                         type="button"
                         onClick={() => runQuickAction(item.prompt)}
-                        className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-left transition hover:border-[hsla(263,70%,58%,0.35)] hover:bg-white/[0.08]"
+                        className="rounded-2xl border border-white/10 bg-white/4 p-3 text-left transition hover:border-[hsla(263,70%,58%,0.35)] hover:bg-white/8"
                       >
                         <p className="text-sm font-semibold text-foreground">
                           {item.label}
@@ -235,7 +235,7 @@ export const ContextualAIAssistant = ({
                     type="button"
                     variant="outline"
                     onClick={clearPrompt}
-                    className="h-10 rounded-xl border-white/15 bg-white/[0.03] text-foreground hover:bg-white/[0.08]"
+                    className="h-10 rounded-xl border-white/15 bg-white/3 text-foreground hover:bg-white/8"
                   >
                     Clear
                   </Button>

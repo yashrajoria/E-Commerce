@@ -358,11 +358,11 @@ function SortableImage({
           </Button>
         )}
         {failed && (
-          <Button size="sm" variant="ghost" onClick={onRetry}>
+          <Button size="sm" variant="ghost" onClick={onRetry} aria-label="Retry upload">
             <RotateCcw className="h-4 w-4" />
           </Button>
         )}
-        <Button type="button" variant="ghost" size="icon" onClick={onRemove}>
+        <Button type="button" variant="ghost" size="icon" onClick={onRemove} aria-label="Remove image">
           <X className="h-4 w-4" />
         </Button>
       </div>

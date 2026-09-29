@@ -19,20 +19,14 @@ async function pollForPaymentUrl(id: string): Promise<string> {
       const res = await axiosInstance.get(
         API_ROUTES.PAYMENT.STATUS_BY_ORDER(id),
       );
-      const { status, checkout_url } = res.data as {
-        status?: unknown;
-        checkout_url?: unknown;
-      };
+      const { status, checkout_url } = res.data;
       const statusStr = typeof status === "string" ? status.toUpperCase() : "";
-      if (typeof checkout_url === "string" && checkout_url) return checkout_url;
+      if (checkout_url) return checkout_url;
+      if (statusStr === "URL_READY") return checkout_url;
       if (statusStr === "FAILED")
         throw new Error("Payment failed during processing.");
-    } catch (err) {
-      // Surface terminal errors immediately; retry transient poll failures.
-      if (err instanceof Error && err.message === "Payment failed during processing.") {
-        throw err;
-      }
-      // Otherwise swallow and retry until attempts are exhausted.
+    } catch {
+      // swallow poll errors; retry loop handles it
     }
     attempts++;
     await new Promise((resolve) => setTimeout(resolve, delay));
@@ -300,7 +294,22 @@ export function useCheckout(): CheckoutState {
     }
     setIsProcessing(true);
     try {
-      const idempotencyKey = crypto.randomUUID();
+      await axiosInstance.delete(API_ROUTES.CART.CLEAR);
+
+      const addRes = await axiosInstance.post(API_ROUTES.CART.ADD, {
+        items: cart.map((item) => ({
+          product_id: item.id,
+          quantity: item.quantity,
+        })),
+      });
+      if (addRes.status !== 200) {
+        showError("Failed to update cart. Please try again.");
+        return;
+      }
+      const idempotencyKey =
+        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
       const checkoutRes = await axiosInstance.post(
         API_ROUTES.CART.CHECKOUT,
         {},
@@ -318,9 +327,22 @@ export function useCheckout(): CheckoutState {
       localStorage.removeItem("checkout_draft");
       showSuccess("Redirecting to secure payment…");
       if (checkoutUrl && typeof checkoutUrl === "string") {
-        // Single navigation to the payment page. Previously this did both
-        // location.assign + window.open, double-opening the checkout.
-        window.location.assign(checkoutUrl);
+        try {
+          window.location.assign(checkoutUrl);
+          setTimeout(() => {
+            try {
+              window.open(checkoutUrl, "_blank");
+            } catch {
+              // swallow fallback errors
+            }
+          }, 3000);
+        } catch {
+          try {
+            window.open(checkoutUrl, "_blank");
+          } catch {
+            showError("Unable to open payment page. Please try again.");
+          }
+        }
       } else {
         showError("Payment URL was invalid. Please try again.");
       }

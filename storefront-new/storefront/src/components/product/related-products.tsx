@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Star, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/hooks/useProducts";
+import { formatGBP } from "@/lib/utils";
 import Image from "next/image";
 
 interface RelatedProductsProps {
@@ -17,12 +18,6 @@ export function RelatedProducts({ currentProductId }: RelatedProductsProps) {
   const relatedProducts = (data?.products ?? [])
     .filter((p) => p.id !== currentProductId)
     .slice(0, 4);
-  const formatGBP = (value?: number) =>
-    new Intl.NumberFormat("en-GB", {
-      style: "currency",
-      currency: "GBP",
-    }).format(value ?? 0);
-
   const getCategoryName = (p: Product) =>
     typeof p.category === "string" ? p.category : (p.category?.name ?? "");
 

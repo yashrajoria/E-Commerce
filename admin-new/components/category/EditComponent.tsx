@@ -26,7 +26,7 @@ const EditComponent = ({
 }) => {
   return (
     <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-      <DialogContent className="glass-effect-strong border-white/[0.08]">
+      <DialogContent className="glass-effect-strong border-white/8">
         <DialogHeader>
           <DialogTitle className="text-gradient">Edit Category</DialogTitle>
           <DialogDescription>Update category name</DialogDescription>
@@ -37,7 +37,7 @@ const EditComponent = ({
             <Input
               value={editCategoryName}
               onChange={(e) => setEditCategoryName(e.target.value)}
-              className="bg-white/[0.04] border-white/[0.08] rounded-xl"
+              className="bg-white/4 border-white/8 rounded-xl"
             />
           </div>
         </div>

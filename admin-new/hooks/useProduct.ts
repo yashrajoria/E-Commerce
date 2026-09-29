@@ -23,7 +23,7 @@ export const useProduct = (productId: string) => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await axios.get(`/api/products/${productId}`, {
+        const res = await axios.get(`/api/admin/products/${productId}`, {
           headers: {
             "Content-Type": "application/json",
           },

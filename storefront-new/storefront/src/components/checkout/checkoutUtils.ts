@@ -1,9 +1,6 @@
-/* ─── Currency formatting ─── */
-export const formatGBP = (value?: number): string =>
-  new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: "GBP",
-  }).format(value ?? 0);
+import { formatGBP } from "@/lib/utils";
+
+export { formatGBP };
 
 /* ─── Validation helpers ─── */
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

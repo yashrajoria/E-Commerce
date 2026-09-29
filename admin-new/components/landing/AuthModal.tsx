@@ -126,9 +126,8 @@ export default function AuthModal({
     setIsLoading(true);
     try {
       const res = await axios.post(
-        "/api/auth/login",
-
-        { ...loginData, role: "admin" },
+        "/api/admin/auth/login",
+        { ...loginData },
         {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
@@ -136,12 +135,14 @@ export default function AuthModal({
       );
       toast.success("Successfully signed in");
       if (res.status === 200) router.push("/dashboard");
-      
     } catch (error: unknown) {
       const { data } = getResponseInfo(error);
-      const msg = typeof data === "object" && data !== null && "message" in (data as Record<string, unknown>)
-        ? String((data as Record<string, unknown>).message)
-        : getErrorMessage(error) || "Invalid credentials";
+      const msg =
+        typeof data === "object" &&
+        data !== null &&
+        "message" in (data as Record<string, unknown>)
+          ? String((data as Record<string, unknown>).message)
+          : getErrorMessage(error) || "Invalid credentials";
       toast.error(msg);
     } finally {
       setIsLoading(false);
@@ -160,8 +161,18 @@ export default function AuthModal({
     }
     setIsLoading(true);
     try {
-      await axios.post(
-        "/api/auth/register",
+      const sanitized = {
+        name: registerData.name,
+        email: registerData.email,
+        storeName: registerData.storeName,
+      };
+      console.debug("[AuthModal] register start", {
+        endpoint: "/api/admin/auth/register",
+        payload: sanitized,
+      });
+
+      const res = await axios.post(
+        "/api/admin/auth/register",
         {
           name: registerData.name,
           email: registerData.email,
@@ -170,14 +181,22 @@ export default function AuthModal({
         },
         { withCredentials: true },
       );
+
+      console.debug("[AuthModal] register response", {
+        status: res.status,
+        data: res.data,
+      });
       toast.success("Verification code sent to your email");
       setView("otp");
-      
     } catch (error: unknown) {
+      console.error("[AuthModal] register error:", error);
       const { data } = getResponseInfo(error);
-      const msg = typeof data === "object" && data !== null && "message" in (data as Record<string, unknown>)
-        ? String((data as Record<string, unknown>).message)
-        : getErrorMessage(error) || "Registration failed";
+      const msg =
+        typeof data === "object" &&
+        data !== null &&
+        "message" in (data as Record<string, unknown>)
+          ? String((data as Record<string, unknown>).message)
+          : getErrorMessage(error) || "Registration failed";
       toast.error(msg);
     } finally {
       setIsLoading(false);
@@ -192,7 +211,7 @@ export default function AuthModal({
     setIsLoading(true);
     try {
       await axios.post(
-        "/api/auth/verify-otp",
+        "/api/admin/auth/verify-otp",
         { email: registerData.email, code: otpValue },
         {
           headers: { "Content-Type": "application/json" },
@@ -215,7 +234,9 @@ export default function AuthModal({
   const handleResendOTP = async () => {
     setIsResending(true);
     try {
-      await axios.post("/api/auth/resend-otp", { email: registerData.email });
+      await axios.post("/api/admin/auth/resend-otp", {
+        email: registerData.email,
+      });
       setOtpValue("");
       toast.success("New code sent to your email");
     } catch {

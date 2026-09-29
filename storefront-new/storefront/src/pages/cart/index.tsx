@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -17,24 +19,18 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
-import { getSiteUrl } from "@/lib/site";
+import { formatGBP } from "@/lib/utils";
 import Image from "next/image";
 import Head from "next/head";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 export default function CartPage() {
-  const { cart: cartItems, updateQuantity, removeFromCart, isHydrated } = useCart();
-  const siteUrl = getSiteUrl();
+  const { cart: cartItems, updateQuantity, removeFromCart } = useCart();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
   const [promoMessage, setPromoMessage] = useState<string | null>(null);
   const router = useRouter();
-
-  const formatGBP = (value?: number) =>
-    new Intl.NumberFormat("en-GB", {
-      style: "currency",
-      currency: "GBP",
-    }).format(value ?? 0);
 
   const handleUpdateQuantity = (id: string, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -62,43 +58,6 @@ export default function CartPage() {
   const shipping = subtotal > 50 ? 0 : 9.99;
   const tax = (subtotal - discount) * 0.08;
   const total = subtotal - discount + shipping + tax;
-
-  if (!isHydrated) {
-    return (
-      <div className="min-h-screen">
-        <Head>
-          <title>ShopSwift | Cart</title>
-          <meta
-            name="description"
-            content="Review items in your cart and proceed to checkout."
-          />
-          <link rel="canonical" href={`${siteUrl}/cart`} />
-          <meta property="og:title" content="ShopSwift | Cart" />
-          <meta
-            property="og:description"
-            content="Review items in your cart and proceed to checkout."
-          />
-          <meta property="og:url" content={`${siteUrl}/cart`} />
-        </Head>
-        <Header />
-        <main className="container mx-auto px-4 py-16">
-          <motion.div
-            className="text-center max-w-md mx-auto"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="mx-auto mb-6 h-16 w-16 rounded-full border-4 border-rose-200 border-t-rose-600 animate-spin" />
-            <h1 className="text-2xl font-bold mb-4">Loading cart</h1>
-            <p className="text-muted-foreground">
-              Restoring your saved cart items.
-            </p>
-          </motion.div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
 
   if (cartItems.length === 0) {
     return (
@@ -131,7 +90,7 @@ export default function CartPage() {
               Looks like you haven&apos;t added anything to your cart yet.
             </p>
             <Link href="/products">
-              <Button type="button" size="lg">Continue Shopping</Button>
+              <Button size="lg">Continue Shopping</Button>
             </Link>
           </motion.div>
         </main>
@@ -344,7 +303,6 @@ export default function CartPage() {
 
                 <Link href="/checkout" passHref>
                   <Button
-                    type="button"
                     size="lg"
                     className="w-full mb-3 rounded-full bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 shadow-lg shadow-rose-500/20"
                   >
@@ -354,7 +312,6 @@ export default function CartPage() {
 
                 <Link href="/products" passHref>
                   <Button
-                    type="button"
                     variant="outline"
                     size="lg"
                     className="w-full rounded-full"

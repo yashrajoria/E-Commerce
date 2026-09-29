@@ -87,7 +87,7 @@ const Categories = () => {
         is_active: newCategoryActive,
       };
 
-      await axios.post("/bff/categories", payload, { withCredentials: true });
+      await axios.post("/api/admin/categories", payload, { withCredentials: true });
       toast.success("Category created successfully!");
       setNewCategoryName("");
       setNewCategoryParent(null);
@@ -107,7 +107,7 @@ const Categories = () => {
     if (!editCategoryName.trim() || !selectedCategory) return;
     try {
       await axios.put(
-        `/bff/categories/${selectedCategory.id}`,
+        `/api/admin/categories/${selectedCategory.id}`,
         { name: editCategoryName },
         { withCredentials: true },
       );
@@ -122,7 +122,7 @@ const Categories = () => {
   const handleDeleteCategory = async () => {
     if (!selectedCategory) return;
     try {
-      await axios.delete(`/bff/categories/${selectedCategory.id}`, {
+      await axios.delete(`/api/admin/categories/${selectedCategory.id}`, {
         withCredentials: true,
       });
       toast.success("Category deleted successfully!");
@@ -241,26 +241,17 @@ const Categories = () => {
                   className={`rounded-xl ${currentPage === 1 ? "pointer-events-none opacity-50" : ""}`}
                 />
               </PaginationItem>
-              {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
-                let pageNum = i + 1;
-                if (totalPages > 5) {
-                  if (currentPage > 3 && currentPage < totalPages - 1)
-                    pageNum = currentPage - 2 + i;
-                  else if (currentPage >= totalPages - 1)
-                    pageNum = totalPages - 4 + i;
-                }
-                return pageNum <= totalPages ? (
-                  <PaginationItem key={pageNum}>
-                    <PaginationLink
-                      isActive={currentPage === pageNum}
-                      onClick={() => setCurrentPage(pageNum)}
-                      className={`rounded-xl ${currentPage === pageNum ? "gradient-purple text-white border-0" : ""}`}
-                    >
-                      {pageNum}
-                    </PaginationLink>
-                  </PaginationItem>
-                ) : null;
-              })}
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <PaginationItem key={i + 1}>
+                  <PaginationLink
+                    isActive={currentPage === i + 1}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`rounded-xl ${currentPage === i + 1 ? "gradient-purple text-white border-0" : ""}`}
+                  >
+                    {i + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
               <PaginationItem>
                 <PaginationNext
                   onClick={() =>

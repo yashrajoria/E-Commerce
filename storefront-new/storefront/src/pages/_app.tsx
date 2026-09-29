@@ -1,4 +1,5 @@
 import "@/styles/globals.css";
+import { useEffect } from "react";
 import { ThemeProvider } from "next-themes";
 import type { AppProps } from "next/app";
 import { Inter } from "next/font/google";
@@ -8,30 +9,20 @@ import { UserProvider } from "@/context/UserContext";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import Head from "next/head";
-import { useState } from "react";
+
+import { setAPIErrorHandler, axiosInstance } from "@ecommerce/shared";
+import { toast as sharedToast } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
+const queryClient = new QueryClient();
 
 export default function App({ Component, pageProps }: AppProps) {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            // Reduce background refetch bursts while backend rate limits are strict.
-            refetchOnWindowFocus: false,
-            refetchOnReconnect: false,
-            retry: (failureCount, error) => {
-              const status =
-                (error as { response?: { status?: number } })?.response?.status;
-              if (status === 429) return false;
-              return failureCount < 2;
-            },
-            retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 4000),
-          },
-        },
-      }),
-  );
+  useEffect(() => {
+    setAPIErrorHandler((type, message) => {
+      sharedToast.error(message);
+    });
+  }, []);
+
   return (
     <>
       <Head>
