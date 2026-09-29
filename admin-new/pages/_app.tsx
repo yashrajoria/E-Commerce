@@ -163,6 +163,11 @@ export default function App({ Component, pageProps, router }: AppProps) {
   //     router.replace("/");
   //   }
   // }, [loading, authenticated, needsAuth, router]);
+  useEffect(() => {
+    if (!loading && needsAuth && !authenticated) {
+      void router.replace("/");
+    }
+  }, [loading, authenticated, needsAuth, router]);
 
   if (needsAuth && loading) {
     return (

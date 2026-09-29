@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -19,13 +17,14 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import { getSiteUrl } from "@/lib/site";
 import Image from "next/image";
 import Head from "next/head";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 
 export default function CartPage() {
   const { cart: cartItems, updateQuantity, removeFromCart, isHydrated } = useCart();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = getSiteUrl();
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
   const [promoMessage, setPromoMessage] = useState<string | null>(null);

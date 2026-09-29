@@ -22,7 +22,11 @@ interface Segment {
 
 
 
-const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
+const CustomTooltip = ({
+  active,
+  payload,
+  total,
+}: TooltipProps<number, string> & { total?: number }) => {
   if (!active || !payload?.length) return null;
   const data = payload[0];
   return (
@@ -38,13 +42,18 @@ const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
         {(data.value as number).toLocaleString()} customers
       </p>
       <p className="text-[10px] text-muted-foreground">
-        {(((data.value as number) / total) * 100).toFixed(1)}% of total
+        {total ? `${(((data.value as number) / total) * 100).toFixed(1)}% of total` : ""}
       </p>
     </div>
   );
 };
 
-export default function CustomerInsights({ insights }: { insights: any[] }) {
+export interface CustomerInsight {
+  name: string;
+  value: number;
+}
+
+export default function CustomerInsights({ insights }: { insights: CustomerInsight[] }) {
   if (!insights || insights.length === 0) return null;
 
   // Map the backend insight data to our frontend format (adding colors and icons)
@@ -106,7 +115,7 @@ export default function CustomerInsights({ insights }: { insights: any[] }) {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={<CustomTooltip total={total} />} />
               </PieChart>
             </ResponsiveContainer>
             {/* Center label */}

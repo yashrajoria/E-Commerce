@@ -1,5 +1,3 @@
-"use client";
-
 import { AnimatePresence } from "framer-motion";
 import { ArrowLeft, ChevronRight, Lock, Mail, MapPin, Truck } from "lucide-react";
 import Head from "next/head";
@@ -16,9 +14,10 @@ import { StepDelivery } from "@/components/checkout/steps/StepDelivery";
 import { StepReview } from "@/components/checkout/steps/StepReview";
 import { StepShipping } from "@/components/checkout/steps/StepShipping";
 import { useCart } from "@/context/CartContext";
+import { getSiteUrl } from "@/lib/site";
 
 export default function CheckoutPage() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = getSiteUrl();
   const { cart: cartItems, isHydrated } = useCart();
   const {
     cart, currentStep, direction, shippingMethod, shippingDetails,

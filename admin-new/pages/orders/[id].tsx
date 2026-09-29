@@ -1,4 +1,3 @@
-"use client";
 /**
  * Premium Order Details Page
  */
@@ -112,11 +111,12 @@ interface ODetail {
 
 const OrderDetailsPage = () => {
   const router = useRouter();
-  const { id: orderId } = router.query;
+  const rawId = router.query.id;
+  const orderId = Array.isArray(rawId) ? rawId[0] : rawId;
   const [order, setOrder] = useState<ODetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _q = useOrders({ orderId });
+  void _q;
 
   useEffect(() => {
     if (!orderId) return;

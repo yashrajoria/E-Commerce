@@ -1,5 +1,6 @@
 import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
+import { backendUrl } from "@/lib/backend";
 
 export default async function handler(
   req: NextApiRequest,
@@ -16,7 +17,7 @@ export default async function handler(
     // const offset = (pageNumber - 1) * limitNumber;
     const cookie = req.headers.cookie;
     const apiRes = await axios.get(
-      `${process.env.NEXT_PUBLIC_NEW_API_URL}orders/admin`,
+      backendUrl("orders/admin"),
       {
         headers: {
           "Content-Type": "application/json",

@@ -1,18 +1,17 @@
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ??
-  // "https://lawana-indexless-terese.ngrok-free.dev";
+  process.env.NEXT_PUBLIC_BASE_URL ??
   "http://localhost:8080";
 
 // small helper to ensure consistent path joining
 const route = (path: string) =>
-  `${API_BASE_URL.replace(/\/$/, "")}${path.startsWith("/") ? "" : "/"}${path}`;
+  `${API_BASE_URL.replace(/\/+$/, "")}${path.startsWith("/") ? "" : "/"}${path}`;
 
 export const API_ROUTES = {
   AUTH: {
-    // LOGIN: route("/bff/auth/login"),
-    // REGISTER: route("/bff/auth/register"),
-    LOGIN: route("/auth/login"),
-    REGISTER: route("/auth/register"),
+    // All auth goes via BFF public/protected routes (see api-gateway routes.go).
+    LOGIN: route("/bff/auth/login"),
+    REGISTER: route("/bff/auth/register"),
     VERIFY_EMAIL: route("/bff/auth/verify-email"),
     RESEND_VERIFICATION: route("/bff/auth/resend-verification"),
     REFRESH: route("/bff/auth/refresh"),
@@ -23,12 +22,9 @@ export const API_ROUTES = {
   },
 
   USER: {
-    // PROFILE: route("/users/profile"),
     PROFILE: route("/bff/profile"),
-    // UPDATE_PASSWORD: route("/users/change-password"),
-    // UPDATE_USER_DATA: route("/users/profile"),
-    UPDATE_PASSWORD: route("/bff/change-password"),
-    UPDATE_USER_DATA: route("/bff/profile"),
+    UPDATE_PASSWORD: route("/bff/users/change-password"),
+    UPDATE_USER_DATA: route("/bff/users/profile"),
   },
 
   PRODUCTS: {
@@ -41,17 +37,17 @@ export const API_ROUTES = {
   },
 
   ORDERS: {
-    ALL: route("/orders"),
-    BY_ID: (id: string) => route(`/orders/${id}`),
+    ALL: route("/bff/orders"),
+    BY_ID: (id: string) => route(`/bff/orders/${id}`),
   },
 
   CART: {
-    ADD: route("/cart/add"),
-    CHECKOUT: route("/cart/checkout"),
+    ADD: route("/bff/cart/add"),
+    CHECKOUT: route("/bff/checkout"),
   },
 
   PAYMENT: {
-    STATUS_BY_ORDER: (id: string) => route(`/payment/status/by-order/${id}`),
-    VERIFY: route("/payment/verify-payment"),
+    STATUS_BY_ORDER: (id: string) => route(`/bff/payment/status/by-order/${id}`),
+    VERIFY: route("/bff/payment/verify-payment"),
   },
 };

@@ -15,7 +15,7 @@ import Link from "next/link";
 import { useState, ReactNode } from "react";
 import axios from "axios";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 
 // ── Page-level animation variants (same as dashboard) ──
 export const pageContainer = {

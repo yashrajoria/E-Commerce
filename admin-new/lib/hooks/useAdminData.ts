@@ -1,5 +1,13 @@
 import useSWR from "swr";
 import { fetcher } from "../fetcher";
+import type { Product } from "@/types/shared";
+
+export interface AdminMeta {
+  totalPages?: number;
+  total?: number;
+  total_pages?: number;
+  [key: string]: unknown;
+}
 
 const extractArray = <T,>(value: unknown): T[] => {
   if (!value || typeof value !== "object") {
@@ -25,20 +33,20 @@ const extractArray = <T,>(value: unknown): T[] => {
   return [];
 };
 
-const extractMeta = (value: unknown) => {
+const extractMeta = (value: unknown): AdminMeta | undefined => {
   if (!value || typeof value !== "object") {
     return undefined;
   }
 
   const record = value as Record<string, unknown>;
   if (record.meta && typeof record.meta === "object") {
-    return record.meta;
+    return record.meta as AdminMeta;
   }
 
   if (record.data && typeof record.data === "object") {
     const nested = record.data as Record<string, unknown>;
     if (nested.meta && typeof nested.meta === "object") {
-      return nested.meta;
+      return nested.meta as AdminMeta;
     }
   }
 
@@ -79,7 +87,7 @@ export function useAdminProducts(page = 1, limit = 20, search?: string) {
     fetcher
   );
   return {
-    products: pickArray(data?.products, data?.data, data),
+    products: pickArray<Product>(data?.products, data?.data, data),
     meta: extractMeta(data),
     error,
     isLoading,

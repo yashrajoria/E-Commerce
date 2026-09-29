@@ -1,5 +1,3 @@
-"use client";
-
 import { Header } from "@/components/layout/header";
 import { HeroSection } from "@/components/sections/hero-section";
 
@@ -9,10 +7,11 @@ import { CollectionsSection } from "@/components/sections/collections-sections";
 
 import { FloatingActionButton } from "@/components/layout/floating-action-button";
 import { Footer } from "@/components/layout/footer";
+import { getSiteUrl } from "@/lib/site";
 import Head from "next/head";
 
 export default function Home() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = getSiteUrl();
   return (
     <>
       <Head>

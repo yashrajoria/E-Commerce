@@ -1,15 +1,11 @@
 import axios from "axios";
 import { getResponseInfo } from "@/lib/error";
+import { backendUrl, getBackendBaseUrl } from "@/lib/backend";
 import { NextApiRequest, NextApiResponse } from "next";
 
-// Utility function to extract auth cookie (prefer __session, fallback to token)
+// Utility function to extract auth cookie (forward full cookie header)
 const extractAuthCookie = (cookieHeader: string | undefined): string => {
-  if (!cookieHeader) return "";
-  const parts = cookieHeader.split(";").map((c) => c.trim());
-  const session = parts.find((c) => c.startsWith("__session="));
-  if (session) return session;
-  const token = parts.find((c) => c.startsWith("token="));
-  return token || "";
+  return cookieHeader || "";
 };
 
 export default async function handler(
@@ -19,7 +15,7 @@ export default async function handler(
   const { id } = req.query;
   console.log("ID", id);
   const tokenCookie = extractAuthCookie(req.headers.cookie);
-  const baseUrl = process.env.NEXT_PUBLIC_NEW_API_URL;
+  const baseUrl = getBackendBaseUrl();
 
   if (!baseUrl) {
     console.error("API URL is not defined in environment variables");
@@ -38,9 +34,9 @@ export default async function handler(
           return res.status(400).json({ message: "Product ID is required" });
         }
 
-        console.log("Fetching product:", `${baseUrl}products/${id}`);
+        console.log("Fetching product:", backendUrl(`products/${id}`));
         const response = await axios.get(
-          `${baseUrl}products/${id}`,
+          backendUrl(`products/${id}`),
           axiosConfig,
         );
         return res.status(response.status).json(response.data);
@@ -51,10 +47,10 @@ export default async function handler(
           return res.status(400).json({ message: "Product ID is required" });
         }
 
-        console.log("Updating product:", `${baseUrl}products/${id}`);
+        console.log("Updating product:", backendUrl(`products/${id}`));
         console.log(req.body);
         const response = await axios.put(
-          `${baseUrl}products/${id}`,
+          backendUrl(`products/${id}`),
           req.body,
           axiosConfig,
         );
@@ -62,19 +58,19 @@ export default async function handler(
       }
 
       case "POST": {
-        console.log("Creating new product:", `${baseUrl}products/`);
+        console.log("Creating new product:", backendUrl("products/"));
         const response = await axios.post(
-          `${baseUrl}products/`,
+          backendUrl("products/"),
           req.body,
           axiosConfig,
         );
         return res.status(response.status).json(response.data);
       }
       case "DELETE": {
-        console.log("Deleting product:", `${baseUrl}products/${id}`);
+        console.log("Deleting product:", backendUrl(`products/${id}`));
 
         const response = await axios.delete(
-          `${baseUrl}products/${id}`,
+          backendUrl(`products/${id}`),
           axiosConfig,
         );
         return res.status(response.status).json(response.data);

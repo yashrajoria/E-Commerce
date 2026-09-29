@@ -19,14 +19,20 @@ async function pollForPaymentUrl(id: string): Promise<string> {
       const res = await axiosInstance.get(
         API_ROUTES.PAYMENT.STATUS_BY_ORDER(id),
       );
-      const { status, checkout_url } = res.data;
+      const { status, checkout_url } = res.data as {
+        status?: unknown;
+        checkout_url?: unknown;
+      };
       const statusStr = typeof status === "string" ? status.toUpperCase() : "";
-      if (checkout_url) return checkout_url;
-      if (statusStr === "URL_READY") return checkout_url;
+      if (typeof checkout_url === "string" && checkout_url) return checkout_url;
       if (statusStr === "FAILED")
         throw new Error("Payment failed during processing.");
-    } catch {
-      // swallow poll errors; retry loop handles it
+    } catch (err) {
+      // Surface terminal errors immediately; retry transient poll failures.
+      if (err instanceof Error && err.message === "Payment failed during processing.") {
+        throw err;
+      }
+      // Otherwise swallow and retry until attempts are exhausted.
     }
     attempts++;
     await new Promise((resolve) => setTimeout(resolve, delay));
@@ -312,22 +318,9 @@ export function useCheckout(): CheckoutState {
       localStorage.removeItem("checkout_draft");
       showSuccess("Redirecting to secure payment…");
       if (checkoutUrl && typeof checkoutUrl === "string") {
-        try {
-          window.location.assign(checkoutUrl);
-          setTimeout(() => {
-            try {
-              window.open(checkoutUrl, "_blank");
-            } catch {
-              // swallow fallback errors
-            }
-          }, 3000);
-        } catch {
-          try {
-            window.open(checkoutUrl, "_blank");
-          } catch {
-            showError("Unable to open payment page. Please try again.");
-          }
-        }
+        // Single navigation to the payment page. Previously this did both
+        // location.assign + window.open, double-opening the checkout.
+        window.location.assign(checkoutUrl);
       } else {
         showError("Payment URL was invalid. Please try again.");
       }

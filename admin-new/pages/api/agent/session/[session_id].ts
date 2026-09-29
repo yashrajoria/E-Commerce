@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
-
-const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
+import { backendUrl } from "@/lib/backend";
 
 const getSessionTargets = (sessionId: string) => [
   `bff/admin/agent/session/${encodeURIComponent(sessionId)}`,
@@ -25,7 +24,7 @@ export default async function handler(
 
       for (const target of getSessionTargets(session_id)) {
         try {
-          response = await axios.get(`${API_URL}${target}`, {
+          response = await axios.get(backendUrl(target), {
             headers: {
               Cookie: req.headers.cookie || "",
             },
@@ -62,7 +61,7 @@ export default async function handler(
 
       for (const target of getSessionTargets(session_id)) {
         try {
-          response = await axios.delete(`${API_URL}${target}`, {
+          response = await axios.delete(backendUrl(target), {
             headers: {
               Cookie: req.headers.cookie || "",
             },

@@ -19,7 +19,9 @@ const processQueue = (error: Error | null, token: string | null = null) => {
   failedQueue = [];
 };
 
-export const setupGlobalAxiosInterceptors = () => {
+export const setupGlobalAxiosInterceptors = (router?: {
+  replace: (url: string) => void | Promise<unknown>;
+}) => {
   // Clear any existing interceptors to prevent duplicates on hot-reload/re-renders
   axios.interceptors.response.clear();
 
@@ -70,14 +72,22 @@ export const setupGlobalAxiosInterceptors = () => {
         } catch (refreshError) {
           // Refresh failed (e.g., refresh_token expired or invalid)
           processQueue(refreshError as Error);
-          
-          // Redirect the user to login since they are completely logged out
-          // Using window.location instead of router to force a full hard reload 
-          // to clear global states
-          if (typeof window !== "undefined") {
-            window.location.href = "/";
+
+          // Redirect the user to login since they are completely logged out.
+          // Prefer Next.js router (SPA navigation) when available, otherwise
+          // fall back to a hard reload to clear global state.
+          try {
+            if (router) {
+              await router.replace("/");
+            } else if (typeof window !== "undefined") {
+              window.location.href = "/";
+            }
+          } catch {
+            if (typeof window !== "undefined") {
+              window.location.href = "/";
+            }
           }
-          
+
           return Promise.reject(refreshError);
         } finally {
           isRefreshing = false;

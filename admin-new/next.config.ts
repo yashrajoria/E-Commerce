@@ -18,16 +18,23 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
-    const apiBaseUrl =
-      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+    // Canonical env is NEXT_PUBLIC_NEW_API_URL; keep NEXT_PUBLIC_API_BASE_URL
+    // as a backwards-compatible alias. Trim trailing slashes for safe joins.
+    const rawBase =
+      process.env.NEXT_PUBLIC_NEW_API_URL ??
+      process.env.NEXT_PUBLIC_API_BASE_URL ??
+      "http://localhost:8080";
+    const apiBaseUrl = rawBase.replace(/\/+$/, "");
+    // NOTE: do NOT rewrite /api/:path* — that would shadow pages/api/* proxies.
+    // Use /bff/:path* for BFF and /backend/:path* for direct backend access.
     return [
-      {
-        source: "/api/:path*",
-        destination: `${apiBaseUrl}/:path*`,
-      },
       {
         source: "/bff/:path*",
         destination: `${apiBaseUrl}/bff/:path*`,
+      },
+      {
+        source: "/backend/:path*",
+        destination: `${apiBaseUrl}/:path*`,
       },
     ];
   },

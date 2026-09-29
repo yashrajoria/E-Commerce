@@ -24,34 +24,43 @@ const WishlistContext = createContext<WishlistContextType | undefined>(
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
-    const stored = localStorage.getItem("wishlist");
-    if (stored) {
-      const parsed = JSON.parse(stored) as Array<
-        WishlistItem & { _id?: string | number; image?: string }
-      >;
-      const normalized = parsed.map((item) => ({
-        ...item,
-        id: item.id ?? item._id,
-        images: item.images?.length
-          ? item.images
-          : item.image
-            ? [item.image]
-            : [],
-      }));
-      setWishlist(normalized);
+    try {
+      const stored = localStorage.getItem("wishlist");
+      if (stored) {
+        const parsed = JSON.parse(stored) as Array<
+          WishlistItem & { _id?: string | number; image?: string }
+        >;
+        const normalized = parsed
+          .map((item) => ({
+            ...item,
+            id: (item.id ?? item._id ?? "") as string | number,
+            images: item.images?.length
+              ? item.images
+              : item.image
+                ? [item.image]
+                : [],
+          }))
+          .filter((item) => Boolean(item.id));
+        setWishlist(normalized as WishlistItem[]);
+      }
+    } catch {
+      // Ignore corrupt wishlist data; start fresh.
     }
+    setIsHydrated(true);
   }, []);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("wishlist", JSON.stringify(wishlist));
+    if (typeof window === "undefined" || !isHydrated) {
+      return;
     }
-  }, [wishlist]);
+    localStorage.setItem("wishlist", JSON.stringify(wishlist));
+  }, [wishlist, isHydrated]);
 
   const addToWishlist = (itemToAdd: WishlistItem) => {
     setWishlist((prev) => {

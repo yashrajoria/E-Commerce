@@ -6,7 +6,7 @@ import axios from "axios";
  * Throws errors for SWR to catch.
  */
 export const fetcher = async (url: string) => {
-  const response = await axios.get(url);
+  const response = await axios.get(url, { withCredentials: true });
   const data = response.data;
 
   // BFF shape: { success, data, error, meta }

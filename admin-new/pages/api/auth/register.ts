@@ -1,8 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 import { getResponseInfo } from "@/lib/error";
-
-const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
+import { backendUrl, getBackendBaseUrl } from "@/lib/backend";
 
 function sanitizeSetCookies(raw: string[]): string[] {
   const isProd = process.env.NODE_ENV === "production";
@@ -25,12 +24,12 @@ export default async function handler(
   if (req.method !== "POST")
     return res.status(405).json({ message: "Method not allowed" });
 
-  if (!API_URL) {
+  if (!getBackendBaseUrl()) {
     return res.status(500).json({ message: "NEXT_PUBLIC_NEW_API_URL is not configured" });
   }
 
   try {
-    const response = await axios.post(`${API_URL}auth/register`, req.body, {
+    const response = await axios.post(backendUrl("auth/register"), req.body, {
       headers: { "Content-Type": "application/json" },
       withCredentials: true,
     });

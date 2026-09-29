@@ -31,32 +31,39 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // Load cart from localStorage on initial render
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const storedCart = localStorage.getItem("cart");
-      if (storedCart) {
-        const parsed = JSON.parse(storedCart) as Array<
-          CartItem & { _id?: string | number; image?: string }
-        >;
-        const normalized = parsed.map((item) => ({
-          ...item,
-          id: item.id ?? item._id,
-          images: item.images?.length
-            ? item.images
-            : item.image
-              ? [item.image]
-              : [],
-        }));
-        setCart(normalized);
+      try {
+        const storedCart = localStorage.getItem("cart");
+        if (storedCart) {
+          const parsed = JSON.parse(storedCart) as Array<
+            CartItem & { _id?: string | number; image?: string }
+          >;
+          const normalized = parsed
+            .map((item) => ({
+              ...item,
+              id: (item.id ?? item._id ?? "") as string,
+              images: item.images?.length
+                ? item.images
+                : item.image
+                  ? [item.image]
+                  : [],
+            }))
+            .filter((item) => Boolean(item.id));
+          setCart(normalized as CartItem[]);
+        }
+      } catch {
+        // Ignore corrupt cart data; start fresh.
       }
       setIsHydrated(true);
     }
   }, []);
 
-  // Save cart to localStorage whenever it changes
+  // Save cart to localStorage whenever it changes (after hydration)
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("cart", JSON.stringify(cart));
+    if (typeof window === "undefined" || !isHydrated) {
+      return;
     }
-  }, [cart]);
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }, [cart, isHydrated]);
 
   const findItemIndex = (currentCart: CartItem[], id: number | string) => {
     return currentCart.findIndex((item) => item.id === id);

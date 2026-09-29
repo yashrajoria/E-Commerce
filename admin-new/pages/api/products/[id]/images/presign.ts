@@ -1,8 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 import { getResponseInfo } from "@/lib/error";
-
-const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
+import { backendUrl } from "@/lib/backend";
 
 export default async function handler(
   req: NextApiRequest,
@@ -20,7 +19,7 @@ export default async function handler(
     const body = req.body || {};
 
     const response = await axios.post(
-      `${API_URL}products/${id}/images/presign`,
+      backendUrl(`products/${id}/images/presign`),
       body,
       {
         headers: {

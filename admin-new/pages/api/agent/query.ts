@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
-
-const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
+import { backendUrl } from "@/lib/backend";
 
 const queryTargets = ["bff/admin/agent/query", "bff/agent/query", "agent/query"];
 
@@ -19,7 +18,7 @@ export default async function handler(
 
     for (const target of queryTargets) {
       try {
-        response = await axios.post(`${API_URL}${target}`, req.body, {
+        response = await axios.post(backendUrl(target), req.body, {
           headers: {
             "Content-Type": "application/json",
             Cookie: req.headers.cookie || "",

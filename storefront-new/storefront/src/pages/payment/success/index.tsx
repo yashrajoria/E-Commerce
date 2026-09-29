@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Suspense,
   useEffect,
@@ -9,6 +7,7 @@ import {
 } from "react";
 import Head from "next/head";
 import Link from "next/link";
+import { getSiteUrl } from "@/lib/site";
 import { useCart } from "@/context/CartContext";
 import { useUser } from "@/context/UserContext";
 import { API_ROUTES } from "@/pages/api/constants/apiRoutes";
@@ -437,7 +436,7 @@ function PaymentSuccessContent() {
 // Page
 // ---------------------------------------------------------------------------
 export default function PaymentSuccessPage() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = getSiteUrl();
 
   return (
     <div className="min-h-screen bg-gray-50">

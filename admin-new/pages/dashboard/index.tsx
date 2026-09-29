@@ -288,10 +288,9 @@ const Dashboard = ({ name }: { name: string }) => {
 
 export default Dashboard;
 
-export const getServerSideProps: GetServerSideProps = async () => {
-  return {
-    props: {
-      name: "Admin",
-    },
-  };
-};
+import type { GetServerSidePropsContext } from "next";
+
+export async function getServerSideProps(ctx: GetServerSidePropsContext) {
+  const { requireAuth } = await import("@/lib/ssrAuth");
+  return requireAuth(ctx);
+}

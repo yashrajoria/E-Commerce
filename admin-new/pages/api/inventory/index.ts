@@ -1,4 +1,5 @@
 import axios from "axios";
+import { backendUrl } from "@/lib/backend";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(
@@ -14,7 +15,7 @@ export default async function handler(
 
   try {
     const apiRes = await axios.get(
-      `${process.env.NEXT_PUBLIC_NEW_API_URL}inventory`,
+      backendUrl("inventory"),
       {
         headers: {
           "Content-Type": "application/json",

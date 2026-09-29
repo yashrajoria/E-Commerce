@@ -18,12 +18,13 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { formatGBP } from "@/lib/utils";
+import { getSiteUrl } from "@/lib/site";
 
 export default function ProductPage() {
   const [quantity, setQuantity] = useState(1);
   const router = useRouter();
   const { showSuccess, showInfo } = useToast();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = getSiteUrl();
   const id = Array.isArray(router.query.id)
     ? router.query.id[0]
     : router.query.id;

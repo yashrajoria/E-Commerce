@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 import { getResponseInfo } from "@/lib/error";
+import { backendUrl } from "@/lib/backend";
 
 export default async function handler(
   req: NextApiRequest,
@@ -24,7 +25,7 @@ export default async function handler(
   try {
     console.log({ body });
     const response = await axios.post(
-      process.env.NEXT_PUBLIC_SIGNUP_URL as string,
+      backendUrl("auth/register"),
       body,
       {
         headers: {

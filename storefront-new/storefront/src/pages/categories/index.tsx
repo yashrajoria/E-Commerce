@@ -1,5 +1,3 @@
-"use client";
-
 import Head from "next/head";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
@@ -8,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Grid, List } from "lucide-react";
+import { getSiteUrl } from "@/lib/site";
 
 export default function CategoriesPage() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = getSiteUrl();
   const [filter, setFilter] = useState("");
   const [layout, setLayout] = useState<"grid" | "carousel">("grid");
 

@@ -3,8 +3,11 @@ import axios, { AxiosError, AxiosRequestConfig } from "axios";
 
 // Create the Axios instance with base configuration
 export const axiosInstance = axios.create({
-  baseURL:
-    process.env.NEXT_PUBLIC_API_BASE_URL ?? process.env.NEXT_PUBLIC_BASE_URL,
+  baseURL: (
+    process.env.NEXT_PUBLIC_API_BASE_URL ??
+    process.env.NEXT_PUBLIC_BASE_URL ??
+    "http://localhost:8080"
+  ).replace(/\/+$/, ""),
   withCredentials: true, // This is crucial for sending cookies
 });
 
@@ -50,16 +53,13 @@ axiosInstance.interceptors.response.use(
 
       originalRequest._retry = true;
 
-      // Check if the route is protected
-      const isProtectedRoute =
-        originalRequest.url?.includes("/cart") ||
-        originalRequest.url?.includes("/orders") ||
-        originalRequest.url?.includes("/profile");
-
-      if (isProtectedRoute) {
-        window.dispatchEvent(new Event("logout"));
-        return Promise.reject(error);
-      }
+      // Always attempt a token refresh first for non-auth 401s.
+      // Only dispatch logout after refresh fails (and only in the browser).
+      const dispatchLogout = () => {
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("logout"));
+        }
+      };
 
       // Handle token refresh
       if (isRefreshing) {
@@ -79,7 +79,7 @@ axiosInstance.interceptors.response.use(
           resolve(axiosInstance(originalRequest)); // Retry the original request
         } catch (err) {
           processQueue(err); // Reject all failed requests
-          window.dispatchEvent(new Event("logout")); // Trigger logout
+          dispatchLogout(); // Trigger logout (browser only)
           reject(err);
         } finally {
           isRefreshing = false;

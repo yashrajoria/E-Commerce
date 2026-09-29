@@ -25,15 +25,18 @@ import {
   RefreshCw,
   Download,
 } from "lucide-react";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useAdminInventory } from "@/lib/hooks/useAdminData";
 
-interface InventoryItem {
+interface InventoryRecord {
   product_id: string;
   available: number;
   reserved: number;
   threshold: number;
   updated_at: string;
+}
+
+interface InventoryItem extends InventoryRecord {
   status: "in-stock" | "low" | "out";
 }
 
@@ -66,9 +69,9 @@ const Inventory = () => {
   const { inventory, error, isLoading, mutate } = useAdminInventory();
 
   // Add status to each item (mimic old logic)
-  const inventoryItems = useMemo(() => {
+  const inventoryItems: InventoryItem[] = useMemo(() => {
     if (!Array.isArray(inventory)) return [];
-    return inventory.map((item: any) => ({
+    return (inventory as InventoryRecord[]).map((item) => ({
       ...item,
       status: getStockStatus(item),
     }));
@@ -120,34 +123,34 @@ const Inventory = () => {
       >
         <StatsCard
           title="Total Stock"
-          value={loading ? "—" : totalStock}
+          value={isLoading ? "—" : totalStock}
           icon={Warehouse}
           gradient="gradient-purple"
           glowClass="glow-purple"
         />
         <StatsCard
           title="In Stock"
-          value={loading ? "—" : inStockCount}
+          value={isLoading ? "—" : inStockCount}
           icon={Package}
           gradient="gradient-emerald"
           glowClass="glow-emerald"
         />
         <StatsCard
           title="Low Stock"
-          value={loading ? "—" : lowStockCount}
+          value={isLoading ? "—" : lowStockCount}
           icon={TrendingDown}
           gradient="gradient-amber"
         />
         <StatsCard
           title="Out of Stock"
-          value={loading ? "—" : outOfStockCount}
+          value={isLoading ? "—" : outOfStockCount}
           icon={AlertTriangle}
           gradient="gradient-rose"
         />
       </motion.section>
 
       {/* Low Stock Alerts */}
-      {!loading && lowStockCount + outOfStockCount > 0 && (
+      {!isLoading && lowStockCount + outOfStockCount > 0 && (
         <motion.section variants={pageItem}>
           <Card className="glass-effect border-amber-500/10 overflow-hidden">
             <CardHeader className="pb-3">

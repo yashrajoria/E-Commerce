@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 import { getResponseInfo } from "@/lib/error";
+import { backendUrl } from "@/lib/backend";
 
 export default async function handler(
   req: NextApiRequest,
@@ -15,7 +16,7 @@ export default async function handler(
 
   try {
     const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_NEW_API_URL}auth/verify-email`,
+      backendUrl("auth/verify-email"),
       req.body,
       {
         headers: {

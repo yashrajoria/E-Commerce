@@ -9,11 +9,15 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   try {
-    const apiBaseUrl =
+    const rawBase =
       process.env.API_BASE_URL ||
       process.env.NEXT_PUBLIC_API_BASE_URL ||
+      process.env.NEXT_PUBLIC_BASE_URL ||
       "http://localhost:8080";
-    const backendUrl = `${apiBaseUrl}/products${req.url?.replace("/api/products", "") || ""}`;
+    const apiBaseUrl = rawBase.replace(/\/+$/, "");
+    // Preserve query string; req.url is like "/api/products?page=1".
+    const suffix = req.url?.replace("/api/products", "") || "";
+    const backendUrl = `${apiBaseUrl}/products${suffix.startsWith("/") || suffix.startsWith("?") || suffix === "" ? suffix : `/${suffix}`}`;
 
     // Filter out problematic headers that should not be forwarded
     const headersToForward = new Map(Object.entries(req.headers));

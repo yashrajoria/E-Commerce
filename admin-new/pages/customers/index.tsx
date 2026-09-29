@@ -22,13 +22,9 @@ import {
   UserX,
   DollarSign,
 } from "lucide-react";
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useAdminUsers } from "@/lib/hooks/useAdminData";
-import type {
-  Customer,
-  CustomerFilter,
-  CustomerStatus,
-} from "@/types/customers";
+import type { Customer, CustomerFilter } from "@/types/customers";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -50,13 +46,13 @@ const Customers = () => {
     if (filter.search) {
       const q = filter.search.toLowerCase();
       result = result.filter(
-        (c: any) =>
+        (c: Customer) =>
           c.name?.toLowerCase().includes(q) || c.email?.toLowerCase().includes(q),
       );
     }
     if (filter.status !== "all")
-      result = result.filter((c: any) => c.status === filter.status);
-    result.sort((a: any, b: any) => {
+      result = result.filter((c: Customer) => c.status === filter.status);
+    result.sort((a: Customer, b: Customer) => {
       const order = filter.sortOrder === "asc" ? 1 : -1;
       if (filter.sortBy === "name") return a.name.localeCompare(b.name) * order;
       if (filter.sortBy === "totalOrders")
@@ -76,10 +72,10 @@ const Customers = () => {
 
   const totalCustomerCount = meta?.total || users.length;
 
-  const activeCount = Array.isArray(users) ? users.filter((c: any) => c.status === "active").length : 0;
-  const inactiveCount = Array.isArray(users) ? users.filter((c: any) => c.status === "inactive").length : 0;
+  const activeCount = Array.isArray(users) ? users.filter((c: Customer) => c.status === "active").length : 0;
+  const inactiveCount = Array.isArray(users) ? users.filter((c: Customer) => c.status === "inactive").length : 0;
   const totalRevenue = Array.isArray(users)
-    ? users.reduce((sum: number, c: any) => sum + (c.stats?.totalSpent || 0), 0)
+    ? users.reduce((sum: number, c: Customer) => sum + (c.stats?.totalSpent || 0), 0)
     : 0;
 
   return (

@@ -1,8 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 import { getResponseInfo } from "@/lib/error";
-
-const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
+import { backendUrl } from "@/lib/backend";
 
 export default async function handler(
   req: NextApiRequest,
@@ -17,8 +16,8 @@ export default async function handler(
     const cookie = req.headers.cookie || "";
 
     const url = sku
-      ? `${API_URL}products/presign?sku=${encodeURIComponent(sku)}`
-      : `${API_URL}products/presign`;
+      ? backendUrl(`products/presign?sku=${encodeURIComponent(sku)}`)
+      : backendUrl("products/presign");
 
     const response = await axios.get(url, {
       headers: {

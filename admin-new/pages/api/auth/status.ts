@@ -1,8 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 import { getResponseInfo } from "@/lib/error";
-
-const API_URL = process.env.NEXT_PUBLIC_NEW_API_URL;
+import { backendUrl } from "@/lib/backend";
 
 function sanitizeSetCookies(raw: string[]): string[] {
   const isProd = process.env.NODE_ENV === "production";
@@ -29,7 +28,7 @@ export default async function handler(
     return res.status(405).json({ message: "Method not allowed" });
 
   try {
-    const response = await axios.get(`${API_URL}auth/status`, {
+    const response = await axios.get(backendUrl("auth/status"), {
       headers: { Cookie: req.headers.cookie || "" },
       withCredentials: true,
     });
