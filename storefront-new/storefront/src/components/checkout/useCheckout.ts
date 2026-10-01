@@ -137,7 +137,25 @@ export function useCheckout(): CheckoutState {
     }
   })();
 
+  const isDraftHydratedRef = useRef(false);
+
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const draft = localStorage.getItem("checkout_draft");
+    if (draft) {
+      try {
+        const parsed = JSON.parse(draft);
+        if (parsed.shippingDetails) setShippingDetails(parsed.shippingDetails);
+        if (parsed.shippingMethod) setShippingMethod(parsed.shippingMethod);
+      } catch {
+        /* ignore corrupt data */
+      }
+    }
+    isDraftHydratedRef.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (!isDraftHydratedRef.current) return;
     const saveDraft = debounce(() => {
       if (typeof window !== "undefined") {
         localStorage.setItem(
@@ -149,19 +167,6 @@ export function useCheckout(): CheckoutState {
     saveDraft();
     return () => saveDraft.cancel();
   }, [shippingDetails, shippingMethod, currentStep]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const draft = localStorage.getItem("checkout_draft");
-    if (!draft) return;
-    try {
-      const parsed = JSON.parse(draft);
-      if (parsed.shippingDetails) setShippingDetails(parsed.shippingDetails);
-      if (parsed.shippingMethod) setShippingMethod(parsed.shippingMethod);
-    } catch {
-      /* ignore corrupt data */
-    }
-  }, []);
 
   useEffect(() => {
     const ref = pollIntervalRef;

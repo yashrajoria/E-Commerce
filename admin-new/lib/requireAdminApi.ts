@@ -8,8 +8,8 @@ type AdminUser = {
   role?: string;
 };
 
-type GuardOk = { ok: true; user: AdminUser | null };
-type GuardDeny = { ok: false };
+export type GuardOk = { ok: true; user: AdminUser | null };
+export type GuardDeny = { ok: false };
 
 const STATUS_CACHE_TTL_MS = 5_000;
 const statusCache = new Map<
@@ -181,16 +181,19 @@ async function fetchAdminStatus(
 
   const role = String(
     (typeof nested?.role === "string" && nested.role) ||
+      (typeof nested?.user_role === "string" && nested.user_role) ||
       (typeof data.role === "string" && data.role) ||
+      (typeof data.user_role === "string" && data.user_role) ||
       "",
   ).toLowerCase();
 
   const user: AdminUser | null =
-    nested || data.id || data.email
+    nested || data.id || data.email || data.user_id
       ? {
           id:
             (typeof nested?.id === "string" && nested.id) ||
             (typeof data.id === "string" && data.id) ||
+            (typeof data.user_id === "string" && data.user_id) ||
             undefined,
           email:
             (typeof nested?.email === "string" && nested.email) ||
