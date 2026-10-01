@@ -67,7 +67,7 @@ function normalizeCoupon(raw: CouponRecord): CouponRecord {
       ? raw.active
       : raw.status === "active"
         ? true
-        : raw.status === "expired"
+        : raw.status === "inactive" || raw.status === "expired"
           ? false
           : Boolean(raw.active ?? raw.status);
   const expiresAt = raw.expires_at || raw.endDate;
