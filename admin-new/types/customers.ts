@@ -1,39 +1,40 @@
-export type CustomerStatus = "active" | "inactive" | "blocked";
+export type CustomerRole = "admin" | "user";
 
-export interface CustomerAddress {
-  street: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  country: string;
-  isDefault?: boolean;
-  type: "billing" | "shipping";
-}
-
-export interface CustomerStats {
-  totalOrders: number;
-  totalSpent: number;
-  lastOrderDate: string;
-  averageOrderValue: number;
-  joinedDate: string;
+/**
+ * Raw shape returned by `GET /bff/admin/users` (identity-service
+ * `GetAllUsers`). Everything the admin panel knows about a customer comes
+ * from these fields — there is no order/spend aggregate behind this route.
+ */
+export interface AdminUserRecord {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  phone_number?: string | null;
+  created_at: string;
 }
 
 export interface Customer {
-  _id: string;
+  id: string;
   name: string;
   email: string;
+  role: CustomerRole;
   phone?: string;
-  avatar?: string;
-  status: CustomerStatus;
-  addresses: CustomerAddress[];
-  stats: CustomerStats;
-  notes?: string;
-  tags?: string[];
+  createdAt: string;
 }
+
+export type CustomerSortKey = "name" | "email" | "role" | "createdAt";
 
 export interface CustomerFilter {
   search: string;
-  status: CustomerStatus | "all";
-  sortBy: "name" | "totalOrders" | "totalSpent" | "lastOrder" | "joinedDate";
+  role: CustomerRole | "all";
+  sortBy: CustomerSortKey;
   sortOrder: "asc" | "desc";
+}
+
+export interface CustomerMeta {
+  page?: number;
+  page_size?: number;
+  total?: number;
+  total_pages?: number;
 }

@@ -17,17 +17,30 @@ interface StatsCardProps {
   children?: ReactNode;
 }
 
+/** Falls back to the glow that matches `gradient` so a blue/amber/rose tile
+ *  never picks up the default purple halo. */
+const GLOW_BY_GRADIENT: Record<string, string> = {
+  "gradient-purple": "glow-purple",
+  "gradient-emerald": "glow-emerald",
+  "gradient-gold": "glow-gold",
+  "gradient-blue": "glow-blue",
+  "gradient-amber": "glow-amber",
+  "gradient-rose": "glow-rose",
+  "gradient-teal": "glow-teal",
+};
+
 const StatsCard = ({
   title,
   value,
   icon: Icon,
   trend,
   gradient = "gradient-purple",
-  glowClass = "glow-purple",
+  glowClass,
   subtitle,
   children,
 }: StatsCardProps) => {
   const isPositive = trend && trend.value >= 0;
+  const glow = glowClass ?? GLOW_BY_GRADIENT[gradient] ?? "glow-purple";
 
   return (
     <motion.div
@@ -83,7 +96,7 @@ const StatsCard = ({
           className={cn(
             "w-10 h-10 rounded-lg flex items-center justify-center shrink-0",
             gradient,
-            glowClass,
+            glow,
           )}
         >
           <Icon size={18} className="text-white" />

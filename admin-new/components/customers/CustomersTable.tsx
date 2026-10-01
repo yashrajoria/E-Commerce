@@ -1,14 +1,6 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,192 +10,222 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  ArrowUpDown,
-  Calendar,
-  MoreHorizontal,
-  Package,
-  Wallet2,
-} from "lucide-react";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import type { Customer, CustomerFilter, CustomerSortKey } from "@/types/customers";
+import { formatDate, formatRelativeDate } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Customer, CustomerFilter } from "@/types/customers";
-import { Skeleton } from "@/components/ui/skeleton";
-import { formatDate, formatCurrency } from "@/lib/utils";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  Copy,
+  Eye,
+  Mail,
+  MoreHorizontal,
+} from "lucide-react";
+import { toast } from "sonner";
 
 interface CustomersTableProps {
   customers: Customer[];
-  isLoading: boolean;
   filter: CustomerFilter;
-  onSort: (key: string) => void;
-  onCustomerClick: (customerId: string) => void;
+  onSort: (key: CustomerSortKey) => void;
+  onCustomerClick: (customer: Customer) => void;
 }
 
-const getStatusStyle = (status: string) => {
-  const styles = {
-    active: "bg-teal-500/10 text-teal-500 border-teal-500/20",
-    inactive: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-    blocked: "bg-rose-500/10 text-rose-500 border-rose-500/20",
-  };
-  return styles[status as keyof typeof styles] || styles.inactive;
+export const ROLE_STYLE: Record<Customer["role"], string> = {
+  admin: "bg-amber-400/10 text-amber-400 border-amber-400/20",
+  user: "bg-emerald-400/10 text-emerald-400 border-emerald-400/20",
 };
 
-const getStatusDot = (status: string) => {
-  const styles = {
-    active: "status-active",
-    inactive: "status-pending",
-    blocked: "status-error",
-  };
-  return styles[status as keyof typeof styles] || "status-inactive";
+export const ROLE_LABEL: Record<Customer["role"], string> = {
+  admin: "Staff",
+  user: "Customer",
 };
 
-const CustomersTableSkeleton = () => (
-  <div className="space-y-4">
-    {Array.from({ length: 5 }).map((_, i) => (
-      <div key={i} className="flex items-center space-x-4 p-4">
-        <Skeleton className="h-12 w-12 rounded-full" />
-        <div className="space-y-2 flex-1">
-          <Skeleton className="h-4 w-[250px]" />
-          <Skeleton className="h-4 w-[200px]" />
-        </div>
-        <Skeleton className="h-8 w-24" />
-      </div>
-    ))}
-  </div>
+const SortIndicator = ({
+  active,
+  order,
+}: {
+  active: boolean;
+  order: CustomerFilter["sortOrder"];
+}) => {
+  if (active) {
+    return order === "asc" ? (
+      <ArrowUp className="h-3 w-3" />
+    ) : (
+      <ArrowDown className="h-3 w-3" />
+    );
+  }
+  return <ArrowUpDown className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-40" />;
+};
+
+const SortableHead = ({
+  label,
+  sortKey,
+  filter,
+  onSort,
+  className,
+}: {
+  label: string;
+  sortKey: CustomerSortKey;
+  filter: CustomerFilter;
+  onSort: (key: CustomerSortKey) => void;
+  className?: string;
+}) => (
+  <TableHead
+    className={`text-xs uppercase tracking-wider text-muted-foreground ${className ?? ""}`}
+  >
+    <button
+      type="button"
+      onClick={() => onSort(sortKey)}
+      className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
+    >
+      {label}
+      <SortIndicator
+        active={filter.sortBy === sortKey}
+        order={filter.sortOrder}
+      />
+    </button>
+  </TableHead>
 );
+
+const initialsOf = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase() || "?";
 
 export const CustomersTable = ({
   customers,
-  isLoading,
   filter,
   onSort,
   onCustomerClick,
 }: CustomersTableProps) => {
-  if (isLoading) {
-    return <CustomersTableSkeleton />;
-  }
+  const copy = (value: string, label: string) => {
+    navigator.clipboard.writeText(value);
+    toast.success(`${label} copied`);
+  };
 
   return (
     <Table>
       <TableHeader>
-        <TableRow>
-          <TableHead className="w-[300px]">Customer</TableHead>
-          <TableHead
-            className="cursor-pointer"
-            onClick={() => onSort("totalOrders")}
-          >
-            Orders
-            {filter.sortBy === "totalOrders" && (
-              <ArrowUpDown size={14} className="inline ml-1" />
-            )}
+        <TableRow className="border-white/[0.04] group">
+          <SortableHead
+            label="Name"
+            sortKey="name"
+            filter={filter}
+            onSort={onSort}
+            className="w-[240px]"
+          />
+          <SortableHead
+            label="Email"
+            sortKey="email"
+            filter={filter}
+            onSort={onSort}
+          />
+          <SortableHead
+            label="Role"
+            sortKey="role"
+            filter={filter}
+            onSort={onSort}
+          />
+          <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
+            Phone
           </TableHead>
-          <TableHead
-            className="cursor-pointer"
-            onClick={() => onSort("totalSpent")}
-          >
-            Total Spent
-            {filter.sortBy === "totalSpent" && (
-              <ArrowUpDown size={14} className="inline ml-1" />
-            )}
+          <SortableHead
+            label="Joined"
+            sortKey="createdAt"
+            filter={filter}
+            onSort={onSort}
+          />
+          <TableHead className="text-right text-xs uppercase tracking-wider text-muted-foreground">
+            Actions
           </TableHead>
-          <TableHead
-            className="cursor-pointer"
-            onClick={() => onSort("lastOrder")}
-          >
-            Last Order
-            {filter.sortBy === "lastOrder" && (
-              <ArrowUpDown size={14} className="inline ml-1" />
-            )}
-          </TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {customers.map((customer, index) => (
           <motion.tr
-            key={customer._id}
-            initial={{ opacity: 0, y: 10 }}
+            key={customer.id}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2, delay: index * 0.05 }}
-            className="group cursor-pointer hover:bg-white/5 transition-colors"
-            onClick={() => onCustomerClick(customer._id)}
+            transition={{ duration: 0.2, delay: Math.min(index, 10) * 0.03 }}
+            onClick={() => onCustomerClick(customer)}
+            className="group cursor-pointer border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors"
           >
             <TableCell>
               <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={customer.avatar} />
-                  <AvatarFallback>
-                    {customer.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
+                <Avatar className="h-9 w-9">
+                  <AvatarFallback className="gradient-purple text-white text-xs font-semibold">
+                    {initialsOf(customer.name)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex flex-col">
-                  <span className="font-medium">{customer.name}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {customer.email}
-                  </span>
-                  {customer.phone && (
-                    <span className="text-xs text-muted-foreground">
-                      {customer.phone}
-                    </span>
-                  )}
-                </div>
+                <span className="font-medium truncate">{customer.name}</span>
               </div>
             </TableCell>
-            <TableCell>
-              <div className="flex items-center gap-2">
-                <Package className="h-4 w-4 text-primary" />
-                <span>{customer.stats.totalOrders}</span>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex items-center gap-2">
-                <Wallet2 className="h-4 w-4 text-primary" />
-                <span>{formatCurrency(customer.stats.totalSpent)}</span>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-primary" />
-                <span>{formatDate(customer.stats.lastOrderDate)}</span>
-              </div>
+            <TableCell className="text-muted-foreground">
+              {customer.email}
             </TableCell>
             <TableCell>
               <Badge
                 variant="outline"
-                className={`capitalize ${getStatusStyle(
-                  customer.status
-                )} flex items-center gap-1.5 w-fit`}
+                className={`gap-1.5 w-fit capitalize ${ROLE_STYLE[customer.role]}`}
               >
-                <span
-                  className={`status-dot ${getStatusDot(customer.status)}`}
-                ></span>
-                {customer.status}
+                <span className="status-dot" />
+                {ROLE_LABEL[customer.role]}
               </Badge>
+            </TableCell>
+            <TableCell className="tabular-nums text-muted-foreground">
+              {customer.phone || (
+                <span className="text-muted-foreground/40">—</span>
+              )}
+            </TableCell>
+            <TableCell>
+              <div className="flex flex-col">
+                <span className="text-sm">{formatDate(customer.createdAt)}</span>
+                <span className="text-xs text-muted-foreground">
+                  {formatRelativeDate(customer.createdAt)}
+                </span>
+              </div>
             </TableCell>
             <TableCell className="text-right">
               <DropdownMenu>
-                <DropdownMenuTrigger
-                  asChild
-                  onClick={(e) => e.stopPropagation()}
-                >
+                <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => e.stopPropagation()}
+                    className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
                   >
                     <MoreHorizontal className="h-4 w-4" />
                     <span className="sr-only">Actions</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                  <DropdownMenuItem>View Details</DropdownMenuItem>
-                  <DropdownMenuItem>Edit Customer</DropdownMenuItem>
+                <DropdownMenuContent
+                  align="end"
+                  className="glass-effect border-white/[0.08]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <DropdownMenuLabel>{customer.name}</DropdownMenuLabel>
+                  <DropdownMenuItem onClick={() => onCustomerClick(customer)}>
+                    <Eye className="h-4 w-4" /> View details
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => copy(customer.email, "Email")}>
+                    <Mail className="h-4 w-4" /> Copy email
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>View Orders</DropdownMenuItem>
-                  <DropdownMenuItem>Send Email</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => copy(customer.id, "User ID")}>
+                    <Copy className="h-4 w-4" /> Copy user ID
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </TableCell>

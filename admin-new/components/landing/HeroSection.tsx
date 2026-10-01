@@ -74,7 +74,7 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="flex justify-center mb-10"
         >
-          <div className="group inline-flex items-center gap-2.5 px-4 py-2 rounded-full glass-effect border border-white/[0.08] text-sm font-medium text-foreground/80 hover:bg-white/[0.04] transition-all cursor-pointer">
+          <div className="group inline-flex items-center gap-2.5 px-4 py-2 rounded-full glass-effect glass-hover border border-white/[0.08] text-sm font-medium text-foreground/80 transition-all cursor-pointer">
             <span className="flex h-2 w-2 rounded-full bg-primary" />
             <span className="text-xs uppercase tracking-[0.1em] font-semibold">Introducing V2.0</span>
             <div className="w-[1px] h-3 bg-white/10 mx-1" />

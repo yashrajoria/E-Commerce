@@ -267,7 +267,7 @@ const ActivityLogs = () => {
                   </div>
 
                   {/* Content */}
-                  <Card className="flex-1 glass-effect border-white/[0.06] hover:bg-white/[0.02] transition-colors">
+                  <Card className="flex-1 glass-effect glass-hover border-white/[0.06] transition-colors">
                     <CardContent className="p-4">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>

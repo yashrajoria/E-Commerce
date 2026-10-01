@@ -196,7 +196,7 @@ const Reviews = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.06 }}
           >
-            <Card className="glass-effect border-white/[0.06] hover:bg-white/[0.02] transition-colors">
+            <Card className="glass-effect glass-hover border-white/[0.06] transition-colors">
               <CardContent className="p-5">
                 <div className="flex items-start gap-4">
                   <Avatar className="h-10 w-10 shrink-0 border border-white/[0.06]">

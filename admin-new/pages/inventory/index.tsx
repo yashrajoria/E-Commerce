@@ -226,7 +226,13 @@ const Inventory = () => {
             variants={pageItem}
             className="flex items-center justify-center py-16"
           >
-            <TableSkeleton rows={6} cols={6} />
+            <Card className="w-full glass-effect overflow-hidden border-white/[0.06]">
+              <CardContent className="p-0">
+                <Table>
+                  <TableSkeleton rows={6} cols={6} />
+                </Table>
+              </CardContent>
+            </Card>
           </motion.section>
         ) : error ? (
           <motion.section key="error" variants={pageItem}>

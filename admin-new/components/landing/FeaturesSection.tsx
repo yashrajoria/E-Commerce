@@ -94,7 +94,7 @@ export default function FeaturesSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: i * 0.1 }}
-              className="group relative p-8 rounded-3xl glass-effect border border-white/[0.05] hover:bg-white/[0.03] transition-all duration-500"
+              className="group relative p-8 rounded-3xl glass-effect glass-hover border border-white/[0.05] transition-all duration-500"
             >
               <div className={`w-12 h-12 rounded-2xl ${feature.gradient} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
                 <feature.icon className={`w-6 h-6 ${feature.textColor}`} />
