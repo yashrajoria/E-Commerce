@@ -291,60 +291,69 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [cart]);
 
-  const addToCart = useCallback((itemToAdd: CartItem) => {
-    let nextCart: CartItem[] = [];
-    setCart((prevCart) => {
-      const existingItemIndex = prevCart.findIndex(
-        (item) => item.id === itemToAdd.id,
-      );
-      if (existingItemIndex !== -1) {
-        nextCart = prevCart.map((item, index) =>
-          index === existingItemIndex
-            ? { ...item, quantity: item.quantity + itemToAdd.quantity }
-            : item,
+  const addToCart = useCallback(
+    (itemToAdd: CartItem) => {
+      setCart((prevCart) => {
+        const existingItemIndex = prevCart.findIndex(
+          (item) => String(item.id) === String(itemToAdd.id),
         );
+        const nextCart =
+          existingItemIndex !== -1
+            ? prevCart.map((item, index) =>
+                index === existingItemIndex
+                  ? { ...item, quantity: item.quantity + itemToAdd.quantity }
+                  : item,
+              )
+            : [...prevCart, itemToAdd];
+
+        enqueueServerSync(async () => {
+          await persistExactCart(nextCart);
+        });
+
         return nextCart;
-      }
-      nextCart = [...prevCart, itemToAdd];
-      return nextCart;
-    });
+      });
+    },
+    [enqueueServerSync, persistExactCart],
+  );
 
-    enqueueServerSync(async () => {
-      await persistExactCart(nextCart);
-    });
-  }, [enqueueServerSync, persistExactCart]);
+  const removeFromCart = useCallback(
+    (id: number | string) => {
+      setCart((prevCart) => {
+        const itemIndex = prevCart.findIndex(
+          (item) => String(item.id) === String(id),
+        );
+        if (itemIndex === -1) return prevCart;
+        const nextCart = prevCart.filter(
+          (item) => String(item.id) !== String(id),
+        );
 
-  const removeFromCart = useCallback((id: number | string) => {
-    let nextCart: CartItem[] = [];
-    setCart((prevCart) => {
-      const itemIndex = prevCart.findIndex((item) => item.id === id);
-      if (itemIndex === -1) return prevCart;
-      const newCart = [...prevCart];
-      newCart.splice(itemIndex, 1);
-      nextCart = newCart;
-      return nextCart;
-    });
+        enqueueServerSync(async () => {
+          await persistExactCart(nextCart);
+        });
 
-    enqueueServerSync(async () => {
-      await persistExactCart(nextCart);
-    });
-  }, [enqueueServerSync, persistExactCart]);
+        return nextCart;
+      });
+    },
+    [enqueueServerSync, persistExactCart],
+  );
 
   const updateQuantity = useCallback(
     (id: number | string, quantity: number) => {
       if (quantity <= 0) return;
-      let nextCart: CartItem[] = [];
       setCart((prevCart) => {
-        const itemIndex = prevCart.findIndex((item) => item.id === id);
+        const itemIndex = prevCart.findIndex(
+          (item) => String(item.id) === String(id),
+        );
         if (itemIndex === -1) return prevCart;
-        nextCart = prevCart.map((item, index) =>
+        const nextCart = prevCart.map((item, index) =>
           index === itemIndex ? { ...item, quantity } : item,
         );
-        return nextCart;
-      });
 
-      enqueueServerSync(async () => {
-        await persistExactCart(nextCart);
+        enqueueServerSync(async () => {
+          await persistExactCart(nextCart);
+        });
+
+        return nextCart;
       });
     },
     [enqueueServerSync, persistExactCart],

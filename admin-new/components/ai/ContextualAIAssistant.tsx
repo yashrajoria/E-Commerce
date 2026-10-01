@@ -107,7 +107,7 @@ export const ContextualAIAssistant = ({
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-4 z-[60] flex justify-end px-3 sm:px-5">
-      <AnimatePresence initial={false} mode="wait">
+      <AnimatePresence initial={false}>
         {isOpen ? (
           <motion.aside
             key="assistant-panel"
