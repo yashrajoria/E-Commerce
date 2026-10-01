@@ -1,5 +1,6 @@
 import useSWR from "swr";
 import { fetcher } from "../fetcher";
+import type { AdminUserRecord, CustomerMeta } from "@/types/customers";
 
 const extractArray = <T,>(value: unknown): T[] => {
   if (!value || typeof value !== "object") {
@@ -87,13 +88,50 @@ export function useAdminProducts(page = 1, limit = 20, search?: string) {
   };
 }
 
-export function useAdminUsers(page = 1, limit = 20) {
+/**
+ * The admin users route is capped at `page_size <= 100` by identity-service
+ * and exposes no aggregate endpoint, so the customers page pulls the whole
+ * directory once and searches / sorts / paginates it client-side. That also
+ * keeps the KPI cards accurate instead of counting a single server page.
+ */
+const CUSTOMERS_PAGE_SIZE = 100;
+const CUSTOMERS_MAX_PAGES = 20;
+
+type AdminUsersResponse = {
+  users?: AdminUserRecord[];
+  meta?: CustomerMeta;
+};
+
+async function fetchAllAdminUsers(): Promise<{
+  users: AdminUserRecord[];
+  meta: CustomerMeta;
+}> {
+  const users: AdminUserRecord[] = [];
+  let meta: CustomerMeta = {};
+  let page = 1;
+  let totalPages = 1;
+
+  do {
+    const data = (await fetcher(
+      `/bff/admin/users?page=${page}&page_size=${CUSTOMERS_PAGE_SIZE}`,
+    )) as AdminUsersResponse;
+
+    if (Array.isArray(data?.users)) users.push(...data.users);
+    if (data?.meta) meta = data.meta;
+    totalPages = Number(meta.total_pages) || 1;
+    page += 1;
+  } while (page <= totalPages && page <= CUSTOMERS_MAX_PAGES);
+
+  return { users, meta };
+}
+
+export function useAdminCustomers() {
   const { data, error, isLoading, mutate } = useSWR(
-    `/bff/admin/users?page=${page}&limit=${limit}`,
-    fetcher
+    "/bff/admin/users?all=true",
+    fetchAllAdminUsers,
   );
   return {
-    users: data?.users || data?.data || [],
+    customers: data?.users ?? [],
     meta: data?.meta,
     error,
     isLoading,

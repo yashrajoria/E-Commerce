@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -6,17 +7,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Filter, Search, SlidersHorizontal } from "lucide-react";
-import { CustomerFilter } from "@/types/customers";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import type { CustomerFilter } from "@/types/customers";
+import { RotateCcw, Search } from "lucide-react";
 
 interface CustomersFiltersProps {
   filter: CustomerFilter;
@@ -27,112 +19,48 @@ export const CustomersFilters = ({
   filter,
   onFilterChange,
 }: CustomersFiltersProps) => {
+  const isFiltered = filter.search !== "" || filter.role !== "all";
+
   return (
-    <div className="flex flex-col sm:flex-row gap-4">
-      <div className="relative flex-1">
-        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+    <div className="flex flex-col sm:flex-row gap-3">
+      <div className="relative flex-1 max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search by name, email, or phone..."
-          className="pl-9"
+          placeholder="Search by name, email or phone..."
+          className="pl-10 bg-white/[0.04] border-white/[0.08] rounded-xl h-9"
           value={filter.search}
           onChange={(e) => onFilterChange({ search: e.target.value })}
         />
       </div>
+
       <div className="flex gap-2">
         <Select
-          value={filter.status}
+          value={filter.role}
           onValueChange={(value) =>
-            onFilterChange({ status: value as CustomerFilter["status"] })
+            onFilterChange({ role: value as CustomerFilter["role"] })
           }
         >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by status" />
+          <SelectTrigger className="w-[190px] bg-white/[0.04] border-white/[0.08] rounded-xl h-9">
+            <SelectValue placeholder="Filter by role" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Customers</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
-            <SelectItem value="blocked">Blocked</SelectItem>
+          <SelectContent className="glass-effect border-white/[0.08]">
+            <SelectItem value="all">All accounts</SelectItem>
+            <SelectItem value="user">Customers</SelectItem>
+            <SelectItem value="admin">Staff (admin)</SelectItem>
           </SelectContent>
         </Select>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="shrink-0">
-              <SlidersHorizontal className="h-4 w-4" />
-              <span className="sr-only">Sort options</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[200px]">
-            <DropdownMenuLabel>Sort By</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() =>
-                onFilterChange({
-                  sortBy: "name",
-                  sortOrder: filter.sortOrder === "asc" ? "desc" : "asc",
-                })
-              }
-            >
-              Name{" "}
-              {filter.sortBy === "name" &&
-                (filter.sortOrder === "asc" ? "↑" : "↓")}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                onFilterChange({
-                  sortBy: "totalOrders",
-                  sortOrder: filter.sortOrder === "asc" ? "desc" : "asc",
-                })
-              }
-            >
-              Total Orders{" "}
-              {filter.sortBy === "totalOrders" &&
-                (filter.sortOrder === "asc" ? "↑" : "↓")}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                onFilterChange({
-                  sortBy: "totalSpent",
-                  sortOrder: filter.sortOrder === "asc" ? "desc" : "asc",
-                })
-              }
-            >
-              Total Spent{" "}
-              {filter.sortBy === "totalSpent" &&
-                (filter.sortOrder === "asc" ? "↑" : "↓")}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                onFilterChange({
-                  sortBy: "lastOrder",
-                  sortOrder: filter.sortOrder === "asc" ? "desc" : "asc",
-                })
-              }
-            >
-              Last Order{" "}
-              {filter.sortBy === "lastOrder" &&
-                (filter.sortOrder === "asc" ? "↑" : "↓")}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                onFilterChange({
-                  sortBy: "joinedDate",
-                  sortOrder: filter.sortOrder === "asc" ? "desc" : "asc",
-                })
-              }
-            >
-              Join Date{" "}
-              {filter.sortBy === "joinedDate" &&
-                (filter.sortOrder === "asc" ? "↑" : "↓")}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <Button variant="outline" size="icon" className="shrink-0">
-          <Filter className="h-4 w-4" />
-          <span className="sr-only">More filters</span>
-        </Button>
+        {isFiltered && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onFilterChange({ search: "", role: "all" })}
+            className="gap-1.5 rounded-xl h-9 border-white/[0.08] hover:bg-white/[0.04] text-xs"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            Reset
+          </Button>
+        )}
       </div>
     </div>
   );
