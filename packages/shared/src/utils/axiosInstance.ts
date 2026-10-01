@@ -78,8 +78,12 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError);
-        // If refresh fails, they are definitely logged out
-        window.dispatchEvent(new Event('logout'));
+        // Only hard-logout when the server rejects the session — not on
+        // transient network/proxy failures (those would falsely kick users out).
+        const refreshStatus = (refreshError as AxiosError)?.response?.status;
+        if (refreshStatus === 401 || refreshStatus === 403) {
+          window.dispatchEvent(new Event('logout'));
+        }
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

@@ -28,16 +28,9 @@ const nextConfig: NextConfig = {
   },
   outputFileTracingRoot: path.join(__dirname, "..", ".."),
   async rewrites() {
-    const apiBaseUrl =
-      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-    return {
-      fallback: [
-        {
-          source: "/api/:path*",
-          destination: `${apiBaseUrl}/:path*`,
-        },
-      ],
-    };
+    // No catch-all `/api/*` → backend fallback. Unmatched routes must 404;
+    // explicit pages/api proxies are the only backend entry points.
+    return [];
   },
 };
 

@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { proxyRequest } from "@ecommerce/shared";
+import { withAdminApi } from "@/lib/requireAdminApi";
 
 export const config = {
   api: {
@@ -7,7 +8,7 @@ export const config = {
   },
 };
 
-export default async function handler(
+async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
@@ -87,3 +88,5 @@ export default async function handler(
 
   return res.status(207).json({ results });
 }
+
+export default withAdminApi(handler);

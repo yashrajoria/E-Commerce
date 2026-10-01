@@ -22,14 +22,19 @@ import { useCart } from "@/context/CartContext";
 import { formatGBP } from "@/lib/utils";
 import Image from "next/image";
 import Head from "next/head";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
+import axios from "axios";
+import { API_ROUTES } from "@/pages/api/constants/apiRoutes";
 
 export default function CartPage() {
   const { cart: cartItems, updateQuantity, removeFromCart, isHydrated } = useCart();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
   const [promoMessage, setPromoMessage] = useState<string | null>(null);
+  const [promoOk, setPromoOk] = useState(false);
+  const [applyingPromo, setApplyingPromo] = useState(false);
   const router = useRouter();
 
   const handleUpdateQuantity = (id: string, newQuantity: number) => {
@@ -40,24 +45,61 @@ export default function CartPage() {
     updateQuantity(id, newQuantity);
   };
 
-  const applyPromoCode = () => {
-    if (promoCode.toLowerCase() === "save10") {
-      setAppliedPromo("SAVE10");
-      setPromoMessage("Promo code applied successfully!");
-    } else {
-      setAppliedPromo(null);
-      setPromoMessage("Invalid promo code. Please try again.");
-    }
-  };
-
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
   );
-  const discount = appliedPromo === "SAVE10" ? subtotal * 0.1 : 0;
+
+  const applyPromoCode = async () => {
+    const code = promoCode.trim();
+    if (!code) {
+      setPromoOk(false);
+      setPromoMessage("Enter a promo code");
+      return;
+    }
+
+    setApplyingPromo(true);
+    setPromoMessage(null);
+    try {
+      const res = await axios.post(
+        API_ROUTES.PROMOTIONS.VALIDATE,
+        { code, cart_total: subtotal },
+        { withCredentials: true },
+      );
+      const { valid, discount_amount, message } = res.data ?? {};
+      if (valid) {
+        setAppliedPromo(code.toUpperCase());
+        setDiscountAmount(Number(discount_amount) || 0);
+        setPromoOk(true);
+        setPromoMessage(message || "Promo code applied successfully!");
+      } else {
+        setAppliedPromo(null);
+        setDiscountAmount(0);
+        setPromoOk(false);
+        setPromoMessage(message || "Invalid promo code. Please try again.");
+      }
+    } catch (err: unknown) {
+      setAppliedPromo(null);
+      setDiscountAmount(0);
+      setPromoOk(false);
+      const status = axios.isAxiosError(err) ? err.response?.status : undefined;
+      const apiError = axios.isAxiosError(err)
+        ? err.response?.data?.error || err.response?.data?.message
+        : undefined;
+      setPromoMessage(
+        status === 401
+          ? "Unable to validate promo code right now"
+          : String(apiError || "Failed to validate promo code"),
+      );
+    } finally {
+      setApplyingPromo(false);
+    }
+  };
+
+  const discount = appliedPromo ? discountAmount : 0;
   const shipping = subtotal > 50 ? 0 : 9.99;
-  const tax = (subtotal - discount) * 0.08;
-  const total = subtotal - discount + shipping + tax;
+  const tax = Math.max(0, subtotal - discount) * 0.08;
+  const total = Math.max(0, subtotal - discount) + shipping + tax;
 
   if (!isHydrated) {
     return (
@@ -272,14 +314,18 @@ export default function CartPage() {
                       value={promoCode}
                       onChange={(e) => setPromoCode(e.target.value)}
                     />
-                    <Button variant="outline" onClick={applyPromoCode}>
+                    <Button
+                      variant="outline"
+                      onClick={() => void applyPromoCode()}
+                      disabled={applyingPromo}
+                    >
                       <Tag className="h-4 w-4" />
                     </Button>
                   </div>
                   {promoMessage && (
                     <p
                       className={`text-sm ${
-                        appliedPromo ? "text-green-600" : "text-red-600"
+                        promoOk ? "text-green-600" : "text-red-600"
                       }`}
                     >
                       {promoMessage}

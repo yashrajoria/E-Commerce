@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { proxyRequest } from "@ecommerce/shared";
+import { withAdminApi } from "@/lib/requireAdminApi";
 
-export default async function handler(
+async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
@@ -31,3 +32,5 @@ export default async function handler(
     return res.status(500).json({ message: "Category proxy error" });
   }
 }
+
+export default withAdminApi(handler);

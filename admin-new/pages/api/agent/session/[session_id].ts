@@ -1,13 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 import { getAdminApiBaseUrl } from "@/lib/backendUrl";
+import { withAdminApi } from "@/lib/requireAdminApi";
 
 const getSessionTargets = (sessionId: string) => [
   `bff/admin/agent/session/${encodeURIComponent(sessionId)}`,
   `bff/agent/session/${encodeURIComponent(sessionId)}`,
 ];
 
-export default async function handler(
+async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
@@ -130,3 +131,5 @@ export default async function handler(
     });
   }
 }
+
+export default withAdminApi(handler);

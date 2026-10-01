@@ -4,7 +4,9 @@ import { proxyRequest } from "@ecommerce/shared";
 const ACTION_TARGET: Record<string, string> = {
   login: "/auth/login",
   logout: "/auth/logout",
-  refresh: "/auth/refresh",
+  // Gateway mounts /auth/refresh behind JWTMiddleware, so expired access
+  // tokens cannot refresh there. Public BFF refresh only needs refresh_token.
+  refresh: "/bff/auth/refresh",
   status: "/auth/status",
   "verify-otp": "/auth/verify-email",
   "resend-otp": "/auth/resend-otp",

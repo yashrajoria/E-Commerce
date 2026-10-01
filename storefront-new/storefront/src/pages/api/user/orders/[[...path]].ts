@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { proxyRequest } from "@ecommerce/shared";
+import { withUserApi } from "@/lib/requireUserApi";
 
-export default async function handler(
+async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
@@ -25,3 +26,5 @@ export default async function handler(
     return res.status(500).json({ error: "Internal server error" });
   }
 }
+
+export default withUserApi(handler);

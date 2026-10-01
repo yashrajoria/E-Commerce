@@ -3,10 +3,11 @@ import axios from "axios";
 import { getResponseInfo } from "@/lib/error";
 
 import { getAdminApiBaseUrl } from "@/lib/backendUrl";
+import { withAdminApi } from "@/lib/requireAdminApi";
 
 const API_URL = getAdminApiBaseUrl();
 
-export default async function handler(
+async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
@@ -38,3 +39,5 @@ export default async function handler(
     return res.status(status || 500).json({ message: data ?? "Server error" });
   }
 }
+
+export default withAdminApi(handler);

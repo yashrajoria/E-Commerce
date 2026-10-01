@@ -2,10 +2,11 @@ import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
 
 import { getAdminApiBaseUrl } from "@/lib/backendUrl";
+import { withAdminApi } from "@/lib/requireAdminApi";
 
 const API_URL = getAdminApiBaseUrl();
 
-export default async function handler(
+async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
@@ -45,3 +46,5 @@ export default async function handler(
     res.status(500).json({ error: "Failed to fetch inventory" });
   }
 }
+
+export default withAdminApi(handler);

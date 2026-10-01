@@ -2,8 +2,9 @@ import axios from "axios";
 import { getResponseInfo } from "@/lib/error";
 import { getAdminApiBaseUrl } from "@/lib/backendUrl";
 import { NextApiRequest, NextApiResponse } from "next";
+import { withAdminApi } from "@/lib/requireAdminApi";
 
-export default async function handler(
+async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
@@ -35,3 +36,5 @@ export default async function handler(
     });
   }
 }
+
+export default withAdminApi(handler);
