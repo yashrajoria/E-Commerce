@@ -6,6 +6,7 @@ import { OrdersFilters } from "@/components/orders/OrdersFilters";
 import { OrdersTable } from "@/components/orders/OrdersTable";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Table } from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -156,9 +157,13 @@ const Orders = () => {
       {/* ── Orders Table ── */}
       <motion.section variants={pageItem}>
         {isLoading ? (
-          <div className="glass-effect rounded-xl p-6 space-y-4">
-            <TableSkeleton rows={5} cols={6} />
-          </div>
+          <Card className="glass-effect overflow-hidden border-white/[0.06]">
+            <CardContent className="p-0">
+              <Table>
+                <TableSkeleton rows={5} cols={7} />
+              </Table>
+            </CardContent>
+          </Card>
         ) : ordersError ? (
           <div className="glass-effect rounded-xl">
             <ErrorState message={ordersError.message} onRetry={() => mutate()} />

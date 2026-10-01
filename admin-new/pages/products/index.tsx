@@ -15,6 +15,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import StatsCard from "@/components/ui/stats-card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -174,7 +175,26 @@ const Products = () => {
             variants={pageItem}
             className="flex items-center justify-center py-16"
           >
-            <TableSkeleton rows={viewMode === "grid" ? 3 : 8} cols={viewMode === "grid" ? 4 : 6} />
+            {viewMode === "grid" ? (
+              <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="glass-effect rounded-xl p-4 space-y-3"
+                  >
+                    <Skeleton className="h-40 w-full rounded-lg" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="w-full glass-effect rounded-xl overflow-hidden border border-white/[0.06]">
+                <Table>
+                  <TableSkeleton rows={8} cols={6} />
+                </Table>
+              </div>
+            )}
           </motion.section>
         ) : productsError ? (
           <motion.section key="error" variants={pageItem}>
