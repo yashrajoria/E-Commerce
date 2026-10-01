@@ -138,6 +138,18 @@ body.theme-storefront,
   --glow-gold:
     0 0 22px hsl(38 72% 68% / 0.28),
     0 0 56px hsl(38 72% 68% / 0.1);
+  --glow-blue:
+    0 0 22px hsl(196 78% 56% / 0.26),
+    0 0 56px hsl(196 78% 56% / 0.1);
+  --glow-amber:
+    0 0 22px hsl(34 76% 62% / 0.26),
+    0 0 56px hsl(34 76% 62% / 0.1);
+  --glow-rose:
+    0 0 22px hsl(8 72% 58% / 0.26),
+    0 0 56px hsl(8 72% 58% / 0.1);
+  --glow-teal:
+    0 0 22px hsl(191 73% 56% / 0.26),
+    0 0 56px hsl(191 73% 56% / 0.1);
   --card-hover-shadow:
     0 20px 42px hsl(224 35% 4% / 0.34),
     0 0 28px hsl(14 78% 62% / 0.08);
@@ -328,6 +340,18 @@ body.theme-admin,
   --glow-gold:
     0 0 22px hsl(35 74% 64% / 0.28),
     0 0 56px hsl(35 74% 64% / 0.1);
+  --glow-blue:
+    0 0 22px hsl(193 76% 58% / 0.26),
+    0 0 56px hsl(193 76% 58% / 0.1);
+  --glow-amber:
+    0 0 22px hsl(36 80% 60% / 0.26),
+    0 0 56px hsl(36 80% 60% / 0.1);
+  --glow-rose:
+    0 0 22px hsl(8 72% 58% / 0.26),
+    0 0 56px hsl(8 72% 58% / 0.1);
+  --glow-teal:
+    0 0 22px hsl(191 73% 56% / 0.26),
+    0 0 56px hsl(191 73% 56% / 0.1);
   --card-hover-shadow:
     0 20px 42px hsl(210 28% 4% / 0.34),
     0 0 28px hsl(23 83% 58% / 0.08);
@@ -389,12 +413,17 @@ body.theme-admin,
   --selection-background: hsl(23 83% 58% / 0.28);
 }
 
-/* ── Glassmorphism Utilities ── */
+/* ── Glassmorphism Utilities ──
+   Background/backdrop/shadow stay unlayered on purpose: they must beat the
+   `bg-card` / `bg-background` utilities that primitives like <Card> ship with,
+   otherwise every glass surface would fall back to a flat opaque fill.
+   The border lives in @layer components instead, so per-element border
+   utilities (`border-amber-500/10`, `border-b border-white/[0.04]`, …) can
+   actually override it. */
 .glass-effect {
   background: var(--glass-surface);
   backdrop-filter: blur(18px) saturate(1.15);
   -webkit-backdrop-filter: blur(18px) saturate(1.15);
-  border: 1px solid var(--glass-border-subtle);
   box-shadow: var(--glass-shadow);
 }
 
@@ -402,7 +431,6 @@ body.theme-admin,
   background: var(--glass-surface-strong);
   backdrop-filter: blur(28px) saturate(1.2);
   -webkit-backdrop-filter: blur(28px) saturate(1.2);
-  border: 1px solid var(--glass-border-strong);
   box-shadow: var(--glass-shadow-strong);
 }
 
@@ -410,7 +438,43 @@ body.theme-admin,
   background: var(--glass-sidebar-surface);
   backdrop-filter: blur(26px) saturate(1.08);
   -webkit-backdrop-filter: blur(26px) saturate(1.08);
-  border-right: 1px solid var(--glass-sidebar-border);
+}
+
+@layer components {
+  .glass-effect {
+    border: 1px solid var(--glass-border-subtle);
+  }
+
+  .glass-effect-strong {
+    border: 1px solid var(--glass-border-strong);
+  }
+
+  .glass-sidebar {
+    border-right: 1px solid var(--glass-sidebar-border);
+  }
+}
+
+/* Hover tint for glass surfaces. `hover:bg-white/[0.02]` is a no-op next to
+   `.glass-effect` (unlayered background wins), so glass cards opt into this
+   instead. */
+.glass-hover {
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-hover:hover {
+  background-color: var(--glass-surface-strong);
+}
+
+/* ── Status dot (used inside <Badge> chips; picks up the badge text colour) ── */
+@layer components {
+  .status-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    flex: none;
+    background: currentColor;
+  }
 }
 
 /* ── Text Gradients ── */
@@ -475,6 +539,22 @@ body.theme-admin,
 
 .glow-gold {
   box-shadow: var(--glow-gold);
+}
+
+.glow-blue {
+  box-shadow: var(--glow-blue);
+}
+
+.glow-amber {
+  box-shadow: var(--glow-amber);
+}
+
+.glow-rose {
+  box-shadow: var(--glow-rose);
+}
+
+.glow-teal {
+  box-shadow: var(--glow-teal);
 }
 
 /* ── Card Hover & Interactive ── */

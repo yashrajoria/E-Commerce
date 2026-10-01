@@ -48,7 +48,7 @@ export default function IntegrationsSection() {
             {[...integrations, ...integrations].map((name, i) => (
               <motion.div
                 key={`${name}-${i}`}
-                className="flex-shrink-0 mx-4 px-8 py-4 glass-effect rounded-xl flex items-center justify-center hover:bg-white/[0.06] transition-all duration-300 group cursor-default"
+                className="flex-shrink-0 mx-4 px-8 py-4 glass-effect glass-hover rounded-xl flex items-center justify-center transition-all duration-300 group cursor-default"
                 whileHover={{ scale: 1.05, y: -2 }}
               >
                 <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors whitespace-nowrap">

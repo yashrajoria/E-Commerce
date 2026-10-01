@@ -332,7 +332,7 @@ export const AIInsightsWorkspace = () => {
               transition={{ duration: 0.24, delay: prefersReducedMotion ? 0 : 0.06 + index * 0.04 }}
               whileHover={prefersReducedMotion ? undefined : { y: -3, scale: 1.01 }}
               whileTap={prefersReducedMotion ? undefined : { scale: 0.99 }}
-              className="glass-effect rounded-[26px] border border-white/10 p-4 text-left transition hover:border-[hsla(23,83%,58%,0.3)] hover:bg-white/[0.05]"
+              className="glass-effect glass-hover rounded-[26px] border border-white/10 p-4 text-left transition hover:border-[hsla(23,83%,58%,0.3)]"
             >
               <div className="flex items-center justify-between gap-3">
                 <div>

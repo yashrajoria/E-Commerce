@@ -77,7 +77,7 @@ const PageLayout = ({
       {/* ── Main Content ── */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* ── Top Header Bar ── */}
-        <header className="sticky top-0 z-30 h-16 border-b border-white/[0.04] glass-effect-strong">
+        <header className="sticky top-0 z-30 h-16 border-b border-x-0 border-t-0 border-white/[0.04] glass-effect-strong">
           <div className="h-full px-4 sm:px-6 flex items-center justify-between gap-4">
             {/* Left: Mobile menu + breadcrumb */}
             <div className="flex items-center gap-3">
