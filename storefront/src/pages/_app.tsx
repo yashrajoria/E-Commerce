@@ -17,6 +17,8 @@ import { toast as sharedToast } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
+import { PersonalShopperWidget } from "@/components/shopper/PersonalShopperWidget";
+
 export default function App({ Component, pageProps }: AppProps) {
   const [queryClient] = useState(
     () =>
@@ -71,6 +73,7 @@ export default function App({ Component, pageProps }: AppProps) {
                 <QueryClientProvider client={queryClient}>
                   <Component {...pageProps} />
                 </QueryClientProvider>
+                <PersonalShopperWidget />
                 <Analytics />
                 <SpeedInsights />
               </CartProvider>
