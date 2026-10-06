@@ -11,6 +11,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ContextualAIAssistant } from "@/components/ai/ContextualAIAssistant";
 import { resolveAIPageContext } from "@/lib/ai-contextual-assistant";
 import { useAdminSession, AdminSessionProvider } from "@/lib/useAdminSession";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 // Admin JWT refresh must not hit storefront `/api/user/auth/refresh`.
 setAuthRefreshUrl("/api/admin/auth/refresh");
@@ -226,6 +228,8 @@ function AppContent({ Component, pageProps, router }: AppProps) {
         {shouldRenderContextualAssistant && pageAIContext ? (
           <ContextualAIAssistant context={pageAIContext} />
         ) : null}
+        <Analytics />
+        <SpeedInsights />
       </div>
     </ErrorBoundary>
   );
