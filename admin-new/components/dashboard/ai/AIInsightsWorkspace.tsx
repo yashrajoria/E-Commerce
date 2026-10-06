@@ -27,6 +27,7 @@ import { useAIInsights } from "@/hooks/useAIInsights";
 import { PromptComposer } from "@/components/dashboard/ai/PromptComposer";
 import { AnswerCanvas } from "@/components/dashboard/ai/AnswerCanvas";
 import { ToolTimeline } from "@/components/dashboard/ai/ToolTimeline";
+import { IncidentTriageBanner } from "@/components/dashboard/ai/IncidentTriageBanner";
 
 const SessionDrawer = dynamic(
   () => import("@/components/dashboard/ai/SessionDrawer").then((mod) => mod.SessionDrawer),
@@ -276,11 +277,21 @@ export const AIInsightsWorkspace = () => {
         </motion.header>
 
         <motion.section
+          initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: prefersReducedMotion ? 0 : 0.08 }}
+          className="mt-5"
+        >
+          <IncidentTriageBanner />
+        </motion.section>
+
+        <motion.section
           initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.32, delay: staggerDelay * 0.8 }}
           className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4"
         >
+
           {operatingSignals.map((item, index) => {
             const Icon = item.icon;
 

@@ -10,7 +10,9 @@ import {
   ArrowLeft,
   Tag,
   Truck,
+  Sparkles,
 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -373,16 +375,29 @@ export default function CartPage() {
                   <span>{formatGBP(total)}</span>
                 </div>
 
-                {shipping > 0 && (
-                  <div className="bg-rose-50 dark:bg-rose-950 border border-rose-200 dark:border-rose-800 rounded-lg p-3 mb-6">
-                    <div className="flex items-center space-x-2 text-rose-600 dark:text-rose-400">
-                      <Truck className="h-4 w-4" />
-                      <span className="text-sm">
-                        Add {formatGBP(50 - subtotal)} more for free shipping!
+                {shipping > 0 ? (
+                  <div className="bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-orange-500/10 border border-amber-500/30 rounded-xl p-3.5 mb-6">
+                    <div className="flex items-center space-x-2 text-amber-500 dark:text-amber-400 font-semibold text-xs mb-1">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      <span>Smart Bundle Optimizer</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-rose-600 dark:text-rose-400 mb-1.5">
+                      <Truck className="h-3.5 w-3.5 shrink-0" />
+                      <span className="text-xs font-medium">
+                        Add {formatGBP(Math.max(0, 75 - subtotal))} more for Free Shipping!
                       </span>
                     </div>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      Add any lightweight accessory under 0.8kg to offset shipping and unlock instant bundle savings.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 mb-6 flex items-center space-x-2 text-emerald-600 dark:text-emerald-400 text-xs">
+                    <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                    <span>Free Shipping unlocked! Dynamic weight consolidation active.</span>
                   </div>
                 )}
+
 
                 <Link href="/checkout" passHref>
                   <Button
