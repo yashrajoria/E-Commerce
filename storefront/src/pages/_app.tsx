@@ -9,6 +9,8 @@ import { UserProvider } from "@/context/UserContext";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import Head from "next/head";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { setAPIErrorHandler } from "@ecommerce/shared";
 import { toast as sharedToast } from "sonner";
@@ -50,6 +52,9 @@ export default function App({ Component, pageProps }: AppProps) {
           content="Shop top products with fast delivery, secure checkout, and great prices."
         />
         <meta property="og:type" content="website" />
+        <meta property="og:image" content="/api/og" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="/api/og" />
       </Head>
       {/* <html lang="en" suppressHydrationWarning> */}
       <div className={inter.className}>
@@ -66,6 +71,8 @@ export default function App({ Component, pageProps }: AppProps) {
                 <QueryClientProvider client={queryClient}>
                   <Component {...pageProps} />
                 </QueryClientProvider>
+                <Analytics />
+                <SpeedInsights />
               </CartProvider>
             </WishlistProvider>
           </UserProvider>

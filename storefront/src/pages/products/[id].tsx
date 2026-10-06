@@ -161,9 +161,16 @@ export default function ProductPage({ initialProduct }: ProductPageProps) {
             `Buy ${product.name} at the best price with fast delivery.`
           }
         />
-        {product.images?.[0] && (
-          <meta property="og:image" content={product.images[0]} />
-        )}
+        <meta
+          property="og:image"
+          content={`${siteUrl}/api/og?title=${encodeURIComponent(product.name)}&price=${encodeURIComponent(formatGBP(product.price))}&category=${encodeURIComponent(categoryName || "Store")}${product.images?.[0] ? `&image=${encodeURIComponent(product.images[0])}` : ""}`}
+        />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${product.name} | ShopSwift`} />
+        <meta
+          name="twitter:image"
+          content={`${siteUrl}/api/og?title=${encodeURIComponent(product.name)}&price=${encodeURIComponent(formatGBP(product.price))}&category=${encodeURIComponent(categoryName || "Store")}${product.images?.[0] ? `&image=${encodeURIComponent(product.images[0])}` : ""}`}
+        />
         <meta property="og:url" content={`${siteUrl}/products/${id}`} />
       </Head>
       <Header />
