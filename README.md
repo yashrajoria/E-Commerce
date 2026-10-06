@@ -49,9 +49,8 @@ Both applications are built with **Next.js 15**, **React 19**, and **TypeScript*
 
 ```text
 E-Commerce/
-├── admin-new/              # Admin dashboard application (Next.js)
-├── storefront-new/
-│   └── storefront/        # Customer storefront application (Next.js)
+├── admin/                 # Admin dashboard application (Next.js)
+├── storefront/            # Customer storefront application (Next.js)
 ├── packages/
 │   └── shared/            # Shared components, hooks, and utilities
 ├── package.json           # Root workspace configuration
