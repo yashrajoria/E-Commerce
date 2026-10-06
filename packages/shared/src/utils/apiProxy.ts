@@ -1,4 +1,4 @@
-const DEFAULT_API_BASE_URL = "https://e-commerce-backend-ygdf.onrender.com";
+const DEFAULT_API_BASE_URL = "http://localhost:8080";
 
 type HeaderValue = string | string[] | undefined;
 

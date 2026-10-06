@@ -3,6 +3,10 @@ node_modules
 *.log
 *.err
 *.env
+.env.local
+.env.*.local
+!.env.production
+!.env.example
 
 # Graphify knowledge graph output (generated)
 graphify-out/
