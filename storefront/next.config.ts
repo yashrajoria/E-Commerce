@@ -26,7 +26,7 @@ const nextConfig: NextConfig = {
       { protocol: "http", hostname: "localstack", port: "4566" },
     ],
   },
-  outputFileTracingRoot: path.join(__dirname, "..", ".."),
+  outputFileTracingRoot: path.join(__dirname, ".."),
   async rewrites() {
     // No catch-all `/api/*` → backend fallback. Unmatched routes must 404;
     // explicit pages/api proxies are the only backend entry points.
