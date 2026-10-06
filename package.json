@@ -11,17 +11,17 @@
     "dev:both": "concurrently -n admin,storefront -c blue,green \"npm run dev:admin\" \"npm run dev:storefront\"",
     "build:both": "concurrently -n admin,storefront -c blue,green \"npm run build:admin\" \"npm run build:storefront\"",
     "lint:both": "concurrently -n admin,storefront -c blue,green \"npm run lint:admin\" \"npm run lint:storefront\"",
-    "dev:admin": "npm run dev --workspace admin-new -- -p 3000",
-    "dev:storefront": "npm run dev --workspace storefront-new/storefront -- -p 3001",
-    "build:admin": "npm run build --workspace admin-new",
+    "dev:admin": "npm run dev --workspace admin -- -p 3000",
+    "dev:storefront": "npm run dev --workspace storefront -- -p 3001",
+    "build:admin": "npm run build --workspace admin",
     "build:storefront": "npm run build --workspace storefront",
-    "lint:admin": "npm run lint --workspace admin-new",
+    "lint:admin": "npm run lint --workspace admin",
     "lint:storefront": "npm run lint --workspace storefront",
-    "typecheck": "npx tsc --noEmit -p packages/shared && npx tsc --noEmit -p admin-new && npx tsc --noEmit -p storefront-new/storefront"
+    "typecheck": "npx tsc --noEmit -p packages/shared && npx tsc --noEmit -p admin && npx tsc --noEmit -p storefront"
   },
   "workspaces": [
-    "admin-new",
-    "storefront-new/storefront",
+    "admin",
+    "storefront",
     "packages/*"
   ],
   "optionalDependencies": {
