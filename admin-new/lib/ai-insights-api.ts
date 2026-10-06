@@ -227,3 +227,59 @@ export const extractTechnicalDetails = (error: unknown): unknown => {
     data: axiosError.response?.data,
   };
 };
+
+export interface PendingMutation {
+  id: string;
+  request_id: string;
+  user_id: string | null;
+  prompt: string;
+  tool: string;
+  arguments: Record<string, unknown> | string;
+  mutating: boolean;
+  status: string;
+  created_at?: string;
+}
+
+export const fetchPendingMutations = async (): Promise<PendingMutation[]> => {
+  try {
+    const response = await axios.get<PendingMutation[]>("/api/agent/mutations", {
+      withCredentials: true,
+      timeout: 10000,
+    });
+    return Array.isArray(response.data) ? response.data : [];
+  } catch (error) {
+    console.error("fetchPendingMutations error:", error);
+    return [];
+  }
+};
+
+export const confirmMutation = async (
+  requestId: string,
+  approve: boolean,
+): Promise<{ success: boolean; data?: unknown }> => {
+  try {
+    const response = await axios.post(
+      `/api/agent/mutations/${requestId}/confirm`,
+      { approve },
+      { withCredentials: true, timeout: 15000 },
+    );
+    return { success: true, data: response.data };
+  } catch (error) {
+    console.error(`confirmMutation ${requestId} error:`, error);
+    return { success: false, data: error };
+  }
+};
+
+export const triggerWatchdogScan = async (): Promise<{
+  anomalies_detected: number;
+  incidents_created: number;
+  details?: unknown[];
+}> => {
+  const response = await axios.post(
+    "/api/agent/watchdog/scan",
+    {},
+    { withCredentials: true, timeout: 15000 },
+  );
+  return response.data;
+};
+
