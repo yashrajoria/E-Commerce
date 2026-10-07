@@ -59,9 +59,10 @@ export default async function handler(
     }
 
     return res.end();
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("[shopper stream] Stream proxy error:", err);
-    res.write(`event: error\ndata: {"error": "${err?.message || "Stream proxy error"}"}\n\n`);
+    const msg = err instanceof Error ? err.message : "Stream proxy error";
+    res.write(`event: error\ndata: {"error": "${msg}"}\n\n`);
     return res.end();
   }
 }

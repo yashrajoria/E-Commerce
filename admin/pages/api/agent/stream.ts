@@ -70,7 +70,7 @@ export default async function handler(
       const chunk = decoder.decode(value, { stream: true });
       res.write(chunk);
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("[agent/stream] reading stream chunk failed", err);
   }
 

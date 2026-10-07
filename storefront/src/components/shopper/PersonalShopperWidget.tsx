@@ -218,7 +218,7 @@ export function PersonalShopperWidget() {
             if (!eventMatch || !dataMatch) continue;
 
             const eventType = eventMatch[1].trim();
-            let parsedData: any;
+            let parsedData: Record<string, unknown>;
             try {
               parsedData = JSON.parse(dataMatch[1].trim());
             } catch {
@@ -226,18 +226,19 @@ export function PersonalShopperWidget() {
             }
 
             if (eventType === "status") {
-              setLiveStatus(parsedData.message || null);
+              setLiveStatus(typeof parsedData.message === "string" ? parsedData.message : null);
             } else if (eventType === "token") {
-              const delta = parsedData.delta || "";
+              const delta = typeof parsedData.delta === "string" ? parsedData.delta : "";
               setMessages((prev) =>
                 prev.map((m) =>
                   m.id === assistantMsgId ? { ...m, text: m.text + delta } : m
                 )
               );
             } else if (eventType === "action_card") {
-              if (parsedData?.items) {
+              const card = parsedData as unknown as ActionCard;
+              if (Array.isArray(card.items)) {
                 const initMap: Record<string, boolean> = {};
-                parsedData.items.forEach((it: BundleItem) => {
+                card.items.forEach((it: BundleItem) => {
                   initMap[it.id] = true;
                 });
                 setCheckedItemsMap((prev) => ({
@@ -247,29 +248,31 @@ export function PersonalShopperWidget() {
               }
               setMessages((prev) =>
                 prev.map((m) =>
-                  m.id === assistantMsgId ? { ...m, actionCard: parsedData } : m
+                  m.id === assistantMsgId ? { ...m, actionCard: card } : m
                 )
               );
             } else if (eventType === "steps") {
+              const stepsArr = Array.isArray(parsedData.steps) ? (parsedData.steps as string[]) : [];
               setMessages((prev) =>
                 prev.map((m) =>
                   m.id === assistantMsgId
-                    ? { ...m, steps: parsedData.steps || [] }
+                    ? { ...m, steps: stepsArr }
                     : m
                 )
               );
             } else if (eventType === "done") {
-              if (parsedData.answer) {
+              if (typeof parsedData.answer === "string" && parsedData.answer) {
                 setMessages((prev) =>
                   prev.map((m) =>
                     m.id === assistantMsgId && !m.text
-                      ? { ...m, text: parsedData.answer }
+                      ? { ...m, text: parsedData.answer as string }
                       : m
                   )
                 );
               }
             } else if (eventType === "error") {
-              throw new Error(parsedData.error || "Stream returned error");
+              const errMsg = typeof parsedData.error === "string" ? parsedData.error : "Stream returned error";
+              throw new Error(errMsg);
             }
           }
         }

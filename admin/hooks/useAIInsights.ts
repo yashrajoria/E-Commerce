@@ -309,7 +309,7 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
             },
             onDone: (data) => {
               finalData = data;
-              if (data?.session_id) {
+              if (data?.session_id && typeof data.session_id === "string") {
                 setSessionId(data.session_id);
               }
             },
@@ -317,8 +317,8 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
         );
 
         streamed = true;
-        const answer = accumulatedText.trim() || finalData?.answer || "";
-        const cid = finalData?.correlation_id || "";
+        const answer = accumulatedText.trim() || (typeof finalData?.answer === "string" ? finalData.answer : "");
+        const cid = typeof finalData?.correlation_id === "string" ? finalData.correlation_id : "";
         const timestamp = new Date().toISOString();
 
         const historyItem: PromptHistoryItem = {

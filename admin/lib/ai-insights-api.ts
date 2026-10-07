@@ -136,8 +136,8 @@ export const queryAgent = async (
 export interface AgentStreamCallbacks {
   onStatus?: (step: string, message: string) => void;
   onToken?: (delta: string) => void;
-  onActionCard?: (card: any) => void;
-  onDone?: (data: any) => void;
+  onActionCard?: (card: Record<string, unknown>) => void;
+  onDone?: (data: Record<string, unknown>) => void;
   onError?: (err: string) => void;
 }
 
@@ -177,7 +177,7 @@ export const streamAgentQuery = async (
       if (!eventMatch || !dataMatch) continue;
 
       const eventType = eventMatch[1].trim();
-      let parsedData: any;
+      let parsedData: Record<string, unknown>;
       try {
         parsedData = JSON.parse(dataMatch[1].trim());
       } catch {
@@ -185,16 +185,17 @@ export const streamAgentQuery = async (
       }
 
       if (eventType === "status" && callbacks.onStatus) {
-        callbacks.onStatus(parsedData.step, parsedData.message);
+        callbacks.onStatus(String(parsedData.step || ""), String(parsedData.message || ""));
       } else if (eventType === "token" && callbacks.onToken) {
-        callbacks.onToken(parsedData.delta || "");
+        callbacks.onToken(String(parsedData.delta || ""));
       } else if (eventType === "action_card" && callbacks.onActionCard) {
         callbacks.onActionCard(parsedData);
       } else if (eventType === "done" && callbacks.onDone) {
         callbacks.onDone(parsedData);
       } else if (eventType === "error") {
-        if (callbacks.onError) callbacks.onError(parsedData.error || "Unknown stream error");
-        throw new Error(parsedData.error || "Streaming error");
+        const errorMsg = typeof parsedData.error === "string" ? parsedData.error : "Unknown stream error";
+        if (callbacks.onError) callbacks.onError(errorMsg);
+        throw new Error(errorMsg);
       }
     }
   }
