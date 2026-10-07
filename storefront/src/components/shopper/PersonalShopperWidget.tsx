@@ -64,6 +64,8 @@ export function PersonalShopperWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sessionId, setSessionId] = useState<string>(() => `shopper-${Date.now()}`);
+  const [liveStatus, setLiveStatus] = useState<string | null>(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -170,60 +172,170 @@ export function PersonalShopperWidget() {
     setMessages((prev) => [...prev, userMsg]);
     setPrompt("");
     setLoading(true);
+    setLiveStatus("Analyzing request & scanning catalog...");
+
+    const assistantMsgId = `assistant-${Date.now()}`;
+    let streamedSuccessfully = false;
 
     try {
-      const res = await fetch("/api/shopper/query", {
+      // 1. Attempt Server-Sent Events (SSE) streaming
+      const streamRes = await fetch("/api/shopper/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: query }),
+        body: JSON.stringify({ prompt: query, session_id: sessionId }),
       });
 
-      if (!res.ok) {
-        throw new Error(`HTTP error ${res.status}`);
-      }
-
-      const data = await res.json();
-      const assistantMsgId = `assistant-${Date.now()}`;
-
-      // Initialize all items as checked
-      if (data.action_card?.items) {
-        const initMap: Record<string, boolean> = {};
-        data.action_card.items.forEach((it: BundleItem) => {
-          initMap[it.id] = true;
-        });
-        setCheckedItemsMap((prev) => ({
+      if (streamRes.ok && streamRes.body) {
+        streamedSuccessfully = true;
+        // Seed blank assistant message
+        setMessages((prev) => [
           ...prev,
-          [assistantMsgId]: initMap,
-        }));
+          {
+            id: assistantMsgId,
+            sender: "assistant",
+            text: "",
+            steps: [],
+            timestamp: new Date(),
+          },
+        ]);
+
+        const reader = streamRes.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+
+          const blocks = buffer.split("\n\n");
+          buffer = blocks.pop() || "";
+
+          for (const block of blocks) {
+            if (!block.trim()) continue;
+            const eventMatch = block.match(/^event:\s*([^\n\r]+)/m);
+            const dataMatch = block.match(/^data:\s*([^\n\r]+)/m);
+            if (!eventMatch || !dataMatch) continue;
+
+            const eventType = eventMatch[1].trim();
+            let parsedData: any;
+            try {
+              parsedData = JSON.parse(dataMatch[1].trim());
+            } catch {
+              continue;
+            }
+
+            if (eventType === "status") {
+              setLiveStatus(parsedData.message || null);
+            } else if (eventType === "token") {
+              const delta = parsedData.delta || "";
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantMsgId ? { ...m, text: m.text + delta } : m
+                )
+              );
+            } else if (eventType === "action_card") {
+              if (parsedData?.items) {
+                const initMap: Record<string, boolean> = {};
+                parsedData.items.forEach((it: BundleItem) => {
+                  initMap[it.id] = true;
+                });
+                setCheckedItemsMap((prev) => ({
+                  ...prev,
+                  [assistantMsgId]: initMap,
+                }));
+              }
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantMsgId ? { ...m, actionCard: parsedData } : m
+                )
+              );
+            } else if (eventType === "steps") {
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantMsgId
+                    ? { ...m, steps: parsedData.steps || [] }
+                    : m
+                )
+              );
+            } else if (eventType === "done") {
+              if (parsedData.answer) {
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === assistantMsgId && !m.text
+                      ? { ...m, text: parsedData.answer }
+                      : m
+                  )
+                );
+              }
+            } else if (eventType === "error") {
+              throw new Error(parsedData.error || "Stream returned error");
+            }
+          }
+        }
       }
-
-      const assistantMsg: Message = {
-        id: assistantMsgId,
-        sender: "assistant",
-        text: data.answer || "Here is what I curated for you:",
-        steps: data.steps || [],
-        actionCard: data.action_card || undefined,
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, assistantMsg]);
-    } catch (err) {
-      console.error("Shopper query error:", err);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `error-${Date.now()}`,
-          sender: "assistant",
-          text: "I couldn't reach the catalog engine right now. Please check that the backend is running and try again.",
-          timestamp: new Date(),
-        },
-      ]);
-    } finally {
-      setLoading(false);
+    } catch (streamErr) {
+      console.warn("[shopper] Streaming attempt failed, falling back to sync query:", streamErr);
     }
+
+    // 2. Fallback to synchronous query if streaming didn't process
+    if (!streamedSuccessfully) {
+      try {
+        const res = await fetch("/api/shopper/query", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: query, session_id: sessionId }),
+        });
+
+        if (!res.ok) {
+          throw new Error(`HTTP error ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        // Initialize all items as checked
+        if (data.action_card?.items) {
+          const initMap: Record<string, boolean> = {};
+          data.action_card.items.forEach((it: BundleItem) => {
+            initMap[it.id] = true;
+          });
+          setCheckedItemsMap((prev) => ({
+            ...prev,
+            [assistantMsgId]: initMap,
+          }));
+        }
+
+        const assistantMsg: Message = {
+          id: assistantMsgId,
+          sender: "assistant",
+          text: data.answer || "Here is what I curated for you:",
+          steps: data.steps || [],
+          actionCard: data.action_card || undefined,
+          timestamp: new Date(),
+        };
+
+        setMessages((prev) => [...prev, assistantMsg]);
+      } catch (err) {
+        console.error("Shopper query error:", err);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `error-${Date.now()}`,
+            sender: "assistant",
+            text: "I couldn't reach the catalog engine right now. Please check that the backend is running and try again.",
+            timestamp: new Date(),
+          },
+        ]);
+      }
+    }
+
+    setLoading(false);
+    setLiveStatus(null);
   };
 
   const clearChat = () => {
+    setSessionId(`shopper-${Date.now()}`);
+    setLiveStatus(null);
     setMessages([
       {
         id: "welcome-reset",
@@ -361,6 +473,30 @@ export function PersonalShopperWidget() {
                           onAddBundle={() => handleAddBundleToCart(msg.id, msg.actionCard!)}
                         />
                       )}
+
+                      {/* Quick Conversational Refinement Pills */}
+                      {msg.actionCard && !loading && (
+                        <div className="mt-2.5 flex flex-wrap gap-1.5 max-w-[95%]">
+                          <button
+                            onClick={() => handleSubmit("Make this bundle cheaper / reduce total cost")}
+                            className="text-[11px] font-medium bg-card hover:bg-accent border border-border/70 hover:border-violet-500/50 rounded-lg px-2.5 py-1 text-muted-foreground hover:text-foreground transition-all duration-200 flex items-center gap-1 shadow-2xs"
+                          >
+                            📉 Lower budget
+                          </button>
+                          <button
+                            onClick={() => handleSubmit("Can you swap one item for a recommended alternative?")}
+                            className="text-[11px] font-medium bg-card hover:bg-accent border border-border/70 hover:border-violet-500/50 rounded-lg px-2.5 py-1 text-muted-foreground hover:text-foreground transition-all duration-200 flex items-center gap-1 shadow-2xs"
+                          >
+                            🔄 Swap an item
+                          </button>
+                          <button
+                            onClick={() => handleSubmit("Find the best active discount coupon code")}
+                            className="text-[11px] font-medium bg-card hover:bg-accent border border-border/70 hover:border-violet-500/50 rounded-lg px-2.5 py-1 text-muted-foreground hover:text-foreground transition-all duration-200 flex items-center gap-1 shadow-2xs"
+                          >
+                            🏷️ Check coupons
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
 
@@ -376,7 +512,7 @@ export function PersonalShopperWidget() {
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
                           <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-violet-600"></span>
                         </span>
-                        Curating intelligent bundle...
+                        {liveStatus || "Curating intelligent bundle..."}
                       </div>
 
                       <div className="space-y-2">

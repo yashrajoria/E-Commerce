@@ -6,6 +6,7 @@ import {
   fetchAgentTools,
   fetchSessionHistory,
   queryAgent,
+  streamAgentQuery,
   toFriendlyErrorMessage,
 } from "@/lib/ai-insights-api";
 import { trackAIInsightsEvent } from "@/lib/ai-insights-analytics";
@@ -120,6 +121,7 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
   const [sessionId, setSessionId] = useState("");
   const [prompt, setPrompt] = useState("");
   const [responseText, setResponseText] = useState("");
+  const [liveStatus, setLiveStatus] = useState<string | null>(null);
   const [friendlyError, setFriendlyError] = useState<string | null>(null);
   const [technicalError, setTechnicalError] = useState<unknown>(null);
   const [diagnostics, setDiagnostics] = useState<AIInsightsDiagnostics | null>(null);
@@ -280,52 +282,112 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
       setFriendlyError(null);
       setTechnicalError(null);
       setLifecycle("loading");
+      setLiveStatus("Analyzing prompt & querying operations agent...");
       lastPromptRef.current = nextPrompt;
       trackAIInsightsEvent("prompt_submitted", { promptLength: nextPrompt.length });
 
-      try {
-        const requestPrompt = transformPrompt ? transformPrompt(nextPrompt) : nextPrompt;
-        const result = await queryAgent({
-          session_id: sessionId,
-          prompt: requestPrompt,
-        });
+      const requestPrompt = transformPrompt ? transformPrompt(nextPrompt) : nextPrompt;
+      let streamed = false;
 
-        setResponseText(result.answer);
-        setSessionId(result.sessionId);
-        setDiagnostics({
-          correlationId: result.correlationId,
-          timestamp: result.timestamp,
-          latencyMs: result.latencyMs,
-          toolsCalled: result.toolsCalled,
-          toolResults: result.toolResults,
-          technicalDetails: result.technicalDetails,
-        });
+      try {
+        setResponseText("");
+        let accumulatedText = "";
+        let finalData: any = null;
+
+        await streamAgentQuery(
+          {
+            session_id: sessionId,
+            prompt: requestPrompt,
+          },
+          {
+            onStatus: (_step, message) => {
+              setLiveStatus(message);
+            },
+            onToken: (delta) => {
+              accumulatedText += delta;
+              setResponseText((prev) => prev + delta);
+            },
+            onDone: (data) => {
+              finalData = data;
+              if (data?.session_id) {
+                setSessionId(data.session_id);
+              }
+            },
+          },
+        );
+
+        streamed = true;
+        const answer = accumulatedText.trim() || finalData?.answer || "";
+        const cid = finalData?.correlation_id || "";
+        const timestamp = new Date().toISOString();
 
         const historyItem: PromptHistoryItem = {
-          id: `${Date.now()}-${result.correlationId || Math.random().toString(36).slice(2, 8)}`,
+          id: `${Date.now()}-${cid || Math.random().toString(36).slice(2, 8)}`,
           prompt: nextPrompt,
-          answer: result.answer,
-          createdAt: result.timestamp,
-          correlationId: result.correlationId,
-          latencyMs: result.latencyMs,
+          answer: answer,
+          createdAt: timestamp,
+          correlationId: cid,
+          latencyMs: null,
         };
 
         setHistory((previous) => [historyItem, ...previous].slice(0, RECENT_PROMPTS_LIMIT));
         updatePromptCollections(nextPrompt);
-
-        setLifecycle(result.partialSuccess ? "partial" : "success");
+        setLifecycle("success");
+        setLiveStatus(null);
         trackAIInsightsEvent("response_succeeded", {
-          partialSuccess: result.partialSuccess,
-          toolsCalled: result.toolsCalled.length,
+          partialSuccess: false,
+          toolsCalled: 0,
         });
-      } catch (error) {
-        const friendly = toFriendlyErrorMessage(error);
-        const technical = extractTechnicalDetails(error);
+      } catch (streamErr) {
+        console.warn("[useAIInsights] Stream attempt failed, falling back to queryAgent:", streamErr);
+      }
 
-        setFriendlyError(friendly);
-        setTechnicalError(technical);
-        setLifecycle("error");
-        trackAIInsightsEvent("response_failed", { reason: friendly });
+      if (!streamed) {
+        try {
+          const result = await queryAgent({
+            session_id: sessionId,
+            prompt: requestPrompt,
+          });
+
+          setResponseText(result.answer);
+          setSessionId(result.sessionId);
+          setDiagnostics({
+            correlationId: result.correlationId,
+            timestamp: result.timestamp,
+            latencyMs: result.latencyMs,
+            toolsCalled: result.toolsCalled,
+            toolResults: result.toolResults,
+            technicalDetails: result.technicalDetails,
+          });
+
+          const historyItem: PromptHistoryItem = {
+            id: `${Date.now()}-${result.correlationId || Math.random().toString(36).slice(2, 8)}`,
+            prompt: nextPrompt,
+            answer: result.answer,
+            createdAt: result.timestamp,
+            correlationId: result.correlationId,
+            latencyMs: result.latencyMs,
+          };
+
+          setHistory((previous) => [historyItem, ...previous].slice(0, RECENT_PROMPTS_LIMIT));
+          updatePromptCollections(nextPrompt);
+
+          setLifecycle(result.partialSuccess ? "partial" : "success");
+          setLiveStatus(null);
+          trackAIInsightsEvent("response_succeeded", {
+            partialSuccess: result.partialSuccess,
+            toolsCalled: result.toolsCalled.length,
+          });
+        } catch (error) {
+          const friendly = toFriendlyErrorMessage(error);
+          const technical = extractTechnicalDetails(error);
+
+          setFriendlyError(friendly);
+          setTechnicalError(technical);
+          setLifecycle("error");
+          setLiveStatus(null);
+          trackAIInsightsEvent("response_failed", { reason: friendly });
+        }
       }
     },
     [lifecycle, maxPromptLength, prompt, sessionId, transformPrompt, updatePromptCollections],
@@ -406,6 +468,7 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
     prompt,
     setPrompt,
     responseText,
+    liveStatus,
     diagnostics,
     tools,
     history,

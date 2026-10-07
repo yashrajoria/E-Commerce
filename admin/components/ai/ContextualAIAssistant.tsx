@@ -57,6 +57,7 @@ export const ContextualAIAssistant = ({
     submitPrompt,
     clearPrompt,
     responseText,
+    liveStatus,
     diagnostics,
     friendlyError,
     lifecycle,
@@ -257,10 +258,18 @@ export const ContextualAIAssistant = ({
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-xs text-[hsl(160,84%,72%)]">
                         <LoaderCircle className="size-3.5 animate-spin" aria-hidden="true" />
-                        Running page-aware tools
+                        {liveStatus || "Running page-aware tools..."}
                       </div>
-                      <div className="h-3 w-full animate-pulse rounded bg-white/10" />
-                      <div className="h-3 w-5/6 animate-pulse rounded bg-white/10" />
+                      {responseText ? (
+                        <p className="whitespace-pre-wrap text-sm leading-6 text-foreground font-sans">
+                          {responseText}
+                        </p>
+                      ) : (
+                        <>
+                          <div className="h-3 w-full animate-pulse rounded bg-white/10" />
+                          <div className="h-3 w-5/6 animate-pulse rounded bg-white/10" />
+                        </>
+                      )}
                     </div>
                   ) : friendlyError ? (
                     <div className="space-y-2">

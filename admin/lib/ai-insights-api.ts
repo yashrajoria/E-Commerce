@@ -133,6 +133,73 @@ export const queryAgent = async (
   return normalizeQueryResponse(raw, payload.session_id);
 };
 
+export interface AgentStreamCallbacks {
+  onStatus?: (step: string, message: string) => void;
+  onToken?: (delta: string) => void;
+  onActionCard?: (card: any) => void;
+  onDone?: (data: any) => void;
+  onError?: (err: string) => void;
+}
+
+export const streamAgentQuery = async (
+  payload: AgentQueryRequest,
+  callbacks: AgentStreamCallbacks,
+): Promise<void> => {
+  const response = await fetch("/api/bff/admin/agent/stream", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+    credentials: "include",
+  });
+
+  if (!response.ok || !response.body) {
+    throw new Error(`Streaming request failed: ${response.status}`);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    const blocks = buffer.split("\n\n");
+    buffer = blocks.pop() || "";
+
+    for (const block of blocks) {
+      if (!block.trim()) continue;
+      const eventMatch = block.match(/^event:\s*([^\n\r]+)/m);
+      const dataMatch = block.match(/^data:\s*([^\n\r]+)/m);
+      if (!eventMatch || !dataMatch) continue;
+
+      const eventType = eventMatch[1].trim();
+      let parsedData: any;
+      try {
+        parsedData = JSON.parse(dataMatch[1].trim());
+      } catch {
+        continue;
+      }
+
+      if (eventType === "status" && callbacks.onStatus) {
+        callbacks.onStatus(parsedData.step, parsedData.message);
+      } else if (eventType === "token" && callbacks.onToken) {
+        callbacks.onToken(parsedData.delta || "");
+      } else if (eventType === "action_card" && callbacks.onActionCard) {
+        callbacks.onActionCard(parsedData);
+      } else if (eventType === "done" && callbacks.onDone) {
+        callbacks.onDone(parsedData);
+      } else if (eventType === "error") {
+        if (callbacks.onError) callbacks.onError(parsedData.error || "Unknown stream error");
+        throw new Error(parsedData.error || "Streaming error");
+      }
+    }
+  }
+};
+
 export const fetchSessionHistory = async (
   sessionId: string,
 ): Promise<AgentSessionMessage[]> => {
