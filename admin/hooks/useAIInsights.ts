@@ -316,8 +316,11 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
           },
         );
 
-        streamed = true;
         const answer = accumulatedText.trim() || (typeof finalData?.answer === "string" ? finalData.answer : "");
+        if (!answer) {
+          throw new Error("Stream completed without producing an answer");
+        }
+        streamed = true;
         const cid = typeof finalData?.correlation_id === "string" ? finalData.correlation_id : "";
         const timestamp = new Date().toISOString();
 

@@ -199,6 +199,7 @@ export function PersonalShopperWidget() {
           },
         ]);
 
+        let receivedContent = false;
         const reader = streamRes.body.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
@@ -229,6 +230,7 @@ export function PersonalShopperWidget() {
               setLiveStatus(typeof parsedData.message === "string" ? parsedData.message : null);
             } else if (eventType === "token") {
               const delta = typeof parsedData.delta === "string" ? parsedData.delta : "";
+              if (delta) receivedContent = true;
               setMessages((prev) =>
                 prev.map((m) =>
                   m.id === assistantMsgId ? { ...m, text: m.text + delta } : m
@@ -236,6 +238,7 @@ export function PersonalShopperWidget() {
               );
             } else if (eventType === "action_card") {
               const card = parsedData as unknown as ActionCard;
+              receivedContent = true;
               if (Array.isArray(card.items)) {
                 const initMap: Record<string, boolean> = {};
                 card.items.forEach((it: BundleItem) => {
@@ -262,6 +265,7 @@ export function PersonalShopperWidget() {
               );
             } else if (eventType === "done") {
               if (typeof parsedData.answer === "string" && parsedData.answer) {
+                receivedContent = true;
                 setMessages((prev) =>
                   prev.map((m) =>
                     m.id === assistantMsgId && !m.text
@@ -276,9 +280,18 @@ export function PersonalShopperWidget() {
             }
           }
         }
+
+        if (receivedContent) {
+          streamedSuccessfully = true;
+        } else {
+          // Remove empty message if stream closed without content
+          setMessages((prev) => prev.filter((m) => m.id !== assistantMsgId));
+        }
       }
     } catch (streamErr) {
       console.warn("[shopper] Streaming attempt failed, falling back to sync query:", streamErr);
+      setMessages((prev) => prev.filter((m) => m.id !== assistantMsgId));
+      streamedSuccessfully = false;
     }
 
     // 2. Fallback to synchronous query if streaming didn't process
