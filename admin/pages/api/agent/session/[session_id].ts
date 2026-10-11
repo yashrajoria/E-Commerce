@@ -101,7 +101,10 @@ async function handler(
     return res.status(405).json({ success: false, message: "Method not allowed" });
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      if (error.response?.status === 404 && req.method === "GET") {
+      const status = error.response?.status;
+      const isUnreachable = status === 404 || status === 502 || status === 503 || status === 504 || !error.response;
+
+      if (isUnreachable && req.method === "GET") {
         return res.status(200).json({
           success: true,
           session_id,
@@ -110,7 +113,7 @@ async function handler(
         });
       }
 
-      if (error.response?.status === 404 && req.method === "DELETE") {
+      if (isUnreachable && req.method === "DELETE") {
         return res.status(200).json({
           success: true,
           session_id,
@@ -118,10 +121,19 @@ async function handler(
         });
       }
 
-      console.error("[agent/session] proxy failed", error.response?.status);
-      return res.status(error.response?.status || 500).json({
+      console.error("[agent/session] proxy failed", status);
+      return res.status(status || 500).json({
         success: false,
         message: "Session operation failed",
+      });
+    }
+
+    if (req.method === "GET") {
+      return res.status(200).json({
+        success: true,
+        session_id,
+        messages: [],
+        history: [],
       });
     }
 

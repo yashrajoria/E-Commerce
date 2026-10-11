@@ -413,7 +413,7 @@ export function ProductCard({
     <div className="group relative flex flex-col bg-card border border-border/80 rounded-xl overflow-hidden hover:border-primary/50 hover:shadow-2xs transition-all duration-200">
       {/* Product Image Area */}
       <div className="relative aspect-square w-full bg-muted/20 overflow-hidden">
-        <Link href={`/products/${product.id}`} className="block h-full w-full">
+        <Link href={`/products/${product.id}`} className="relative block h-full w-full">
           {primaryImage === "/icons8-image-100.png" ? (
             <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground/35 p-4">
               <Package className="h-12 w-12 stroke-1 mb-2" />

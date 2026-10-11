@@ -2,7 +2,7 @@ import { Html, Head, Main, NextScript } from "next/document";
 
 export default function Document() {
   return (
-    <Html lang="en" className="theme-admin scroll-smooth">
+    <Html lang="en" className="theme-admin scroll-smooth" data-scroll-behavior="smooth">
       <Head>
         {/* Favicon */}
         <link rel="icon" type="image/svg+xml" href="/favicon-admin.svg" />

@@ -48,16 +48,25 @@ async function handler(
     return res.status(response.status).json(response.data);
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      console.error("[agent/tools] proxy failed", error.response?.status);
-      return res.status(error.response?.status || 500).json({
+      const status = error.response?.status;
+      if (status === 502 || status === 503 || status === 504 || !error.response) {
+        return res.status(200).json({
+          success: true,
+          data: { tools: [] },
+          tools: [],
+        });
+      }
+      console.error("[agent/tools] proxy failed", status);
+      return res.status(status || 500).json({
         success: false,
         message: "Failed to load AI tools",
       });
     }
 
-    return res.status(500).json({
-      success: false,
-      message: "Unexpected AI tools proxy error",
+    return res.status(200).json({
+      success: true,
+      data: { tools: [] },
+      tools: [],
     });
   }
 }
