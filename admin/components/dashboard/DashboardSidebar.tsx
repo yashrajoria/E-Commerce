@@ -558,7 +558,7 @@ const DashboardSidebar = () => {
                 )}
 
                 {collapsed && sectionIdx > 0 && (
-                  <div className="mx-3 my-2 border-t border-white/[0.04]" />
+                  <div className="mx-3 my-2 border-t border-border/60" />
                 )}
 
                 <div className="space-y-0.5">

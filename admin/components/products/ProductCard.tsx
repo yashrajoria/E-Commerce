@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Package, Edit } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { resolveProductImageUrl } from "@ecommerce/shared";
 import type { Product, Category } from "@/types/shared";
 
 interface ProductCardProps {
@@ -70,7 +71,7 @@ const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
           <div className="relative h-44 bg-muted/30 overflow-hidden border-b border-border">
             <motion.div variants={imageVariants} className="h-full w-full">
               <Image
-                src={product?.images?.[0] || "/placeholder.svg"}
+                src={resolveProductImageUrl(product?.images?.[0])}
                 alt={product?.name ?? ""}
                 width={100}
                 height={100}

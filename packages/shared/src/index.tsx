@@ -23,6 +23,7 @@ export {
   formatGBP,
   formatINR,
   trapFocus,
+  resolveProductImageUrl,
 } from "./utils";
 export * from "./types/models";
 export * from "./types/common";

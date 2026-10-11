@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { useProducts } from "@/hooks/useProducts";
 import { formatGBP } from "@/lib/utils";
+import { resolveProductImageUrl } from "@ecommerce/shared";
 import { ArrowRight, CheckCircle2, Package, ShieldCheck, Truck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,10 +15,11 @@ export function HeroSection() {
   const featuredProduct = products[0];
   const [imageError, setImageError] = useState(false);
 
+  const rawFeaturedImage = resolveProductImageUrl(featuredProduct?.images?.[0]);
   const heroImage =
-    imageError || !featuredProduct?.images?.[0] || featuredProduct.images[0].includes("localhost:4566")
+    imageError || !rawFeaturedImage
       ? "/icons8-image-100.png"
-      : featuredProduct.images[0];
+      : rawFeaturedImage;
 
   return (
     <section className="relative border-b border-border bg-background">

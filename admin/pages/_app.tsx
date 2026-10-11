@@ -1,5 +1,4 @@
 import "../styles/globals.css";
-import "../styles/app.css";
 import type { AppProps } from "next/app";
 import { Toaster, toast } from "sonner";
 import { ErrorBoundary } from "react-error-boundary";

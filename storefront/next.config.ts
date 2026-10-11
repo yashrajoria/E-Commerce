@@ -21,6 +21,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "shopswift.s3.amazonaws.com" },
       { protocol: "https", hostname: "cdn.example.com" },
       { protocol: "https", hostname: "picsum.photos" },
+      { protocol: "https", hostname: "vtfryikkounwjuyceztn.supabase.co" },
+      { protocol: "https", hostname: "*.supabase.co" },
 
       // Allow images served from localstack (used in local integration tests)
       { protocol: "http", hostname: "localstack", port: "4566" },

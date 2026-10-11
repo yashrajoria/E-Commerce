@@ -101,3 +101,16 @@ export function formatRelativeDate(
   return formatter.format(Math.round(delta / 1000), "second");
 }
 
+const SUPABASE_STORAGE_BASE = "https://vtfryikkounwjuyceztn.supabase.co/storage/v1/object/public/shopswift";
+
+export function resolveProductImageUrl(url?: string | null, fallback = "/placeholder.svg"): string {
+  if (!url || typeof url !== "string" || !url.trim()) return fallback;
+  const trimmed = url.trim();
+
+  // If localstack / localhost:4566 URL, rewrite to live Supabase Storage URL
+  if (trimmed.includes("localhost:4566/shopswift") || trimmed.includes("localstack:4566/shopswift")) {
+    return trimmed.replace(/^https?:\/\/(localhost|localstack):4566\/shopswift/, SUPABASE_STORAGE_BASE);
+  }
+
+  return trimmed;
+}

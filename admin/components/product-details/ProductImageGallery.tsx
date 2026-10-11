@@ -3,6 +3,7 @@ import { Eye, ZoomIn } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { resolveProductImageUrl } from "@ecommerce/shared";
 
 interface ProductImageGalleryProps {
   images: string[];
@@ -24,14 +25,14 @@ const ProductImageGallery = ({
 
   // Guard for empty images array
   const safeImage =
-    images.length > 0 ? images[activeImage] : "/placeholder.jpg"; // Optional fallback image
+    images.length > 0 ? resolveProductImageUrl(images[activeImage]) : "/placeholder.svg";
 
   return (
     <div className="space-y-4">
       {/* Main Image */}
       <motion.div
-        className="relative aspect-square rounded-2xl overflow-hidden bg-zinc-900/50 border border-zinc-800"
-        whileHover={{ scale: 1.02 }}
+        className="relative aspect-square rounded-2xl overflow-hidden bg-card border border-border shadow-2xs"
+        whileHover={{ scale: 1.01 }}
         transition={{ duration: 0.3 }}
       >
         <Image
@@ -39,11 +40,12 @@ const ProductImageGallery = ({
           alt="Product"
           className="w-full h-full object-cover"
           priority
-          width={100}
+          width={400}
+          height={400}
         />
 
         {/* Overlay */}
-        <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors duration-300 flex items-center justify-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             whileHover={{ opacity: 1, scale: 1 }}
@@ -53,7 +55,7 @@ const ProductImageGallery = ({
               variant="secondary"
               size="sm"
               onClick={() => setIsZoomed(true)}
-              className="bg-white/90 text-black hover:bg-white"
+              className="bg-background/90 text-foreground hover:bg-background shadow-xs border border-border"
             >
               <ZoomIn className="w-4 h-4 mr-2" />
               Zoom
@@ -63,7 +65,7 @@ const ProductImageGallery = ({
 
         {/* Badge */}
         <div className="absolute top-4 left-4">
-          <div className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+          <div className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold shadow-xs">
             Premium
           </div>
         </div>
@@ -78,29 +80,30 @@ const ProductImageGallery = ({
               setActiveImage(index);
               onImageSelect?.(index); // Only call if callback provided
             }}
-            className={`aspect-square rounded-lg overflow-hidden border-2 transition-all duration-300 ${
+            className={`aspect-square rounded-lg overflow-hidden border-2 transition-all duration-200 ${
               activeImage === index
-                ? "border-blue-500 ring-2 ring-blue-500/20"
-                : "border-zinc-700 hover:border-zinc-600"
+                ? "border-primary ring-2 ring-primary/20"
+                : "border-border hover:border-muted-foreground/40 bg-card"
             }`}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
           >
             <Image
-              src={image}
+              src={resolveProductImageUrl(image)}
               alt={`Product view ${index + 1}`}
               className="w-full h-full object-cover"
               width={100}
+              height={100}
             />
           </motion.button>
         ))}
       </div>
 
       {/* Product Actions */}
-      <div className="flex items-center justify-between pt-4">
-        <div className="flex items-center space-x-2 text-zinc-400">
+      <div className="flex items-center justify-between pt-2">
+        <div className="flex items-center space-x-2 text-muted-foreground">
           <Eye className="w-4 h-4" />
-          <span className="text-sm">1,250+ views</span>
+          <span className="text-xs">1,250+ views</span>
         </div>
 
         <div className="flex items-center space-x-1">
@@ -108,7 +111,7 @@ const ProductImageGallery = ({
             <div
               key={index}
               className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                activeImage === index ? "bg-blue-500" : "bg-zinc-700"
+                activeImage === index ? "bg-primary" : "bg-muted-foreground/30"
               }`}
             />
           ))}

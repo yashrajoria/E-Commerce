@@ -6,6 +6,7 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import type { Product } from "@/lib/types";
 import { formatGBP } from "@/lib/utils";
+import { resolveProductImageUrl } from "@ecommerce/shared";
 import { Heart, ShoppingBag, Package, Check, Sparkles } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -34,9 +35,9 @@ export function ProductCard({
   const [imageError, setImageError] = useState(false);
   const [addedAnimation, setAddedAnimation] = useState(false);
 
-  const rawImage = product.images?.[0];
+  const rawImage = resolveProductImageUrl(product.images?.[0]);
   const primaryImage =
-    imageError || !rawImage || rawImage.includes("localhost:4566")
+    imageError || !rawImage
       ? "/icons8-image-100.png"
       : rawImage;
 

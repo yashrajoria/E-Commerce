@@ -27,6 +27,7 @@ import {
 import { useCategories } from "@/hooks/useCategory";
 import { useAdminProducts } from "@/lib/hooks/useAdminData";
 import type { Product } from "@/types/shared";
+import { resolveProductImageUrl } from "@ecommerce/shared";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
@@ -276,8 +277,9 @@ const Products = () => {
                             <div className="h-10 w-10 rounded-lg bg-muted border border-border overflow-hidden flex items-center justify-center shrink-0">
                               {product.images?.[0] ? (
                                 <Image
-                                  src={product.images[0]}
+                                  src={resolveProductImageUrl(product.images[0])}
                                   width={100}
+                                  height={100}
                                   alt={product.name || "Product image"}
                                   className="h-full w-full object-cover"
                                 />
