@@ -17,6 +17,7 @@ import { StepDelivery } from "@/components/checkout/steps/StepDelivery";
 import { StepReview } from "@/components/checkout/steps/StepReview";
 import { StepShipping } from "@/components/checkout/steps/StepShipping";
 import { useCart } from "@/context/CartContext";
+import { Button } from "@/components/ui/button";
 
 export default function CheckoutPage() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -36,7 +37,7 @@ export default function CheckoutPage() {
 
   if (!isHydrated) {
     return (
-      <div className="min-h-screen bg-linear-to-b from-rose-50 via-amber-50/30 to-rose-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
+      <div className="min-h-screen bg-background">
         <Head>
           <title>Secure Checkout | ShopSwift</title>
           <meta name="description" content="Complete your order with our secure checkout." />
@@ -45,10 +46,10 @@ export default function CheckoutPage() {
         </Head>
         <div className="min-h-screen flex items-center justify-center px-4">
           <div className="text-center max-w-sm">
-            <div className="mx-auto mb-4 h-12 w-12 rounded-full border-4 border-rose-200 border-t-rose-600 animate-spin" />
-            <h1 className="text-xl font-semibold">Loading checkout</h1>
-            <p className="mt-2 text-sm text-neutral-500">
-              We&apos;re restoring your cart and checkout state.
+            <div className="mx-auto mb-4 h-8 w-8 rounded-full border-2 border-border border-t-foreground animate-spin" />
+            <h1 className="text-base font-medium">Loading checkout</h1>
+            <p className="mt-1 text-xs text-muted-foreground">
+              We&apos;re restoring your cart and checkout session.
             </p>
           </div>
         </div>
@@ -58,7 +59,7 @@ export default function CheckoutPage() {
 
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-linear-to-b from-rose-50 via-amber-50/30 to-rose-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
+      <div className="min-h-screen bg-background">
         <Head>
           <title>Secure Checkout | ShopSwift</title>
           <meta name="description" content="Complete your order with our secure checkout." />
@@ -66,24 +67,24 @@ export default function CheckoutPage() {
           <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         </Head>
         <div className="min-h-screen flex items-center justify-center px-4">
-          <div className="text-center max-w-sm rounded-2xl border bg-white/90 dark:bg-neutral-900/90 p-8 shadow-sm backdrop-blur">
-            <h1 className="text-2xl font-bold">Your checkout is empty</h1>
-            <p className="mt-2 text-sm text-neutral-500">
-              Add items to your cart before starting checkout.
+          <div className="text-center max-w-sm rounded-lg border border-border bg-surface p-8">
+            <h1 className="text-lg font-semibold tracking-tight">Your checkout is empty</h1>
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              Add items to your bag before proceeding to checkout.
             </p>
-            <div className="mt-6 flex items-center justify-center gap-3">
-              <button
+            <div className="mt-6 flex items-center justify-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => window.history.back()}
-                className="inline-flex items-center justify-center rounded-full border px-4 py-2 text-sm font-medium"
               >
                 Go Back
-              </button>
-              <Link
-                href="/products"
-                className="inline-flex items-center justify-center rounded-full bg-linear-to-r from-rose-600 to-amber-500 px-4 py-2 text-sm font-medium text-white"
-              >
-                Browse Products
-              </Link>
+              </Button>
+              <Button asChild size="sm">
+                <Link href="/products">
+                  Explore Products
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -92,7 +93,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-rose-50 via-amber-50/30 to-rose-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
+    <div className="min-h-screen bg-background">
       <Head>
         <title>Secure Checkout | ShopSwift</title>
         <meta name="description" content="Complete your order with our secure checkout." />
@@ -103,34 +104,34 @@ export default function CheckoutPage() {
       <div id="sr-step-announce" className="sr-only" aria-live="polite" aria-atomic="true" />
 
       {/* ── Header ── */}
-      <header className="sticky top-0 z-50 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-xl border-b border-neutral-200/50 dark:border-neutral-800/50">
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
           <button
             onClick={() => (currentStep > 1 ? goBack() : window.history.back())}
-            className="flex items-center gap-1 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors min-h-12 min-w-12 justify-center rounded-xl"
+            className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors h-9 px-2 justify-center rounded-md text-xs font-medium"
             aria-label={currentStep > 1 ? "Go to previous step" : "Go back"}
           >
-            <ArrowLeft className="h-5 w-5" />
-            <span className="text-sm font-medium hidden sm:inline">Back</span>
+            <ArrowLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Back</span>
           </button>
 
           <div className="flex flex-col items-center">
             <ProgressDots current={currentStep} total={4} />
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1.5 font-medium">
+            <p className="text-[11px] text-muted-foreground mt-1 font-medium">
               Step {currentStep} of 4 — {STEP_META[currentStep - 1].label}
             </p>
           </div>
 
-          <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 min-h-12">
-            <Lock className="h-4 w-4" />
-            <span className="text-xs font-semibold hidden sm:inline">Secure</span>
+          <div className="flex items-center gap-1.5 text-muted-foreground h-9 text-xs font-medium">
+            <Lock className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Encrypted</span>
           </div>
         </div>
       </header>
 
       {/* ── Main Content ── */}
       <main className="max-w-3xl mx-auto px-4 pt-6 pb-36">
-          {currentStep === 1 && <ExpressCheckout />}
+        {currentStep === 1 && <ExpressCheckout />}
 
         {/* Completed section summaries */}
         <AnimatePresence>
@@ -190,19 +191,19 @@ export default function CheckoutPage() {
           <div className="mt-4 text-center">
             <button
               onClick={() => { if (validateStep(currentStep)) goToStep(4); }}
-              className="text-sm text-rose-600 dark:text-rose-400 font-medium hover:underline inline-flex items-center gap-1"
+              className="text-xs text-muted-foreground hover:text-foreground font-medium hover:underline inline-flex items-center gap-1 transition-colors"
             >
               Jump to Review
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-3.5 w-3.5" />
             </button>
           </div>
         )}
       </main>
 
-        <MobileOrderSummary
+      <MobileOrderSummary
         isOpen={showMobileSummary}
         onClose={() => setShowMobileSummary(false)}
-          cart={cartItems}
+        cart={cartItems}
         itemCount={itemCount}
         subtotal={subtotal}
         shipping={shipping}

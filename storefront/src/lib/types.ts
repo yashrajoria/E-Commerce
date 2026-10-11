@@ -1,38 +1,36 @@
-export interface Product {
+import type {
+  Product as BaseProduct,
+  Category as BaseCategory,
+  Collection as BaseCollection,
+} from "@ecommerce/shared";
+
+export interface Product extends BaseProduct {
   id: string;
   name: string;
   price: number;
-  originalPrice?: number;
   images: string[];
-  description?: string;
-  rating: number;
-  reviews: number;
-  // Backend may return category as an ID/name string or a populated object
-  category: string | { id?: string; name: string };
-  badge?: string;
-  quantity?: number;
-  inStock?: boolean;
 }
 
-export interface Category {
+export interface Category extends BaseCategory {
   id: string;
   name: string;
   icon: string;
   image: string;
   productCount: number;
-  directProductCount?: number;
-  totalProductCount?: number;
 }
 
 export interface CartItem extends Product {
   quantity: number;
 }
 
-export interface Collection {
-  id: string;
-  title: string;
-  subtitle: string;
-  image: string;
+export interface Collection extends Omit<BaseCollection, "products"> {
   products: Product[];
-  layout: "large" | "medium" | "small";
 }
+
+export type {
+  Customer,
+  Address,
+  Order,
+  OrderItem,
+  OrderStatus,
+} from "@ecommerce/shared";

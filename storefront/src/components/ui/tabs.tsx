@@ -1,1 +1,6 @@
-export { Tabs, TabsContent, TabsList, TabsTrigger } from "@ecommerce/shared"
+export {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@ecommerce/ui";

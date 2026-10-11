@@ -96,13 +96,13 @@ const Orders = () => {
           <Button
             variant="outline"
             size="sm"
-            className="gap-2 text-xs border-white/[0.08] hover:bg-white/[0.04] rounded-xl h-8 hidden sm:flex"
+            className="gap-2 text-xs border-border hover:bg-muted rounded-lg h-8 hidden sm:flex font-medium shadow-2xs"
           >
             <Download size={13} /> Export
           </Button>
           <Button
             size="sm"
-            className="gap-2 text-xs gradient-purple text-white hover:opacity-90 rounded-xl h-8 border-0"
+            className="gap-2 text-xs bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-8 shadow-2xs font-medium"
           >
             <Calendar size={13} /> This Month
           </Button>
@@ -119,22 +119,17 @@ const Orders = () => {
           value={meta?.total || orders.length}
           icon={ShoppingCart}
           trend={{ value: 12.5, label: "vs last month" }}
-          gradient="gradient-purple"
-          glowClass="glow-purple"
         />
         <StatsCard
           title="Pending"
           value={orders.filter((o: Order) => o.status === "pending").length}
           icon={Clock}
-          gradient="gradient-amber"
-          glowClass="glow-gold"
           subtitle="Awaiting processing"
         />
         <StatsCard
           title="Shipped"
           value={orders.filter((o: Order) => o.status === "shipped").length}
           icon={Truck}
-          gradient="gradient-blue"
           subtitle="In transit"
         />
         <StatsCard
@@ -142,14 +137,12 @@ const Orders = () => {
           value={orders.filter((o: Order) => o.status === "delivered").length}
           icon={CheckCircle}
           trend={{ value: 8.3, label: "vs last month" }}
-          gradient="gradient-emerald"
-          glowClass="glow-emerald"
         />
       </motion.section>
 
       {/* ── Filters ── */}
       <motion.section variants={pageItem}>
-        <div className="glass-effect rounded-xl p-4">
+        <div className="bg-card border border-border shadow-2xs rounded-lg p-3">
           <OrdersFilters filter={filter} onFilterChange={handleFilterChange} />
         </div>
       </motion.section>
@@ -157,7 +150,7 @@ const Orders = () => {
       {/* ── Orders Table ── */}
       <motion.section variants={pageItem}>
         {isLoading ? (
-          <Card className="glass-effect overflow-hidden border-white/[0.06]">
+          <Card className="bg-card border border-border shadow-2xs overflow-hidden">
             <CardContent className="p-0">
               <Table>
                 <TableSkeleton rows={5} cols={7} />
@@ -165,18 +158,18 @@ const Orders = () => {
             </CardContent>
           </Card>
         ) : ordersError ? (
-          <div className="glass-effect rounded-xl">
+          <div className="bg-card border border-border shadow-2xs rounded-lg p-4">
             <ErrorState message={ordersError.message} onRetry={() => mutate()} />
           </div>
         ) : orders.length === 0 ? (
-          <div className="glass-effect rounded-xl">
+          <div className="bg-card border border-border shadow-2xs rounded-lg p-4">
             <EmptyState
               title="No orders found"
               description="Orders will appear here once customers start placing them."
             />
           </div>
         ) : (
-          <Card className="glass-effect overflow-hidden border-white/[0.06]">
+          <Card className="bg-card border border-border shadow-2xs overflow-hidden">
             <CardContent className="p-0">
               <OrdersTable
                 orders={orders}

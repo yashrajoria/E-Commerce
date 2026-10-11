@@ -1,110 +1,149 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Heart, ShoppingCart, X } from "lucide-react";
+import { Heart, Package, ShoppingCart, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useWishlist } from "@/context/WishlistContext";
+import { useCart } from "@/context/CartContext";
 import { formatCurrency } from "@ecommerce/shared";
 import Image from "next/image";
 import Link from "next/link";
 
-export function WishlistItems() {
-  const { wishlist, removeFromWishlist } = useWishlist();
-  const wishlistItems = wishlist;
+function WishlistItemCard({
+  item,
+  index,
+  onRemove,
+  onAddToCart,
+}: {
+  item: {
+    id: string;
+    name: string;
+    price: number;
+    originalPrice?: number;
+    images?: string[];
+    category?: string | { name: string };
+    badge?: string;
+  };
+  index: number;
+  onRemove: (id: string) => void;
+  onAddToCart: () => void;
+}) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const rawImage = item.images?.[0];
+  const isLocalStack = rawImage?.includes("localhost:4566");
+  const hasValidImage = rawImage && !isLocalStack && !imageFailed;
   const currency = process.env.NEXT_PUBLIC_CURRENCY ?? "GBP";
   const locale = process.env.NEXT_PUBLIC_LOCALE ?? "en-GB";
+  const categoryName = typeof item.category === "string" ? item.category : item.category?.name;
+
   return (
     <motion.div
-      className="space-y-6"
-      initial={{ opacity: 0, y: 20 }}
+      key={item.id}
+      className="bg-surface border border-border rounded-lg overflow-hidden flex flex-col"
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ delay: index * 0.05, duration: 0.2 }}
     >
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">My Wishlist</h2>
-        <Badge>{wishlistItems.length} items</Badge>
+      <div className="relative aspect-4/3 bg-muted overflow-hidden flex items-center justify-center">
+        {hasValidImage ? (
+          <Image
+            src={rawImage}
+            alt={item.name}
+            fill
+            sizes="(max-width: 768px) 100vw, 33vw"
+            className="object-cover"
+            onError={() => setImageFailed(true)}
+          />
+        ) : (
+          <Package className="h-8 w-8 text-muted-foreground/40" />
+        )}
+        <button
+          className="absolute top-2 right-2 w-8 h-8 rounded-full bg-background/80 backdrop-blur-xs border border-border flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
+          onClick={() => onRemove(item.id)}
+          aria-label="Remove from wishlist"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
+        {item.badge && (
+          <Badge variant="secondary" className="absolute top-2 left-2 text-[10px] py-0 px-1.5 font-normal">
+            {item.badge}
+          </Badge>
+        )}
+      </div>
+
+      <div className="p-4 flex-1 flex flex-col justify-between">
+        <div>
+          <h3 className="font-semibold text-sm line-clamp-1">{item.name}</h3>
+          {categoryName && (
+            <p className="text-xs text-muted-foreground mt-0.5">{categoryName}</p>
+          )}
+          <div className="flex items-center gap-2 mt-2">
+            <span className="font-semibold text-sm">
+              {formatCurrency(item.price, { currency, locale })}
+            </span>
+            {item.originalPrice && item.originalPrice > item.price && (
+              <span className="text-xs text-muted-foreground line-through">
+                {formatCurrency(item.originalPrice, { currency, locale })}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="pt-4 mt-2 border-t border-border">
+          <Button size="sm" className="w-full text-xs" onClick={onAddToCart}>
+            <ShoppingCart className="h-3.5 w-3.5 mr-1.5" />
+            Add to Bag
+          </Button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+export function WishlistItems() {
+  const { wishlist, removeFromWishlist } = useWishlist();
+  const { addToCart } = useCart();
+  const wishlistItems = wishlist;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-base font-semibold tracking-tight text-foreground">
+          Wishlist ({wishlistItems.length})
+        </h2>
       </div>
 
       {wishlistItems.length === 0 ? (
-        <div className="text-center py-16 rounded-2xl border bg-card">
-          <Heart className="h-24 w-24 mx-auto text-muted-foreground mb-6" />
-          <h3 className="text-xl font-semibold mb-2">Your wishlist is empty</h3>
-          <p className="text-muted-foreground mb-8">
-            Save items you love for later by clicking the heart icon.
+        <div className="text-center py-12 rounded-lg border border-border bg-surface">
+          <Heart className="h-8 w-8 mx-auto text-muted-foreground/40 mb-3" />
+          <h3 className="text-sm font-semibold mb-1">Your wishlist is empty</h3>
+          <p className="text-xs text-muted-foreground mb-4">
+            Items you mark with a heart will be saved here.
           </p>
-          <Button asChild>
-            <Link href="/products">Continue Shopping</Link>
+          <Button asChild size="sm">
+            <Link href="/products">Explore Products</Link>
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {wishlistItems.map((item, index) => (
-            <motion.div
+            <WishlistItemCard
               key={item.id}
-              className="bg-card border rounded-lg overflow-hidden group"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1, duration: 0.5 }}
-            >
-              <div className="relative aspect-square overflow-hidden">
-                <Image
-                  src={item.images?.[0] || "/icons8-image-100.png"}
-                  alt={item.name}
-                  fill
-                  sizes="(max-width: 768px) 50vw, 25vw"
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm hover:bg-white"
-                  onClick={() => removeFromWishlist(item.id)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-                {item.badge && (
-                  <Badge className="absolute top-2 left-2 bg-red-500 text-white">
-                    {item.badge}
-                  </Badge>
-                )}
-              </div>
-
-              <div className="p-4">
-                <h3 className="font-semibold mb-2 line-clamp-2">{item.name}</h3>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center space-x-2">
-                    <span className="font-bold">
-                      {formatCurrency(item.price, { currency, locale })}
-                    </span>
-                    {item.originalPrice && (
-                      <span className="text-sm text-muted-foreground line-through">
-                        {formatCurrency(item.originalPrice, { currency, locale })}
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-sm text-muted-foreground">
-                    {typeof item.category === "string"
-                      ? item.category
-                      : item.category?.name}
-                  </span>
-                </div>
-
-                <div className="flex space-x-2">
-                  <Button size="sm" className="flex-1">
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    Add to Cart
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Heart className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
+              item={item}
+              index={index}
+              onRemove={removeFromWishlist}
+              onAddToCart={() => {
+                addToCart({
+                  ...item,
+                  quantity: 1,
+                });
+              }}
+            />
           ))}
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }

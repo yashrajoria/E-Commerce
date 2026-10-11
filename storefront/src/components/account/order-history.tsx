@@ -34,33 +34,38 @@ interface NormalizedOrder {
   items: NormalizedItem[];
 }
 
-const getStatusIcon = (status: string) => {
+const getStatusBadge = (status: string) => {
   switch (status) {
     case "delivered":
     case "paid":
-      return <CheckCircle className="h-4 w-4 text-green-500" />;
+      return (
+        <Badge variant="secondary" className="gap-1 text-[11px] font-normal text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
+          <CheckCircle className="h-3 w-3" />
+          <span className="capitalize">{status.replace("_", " ")}</span>
+        </Badge>
+      );
     case "shipped":
-      return <Truck className="h-4 w-4 text-blue-500" />;
+      return (
+        <Badge variant="secondary" className="gap-1 text-[11px] font-normal text-foreground bg-muted border border-border">
+          <Truck className="h-3 w-3" />
+          <span className="capitalize">{status.replace("_", " ")}</span>
+        </Badge>
+      );
     case "pending":
     case "pending_payment":
-      return <Clock className="h-4 w-4 text-yellow-500" />;
+      return (
+        <Badge variant="secondary" className="gap-1 text-[11px] font-normal text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20">
+          <Clock className="h-3 w-3" />
+          <span className="capitalize">{status.replace("_", " ")}</span>
+        </Badge>
+      );
     default:
-      return <Package className="h-4 w-4 text-gray-500" />;
-  }
-};
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "delivered":
-    case "paid":
-      return "bg-green-500";
-    case "shipped":
-      return "bg-blue-500";
-    case "pending":
-    case "pending_payment":
-      return "bg-yellow-500";
-    default:
-      return "bg-gray-500";
+      return (
+        <Badge variant="secondary" className="gap-1 text-[11px] font-normal text-muted-foreground bg-muted border border-border">
+          <Package className="h-3 w-3" />
+          <span className="capitalize">{status.replace("_", " ")}</span>
+        </Badge>
+      );
   }
 };
 
@@ -163,84 +168,84 @@ export function OrderHistory({ orders: ordersProp }: { orders?: unknown }) {
   });
 
   return (
-    <motion.div
-      className="space-y-6"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Order History</h2>
-        <Button variant="outline">Download All</Button>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-base font-semibold tracking-tight text-foreground">
+          Order History ({ordersData.length})
+        </h2>
       </div>
 
-      {ordersData.map((order, index) => (
-        <motion.div
-          key={order.id || index}
-          className="bg-card border rounded-lg p-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.1, duration: 0.5 }}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-4">
-              <h3 className="font-semibold">{order.orderNumber || order.id}</h3>
-              <Badge className={getStatusColor(order.status)}>
-                {getStatusIcon(order.status)}
-                <span className="ml-1 capitalize">
-                  {order.status.replace("_", " ")}
-                </span>
-              </Badge>
-            </div>
-            <div className="text-right">
-              <p className="font-semibold">{formatGBP(order.total)}</p>
-              <p className="text-sm text-muted-foreground">
-                {order.date ? new Date(order.date).toLocaleDateString() : "-"}
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {order.items.map((item, itemIndex) => (
-              <div key={itemIndex} className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-sm">
-                  {String(item.product_id).slice(0, 6)}
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium">
-                    {productMap[item.product_id] ||
-                      `Product ID: ${item.product_id}`}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Qty: {item.quantity}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="font-medium">{formatGBP(item.price)}</p>
-                </div>
+      {ordersData.length === 0 ? (
+        <div className="rounded-lg border border-border bg-surface p-12 text-center">
+          <Package className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
+          <p className="text-sm font-medium text-foreground">No orders yet</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            When you place an order, it will appear here.
+          </p>
+        </div>
+      ) : (
+        ordersData.map((order, index) => (
+          <motion.div
+            key={order.id || index}
+            className="bg-surface border border-border rounded-lg p-5"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05, duration: 0.2 }}
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 border-b border-border gap-2">
+              <div className="flex items-center gap-3">
+                <h3 className="font-semibold text-sm text-foreground">
+                  Order #{order.orderNumber || order.id}
+                </h3>
+                {getStatusBadge(order.status)}
               </div>
-            ))}
-          </div>
+              <div className="flex items-center gap-4 text-xs">
+                <span className="text-muted-foreground">
+                  {order.date ? new Date(order.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—"}
+                </span>
+                <span className="font-semibold text-foreground">
+                  {formatGBP(order.total)}
+                </span>
+              </div>
+            </div>
 
-          <div className="flex items-center justify-between mt-4 pt-4 border-t">
-            <div className="flex space-x-2">
-              <Button variant="outline" size="sm">
+            <div className="space-y-3">
+              {order.items.map((item, itemIndex) => (
+                <div key={itemIndex} className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-md bg-muted border border-border flex items-center justify-center shrink-0 text-muted-foreground">
+                    <Package className="h-4 w-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-xs text-foreground truncate">
+                      {productMap[item.product_id] ||
+                        `Item #${item.product_id}`}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Qty: {item.quantity}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-medium text-xs text-foreground">
+                      {formatGBP(item.price)}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-center justify-end gap-2 mt-4 pt-4 border-t border-border">
+              <Button variant="outline" size="sm" className="h-8 text-xs">
                 View Details
               </Button>
-              {order.status === "delivered" && (
-                <Button variant="outline" size="sm">
-                  Reorder
+              {order.status === "shipped" && (
+                <Button size="sm" className="h-8 text-xs">
+                  Track Package
                 </Button>
               )}
             </div>
-            {order.status === "shipped" && (
-              <Button variant="outline" size="sm">
-                Track Package
-              </Button>
-            )}
-          </div>
-        </motion.div>
-      ))}
-    </motion.div>
+          </motion.div>
+        ))
+      )}
+    </div>
   );
 }

@@ -57,8 +57,9 @@ const Dashboard = ({ name }: { name: string }) => {
     const fetchDashboard = async () => {
       try {
         const response = await axios.get("/api/admin/dashboard");
-        if (response.data && response.data.data) {
-          setDashboardData(response.data.data);
+        const d = response.data?.data ?? response.data;
+        if (d) {
+          setDashboardData(d);
         }
       } catch (error) {
         console.error("Failed to load dashboard data", error);
@@ -97,12 +98,12 @@ const Dashboard = ({ name }: { name: string }) => {
       {/* ── Main Content ── */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* ── Top Header Bar ── */}
-        <header className="sticky top-0 z-30 h-16 border-b border-white/[0.04] glass-effect-strong">
+        <header className="sticky top-0 z-30 h-16 border-b border-border bg-card/80 backdrop-blur-md">
           <div className="h-full px-4 sm:px-6 flex items-center justify-between gap-4">
             {/* Left: Mobile menu + breadcrumb */}
             <div className="flex items-center gap-3">
               <button
-                className="lg:hidden p-2 rounded-lg hover:bg-white/[0.06] text-muted-foreground transition-colors"
+                className="lg:hidden p-2 rounded-lg hover:bg-muted text-muted-foreground transition-colors"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-label="Toggle menu"
               >
@@ -111,7 +112,7 @@ const Dashboard = ({ name }: { name: string }) => {
               <div className="hidden sm:flex items-center gap-2 text-sm">
                 <span className="text-muted-foreground">Admin</span>
                 <span className="text-muted-foreground/40">/</span>
-                <span className="font-medium text-foreground">Dashboard</span>
+                <span className="font-semibold text-foreground">Dashboard</span>
               </div>
             </div>
 
@@ -123,10 +124,10 @@ const Dashboard = ({ name }: { name: string }) => {
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 />
                 <Input
-                  placeholder="Search anything..."
-                  className="pl-9 h-9 bg-white/[0.03] border-white/[0.06] text-sm placeholder:text-muted-foreground/50 focus:bg-white/[0.06] focus:border-primary/30 transition-all rounded-xl"
+                  placeholder="Search orders, products, customers..."
+                  className="pl-9 h-9 bg-muted/40 border-border text-sm placeholder:text-muted-foreground/60 focus:bg-background focus:border-primary/50 transition-all rounded-lg"
                 />
-                <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] border border-white/10 rounded px-1.5 py-0.5 bg-white/[0.03] text-muted-foreground font-mono hidden lg:inline-block">
+                <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] border border-border rounded px-1.5 py-0.5 bg-background text-muted-foreground font-mono hidden lg:inline-block">
                   ⌘K
                 </kbd>
               </div>
@@ -142,10 +143,10 @@ const Dashboard = ({ name }: { name: string }) => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-9 w-9 rounded-xl hover:bg-white/[0.06] text-muted-foreground relative"
+                      className="h-9 w-9 rounded-lg hover:bg-muted text-muted-foreground relative"
                     >
                       <Bell size={16} />
-                      <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full animate-pulse" />
+                      <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-accent rounded-full ring-2 ring-background" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Notifications</TooltipContent>
@@ -156,7 +157,7 @@ const Dashboard = ({ name }: { name: string }) => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 rounded-xl hover:bg-white/[0.06] text-muted-foreground md:hidden"
+                className="h-9 w-9 rounded-lg hover:bg-muted text-muted-foreground md:hidden"
                 onClick={() => setSearchOpen(!searchOpen)}
               >
                 <Search size={16} />
@@ -171,11 +172,11 @@ const Dashboard = ({ name }: { name: string }) => {
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                className="md:hidden border-t border-white/[0.04] px-4 py-2 overflow-hidden"
+                className="md:hidden border-t border-border px-4 py-2 overflow-hidden bg-card"
               >
                 <Input
                   placeholder="Search..."
-                  className="h-9 bg-white/[0.03] border-white/[0.06] text-sm rounded-xl"
+                  className="h-9 bg-muted/50 border-border text-sm rounded-lg"
                   autoFocus
                 />
               </motion.div>
@@ -206,27 +207,27 @@ const Dashboard = ({ name }: { name: string }) => {
                 className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4"
               >
                 <div>
-                  <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                  <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
                     {getGreeting()},{" "}
-                    <span className="text-gradient">{name}</span>
+                    <span className="text-primary">{name}</span>
                   </h2>
                   <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
-                    <Calendar size={13} />
-                    {today} — Here&apos;s your store overview
+                    <Calendar size={13} className="text-accent" />
+                    {today} — Here&apos;s your store operational overview
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="gap-2 text-xs border-white/[0.08] hover:bg-white/[0.04] rounded-xl h-8"
+                    className="gap-2 text-xs border-border hover:bg-muted rounded-lg h-8 shadow-2xs font-medium"
                   >
                     <Download size={13} />
                     Export
                   </Button>
                   <Button
                     size="sm"
-                    className="gap-2 text-xs gradient-purple text-white hover:opacity-90 rounded-xl h-8 border-0"
+                    className="gap-2 text-xs bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-8 font-medium shadow-2xs"
                   >
                     <Calendar size={13} />
                     This Month

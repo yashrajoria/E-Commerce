@@ -36,88 +36,69 @@ const ProductsFilters = ({
   onViewModeChange,
   perPage,
   onPerPageChange,
-}: // showOutOfStock,
-// onToggleOutOfStock,
-ProductsFiltersProps) => {
+}: ProductsFiltersProps) => {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.1 }}
-      className="flex flex-col sm:flex-row gap-4 p-6 bg-gradient-to-r from-zinc-900/30 via-zinc-800/30 to-zinc-900/30 rounded-2xl border border-zinc-800/50 backdrop-blur-sm"
+      transition={{ delay: 0.05 }}
+      className="flex flex-col sm:flex-row gap-3 p-3 bg-card rounded-xl border border-border shadow-2xs"
     >
       <div className="relative flex-1">
-        <Search className="absolute left-3 top-3 h-4 w-4 text-zinc-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Search products by name, description, or SKU..."
-          className="pl-9 bg-zinc-900/50 border-zinc-700 text-white placeholder-zinc-400 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300"
+          className="pl-9 h-9 bg-muted/40 border-border text-foreground placeholder:text-muted-foreground/60 focus:bg-background focus:border-primary/50 text-sm rounded-lg"
           value={searchQuery}
           onChange={onSearchChange}
         />
       </div>
 
-      <div className="flex gap-2">
-        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() =>
-              onViewModeChange(viewMode === "grid" ? "list" : "grid")
-            }
-            aria-label={`Switch to ${viewMode === "grid" ? "list" : "grid"} view`}
-            title={`Switch to ${viewMode === "grid" ? "list" : "grid"} view`}
-            className={`transition-all duration-300 bg-zinc-900/50 border-zinc-700 hover:bg-zinc-800 ${
-              viewMode === "grid"
-                ? "text-blue-400 border-blue-500/50"
-                : "text-zinc-400"
-            }`}
-          >
-            {viewMode === "grid" ? <Rows3 size={18} /> : <Package size={18} />}
-          </Button>
-        </motion.div>
-
-        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          {/* <Button
-            variant="outline"
-            size="icon"
-            onClick={onToggleOutOfStock}
-            className={`transition-all duration-300 bg-zinc-900/50 border-zinc-700 hover:bg-zinc-800 ${
-              showOutOfStock
-                ? "text-emerald-400 border-emerald-500/50"
-                : "text-zinc-400"
-            }`}
-          >
-            {showOutOfStock ? <Eye size={18} /> : <EyeOff size={18} />}
-          </Button> */}
-        </motion.div>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() =>
+            onViewModeChange(viewMode === "grid" ? "list" : "grid")
+          }
+          aria-label={`Switch to ${viewMode === "grid" ? "list" : "grid"} view`}
+          title={`Switch to ${viewMode === "grid" ? "list" : "grid"} view`}
+          className={`h-9 w-9 rounded-lg border-border transition-colors ${
+            viewMode === "grid"
+              ? "bg-primary/10 text-primary border-primary/30"
+              : "bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
+          }`}
+        >
+          {viewMode === "grid" ? <Rows3 size={16} /> : <Package size={16} />}
+        </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Button
-                variant="outline"
-                size="icon"
-                aria-label="Open product filters"
-                title="Open product filters"
-                className="bg-zinc-900/50 border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-all duration-300"
-              >
-                <Filter size={18} />
-              </Button>
-            </motion.div>
+            <Button
+              variant="outline"
+              size="icon"
+              aria-label="Open product filters"
+              title="Open product filters"
+              className="h-9 w-9 rounded-lg border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <Filter size={15} />
+            </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="bg-zinc-900/95 backdrop-blur-xl border-zinc-700 text-white">
-            <DropdownMenuLabel>Filter by Category</DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-zinc-700" />
-            <DropdownMenuItem className="hover:bg-zinc-800">
+          <DropdownMenuContent className="bg-popover border-border text-popover-foreground shadow-md">
+            <DropdownMenuLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Filter by Category
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator className="bg-border" />
+            <DropdownMenuItem className="hover:bg-muted text-xs">
               Electronics
             </DropdownMenuItem>
-            <DropdownMenuItem className="hover:bg-zinc-800">
+            <DropdownMenuItem className="hover:bg-muted text-xs">
               Clothing
             </DropdownMenuItem>
-            <DropdownMenuItem className="hover:bg-zinc-800">
+            <DropdownMenuItem className="hover:bg-muted text-xs">
               Books
             </DropdownMenuItem>
-            <DropdownMenuItem className="hover:bg-zinc-800">
+            <DropdownMenuItem className="hover:bg-muted text-xs">
               Home & Garden
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -125,47 +106,45 @@ ProductsFiltersProps) => {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Button
-                variant="outline"
-                size="sm"
-                aria-label="Sort products"
-                title="Sort products"
-                className="gap-1 bg-zinc-900/50 border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-all duration-300"
-              >
-                <ArrowUpDown size={14} />
-                Sort
-              </Button>
-            </motion.div>
+            <Button
+              variant="outline"
+              size="sm"
+              aria-label="Sort products"
+              title="Sort products"
+              className="h-9 gap-1.5 border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground text-xs font-medium rounded-lg px-2.5"
+            >
+              <ArrowUpDown size={13} />
+              Sort
+            </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="bg-zinc-900/95 backdrop-blur-xl border-zinc-700 text-white">
-            <DropdownMenuItem className="hover:bg-zinc-800">
+          <DropdownMenuContent className="bg-popover border-border text-popover-foreground shadow-md">
+            <DropdownMenuItem className="hover:bg-muted text-xs">
               Name A-Z
             </DropdownMenuItem>
-            <DropdownMenuItem className="hover:bg-zinc-800">
+            <DropdownMenuItem className="hover:bg-muted text-xs">
               Name Z-A
             </DropdownMenuItem>
-            <DropdownMenuItem className="hover:bg-zinc-800">
+            <DropdownMenuItem className="hover:bg-muted text-xs">
               Price Low-High
             </DropdownMenuItem>
-            <DropdownMenuItem className="hover:bg-zinc-800">
+            <DropdownMenuItem className="hover:bg-muted text-xs">
               Price High-Low
             </DropdownMenuItem>
-            <DropdownMenuItem className="hover:bg-zinc-800">
+            <DropdownMenuItem className="hover:bg-muted text-xs">
               Recently Added
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
         <Select onValueChange={onPerPageChange}>
-          <SelectTrigger className="w-[140px] bg-zinc-900/50 border-zinc-700 text-white hover:border-blue-500/50 transition-all duration-300">
+          <SelectTrigger className="h-9 w-[130px] bg-background border-border text-foreground text-xs rounded-lg">
             <SelectValue placeholder={`${perPage} per page`} />
           </SelectTrigger>
-          <SelectContent className="bg-zinc-900/95 backdrop-blur-xl border-zinc-700 text-white">
-            <SelectItem value="12">12 per page</SelectItem>
-            <SelectItem value="20">20 per page</SelectItem>
-            <SelectItem value="50">50 per page</SelectItem>
-            <SelectItem value="100">100 per page</SelectItem>
+          <SelectContent className="bg-popover border-border text-popover-foreground shadow-md">
+            <SelectItem value="12" className="text-xs">12 per page</SelectItem>
+            <SelectItem value="20" className="text-xs">20 per page</SelectItem>
+            <SelectItem value="50" className="text-xs">50 per page</SelectItem>
+            <SelectItem value="100" className="text-xs">100 per page</SelectItem>
           </SelectContent>
         </Select>
       </div>

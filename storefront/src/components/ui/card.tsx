@@ -1,9 +1,9 @@
 export {
   Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
-} from "@ecommerce/shared"
+  CardDescription,
+  CardContent,
+  CardFooter,
+  CardAction,
+} from "@ecommerce/ui";

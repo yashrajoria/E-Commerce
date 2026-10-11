@@ -65,50 +65,53 @@ const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
       whileHover="hover"
       className="h-full"
     >
-      <Card className="h-full bg-card/50 backdrop-blur-xl border-border/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
+      <Card className="h-full bg-card border border-border shadow-2xs hover:shadow-xs transition-shadow duration-200 overflow-hidden group rounded-xl">
         <CardContent className="p-0">
-          <div className="relative h-48 bg-gradient-to-br from-accent/20 to-accent/10 overflow-hidden">
+          <div className="relative h-44 bg-muted/30 overflow-hidden border-b border-border">
             <motion.div variants={imageVariants} className="h-full w-full">
               <Image
                 src={product?.images?.[0] || "/placeholder.svg"}
                 alt={product?.name ?? ""}
                 width={100}
                 height={100}
-                className="h-full w-full object-cover transition-transform duration-300"
+                className="h-full w-full object-cover"
               />
             </motion.div>
 
-            <div className="absolute top-3 left-3">
-              <Badge variant="secondary" className="bg-white text-black">
-                {getCategoryName(product.category_ids?.[0] || product.category)}
+            <div className="absolute top-2.5 left-2.5">
+              <Badge variant="secondary" className="bg-background/90 backdrop-blur-xs text-foreground border border-border font-medium text-xs">
+                {getCategoryName(
+                  product.category_ids?.[0] ||
+                    (typeof product.category === "string"
+                      ? product.category
+                      : product.category?.id ?? product.category?.name)
+                )}
               </Badge>
             </div>
 
-            <div className="absolute top-3 right-3">
+            <div className="absolute top-2.5 right-2.5">
               <Badge
-                variant={product.quantity ?? 0 >= 1 ? "default" : "destructive"}
-                className={`text-xs font-medium ${
-                  product.quantity ?? 0 >= 1
-                    ? "bg-emerald-500/90 text-white border-emerald-600/20"
-                    : "bg-amber-500/90 text-white border-amber-600/20"
+                variant="outline"
+                className={`text-xs font-semibold ${
+                  (product.quantity ?? 0) >= 1
+                    ? "bg-primary/10 text-primary border-primary/20"
+                    : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
                 }`}
               >
-                {product.quantity ?? 0 >= 1 ? "In Stock" : "Out of Stock"}
+                {(product.quantity ?? 0) >= 1 ? "In Stock" : "Out of Stock"}
               </Badge>
             </div>
 
-            {/* Edit Button - visible on touch, revealed on hover for pointer devices */}
-            <motion.div
-              className="absolute top-3 left-1/2 transform -translate-x-1/2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300"
-              initial={{ opacity: 0, y: -10 }}
-              whileHover={{ opacity: 1, y: 0 }}
+            {/* Edit Button */}
+            <div
+              className="absolute top-2.5 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
             >
               <Button
                 size="icon"
                 variant="secondary"
                 aria-label={`Edit ${product.name}`}
                 title={`Edit ${product.name}`}
-                className="h-8 w-8 bg-background/90 backdrop-blur-sm hover:bg-primary hover:text-primary-foreground transition-all duration-200"
+                className="h-7 w-7 bg-background text-foreground hover:bg-muted shadow-2xs border border-border"
                 onClick={(e) => {
                   e.stopPropagation();
                   onEdit?.(product);
@@ -116,71 +119,42 @@ const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
               >
                 <Edit className="h-3 w-3" />
               </Button>
-            </motion.div>
-
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              initial={{ opacity: 0 }}
-              whileHover={{ opacity: 1 }}
-            />
+            </div>
           </div>
 
-          <div className="p-4">
-            <motion.h3
-              className="font-semibold text-lg mb-2 line-clamp-2 text-foreground group-hover:text-primary transition-colors duration-200"
-              layoutId={`title-${product._id}`}
+          <div className="p-3.5">
+            <h3
+              className="font-semibold text-sm mb-1.5 line-clamp-1 text-foreground group-hover:text-primary transition-colors"
             >
               {product.name}
-            </motion.h3>
+            </h3>
 
-            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+            <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
               {product.description || "No description available"}
             </p>
 
-            <div className="flex items-center justify-between mb-3">
-              <motion.div
-                className="text-2xl font-bold text-primary"
-                whileHover={{ scale: 1.05 }}
-              >
+            <div className="flex items-center justify-between">
+              <div className="text-lg font-bold text-foreground">
                 £{product.price?.toFixed(2)}
-              </motion.div>
-              <div className="text-sm text-muted-foreground flex items-center gap-1">
+              </div>
+              <div className="text-xs text-muted-foreground flex items-center gap-1 font-medium">
                 <Package className="h-3 w-3" />
-                {product.quantity ?? 0} left
+                {product.quantity ?? 0} in stock
               </div>
             </div>
           </div>
         </CardContent>
 
-        <CardFooter className="p-4 pt-0 space-y-2">
-          <div className="w-full flex gap-2">
-            <motion.div
-              className="flex-1"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Button
-                className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-primary/90 hover:to-primary/70 shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
-                disabled={(product.quantity ?? 0) < 1}
-              >
-                {product.quantity ?? 0 >= 1 ? (
-                  <Link href={`/products/${product._id}/`}>View Details</Link>
-                ) : (
-                  "Out of Stock"
-                )}
-              </Button>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              {/* <Button
-                size="icon"
-                variant="outline"
-                className="hover:bg-accent/50 transition-all duration-300"
-                onClick={() => onEdit?.(product)}
-              >
-                <Edit className="h-4 w-4" />
-              </Button> */}
-            </motion.div>
-          </div>
+        <CardFooter className="p-3.5 pt-0">
+          <Button
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-8 text-xs font-medium shadow-2xs transition-colors"
+            disabled={(product.quantity ?? 0) < 1}
+            asChild
+          >
+            <Link href={`/products/${product._id}/`}>
+              {(product.quantity ?? 0) >= 1 ? "Manage Product" : "Out of Stock"}
+            </Link>
+          </Button>
         </CardFooter>
       </Card>
     </motion.div>

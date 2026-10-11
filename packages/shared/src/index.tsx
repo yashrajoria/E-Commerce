@@ -19,10 +19,13 @@ export {
   cn,
   formatCurrency,
   formatDate,
+  formatRelativeDate,
   formatGBP,
   formatINR,
   trapFocus,
 } from "./utils";
+export * from "./types/models";
+export * from "./types/common";
 export { Button, buttonVariants } from "./components/ui/button";
 export { Avatar, AvatarFallback, AvatarImage } from "./components/ui/avatar";
 export { Badge, badgeVariants } from "./components/ui/badge";

@@ -19,25 +19,25 @@ const addresses = [
   {
     id: "1",
     type: "home",
-    name: "John Doe",
-    street: "123 Main Street",
-    city: "New York",
-    state: "NY",
-    zip: "10001",
-    country: "United States",
-    phone: "+1 (555) 123-4567",
+    name: "Alex Taylor",
+    street: "14 High Street",
+    city: "London",
+    state: "Greater London",
+    zip: "SW1A 1AA",
+    country: "United Kingdom",
+    phone: "+44 7700 900123",
     isDefault: true,
   },
   {
     id: "2",
     type: "work",
-    name: "John Doe",
-    street: "456 Business Ave",
-    city: "New York",
-    state: "NY",
-    zip: "10002",
-    country: "United States",
-    phone: "+1 (555) 987-6543",
+    name: "Alex Taylor",
+    street: "88 Commercial Road",
+    city: "London",
+    state: "Greater London",
+    zip: "E1 1LP",
+    country: "United Kingdom",
+    phone: "+44 7700 900456",
     isDefault: false,
   },
 ];
@@ -46,67 +46,69 @@ export function AddressBook() {
   const [isAddingAddress, setIsAddingAddress] = useState(false);
 
   return (
-    <motion.div
-      className="space-y-6"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Address Book</h2>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-base font-semibold tracking-tight text-foreground">
+          Saved Addresses ({addresses.length})
+        </h2>
         <Dialog open={isAddingAddress} onOpenChange={setIsAddingAddress}>
           <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
+            <Button size="sm">
+              <Plus className="h-3.5 w-3.5 mr-1.5" />
               Add Address
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md bg-surface border-border">
             <DialogHeader>
-              <DialogTitle>Add New Address</DialogTitle>
+              <DialogTitle className="text-base font-semibold text-foreground">
+                Add New Address
+              </DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input id="firstName" />
+            <div className="space-y-3 pt-2">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="firstName" className="text-xs">First Name</Label>
+                  <Input id="firstName" className="h-9 text-xs" />
                 </div>
-                <div>
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input id="lastName" />
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="street">Street Address</Label>
-                <Input id="street" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="city">City</Label>
-                  <Input id="city" />
-                </div>
-                <div>
-                  <Label htmlFor="state">State</Label>
-                  <Input id="state" />
+                <div className="space-y-1">
+                  <Label htmlFor="lastName" className="text-xs">Last Name</Label>
+                  <Input id="lastName" className="h-9 text-xs" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="zip">ZIP Code</Label>
-                  <Input id="zip" />
+              <div className="space-y-1">
+                <Label htmlFor="street" className="text-xs">Street Address</Label>
+                <Input id="street" className="h-9 text-xs" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="city" className="text-xs">City</Label>
+                  <Input id="city" className="h-9 text-xs" />
                 </div>
-                <div>
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input id="phone" />
+                <div className="space-y-1">
+                  <Label htmlFor="state" className="text-xs">County / State</Label>
+                  <Input id="state" className="h-9 text-xs" />
                 </div>
               </div>
-              <div className="flex space-x-2">
-                <Button className="flex-1">Save Address</Button>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="zip" className="text-xs">Postcode</Label>
+                  <Input id="zip" className="h-9 text-xs" />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="phone" className="text-xs">Phone</Label>
+                  <Input id="phone" className="h-9 text-xs" />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-3">
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={() => setIsAddingAddress(false)}
                 >
                   Cancel
+                </Button>
+                <Button size="sm" onClick={() => setIsAddingAddress(false)}>
+                  Save Address
                 </Button>
               </div>
             </div>
@@ -114,55 +116,57 @@ export function AddressBook() {
         </Dialog>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-2 gap-4">
         {addresses.map((address, index) => (
           <motion.div
             key={address.id}
-            className="bg-card border rounded-lg p-6"
-            initial={{ opacity: 0, y: 20 }}
+            className="bg-surface border border-border rounded-lg p-5"
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1, duration: 0.5 }}
+            transition={{ delay: index * 0.05, duration: 0.2 }}
           >
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center space-x-2">
-                <MapPin className="h-5 w-5 text-muted-foreground" />
-                <span className="font-semibold capitalize">{address.type}</span>
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-muted-foreground" />
+                <span className="font-semibold text-xs capitalize text-foreground">{address.type}</span>
                 {address.isDefault && (
-                  <Badge variant="secondary">Default</Badge>
+                  <Badge variant="secondary" className="text-[10px] py-0 px-1.5 font-normal">
+                    Default
+                  </Badge>
                 )}
               </div>
-              <div className="flex space-x-2">
-                <Button variant="ghost" size="icon">
-                  <Edit className="h-4 w-4" />
+              <div className="flex gap-1">
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground">
+                  <Edit className="h-3.5 w-3.5" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-destructive"
+                  className="h-7 w-7 text-muted-foreground hover:text-destructive"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               </div>
             </div>
 
-            <div className="space-y-1 text-sm">
-              <p className="font-medium">{address.name}</p>
+            <div className="space-y-0.5 text-xs text-muted-foreground">
+              <p className="font-medium text-foreground">{address.name}</p>
               <p>{address.street}</p>
               <p>
                 {address.city}, {address.state} {address.zip}
               </p>
               <p>{address.country}</p>
-              <p className="text-muted-foreground">{address.phone}</p>
+              <p className="pt-1">{address.phone}</p>
             </div>
 
             {!address.isDefault && (
-              <Button variant="outline" size="sm" className="mt-4">
+              <Button variant="outline" size="sm" className="mt-4 h-7 text-xs">
                 Set as Default
               </Button>
             )}
           </motion.div>
         ))}
       </div>
-    </motion.div>
+    </div>
   );
 }

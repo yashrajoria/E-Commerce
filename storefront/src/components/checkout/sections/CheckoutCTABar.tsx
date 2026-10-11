@@ -22,11 +22,11 @@ export function CheckoutCTABar({
   onShowSummary,
 }: Props) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-neutral-950/95 backdrop-blur-xl border-t border-neutral-200/50 dark:border-neutral-800/50">
+    <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border">
       <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
         <button
           onClick={onShowSummary}
-          className="flex items-center gap-2 min-h-12 px-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-sm font-medium text-neutral-700 dark:text-neutral-300 shrink-0 lg:hidden"
+          className="flex items-center gap-2 h-11 px-3 rounded-md bg-muted text-xs font-medium text-foreground shrink-0 lg:hidden"
           aria-label="View order summary"
         >
           <ShoppingBag className="h-4 w-4" />
@@ -34,12 +34,12 @@ export function CheckoutCTABar({
           <ChevronUp className="h-3.5 w-3.5" />
         </button>
 
-        <div className="hidden lg:flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400 shrink-0">
+        <div className="hidden lg:flex items-center gap-2 text-xs text-muted-foreground shrink-0">
           <ShoppingBag className="h-4 w-4" />
           <span>
             {itemCount} {itemCount === 1 ? "item" : "items"}
           </span>
-          <span className="font-bold text-neutral-900 dark:text-neutral-100">
+          <span className="font-semibold text-foreground">
             {formatGBP(total)}
           </span>
         </div>
@@ -48,10 +48,10 @@ export function CheckoutCTABar({
           onClick={onAction}
           disabled={isProcessing}
           whileTap={{ scale: 0.98 }}
-          className={`flex-1 h-13 rounded-xl font-semibold text-base text-white flex items-center justify-center gap-2 transition-all shadow-lg ${
+          className={`flex-1 h-11 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-colors shadow-2xs ${
             isProcessing
-              ? "bg-neutral-400 cursor-not-allowed"
-              : "bg-linear-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 shadow-rose-500/25 hover:shadow-xl hover:shadow-rose-500/30 active:scale-[0.98]"
+              ? "bg-muted text-muted-foreground cursor-not-allowed"
+              : "bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.99]"
           }`}
           aria-label={ctaLabel}
         >
@@ -60,14 +60,14 @@ export function CheckoutCTABar({
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                className="w-4 h-4 border-2 border-background/30 border-t-background rounded-full"
               />
-              Processing…
+              <span>Processing…</span>
             </>
           ) : (
             <>
-              {ctaLabel}
-              {currentStep < 4 && <ChevronRight className="h-5 w-5" />}
+              <span>{ctaLabel}</span>
+              {currentStep < 4 && <ChevronRight className="h-4 w-4" />}
               {currentStep === 4 && <Lock className="h-4 w-4" />}
             </>
           )}

@@ -193,12 +193,12 @@ export default function ProductPage({ initialProduct }: ProductPageProps) {
           >
             <nav
               aria-label="Breadcrumb"
-              className="text-sm text-muted-foreground"
+              className="text-xs text-muted-foreground flex items-center gap-1.5"
             >
-              <Link href="/" className="hover:text-rose-600">
+              <Link href="/" className="hover:text-foreground transition-colors">
                 Home
               </Link>
-              <span className="mx-2">/</span>
+              <span>/</span>
               {categoryName ? (
                 <Link
                   href={
@@ -206,51 +206,44 @@ export default function ProductPage({ initialProduct }: ProductPageProps) {
                       ? `/products?categoryId=${encodeURIComponent(categoryId)}&category=${encodeURIComponent(categoryName)}`
                       : `/products?category=${encodeURIComponent(categoryName)}`
                   }
-                  className="hover:text-rose-600"
+                  className="hover:text-foreground transition-colors capitalize"
                 >
-                  {categoryName}
+                  {categoryName.replace(/-/g, " ")}
                 </Link>
               ) : (
-                <span className="hover:text-rose-600">Category</span>
+                <span className="hover:text-foreground">Category</span>
               )}
-              <span className="mx-2">/</span>
-              <span aria-current="page">{product?.name}</span>
+              <span>/</span>
+              <span aria-current="page" className="text-foreground font-medium truncate max-w-xs">{product?.name}</span>
             </nav>
 
             <div>
-              <h1 className="text-3xl font-bold mb-2">{product?.name}</h1>
-              <div className="flex items-center space-x-4 mb-4">
-                <div className="flex items-center space-x-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-4 w-4 ${
-                        i < rating
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "text-gray-300"
-                      }`}
-                    />
-                  ))}
-                  <span className="font-medium">{rating}</span>
-                </div>
-                <span className="text-muted-foreground">
-                  ({product?.reviews} reviews)
-                </span>
-                <Badge variant="secondary">{product?.badge}</Badge>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mb-2">{product?.name}</h1>
+              <div className="flex items-center space-x-3 mb-4">
+                {rating > 0 && (
+                  <div className="flex items-center space-x-1">
+                    <Star className="h-4 w-4 fill-foreground text-foreground" />
+                    <span className="text-sm font-semibold">{rating.toFixed(1)}</span>
+                    <span className="text-xs text-muted-foreground">
+                      ({product?.reviews ?? 0} reviews)
+                    </span>
+                  </div>
+                )}
+                {product?.badge && <Badge variant="secondary">{product?.badge}</Badge>}
               </div>
             </div>
 
-            <div className="flex items-center space-x-4">
-              <span className="text-3xl font-bold">
+            <div className="flex items-center space-x-3">
+              <span className="text-2xl sm:text-3xl font-bold text-foreground">
                 {formatGBP(product?.price)}
               </span>
               {product?.originalPrice && (
-                <span className="text-xl text-muted-foreground line-through">
+                <span className="text-lg text-muted-foreground line-through">
                   {formatGBP(product?.originalPrice)}
                 </span>
               )}
               {product?.originalPrice && (
-                <Badge className="bg-red-500">
+                <Badge variant="destructive">
                   {Math.round(
                     ((product?.originalPrice - product?.price) /
                       product?.originalPrice) *
@@ -262,16 +255,17 @@ export default function ProductPage({ initialProduct }: ProductPageProps) {
             </div>
 
             {product.description ? (
-              <p className="text-muted-foreground leading-relaxed">
+              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
                 {product.description}
               </p>
             ) : null}
 
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center border rounded-lg">
+            <div className="flex items-center space-x-3 pt-2">
+              <div className="flex items-center border border-border rounded-lg h-11">
                 <Button
                   variant="ghost"
                   size="icon"
+                  className="h-10 w-10 rounded-md"
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                   disabled={quantity <= 1}
                   aria-label="Decrease quantity"
@@ -280,7 +274,7 @@ export default function ProductPage({ initialProduct }: ProductPageProps) {
                 </Button>
                 <Input
                   type="number"
-                  className="w-16 text-center border-0"
+                  className="w-14 text-center border-0 h-10 font-medium"
                   value={quantity}
                   min={1}
                   aria-label="Quantity"
@@ -292,6 +286,7 @@ export default function ProductPage({ initialProduct }: ProductPageProps) {
                 <Button
                   variant="ghost"
                   size="icon"
+                  className="h-10 w-10 rounded-md"
                   onClick={() => setQuantity((q) => q + 1)}
                   aria-label="Increase quantity"
                 >
@@ -301,7 +296,7 @@ export default function ProductPage({ initialProduct }: ProductPageProps) {
 
               <Button
                 size="lg"
-                className="hidden sm:inline-flex flex-1 rounded-full bg-linear-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 shadow-lg shadow-rose-500/20"
+                className="hidden sm:inline-flex flex-1 rounded-lg h-11 font-semibold"
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
                 aria-disabled={isOutOfStock}
@@ -314,7 +309,7 @@ export default function ProductPage({ initialProduct }: ProductPageProps) {
               <Button
                 variant="outline"
                 size="icon"
-                className="rounded-full"
+                className="rounded-lg h-11 w-11"
                 onClick={handleWishlistToggle}
                 aria-label={
                   isWishlisted ? "Remove from wishlist" : "Add to wishlist"
@@ -322,7 +317,7 @@ export default function ProductPage({ initialProduct }: ProductPageProps) {
               >
                 <Heart
                   className={`h-4 w-4 ${
-                    isWishlisted ? "fill-red-500 text-red-500" : ""
+                    isWishlisted ? "fill-accent text-accent" : ""
                   }`}
                 />
               </Button>
@@ -330,7 +325,7 @@ export default function ProductPage({ initialProduct }: ProductPageProps) {
               <Button
                 variant="outline"
                 size="icon"
-                className="rounded-full"
+                className="rounded-lg h-11 w-11"
                 onClick={handleShare}
                 aria-label="Share product"
               >
@@ -339,10 +334,10 @@ export default function ProductPage({ initialProduct }: ProductPageProps) {
             </div>
 
             {/* Shipping / returns near buy — trust signals before scroll */}
-            <ul className="space-y-2 text-sm text-muted-foreground border-t border-border/60 pt-4">
+            <ul className="space-y-2 text-xs text-muted-foreground border-t border-border/60 pt-4">
               <li className="flex items-start gap-2">
                 <Truck
-                  className="h-4 w-4 mt-0.5 text-rose-600 shrink-0"
+                  className="h-4 w-4 mt-0.5 text-foreground shrink-0"
                   aria-hidden
                 />
                 <span>
@@ -352,20 +347,19 @@ export default function ProductPage({ initialProduct }: ProductPageProps) {
               </li>
               <li className="flex items-start gap-2">
                 <RotateCcw
-                  className="h-4 w-4 mt-0.5 text-rose-600 shrink-0"
+                  className="h-4 w-4 mt-0.5 text-foreground shrink-0"
                   aria-hidden
                 />
-                <span>30-day returns · Easy exchanges from your account</span>
+                <span>30-day effortless returns · Easy exchanges</span>
               </li>
-              <li className="text-xs">
+              <li className="text-xs pt-1">
                 {isOutOfStock ? (
-                  <span className="text-amber-700 dark:text-amber-400">
+                  <span className="font-semibold text-destructive">
                     Currently out of stock
                   </span>
                 ) : (
-                  <span className="text-emerald-700 dark:text-emerald-400">
-                    In stock
-                    {categoryName ? ` · ${categoryName}` : ""}
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                    In stock and ready to ship
                   </span>
                 )}
               </li>
@@ -472,22 +466,22 @@ export default function ProductPage({ initialProduct }: ProductPageProps) {
       </main>
 
       {/* Sticky mobile Add to Bag */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border/80 bg-background/95 backdrop-blur-md p-3 sm:hidden safe-area-pb">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur-md p-3 sm:hidden safe-area-pb">
         <div className="flex items-center gap-3 max-w-lg mx-auto">
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold truncate">{product.name}</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs font-semibold truncate text-foreground">{product.name}</p>
+            <p className="text-xs text-muted-foreground font-medium">
               {formatGBP(product.price)}
             </p>
           </div>
           <Button
-            size="lg"
-            className="shrink-0 rounded-full bg-linear-to-r from-rose-600 to-amber-500 px-6"
+            size="sm"
+            className="shrink-0 rounded-lg px-5 h-10 text-xs font-semibold"
             onClick={handleAddToCart}
             disabled={isOutOfStock}
             aria-label={isOutOfStock ? "Out of stock" : "Add to bag"}
           >
-            <ShoppingBag className="h-4 w-4 mr-2" />
+            <ShoppingBag className="h-4 w-4 mr-1.5" />
             {isOutOfStock ? "Sold out" : "Add to Bag"}
           </Button>
         </div>

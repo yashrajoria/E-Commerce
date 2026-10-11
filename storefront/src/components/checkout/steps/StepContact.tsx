@@ -23,26 +23,26 @@ export function StepContact({
       animate="center"
       exit="exit"
       transition={{ duration: 0.15, ease: "easeOut" }}
-      className="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm"
+      className="rounded-lg bg-surface border border-border"
       aria-label="Step 1: Contact Information"
       data-step="1"
     >
-      <div className="p-6 sm:p-8">
+      <div className="p-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-linear-to-br from-rose-600 to-amber-500 flex items-center justify-center">
-            <Mail className="h-5 w-5 text-white" />
+          <div className="w-9 h-9 rounded-md bg-muted flex items-center justify-center text-foreground">
+            <Mail className="h-4 w-4" />
           </div>
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gradient-premium">
+            <h2 className="text-base font-semibold tracking-tight text-foreground">
               Contact Information
             </h2>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">
-              How can we reach you about your order?
+            <p className="text-xs text-muted-foreground mt-0.5">
+              We&apos;ll send your order confirmation and dispatch updates here.
             </p>
           </div>
         </div>
 
-        <div className="space-y-5">
+        <div className="space-y-4">
           <FormField
             name="email"
             label="Email Address"

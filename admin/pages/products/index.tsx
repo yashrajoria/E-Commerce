@@ -95,13 +95,13 @@ const Products = () => {
           <Button
             variant="outline"
             size="sm"
-            className="gap-2 text-xs border-white/[0.08] hover:bg-white/[0.04] rounded-xl h-8 hidden sm:flex"
+            className="gap-2 text-xs border-border hover:bg-muted rounded-lg h-8 hidden sm:flex font-medium shadow-2xs"
           >
             <Download size={13} /> Export
           </Button>
           <Button
             size="sm"
-            className="gap-2 text-xs gradient-purple text-white hover:opacity-90 rounded-xl h-8 border-0"
+            className="gap-2 text-xs bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-8 shadow-2xs font-medium"
             asChild
           >
             <Link href="/products/add-product">
@@ -121,8 +121,6 @@ const Products = () => {
           value={productsCount}
           icon={Package}
           trend={{ value: 5.2, label: "vs last month" }}
-          gradient="gradient-purple"
-          glowClass="glow-purple"
         />
         <StatsCard
           title="In Stock"
@@ -131,8 +129,6 @@ const Products = () => {
               ?.length || 0
           }
           icon={Package}
-          gradient="gradient-emerald"
-          glowClass="glow-emerald"
         />
         <StatsCard
           title="Out of Stock"
@@ -141,19 +137,17 @@ const Products = () => {
               ?.length || 0
           }
           icon={AlertTriangle}
-          gradient="gradient-rose"
         />
         <StatsCard
           title="Categories"
           value={categories?.length || 0}
           icon={DollarSign}
-          gradient="gradient-blue"
         />
       </motion.section>
 
       {/* Filters */}
       <motion.section variants={pageItem}>
-        <div className="glass-effect rounded-xl p-4">
+        <div className="bg-card border border-border shadow-2xs rounded-lg p-3">
           <ProductsFilters
             searchQuery={searchQuery}
             onSearchChange={handleSearchChange}
@@ -243,27 +237,27 @@ const Products = () => {
           </motion.section>
         ) : (
           <motion.section key="list" variants={pageItem}>
-            <Card className="glass-effect overflow-hidden border-white/[0.06]">
+            <Card className="bg-card border border-border shadow-2xs overflow-hidden">
               <CardContent className="p-0 overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-white/[0.04]">
-                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
+                    <TableRow className="border-b border-border bg-muted/40">
+                      <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Product
                       </TableHead>
-                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
+                      <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Category
                       </TableHead>
-                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
+                      <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Price
                       </TableHead>
-                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
+                      <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Stock
                       </TableHead>
-                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
+                      <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Status
                       </TableHead>
-                      <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
+                      <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Actions
                       </TableHead>
                     </TableRow>
@@ -272,14 +266,14 @@ const Products = () => {
                     {displayedProducts.map((product: Product, index: number) => (
                       <motion.tr
                         key={product._id}
-                        initial={{ opacity: 0, x: -20 }}
+                        initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.04 }}
-                        className="border-white/[0.04] hover:bg-white/[0.02] transition-colors"
+                        transition={{ delay: index * 0.02 }}
+                        className="border-b border-border/60 hover:bg-muted/40 transition-colors"
                       >
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-lg bg-white/[0.04] overflow-hidden flex items-center justify-center">
+                            <div className="h-10 w-10 rounded-lg bg-muted border border-border overflow-hidden flex items-center justify-center shrink-0">
                               {product.images?.[0] ? (
                                 <Image
                                   src={product.images[0]}
@@ -295,10 +289,10 @@ const Products = () => {
                               )}
                             </div>
                             <div>
-                              <span className="font-medium text-sm">
+                              <span className="font-semibold text-sm text-foreground">
                                 {product.name}
                               </span>
-                              <p className="text-xs text-muted-foreground truncate max-w-[200px]">
+                              <p className="text-xs text-muted-foreground truncate max-w-[240px]">
                                 {product.description}
                               </p>
                             </div>
@@ -307,15 +301,17 @@ const Products = () => {
                         <TableCell>
                           <Badge
                             variant="outline"
-                            className="text-xs border-white/[0.08]"
+                            className="text-xs border-border bg-muted/50 font-normal"
                           >
-                            {product.category}
+                            {typeof product.category === "string"
+                              ? product.category
+                              : product.category?.name ?? "General"}
                           </Badge>
                         </TableCell>
-                        <TableCell className="font-semibold text-sm">
+                        <TableCell className="font-semibold text-sm text-foreground">
                           £{product.price?.toFixed(2)}
                         </TableCell>
-                        <TableCell className="text-sm">
+                        <TableCell className="text-sm text-foreground">
                           {product.quantity}
                         </TableCell>
                         <TableCell>
@@ -323,8 +319,8 @@ const Products = () => {
                             variant="outline"
                             className={
                               (product.quantity || 0) >= 1
-                                ? "bg-emerald-400/10 text-emerald-400 border-emerald-400/20"
-                                : "bg-amber-400/10 text-amber-400 border-amber-400/20"
+                                ? "bg-primary/10 text-primary border-primary/20 font-medium"
+                                : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 font-medium"
                             }
                           >
                             {(product.quantity || 0) >= 1
@@ -336,7 +332,7 @@ const Products = () => {
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-8 w-8 hover:bg-white/[0.06] rounded-lg"
+                            className="h-8 w-8 hover:bg-muted rounded-md text-muted-foreground hover:text-foreground"
                             onClick={() => handleEditProduct(product)}
                           >
                             <Edit className="h-4 w-4" />

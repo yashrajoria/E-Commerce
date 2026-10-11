@@ -15,7 +15,11 @@
     "jsx": "preserve",
     "incremental": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@ecommerce/shared": ["../packages/shared/src"],
+      "@ecommerce/shared/*": ["../packages/shared/src/*"],
+      "@ecommerce/ui": ["../packages/ui/src"],
+      "@ecommerce/ui/*": ["../packages/ui/src/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],

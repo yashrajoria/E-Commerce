@@ -16,7 +16,6 @@ import { useUser } from "@/context/UserContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useToast } from "@/hooks/use-toast";
 import { updatePassword, updateUserData } from "@/lib/user";
-import { formatGBP } from "@/lib/utils";
 import { motion } from "framer-motion";
 import {
   Bell,
@@ -47,6 +46,7 @@ export default function AccountPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const router = useRouter();
+
   const safeString = (v: unknown) => (v == null ? "" : String(v));
   const safeDateFrom = (v: unknown): Date | null => {
     if (v == null) return null;
@@ -70,6 +70,7 @@ export default function AccountPage() {
     }
     return cur as unknown;
   };
+
   useEffect(() => {
     const baseProfile = (user?.profile ?? {}) as Record<string, unknown>;
     setProfile({
@@ -84,11 +85,11 @@ export default function AccountPage() {
     }
   }, [router.query.tab, user]);
 
+  const { showError, showSuccess } = useToast();
+
   const updateUserProfile = async (data: typeof profile) => {
     try {
-      // Compare each field with original user data, include only changed fields
       const updates: Partial<typeof profile> = {};
-
       const original = {
         name: safeString(user?.name ?? (user?.profile as Record<string, unknown>)?.name),
         email: safeString(user?.email ?? (user?.profile as Record<string, unknown>)?.email),
@@ -102,20 +103,18 @@ export default function AccountPage() {
       if (data.phone_number !== original.phone_number)
         updates.phone_number = data.phone_number;
 
-      // If no changes, avoid API call
       if (Object.keys(updates).length === 0) {
         return;
       }
 
       await updateUserData(updates);
       await refetchUser();
+      showSuccess("Profile updated successfully.");
     } catch {
-      // logger.error("Error updating profile:", { error });
       showError("Could not update profile. Please try again.");
     }
   };
 
-  const { showError, showSuccess } = useToast();
   const handleChangePassword = async (
     oldPassword: string,
     newPassword: string,
@@ -136,105 +135,106 @@ export default function AccountPage() {
       setConfirmPassword("");
       showSuccess("Password updated successfully");
     } catch {
-      // logger.error("Error loading profile", { err });
       showError("Error updating password");
     }
   };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <Head>
-          <title>ShopSwift | Account</title>
+          <title>My Account | ShopSwift</title>
           <meta
             name="description"
             content="Manage your profile, orders, and preferences."
           />
           <link rel="canonical" href={`${siteUrl}/account`} />
-          <meta property="og:title" content="ShopSwift | Account" />
-          <meta
-            property="og:description"
-            content="Manage your profile, orders, and preferences."
-          />
-          <meta property="og:url" content={`${siteUrl}/account`} />
         </Head>
-        <div className="w-8 h-8 border-4 border-rose-200 border-t-rose-600 rounded-full animate-spin"></div>
-        <p className="ml-3 text-lg text-muted-foreground">
-          Loading user profile...
-        </p>
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-border border-t-foreground rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-xs text-muted-foreground">
+            Loading your account...
+          </p>
+        </div>
       </div>
     );
   }
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Head>
-        <title>ShopSwift | Account</title>
+        <title>My Account | ShopSwift</title>
         <meta
           name="description"
           content="Manage your profile, orders, and preferences."
         />
         <link rel="canonical" href={`${siteUrl}/account`} />
-        <meta property="og:title" content="ShopSwift | Account" />
-        <meta
-          property="og:description"
-          content="Manage your profile, orders, and preferences."
-        />
-        <meta property="og:url" content={`${siteUrl}/account`} />
       </Head>
       <Header />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.3 }}
         >
           {/* Profile Header */}
-          <div className="bg-linear-to-r from-rose-600 to-amber-500 rounded-2xl p-8 mb-8 text-white">
-            <div className="flex items-center space-x-6">
-              <Avatar className="w-24 h-24 border-4 border-white/20">
-                <AvatarImage src={user?.avatar ?? undefined} />
-                <AvatarFallback className="text-2xl">
-                  {user?.name?.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-
-              <div className="flex-1">
-                <h1 className="text-3xl font-bold mb-2">{user?.name}</h1>
-                <p className="text-white/80 mb-4">{user?.email}</p>
-                <div className="flex items-center space-x-6 text-sm">
-                  <div>
-                    <span className="text-white/60">Member since</span>
-                    <p className="font-medium">
-                      {(() => {
-                        const d = safeDateFrom(
-                          user?.created_at ?? (user?.profile as Record<string, unknown>)?.created_at,
-                        );
-                        return d ? d.toLocaleDateString("en-US", { year: "numeric", month: "long" }) : "—";
-                      })()}
-                    </p>
+          <div className="rounded-lg border border-border bg-surface p-6 sm:p-8 mb-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+              <div className="flex items-center gap-5">
+                <Avatar className="w-16 h-16 border border-border bg-muted text-foreground">
+                  <AvatarImage src={user?.avatar ?? undefined} />
+                  <AvatarFallback className="text-lg font-semibold">
+                    {user?.name?.charAt(0) || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-xl font-bold tracking-tight text-foreground">
+                      {user?.name || "Member Account"}
+                    </h1>
+                    <Badge variant="secondary" className="text-[10px] py-0 px-2 font-normal">
+                      Verified
+                    </Badge>
                   </div>
-                  <div>
-                    <span className="text-white/60">Total Orders</span>
-                    <p className="font-medium">
-                      {safeNumber(getNested((user as Record<string, unknown>)?.orders, "meta", "total_orders"))}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-white/60">Wishlist</span>
-                    <p className="font-medium">
-                      {((user as Record<string, unknown>)?.wishlist as unknown[])?.length ?? localWishlist.length ?? 0}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-white/60">Total Spent</span>
-                    <p className="font-medium">
-                      {formatGBP(safeNumber(user?.totalSpent))}
-                    </p>
-                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {user?.email}
+                  </p>
                 </div>
               </div>
 
-              <Badge className="bg-white/20 text-white">Premium Member</Badge>
+              {/* Quick stats */}
+              <div className="grid grid-cols-3 gap-6 sm:gap-8 pt-4 sm:pt-0 border-t sm:border-t-0 border-border w-full sm:w-auto">
+                <div>
+                  <span className="text-[11px] text-muted-foreground block">
+                    Orders
+                  </span>
+                  <p className="text-sm font-semibold text-foreground mt-0.5">
+                    {safeNumber(getNested((user as Record<string, unknown>)?.orders, "meta", "total_orders"))}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-[11px] text-muted-foreground block">
+                    Wishlist
+                  </span>
+                  <p className="text-sm font-semibold text-foreground mt-0.5">
+                    {((user as Record<string, unknown>)?.wishlist as unknown[])?.length ?? localWishlist.length ?? 0}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-[11px] text-muted-foreground block">
+                    Member Since
+                  </span>
+                  <p className="text-sm font-semibold text-foreground mt-0.5">
+                    {(() => {
+                      const d = safeDateFrom(
+                        user?.created_at ?? (user?.profile as Record<string, unknown>)?.created_at,
+                      );
+                      return d ? d.toLocaleDateString("en-GB", { month: "short", year: "numeric" }) : "—";
+                    })()}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -242,86 +242,90 @@ export default function AccountPage() {
           <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
-            className="w-full"
+            className="w-full space-y-6"
           >
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 mb-8">
+            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 h-auto p-1 bg-surface border border-border rounded-lg">
               <TabsTrigger
                 value="profile"
-                className="flex items-center space-x-2"
+                className="flex items-center gap-1.5 py-2 text-xs font-medium"
               >
-                <User className="h-4 w-4" />
-                <span className="hidden sm:inline">Profile</span>
+                <User className="h-3.5 w-3.5" />
+                <span>Profile</span>
               </TabsTrigger>
               <TabsTrigger
                 value="orders"
-                className="flex items-center space-x-2"
+                className="flex items-center gap-1.5 py-2 text-xs font-medium"
               >
-                <Package className="h-4 w-4" />
-                <span className="hidden sm:inline">Orders</span>
+                <Package className="h-3.5 w-3.5" />
+                <span>Orders</span>
               </TabsTrigger>
               <TabsTrigger
                 value="wishlist"
-                className="flex items-center space-x-2"
+                className="flex items-center gap-1.5 py-2 text-xs font-medium"
               >
-                <Heart className="h-4 w-4" />
-                <span className="hidden sm:inline">Wishlist</span>
+                <Heart className="h-3.5 w-3.5" />
+                <span>Wishlist</span>
               </TabsTrigger>
               <TabsTrigger
                 value="addresses"
-                className="flex items-center space-x-2"
+                className="flex items-center gap-1.5 py-2 text-xs font-medium"
               >
-                <MapPin className="h-4 w-4" />
-                <span className="hidden sm:inline">Addresses</span>
+                <MapPin className="h-3.5 w-3.5" />
+                <span>Addresses</span>
               </TabsTrigger>
               <TabsTrigger
                 value="payment"
-                className="flex items-center space-x-2"
+                className="flex items-center gap-1.5 py-2 text-xs font-medium"
               >
-                <CreditCard className="h-4 w-4" />
-                <span className="hidden sm:inline">Payment</span>
+                <CreditCard className="h-3.5 w-3.5" />
+                <span>Payment</span>
               </TabsTrigger>
               <TabsTrigger
                 value="settings"
-                className="flex items-center space-x-2"
+                className="flex items-center gap-1.5 py-2 text-xs font-medium"
               >
-                <Settings className="h-4 w-4" />
-                <span className="hidden sm:inline">Settings</span>
+                <Settings className="h-3.5 w-3.5" />
+                <span>Settings</span>
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="profile">
-              <motion.div
-                className="grid md:grid-cols-2 gap-8"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <div className="bg-card border rounded-lg p-6">
-                  <h3 className="text-lg font-semibold mb-4">
+            {/* Profile Tab */}
+            <TabsContent value="profile" className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-surface border border-border rounded-lg p-6">
+                  <h3 className="text-sm font-semibold tracking-tight text-foreground mb-4">
                     Personal Information
                   </h3>
                   <div className="space-y-4">
-                    <div className="grid gap-4">
-                      <Label htmlFor="name">Name</Label>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="name" className="text-xs font-medium text-foreground">
+                        Full Name
+                      </Label>
                       <Input
                         id="name"
                         value={profile.name}
                         onChange={(e) =>
                           setProfile({ ...profile, name: e.target.value })
                         }
+                        className="h-10 text-sm"
                       />
                     </div>
-                    <div className="grid gap-4">
-                      <Label htmlFor="email">Email</Label>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="email" className="text-xs font-medium text-foreground">
+                        Email Address
+                      </Label>
                       <Input
                         id="email"
                         type="email"
                         value={profile.email}
                         readOnly
+                        className="h-10 text-sm bg-muted/50 cursor-not-allowed"
                       />
                     </div>
-                    <div className="grid gap-4">
-                      <Label htmlFor="phone_number">Phone</Label>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="phone_number" className="text-xs font-medium text-foreground">
+                        Phone Number
+                      </Label>
                       <Input
                         id="phone_number"
                         value={profile.phone_number}
@@ -331,44 +335,59 @@ export default function AccountPage() {
                             phone_number: e.target.value,
                           })
                         }
+                        placeholder="+44 7700 900000"
+                        className="h-10 text-sm"
                       />
                     </div>
-                    <Button onClick={() => updateUserProfile(profile)}>
+                    <Button
+                      onClick={() => updateUserProfile(profile)}
+                      size="sm"
+                      className="mt-2"
+                    >
                       Update Profile
                     </Button>
                   </div>
                 </div>
 
-                <div className="bg-card border rounded-lg p-6">
-                  <h3 className="text-lg font-semibold mb-4">
+                <div className="bg-surface border border-border rounded-lg p-6">
+                  <h3 className="text-sm font-semibold tracking-tight text-foreground mb-4">
                     Account Security
                   </h3>
                   <div className="space-y-4">
-                    <div className="grid gap-4">
-                      <Label htmlFor="currentPassword">Current Password</Label>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="currentPassword" className="text-xs font-medium text-foreground">
+                        Current Password
+                      </Label>
                       <Input
                         id="currentPassword"
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        className="h-10 text-sm"
                       />
                     </div>
-                    <div className="grid gap-4">
-                      <Label htmlFor="newPassword">New Password</Label>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="newPassword" className="text-xs font-medium text-foreground">
+                        New Password
+                      </Label>
                       <Input
                         id="newPassword"
                         type="password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
+                        className="h-10 text-sm"
                       />
                     </div>
-                    <div className="grid gap-4">
-                      <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="confirmPassword" className="text-xs font-medium text-foreground">
+                        Confirm Password
+                      </Label>
                       <Input
                         id="confirmPassword"
                         type="password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="h-10 text-sm"
                       />
                     </div>
                     <Button
@@ -379,122 +398,119 @@ export default function AccountPage() {
                           confirmPassword,
                         )
                       }
+                      size="sm"
+                      variant="outline"
+                      className="mt-2"
                     >
                       Change Password
                     </Button>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </TabsContent>
 
+            {/* Orders Tab */}
             <TabsContent value="orders">
               <OrderHistory orders={user?.orders} />
             </TabsContent>
 
+            {/* Wishlist Tab */}
             <TabsContent value="wishlist">
               <WishlistItems />
             </TabsContent>
 
+            {/* Addresses Tab */}
             <TabsContent value="addresses">
               <AddressBook />
             </TabsContent>
 
+            {/* Payment Tab */}
             <TabsContent value="payment">
-              <motion.div
-                className="space-y-6"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <div className="bg-card border rounded-lg p-6">
-                  <h3 className="text-lg font-semibold mb-4">
-                    Payment Methods
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-8 bg-linear-to-r from-blue-600 to-blue-800 rounded flex items-center justify-center text-white text-xs font-bold">
-                          VISA
-                        </div>
-                        <div>
-                          <p className="font-medium">•••• •••• •••• 4242</p>
-                          <p className="text-sm text-muted-foreground">
-                            Expires 12/25
-                          </p>
-                        </div>
+              <div className="bg-surface border border-border rounded-lg p-6 max-w-xl">
+                <h3 className="text-sm font-semibold tracking-tight text-foreground mb-4">
+                  Payment Methods
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-4 border border-border rounded-md bg-background">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-7 bg-muted border border-border rounded flex items-center justify-center text-foreground text-[10px] font-bold tracking-wider">
+                        VISA
                       </div>
-                      <Badge>Default</Badge>
+                      <div>
+                        <p className="text-xs font-medium text-foreground">•••• •••• •••• 4242</p>
+                        <p className="text-[11px] text-muted-foreground">Expires 12/26</p>
+                      </div>
                     </div>
-                    <Button variant="outline" className="w-full">
-                      Add New Payment Method
-                    </Button>
+                    <Badge variant="secondary" className="text-[10px] font-normal">
+                      Default
+                    </Badge>
                   </div>
+                  <Button variant="outline" size="sm" className="w-full">
+                    Add Payment Method
+                  </Button>
                 </div>
-              </motion.div>
+              </div>
             </TabsContent>
 
-            <TabsContent value="settings">
-              <motion.div
-                className="space-y-6"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <div className="bg-card border rounded-lg p-6">
-                  <h3 className="text-lg font-semibold mb-4">Notifications</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <Bell className="h-5 w-5" />
-                        <div>
-                          <p className="font-medium">Email Notifications</p>
-                          <p className="text-sm text-muted-foreground">
-                            Receive updates about your orders
-                          </p>
-                        </div>
+            {/* Settings Tab */}
+            <TabsContent value="settings" className="space-y-6 max-w-2xl">
+              <div className="bg-surface border border-border rounded-lg p-6 space-y-5">
+                <h3 className="text-sm font-semibold tracking-tight text-foreground">
+                  Preferences
+                </h3>
+                <div className="space-y-4 text-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Bell className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium text-foreground">Email Notifications</p>
+                        <p className="text-muted-foreground">Receive order updates and dispatch notices.</p>
                       </div>
-                      <Button variant="outline" size="sm">
-                        Manage
-                      </Button>
                     </div>
-                    <Separator />
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <Shield className="h-5 w-5" />
-                        <div>
-                          <p className="font-medium">Privacy Settings</p>
-                          <p className="text-sm text-muted-foreground">
-                            Control your data and privacy
-                          </p>
-                        </div>
-                      </div>
-                      <Button variant="outline" size="sm">
-                        Manage
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-card border rounded-lg p-6">
-                  <h3 className="text-lg font-semibold mb-4 text-destructive">
-                    Danger Zone
-                  </h3>
-                  <div className="space-y-4">
-                    <Button
-                      variant="outline"
-                      className="text-destructive border-destructive"
-                      onClick={async () => {
-                        await signOut();
-                        router.push("/");
-                      }}
-                    >
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Sign Out
+                    <Button variant="outline" size="sm" className="h-8 text-xs">
+                      Preferences
                     </Button>
-                    <Button variant="destructive">Delete Account</Button>
+                  </div>
+                  <Separator />
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Shield className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium text-foreground">Privacy & Data</p>
+                        <p className="text-muted-foreground">Manage cookies and data retention.</p>
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm" className="h-8 text-xs">
+                      Manage
+                    </Button>
                   </div>
                 </div>
-              </motion.div>
+              </div>
+
+              <div className="bg-surface border border-border rounded-lg p-6 space-y-4">
+                <h3 className="text-sm font-semibold tracking-tight text-foreground">
+                  Session &amp; Account
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Sign out from your current device or manage your account status.
+                </p>
+                <div className="flex gap-3 pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      await signOut();
+                      router.push("/");
+                    }}
+                  >
+                    <LogOut className="h-3.5 w-3.5 mr-1.5" />
+                    Sign Out
+                  </Button>
+                  <Button variant="destructive" size="sm">
+                    Delete Account
+                  </Button>
+                </div>
+              </div>
             </TabsContent>
           </Tabs>
         </motion.div>

@@ -3,6 +3,7 @@ import { FormField } from "@/components/checkout/CheckoutComponents";
 import { SHIPPING_OPTIONS } from "@/components/checkout/checkoutConstants";
 import { FieldError, ShippingDetails, StepId } from "@/components/checkout/checkoutTypes";
 import { formatGBP, getDeliveryDate } from "@/components/checkout/checkoutUtils";
+import { Badge } from "@/components/ui/badge";
 import { AnimatePresence, motion } from "framer-motion";
 import { Mail, MapPin, Phone, User } from "lucide-react";
 
@@ -18,9 +19,6 @@ interface Props {
   shippingMethod: string;
   setShippingMethod: (v: string) => void;
 }
-
-const saveButtonCls =
-  "bg-linear-to-r from-rose-600 to-amber-500 text-white rounded-xl h-10";
 
 export function InlineEditPanels({
   editingSection,
@@ -44,7 +42,7 @@ export function InlineEditPanels({
           exit={{ opacity: 0, height: 0 }}
           className="overflow-hidden mb-4"
         >
-          <div className="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 space-y-4">
+          <div className="rounded-lg bg-surface border border-border p-5 space-y-4">
             <FormField
               name="email"
               label="Email Address"
@@ -71,13 +69,16 @@ export function InlineEditPanels({
               onChange={(v) => handleChange("phone", v)}
               onBlur={() => handleBlur("phone")}
             />
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={onClose}>
+                Cancel
+              </Button>
               <Button
                 type="button"
+                size="sm"
                 onClick={() => {
                   if (validateStep(1)) onClose();
                 }}
-                className={`${saveButtonCls} w-full sm:w-auto`}
               >
                 Save Changes
               </Button>
@@ -94,7 +95,7 @@ export function InlineEditPanels({
           exit={{ opacity: 0, height: 0 }}
           className="overflow-hidden mb-4"
         >
-          <div className="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6 space-y-4">
+          <div className="rounded-lg bg-surface border border-border p-5 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 name="firstName"
@@ -165,13 +166,16 @@ export function InlineEditPanels({
                 onBlur={() => handleBlur("zipCode")}
               />
             </div>
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={onClose}>
+                Cancel
+              </Button>
               <Button
                 type="button"
+                size="sm"
                 onClick={() => {
                   if (validateStep(2)) onClose();
                 }}
-                className={`${saveButtonCls} w-full sm:w-auto`}
               >
                 Save Changes
               </Button>
@@ -188,7 +192,7 @@ export function InlineEditPanels({
           exit={{ opacity: 0, height: 0 }}
           className="overflow-hidden mb-4"
         >
-          <div className="rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-6">
+          <div className="rounded-lg bg-surface border border-border p-5">
             <div className="space-y-3">
               {SHIPPING_OPTIONS.map((opt) => {
                 const isSelected = shippingMethod === opt.id;
@@ -197,10 +201,10 @@ export function InlineEditPanels({
                     type="button"
                     key={opt.id}
                     onClick={() => setShippingMethod(opt.id)}
-                    className={`w-full text-left rounded-2xl border-2 p-5 transition-all duration-200 min-h-20 ${
+                    className={`w-full text-left rounded-lg border p-4 transition-colors ${
                       isSelected
-                        ? "border-rose-500 bg-linear-to-r from-rose-50 to-amber-50 dark:from-rose-950/30 dark:to-amber-950/20 shadow-md shadow-rose-500/10"
-                        : "border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900"
+                        ? "border-foreground bg-muted/40 shadow-xs"
+                        : "border-border hover:border-foreground/40 bg-background"
                     }`}
                     role="radio"
                     aria-checked={isSelected}
@@ -209,38 +213,42 @@ export function InlineEditPanels({
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3">
                         <div
-                          className={`mt-0.5 w-5 h-5 rounded-full border-2 shrink-0 ${isSelected ? "border-rose-500 bg-rose-500" : "border-neutral-300 dark:border-neutral-600"}`}
+                          className={`mt-0.5 w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
+                            isSelected
+                              ? "border-foreground bg-foreground text-background"
+                              : "border-muted-foreground/40"
+                          }`}
                         />
                         <div>
                           <div className="flex items-center gap-2">
-                            <p className="font-semibold text-neutral-900 dark:text-neutral-100">
+                            <p className="font-medium text-sm text-foreground">
                               {opt.label}
                             </p>
                             {opt.badge && (
-                              <span className="px-2 py-0.5 text-xs font-bold bg-linear-to-r from-rose-600 to-amber-500 text-white rounded-full">
+                              <Badge variant="secondary" className="text-[10px] py-0 px-1.5 font-normal">
                                 {opt.badge}
-                              </span>
+                              </Badge>
                             )}
                           </div>
-                          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+                          <p className="text-xs text-muted-foreground mt-0.5">
                             {opt.sub}
                           </p>
-                          <p className="text-xs text-rose-600 dark:text-rose-400 mt-1 font-medium">
+                          <p className="text-xs text-muted-foreground mt-1 font-medium">
                             Arrives by {getDeliveryDate(opt.days)}
                           </p>
                         </div>
                       </div>
-                      <p className="font-bold text-lg text-neutral-900 dark:text-neutral-100 shrink-0 ml-4">
-                        {formatGBP(opt.price)}
+                      <p className="font-semibold text-sm text-foreground shrink-0 ml-4">
+                        {opt.price === 0 ? "Free" : formatGBP(opt.price)}
                       </p>
                     </div>
                   </button>
                 );
               })}
             </div>
-            <div className="flex justify-end mt-4">
-              <Button type="button" onClick={onClose} className={`${saveButtonCls} w-full sm:w-auto`}>
-                Save Changes
+            <div className="flex justify-end gap-2 mt-4">
+              <Button type="button" size="sm" onClick={onClose}>
+                Done
               </Button>
             </div>
           </div>

@@ -3,7 +3,7 @@
 import React, { useMemo } from "react";
 import type { Product } from "@/lib/types";
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useProducts } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
 import Image from "next/image";
@@ -74,24 +74,17 @@ export function CollectionsSection() {
     <section className="py-16 lg:py-20 relative">
       <div className="container mx-auto px-4 lg:px-8">
         {/* Header */}
-        <motion.div
-          className="text-center mb-12"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
-          <span className="inline-flex items-center gap-1.5 text-sm font-medium text-rose-600 dark:text-rose-400 tracking-wide uppercase mb-3">
-            <Sparkles className="h-3.5 w-3.5" />
-            Curated for You
+        <div className="text-center mb-10">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-2">
+            Curated Collections
           </span>
-          <h2 className="text-3xl lg:text-4xl font-bold tracking-tight mb-3">
-            Explore Collections
+          <h2 className="text-2xl lg:text-3xl font-bold tracking-tight text-foreground">
+            Explore Curated Edits
           </h2>
-          <p className="text-muted-foreground max-w-lg mx-auto">
+          <p className="text-muted-foreground text-sm max-w-lg mx-auto mt-2">
             Thoughtfully grouped selections designed around your lifestyle
           </p>
-        </motion.div>
+        </div>
 
         {/* Collections Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -145,7 +138,7 @@ export function CollectionsSection() {
 
                   {/* Content */}
                   <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8">
-                    <span className="inline-block text-xs font-medium bg-white/15 text-white/80 backdrop-blur-sm px-3 py-1 rounded-full mb-3">
+                    <span className="inline-block text-[11px] font-semibold bg-white/20 text-white backdrop-blur-xs px-2.5 py-0.5 rounded-md mb-3">
                       {collection.productCount} products
                     </span>
                     <h3
@@ -157,18 +150,15 @@ export function CollectionsSection() {
                     >
                       {collection.title}
                     </h3>
-                    <p className="text-white/70 text-sm mb-4">
+                    <p className="text-white/80 text-sm mb-4">
                       {collection.subtitle}
                     </p>
 
-                    <span className="inline-flex items-center gap-1.5 text-sm font-medium text-white group-hover:gap-2.5 transition-all duration-300">
+                    <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white group-hover:gap-2.5 transition-all duration-200">
                       Shop Now
                       <ArrowRight className="h-4 w-4" />
                     </span>
                   </div>
-
-                  {/* Violet hover wash */}
-                  <div className="absolute inset-0 bg-rose-600/0 group-hover:bg-rose-600/10 transition-colors duration-500" />
                 </div>
                   </Link>
                 );

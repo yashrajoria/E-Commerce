@@ -28,35 +28,25 @@ export const ProgressDots = ({
         return (
           <div key={step} className="flex items-center gap-2">
             <motion.div
-              className={`flex items-center justify-center rounded-full transition-all duration-300 ${
+              className={`flex items-center justify-center rounded-full text-xs font-semibold transition-all duration-200 ${
                 isCompleted
-                  ? "w-8 h-8 bg-linear-to-r from-rose-600 to-amber-500"
+                  ? "w-7 h-7 bg-foreground text-background"
                   : isCurrent
-                    ? "w-8 h-8 bg-linear-to-r from-rose-600 to-amber-500 ring-4 ring-rose-500/20"
-                    : "w-8 h-8 bg-neutral-200 dark:bg-neutral-700"
+                    ? "w-7 h-7 bg-foreground text-background ring-2 ring-foreground/20"
+                    : "w-7 h-7 bg-muted text-muted-foreground"
               }`}
               layout
             >
               {isCompleted ? (
-                <Check className="h-4 w-4 text-white" strokeWidth={3} />
+                <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
               ) : (
-                <span
-                  className={`text-xs font-bold ${
-                    isCurrent
-                      ? "text-white"
-                      : "text-neutral-500 dark:text-neutral-400"
-                  }`}
-                >
-                  {step}
-                </span>
+                <span>{step}</span>
               )}
             </motion.div>
             {step < total && (
               <div
-                className={`w-8 sm:w-12 h-0.5 rounded-full transition-colors duration-300 ${
-                  isCompleted
-                    ? "bg-linear-to-r from-rose-600 to-amber-500"
-                    : "bg-neutral-200 dark:bg-neutral-700"
+                className={`w-6 sm:w-10 h-0.5 rounded-full transition-colors duration-200 ${
+                  isCompleted ? "bg-foreground" : "bg-border"
                 }`}
               />
             )}
@@ -100,9 +90,9 @@ export const FormField = ({
     <div className="space-y-1.5">
       <Label
         htmlFor={name}
-        className="text-sm font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-2"
+        className="text-xs font-medium text-foreground flex items-center gap-1.5"
       >
-        <Icon className="h-4 w-4 text-rose-500" />
+        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
         {label}
       </Label>
       <div className="relative">
@@ -119,11 +109,11 @@ export const FormField = ({
           aria-label={label}
           aria-invalid={isTouched && !!error}
           aria-describedby={error ? `${name}-error` : undefined}
-          className={`h-12 text-base pr-10 transition-all duration-200 rounded-xl border-neutral-200 dark:border-neutral-700 focus:border-rose-500 focus:ring-rose-500/20 ${
+          className={`h-10 text-sm ${
             isTouched && error
-              ? "border-rose-500 ring-2 ring-rose-500/20"
+              ? "border-destructive ring-1 ring-destructive/30"
               : isValid
-                ? "border-emerald-400 dark:border-emerald-600"
+                ? "border-border"
                 : ""
           }`}
         />
@@ -136,7 +126,7 @@ export const FormField = ({
             initial={{ opacity: 0, y: -4, height: 0 }}
             animate={{ opacity: 1, y: 0, height: "auto" }}
             exit={{ opacity: 0, y: -4, height: 0 }}
-            className="text-sm text-rose-600 dark:text-rose-400"
+            className="text-xs text-destructive"
           >
             {error}
           </motion.p>
@@ -157,9 +147,9 @@ export const CompletedCard = (props: {
   const { title, summary, isEditing, onEditToggle, icon: Icon } = props;
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/50 dark:bg-emerald-950/20 p-4 mb-4"
+      className="rounded-lg border border-border bg-surface p-4 mb-3"
     >
       <button
         type="button"
@@ -169,27 +159,27 @@ export const CompletedCard = (props: {
         aria-label={`Edit ${title}`}
       >
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
+          <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center shrink-0 text-foreground">
             {Icon ? (
-              <Icon className="h-4 w-4 text-white" />
+              <Icon className="h-3.5 w-3.5" />
             ) : (
-              <Check className="h-4 w-4 text-white" strokeWidth={3} />
+              <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
             )}
           </div>
           <div>
-            <p className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">
+            <p className="font-medium text-xs text-foreground">
               {title}
             </p>
             {!isEditing && (
-              <div className="text-sm text-neutral-600 dark:text-neutral-400 mt-0.5">
+              <div className="text-xs text-muted-foreground mt-0.5">
                 {summary}
               </div>
             )}
           </div>
         </div>
         {onEditToggle ? (
-          <div className="flex items-center gap-1 text-rose-600 dark:text-rose-400 text-sm font-medium">
-            <Pencil className="h-3.5 w-3.5" />
+          <div className="flex items-center gap-1 text-muted-foreground hover:text-foreground text-xs font-medium transition-colors">
+            <Pencil className="h-3 w-3" />
             <span>{isEditing ? "Close" : "Edit"}</span>
           </div>
         ) : null}

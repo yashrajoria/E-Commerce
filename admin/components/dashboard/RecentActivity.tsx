@@ -13,6 +13,7 @@ import {
   ArrowRight,
   type LucideIcon,
 } from "lucide-react";
+import Link from "next/link";
 
 interface Activity {
   id: string;
@@ -22,8 +23,6 @@ interface Activity {
   icon: LucideIcon;
   variant: "success" | "warning" | "error" | "info" | "neutral";
 }
-
-
 
 export default function RecentActivity({ activities }: { activities: Array<{ id: string; type: string; description: string; time: string; variant: string }> }) {
   if (!activities || activities.length === 0) return null;
@@ -51,63 +50,59 @@ export default function RecentActivity({ activities }: { activities: Array<{ id:
   });
 
   return (
-    <Card className="glass-effect border-gradient overflow-hidden">
-      <CardHeader className="pb-3">
+    <Card className="bg-card border border-border shadow-2xs overflow-hidden">
+      <CardHeader className="pb-3 border-b border-border/60">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg gradient-blue flex items-center justify-center">
-              <Clock className="h-3.5 w-3.5 text-white" />
+            <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+              <Clock className="h-4 w-4" />
             </div>
-            Recent Activity
+            Operational Audit Trail
           </CardTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-xs text-muted-foreground hover:text-primary gap-1"
-          >
-            View All <ArrowRight size={12} />
-          </Button>
+          <Link href="/activity-logs">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs text-muted-foreground hover:text-foreground gap-1 h-7 px-2 font-medium"
+            >
+              Full Log <ArrowRight size={12} />
+            </Button>
+          </Link>
         </div>
       </CardHeader>
-      <CardContent className="px-4 pb-4">
-        <div className="space-y-1">
-          {mappedActivities.map((activity, idx) => (
-            <motion.div
-              key={activity.id + idx}
-              initial={{ opacity: 0, x: -12 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: 0.05 * idx }}
-              className="group flex items-start gap-3 p-2.5 rounded-xl hover:bg-white/[0.03] transition-all duration-200"
-            >
-              {/* Icon */}
-              <div className="shrink-0 mt-0.5">
-                <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center group-hover:border-primary/20 transition-colors">
-                  <activity.icon
-                    size={14}
-                    className="text-muted-foreground group-hover:text-primary transition-colors"
-                  />
+      <CardContent className="p-3">
+        <div className="divide-y divide-border/60">
+          {mappedActivities.map((activity, idx) => {
+            const Icon = activity.icon;
+            return (
+              <motion.div
+                key={activity.id + idx}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: 0.03 * idx }}
+                className="flex items-center justify-between gap-4 py-2.5 px-2 hover:bg-muted/40 rounded-lg transition-colors"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-7 h-7 rounded-md bg-muted flex items-center justify-center shrink-0 text-muted-foreground border border-border">
+                    <Icon size={14} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {activity.description}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {activity.time}
+                    </p>
+                  </div>
                 </div>
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <StatusBadge
-                    variant={activity.variant}
-                    label={activity.type}
-                  />
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed truncate">
-                  {activity.description}
-                </p>
-              </div>
-
-              {/* Time */}
-              <span className="shrink-0 text-[11px] text-muted-foreground/60 mt-0.5">
-                {activity.time}
-              </span>
-            </motion.div>
-          ))}
+                <StatusBadge
+                  variant={activity.variant}
+                  label={activity.type}
+                  size="sm"
+                />
+              </motion.div>
+            );
+          })}
         </div>
       </CardContent>
     </Card>

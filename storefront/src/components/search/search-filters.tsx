@@ -6,8 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { Category } from "@/lib/types";
 import { formatGBP } from "@/lib/utils";
-import { motion } from "framer-motion";
-import { Star } from "lucide-react";
+import React from "react";
 
 interface SearchFiltersProps {
   categories: Category[];
@@ -15,8 +14,10 @@ interface SearchFiltersProps {
   onCategoryChange: (category: string) => void;
   priceRange: number[];
   onPriceRangeChange: (range: number[]) => void;
+  maxPriceLimit?: number;
   selectedBrands: string[];
   onBrandsChange: (brands: string[]) => void;
+  availableBrands?: string[];
   selectedRating: number | null;
   onRatingChange: (rating: number | null) => void;
   inStockOnly: boolean;
@@ -34,10 +35,10 @@ export function SearchFilters({
   onCategoryChange,
   priceRange,
   onPriceRangeChange,
+  maxPriceLimit = 2000,
   selectedBrands,
   onBrandsChange,
-  selectedRating,
-  onRatingChange,
+  availableBrands = ["ShopSwift", "Apex", "Nova", "AudioCraft", "Orbit"],
   inStockOnly,
   onInStockChange,
   onSaleOnly,
@@ -46,26 +47,17 @@ export function SearchFilters({
   onFreeShippingChange,
   onClearAll,
 }: SearchFiltersProps) {
-  const brands = [
-    "ShopSwift",
-    "TechPro",
-    "StyleMax",
-    "HomeComfort",
-    "SportsFit",
-  ];
-  const ratings = [5, 4, 3, 2, 1];
-
   return (
-    <motion.div
-      className="space-y-6 bg-card border rounded-lg p-6"
-      initial={{ opacity: 0, x: -30 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.6 }}
-    >
+    <div className="space-y-6 bg-card border border-border rounded-xl p-5 shadow-xs">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold">Filters</h3>
-        <Button variant="ghost" size="sm" onClick={onClearAll}>
-          Clear All
+        <h3 className="font-semibold text-sm text-foreground uppercase tracking-wider">Filters</h3>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onClearAll}
+          className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+        >
+          Reset
         </Button>
       </div>
 
@@ -73,8 +65,8 @@ export function SearchFilters({
 
       {/* Categories */}
       <div>
-        <h4 className="font-medium mb-3">Categories</h4>
-        <div className="space-y-2">
+        <h4 className="text-xs font-semibold text-foreground uppercase tracking-wider mb-3">Categories</h4>
+        <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
           {categories.map((category) => (
             <div key={category.id} className="flex items-center space-x-2">
               <Checkbox
@@ -86,12 +78,14 @@ export function SearchFilters({
               />
               <label
                 htmlFor={category.id}
-                className="text-sm cursor-pointer flex-1 flex items-center justify-between"
+                className="text-xs text-foreground cursor-pointer flex-1 flex items-center justify-between"
               >
-                {category.name}
-                <span className="text-muted-foreground text-xs">
-                  ({category.productCount})
-                </span>
+                <span className="capitalize">{category.name.replace(/-/g, " ")}</span>
+                {category.productCount !== undefined && (
+                  <span className="text-muted-foreground text-[11px]">
+                    ({category.productCount})
+                  </span>
+                )}
               </label>
             </div>
           ))}
@@ -102,93 +96,63 @@ export function SearchFilters({
 
       {/* Price Range */}
       <div>
-        <h4 className="font-medium mb-3">Price Range</h4>
-        <div className="space-y-4">
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="text-xs font-semibold text-foreground uppercase tracking-wider">Price Range</h4>
+          <span className="text-xs font-medium text-muted-foreground">
+            {formatGBP(priceRange[0])} – {formatGBP(priceRange[1])}
+          </span>
+        </div>
+        <div className="space-y-3 pt-1">
           <Slider
             value={priceRange}
             onValueChange={onPriceRangeChange}
-            max={500}
+            max={maxPriceLimit}
             min={0}
             step={10}
             className="w-full"
           />
-          <div className="flex items-center justify-between text-sm">
-            <span>{formatGBP(priceRange[0])}</span>
-            <span>{formatGBP(priceRange[1])}</span>
+          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+            <span>Min: £0</span>
+            <span>Max: {formatGBP(maxPriceLimit)}</span>
           </div>
         </div>
       </div>
 
-      <Separator />
-
-      {/* Brands */}
-      <div>
-        <h4 className="font-medium mb-3">Brands</h4>
-        <div className="space-y-2">
-          {brands.map((brand) => (
-            <div key={brand} className="flex items-center space-x-2">
-              <Checkbox
-                id={brand}
-                checked={selectedBrands.includes(brand)}
-                onCheckedChange={(checked) => {
-                  if (checked === true) {
-                    onBrandsChange([...selectedBrands, brand]);
-                    return;
-                  }
-                  onBrandsChange(selectedBrands.filter((b) => b !== brand));
-                }}
-              />
-              <label htmlFor={brand} className="text-sm cursor-pointer">
-                {brand}
-              </label>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <Separator />
-
-      {/* Rating */}
-      <div>
-        <h4 className="font-medium mb-3">Customer Rating</h4>
-        <div className="space-y-2">
-          {ratings.map((rating) => (
-            <div key={rating} className="flex items-center space-x-2">
-              <Checkbox
-                id={`rating-${rating}`}
-                checked={selectedRating === rating}
-                onCheckedChange={(checked) =>
-                  onRatingChange(checked === true ? rating : null)
-                }
-              />
-              <label
-                htmlFor={`rating-${rating}`}
-                className="text-sm cursor-pointer flex items-center space-x-1"
-              >
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-3 w-3 ${
-                        i < rating
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "text-gray-300"
-                      }`}
-                    />
-                  ))}
+      {availableBrands.length > 0 && (
+        <>
+          <Separator />
+          {/* Brands */}
+          <div>
+            <h4 className="text-xs font-semibold text-foreground uppercase tracking-wider mb-3">Brands</h4>
+            <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+              {availableBrands.map((brand) => (
+                <div key={brand} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`brand-${brand}`}
+                    checked={selectedBrands.includes(brand)}
+                    onCheckedChange={(checked) => {
+                      if (checked === true) {
+                        onBrandsChange([...selectedBrands, brand]);
+                        return;
+                      }
+                      onBrandsChange(selectedBrands.filter((b) => b !== brand));
+                    }}
+                  />
+                  <label htmlFor={`brand-${brand}`} className="text-xs text-foreground cursor-pointer">
+                    {brand}
+                  </label>
                 </div>
-                <span>& Up</span>
-              </label>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
+        </>
+      )}
 
       <Separator />
 
       {/* Availability */}
       <div>
-        <h4 className="font-medium mb-3">Availability</h4>
+        <h4 className="text-xs font-semibold text-foreground uppercase tracking-wider mb-3">Availability</h4>
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
             <Checkbox
@@ -196,8 +160,8 @@ export function SearchFilters({
               checked={inStockOnly}
               onCheckedChange={(checked) => onInStockChange(checked === true)}
             />
-            <label htmlFor="in-stock" className="text-sm cursor-pointer">
-              In Stock
+            <label htmlFor="in-stock" className="text-xs text-foreground cursor-pointer">
+              In Stock Only
             </label>
           </div>
           <div className="flex items-center space-x-2">
@@ -206,8 +170,8 @@ export function SearchFilters({
               checked={onSaleOnly}
               onCheckedChange={(checked) => onOnSaleChange(checked === true)}
             />
-            <label htmlFor="on-sale" className="text-sm cursor-pointer">
-              On Sale
+            <label htmlFor="on-sale" className="text-xs text-foreground cursor-pointer">
+              Special Offers & Sale
             </label>
           </div>
           <div className="flex items-center space-x-2">
@@ -218,12 +182,12 @@ export function SearchFilters({
                 onFreeShippingChange(checked === true)
               }
             />
-            <label htmlFor="free-shipping" className="text-sm cursor-pointer">
-              Free Shipping
+            <label htmlFor="free-shipping" className="text-xs text-foreground cursor-pointer">
+              Free Delivery Eligible
             </label>
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

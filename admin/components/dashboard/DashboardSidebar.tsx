@@ -14,7 +14,6 @@ import {
   ChevronRight,
   CreditCard,
   LogOut,
-  Crown,
   Search,
   HelpCircle,
   Megaphone,
@@ -471,12 +470,12 @@ const DashboardSidebar = () => {
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
         className={cn(
-          "h-screen glass-sidebar sticky top-0 flex flex-col transition-all duration-300 z-20",
+          "hidden lg:flex h-screen bg-card border-r border-border sticky top-0 flex-col transition-all duration-300 z-20",
           collapsed ? "w-[72px]" : "w-[260px]",
         )}
       >
         {/* ── Brand Header ── */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-white/[0.04]">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-border">
           <AnimatePresence mode="wait">
             {!collapsed && (
               <motion.div
@@ -486,14 +485,17 @@ const DashboardSidebar = () => {
                 transition={{ duration: 0.2 }}
                 className="flex items-center gap-2.5"
               >
-                <div className="w-8 h-8 rounded-lg gradient-purple flex items-center justify-center glow-purple">
-                  <Crown size={16} className="text-white" />
+                <div className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold shadow-xs">
+                  <span className="text-sm font-black tracking-tight">S</span>
                 </div>
                 <div>
-                  <h1 className="text-sm font-bold text-gradient leading-none">
-                    ShopSwift
-                  </h1>
-                  <span className="text-[10px] text-muted-foreground font-medium tracking-wider uppercase">
+                  <div className="flex items-center gap-1">
+                    <h1 className="text-sm font-bold tracking-tight text-foreground leading-none">
+                      ShopSwift
+                    </h1>
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+                  </div>
+                  <span className="text-[10px] text-muted-foreground font-semibold tracking-wider uppercase">
                     Admin Pro
                   </span>
                 </div>
@@ -502,8 +504,8 @@ const DashboardSidebar = () => {
           </AnimatePresence>
 
           {collapsed && (
-            <div className="w-8 h-8 rounded-lg gradient-purple flex items-center justify-center mx-auto glow-purple">
-              <Crown size={16} className="text-white" />
+            <div className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center mx-auto shadow-xs">
+              <span className="text-sm font-black">S</span>
             </div>
           )}
 
@@ -511,7 +513,7 @@ const DashboardSidebar = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 rounded-md hover:bg-white/[0.06] text-muted-foreground"
+              className="h-7 w-7 rounded-md hover:bg-muted text-muted-foreground"
               onClick={() => setCollapsed(true)}
               aria-label="Collapse sidebar"
             >
@@ -528,10 +530,10 @@ const DashboardSidebar = () => {
             transition={{ delay: 0.2 }}
             className="px-3 py-3"
           >
-            <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.06] text-muted-foreground text-xs hover:bg-white/[0.06] hover:border-white/[0.1] transition-all duration-200">
+            <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/40 border border-border text-muted-foreground text-xs hover:bg-muted hover:text-foreground transition-all duration-200">
               <Search size={13} />
               <span>Search...</span>
-              <kbd className="ml-auto text-[10px] border border-white/10 rounded px-1.5 py-0.5 bg-white/[0.03] font-mono">
+              <kbd className="ml-auto text-[10px] border border-border rounded px-1.5 py-0.5 bg-background font-mono">
                 ⌘K
               </kbd>
             </button>
@@ -566,10 +568,10 @@ const DashboardSidebar = () => {
                       <Link
                         href={item.path}
                         className={cn(
-                          "group relative flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-200",
+                          "group relative flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150",
                           active
-                            ? "bg-primary/10 text-primary"
-                            : "text-muted-foreground hover:text-foreground hover:bg-white/[0.04]",
+                            ? "bg-primary/10 text-primary font-semibold"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/60",
                           collapsed && "justify-center px-0",
                         )}
                       >
@@ -589,7 +591,7 @@ const DashboardSidebar = () => {
                         <item.icon
                           size={18}
                           className={cn(
-                            "shrink-0 transition-colors duration-200",
+                            "shrink-0 transition-colors duration-150",
                             active
                               ? "text-primary"
                               : "text-muted-foreground group-hover:text-foreground",
@@ -602,13 +604,13 @@ const DashboardSidebar = () => {
 
                         {/* Badge */}
                         {item.badge && !collapsed && (
-                          <span className="min-w-[20px] h-5 flex items-center justify-center rounded-full bg-primary/15 text-primary text-[10px] font-bold px-1.5">
+                          <span className="min-w-[20px] h-5 flex items-center justify-center rounded-full bg-accent/20 text-accent text-[10px] font-bold px-1.5">
                             {item.badge}
                           </span>
                         )}
 
                         {item.badge && collapsed && (
-                          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 flex items-center justify-center rounded-full bg-primary text-[9px] font-bold text-white">
+                          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 flex items-center justify-center rounded-full bg-accent text-[9px] font-bold text-accent-foreground">
                             {item.badge > 9 ? "9+" : item.badge}
                           </span>
                         )}
@@ -621,8 +623,8 @@ const DashboardSidebar = () => {
                         initial={{ opacity: 0, x: -8 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{
-                          duration: 0.25,
-                          delay: 0.03 * (sectionIdx * 3 + idx),
+                          duration: 0.2,
+                          delay: 0.02 * (sectionIdx * 3 + idx),
                         }}
                       >
                         {collapsed ? (
@@ -635,7 +637,7 @@ const DashboardSidebar = () => {
                             >
                               {item.label}
                               {item.badge && (
-                                <span className="ml-2 text-primary">
+                                <span className="ml-2 text-accent">
                                   ({item.badge})
                                 </span>
                               )}
@@ -654,12 +656,12 @@ const DashboardSidebar = () => {
         </nav>
 
         {/* ── Bottom Section ── */}
-        <div className="border-t border-white/[0.04] p-2 space-y-1">
+        <div className="border-t border-border p-2 space-y-1 bg-card">
           {/* Help */}
           {collapsed ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <button className="w-full flex items-center justify-center py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/[0.04] transition-all duration-200">
+                <button className="w-full flex items-center justify-center py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors">
                   <HelpCircle size={18} />
                 </button>
               </TooltipTrigger>
@@ -668,7 +670,7 @@ const DashboardSidebar = () => {
               </TooltipContent>
             </Tooltip>
           ) : (
-            <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-white/[0.04] transition-all duration-200">
+            <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors">
               <HelpCircle size={18} />
               <span>Help & Support</span>
             </button>
@@ -680,7 +682,7 @@ const DashboardSidebar = () => {
               <TooltipTrigger asChild>
                 <button
                   onClick={() => setCollapsed(false)}
-                  className="w-full flex items-center justify-center py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/[0.04] transition-all duration-200"
+                  className="w-full flex items-center justify-center py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
                   aria-label="Expand sidebar"
                 >
                   <ChevronRight size={18} />
@@ -696,16 +698,16 @@ const DashboardSidebar = () => {
           <Link
             href="/profile"
             className={cn(
-              "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200",
-              "hover:bg-white/[0.04]",
+              "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+              "hover:bg-muted/60",
               collapsed && "justify-center px-0",
             )}
           >
             <div className="relative shrink-0">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-sm font-bold">
+              <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs ring-1 ring-border">
                 {userLoading ? "..." : getInitials(displayName)}
               </div>
-              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[hsl(var(--sidebar-background))]" />
+              <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-card" />
             </div>
             {!collapsed && (
               <div className="flex-1 min-w-0">
@@ -720,7 +722,7 @@ const DashboardSidebar = () => {
             {!collapsed && (
               <LogOut
                 size={14}
-                className="text-muted-foreground hover:text-red-400 transition-colors shrink-0"
+                className="text-muted-foreground hover:text-destructive transition-colors shrink-0"
               />
             )}
           </Link>

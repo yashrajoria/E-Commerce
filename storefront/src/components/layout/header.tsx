@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 import { AccountDropdown } from "../common/account-dropdown";
 import { CartDrawer } from "../common/cart-drawer";
@@ -23,8 +24,8 @@ import { LoginModal } from "../common/login-modal";
 import { WishlistDrawer } from "../common/wishlist-drawer";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { BrandLogo } from "./brand-logo";
 import { MegaMenu } from "./mega-menu";
-import { useRouter } from "next/router";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -42,12 +43,12 @@ export function Header() {
   const { user } = useUser();
   const loggedIn = !!user;
   const reduceMotion = useReducedMotion();
+  const router = useRouter();
 
   useEffect(() => setMounted(true), []);
 
-  // Track scroll for glass header effect
   useEffect(() => {
-    const onScroll = () => setIsScrolled(window.scrollY > 20);
+    const onScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -56,11 +57,8 @@ export function Header() {
     setTheme(theme === "dark" ? "light" : "dark");
   }, [theme, setTheme]);
 
-  // Compute total cart items (sum of quantities)
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-
   const [searchQuery, setSearchQuery] = useState("");
-  const router = useRouter();
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && searchQuery.trim()) {
@@ -69,23 +67,19 @@ export function Header() {
     }
   };
 
+  const navLinks = [
+    { label: "Shop", href: "/products" },
+    { label: "Categories", href: "/categories" },
+    { label: "New Arrivals", href: "/products?sortBy=newest" },
+  ];
+
   if (!mounted) {
-    // Stable shell to avoid header flash / layout jump before theme mounts.
     return (
-      <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b border-transparent">
+      <header className="sticky top-0 z-40 w-full bg-background/90 backdrop-blur-md border-b border-border/60">
         <div className="container mx-auto px-4 lg:px-8">
-          <div className="flex h-[72px] items-center justify-between">
-            <Link href="/" className="flex items-center space-x-3">
-              <div className="relative h-9 w-9 rounded-xl bg-linear-to-br from-rose-600 to-amber-500 flex items-center justify-center">
-                <span className="text-white font-bold text-sm tracking-tight">
-                  S
-                </span>
-              </div>
-              <span className="font-semibold text-xl tracking-tight text-gradient-premium">
-                ShopSwift
-              </span>
-            </Link>
-            <div className="h-10 w-32 rounded-full bg-muted/40" aria-hidden />
+          <div className="flex h-16 items-center justify-between">
+            <BrandLogo size="md" />
+            <div className="h-9 w-24 rounded-lg bg-muted/40 animate-pulse" aria-hidden />
           </div>
         </div>
       </header>
@@ -94,71 +88,89 @@ export function Header() {
 
   return (
     <>
-      <motion.header
-        className={`sticky top-0 z-50 w-full transition-all duration-500 ${
+      <header
+        className={`sticky top-0 z-40 w-full transition-colors duration-200 ${
           isScrolled
-            ? "glass border-b border-border/40 shadow-sm"
-            : "bg-background/80 backdrop-blur-md border-b border-transparent"
+            ? "bg-background/95 backdrop-blur-md border-b border-border shadow-2xs"
+            : "bg-background/90 backdrop-blur-md border-b border-border/60"
         }`}
-        initial={reduceMotion ? false : { y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ type: "spring", stiffness: 260, damping: 28 }}
       >
         <div className="container mx-auto px-4 lg:px-8">
-          <div className="flex h-[72px] items-center justify-between">
-            {/* Logo */}
-            <Link href="/" className="flex items-center space-x-3 group">
-              <div className="relative h-9 w-9 rounded-xl bg-linear-to-br from-rose-600 to-amber-500 flex items-center justify-center shadow-lg shadow-rose-500/20 group-hover:shadow-rose-500/40 transition-shadow duration-300">
-                <span className="text-white font-bold text-sm tracking-tight">
-                  S
-                </span>
-              </div>
-              <span className="font-semibold text-xl tracking-tight text-gradient-premium">
-                ShopSwift
-              </span>
-            </Link>
+          <div className="flex h-16 items-center justify-between gap-2 sm:gap-4">
+            {/* Left: Brand Logo & Main Nav */}
+            <div className="flex items-center gap-6 lg:gap-8 shrink-0">
+              <BrandLogo size="md" />
 
-            {/* Quick Nav */}
-            <nav className="hidden md:flex md:ml-6 lg:ml-8 items-center gap-5">
-              <Link
-                href="/products"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Shop
-              </Link>
-              <Link
-                href="/categories"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Categories
-              </Link>
-              <Link
-                href="/products?sortBy=newest"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                New
-              </Link>
-            </nav>
+              <nav className="hidden md:flex items-center gap-1" aria-label="Main Navigation">
+                {navLinks.map((link) => {
+                  const isActive =
+                    link.href === "/products"
+                      ? router.pathname === "/products" && !router.query.sortBy
+                      : router.asPath === link.href;
 
-            {/* Desktop Actions */}
-            <div className="hidden md:flex items-center space-x-1">
-              {/* Search */}
-              <div className="relative mr-2">
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`px-3 py-1.5 text-sm font-medium rounded-md whitespace-nowrap transition-colors ${
+                        isActive
+                          ? "text-foreground font-semibold bg-muted/60"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+
+            {/* Center: Search (Desktop lg+) */}
+            <div className="hidden lg:flex flex-1 max-w-sm xl:max-w-md items-center mx-4">
+              <div className="relative w-full">
+                <Search
+                  aria-hidden
+                  className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
+                />
                 <Input
                   aria-label="Search products"
-                  placeholder="Search products..."
+                  placeholder="Search products, brands..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleSearch}
-                  className="w-[260px] lg:w-[320px] pl-10 pr-4 h-10 rounded-full bg-muted/60 border-transparent focus:border-ring/30 focus:bg-background transition-all duration-300"
+                  className="w-full pl-9 pr-10 h-9 text-sm bg-muted/40 border-border/70 hover:border-border focus:bg-background focus:border-ring transition-colors"
                 />
-                <Search
-                  aria-hidden
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
-                />
+                {searchQuery ? (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label="Clear search"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                ) : (
+                  <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground bg-muted border border-border/80 rounded select-none pointer-events-none">
+                    ↵
+                  </kbd>
+                )}
               </div>
+            </div>
 
-              {/* Wishlist */}
+            {/* Right: Actions */}
+            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+              {/* Search Toggle (Mobile & Tablet) */}
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Search products"
+                className="lg:hidden h-9 w-9 text-muted-foreground hover:text-foreground"
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+              >
+                <Search className="h-4 w-4" />
+              </Button>
+
+              {/* Wishlist (Desktop only) */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -168,7 +180,7 @@ export function Header() {
                     : "Open wishlist"
                 }
                 aria-haspopup="dialog"
-                className="relative h-10 w-10 rounded-full hover:bg-muted/60 cursor-pointer transition-colors duration-200"
+                className="hidden md:inline-flex relative h-9 w-9 text-muted-foreground hover:text-foreground"
                 onClick={() => setIsWishlistOpen(true)}
               >
                 <Heart className="h-[18px] w-[18px]" aria-hidden />
@@ -176,7 +188,7 @@ export function Header() {
                   <>
                     <span
                       aria-hidden="true"
-                      className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-linear-to-r from-rose-500 to-pink-500 text-[10px] text-white font-medium flex items-center justify-center shadow-sm"
+                      className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-accent text-accent-foreground text-[10px] font-bold flex items-center justify-center leading-none shadow-2xs"
                     >
                       {wishlist.length}
                     </span>
@@ -187,17 +199,17 @@ export function Header() {
                 )}
               </Button>
 
-              {/* Cart */}
+              {/* Cart (All screens) */}
               <Button
                 variant="ghost"
                 size="icon"
                 aria-label={
                   cartItemCount > 0
-                    ? `Cart, ${cartItemCount} items`
-                    : "Open cart"
+                    ? `Shopping Cart, ${cartItemCount} items`
+                    : "Shopping Cart is empty"
                 }
                 aria-haspopup="dialog"
-                className="relative h-10 w-10 rounded-full hover:bg-muted/60 cursor-pointer transition-colors duration-200"
+                className="relative h-9 w-9 text-muted-foreground hover:text-foreground"
                 onClick={() => setIsCartOpen(true)}
               >
                 <ShoppingBag className="h-[18px] w-[18px]" aria-hidden />
@@ -205,7 +217,7 @@ export function Header() {
                   <>
                     <span
                       aria-hidden="true"
-                      className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-linear-to-r from-rose-600 to-amber-500 text-[10px] text-white font-medium flex items-center justify-center shadow-sm"
+                      className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center leading-none shadow-2xs"
                     >
                       {cartItemCount}
                     </span>
@@ -216,24 +228,31 @@ export function Header() {
                 )}
               </Button>
 
-              {/* Account — click to toggle (not hover-only) */}
-              <div className="relative">
-                <Button
-                  variant="ghost"
-                  aria-haspopup="menu"
-                  aria-expanded={loggedIn ? isAccountOpen : undefined}
-                  className="h-10 rounded-full px-4 hover:bg-muted/60 cursor-pointer transition-colors duration-200 text-sm font-medium"
-                  onClick={() => {
-                    if (!loggedIn) {
-                      setIsLoginOpen(true);
-                      return;
-                    }
-                    setIsAccountOpen((open) => !open);
-                  }}
-                >
-                  <User className="h-[18px] w-[18px] mr-2" aria-hidden />
-                  {loggedIn ? "Account" : "Sign In"}
-                </Button>
+              {/* Account Dropdown or Sign In (Desktop only) */}
+              <div className="hidden md:block relative">
+                {loggedIn ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    aria-haspopup="menu"
+                    aria-expanded={isAccountOpen}
+                    className="h-9 px-2.5 gap-2 text-sm font-medium text-foreground hover:bg-muted/60"
+                    onClick={() => setIsAccountOpen((open) => !open)}
+                  >
+                    <User className="h-4 w-4 text-muted-foreground" aria-hidden />
+                    <span className="text-xs font-semibold">Account</span>
+                  </Button>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-9 px-3 text-xs font-medium text-muted-foreground hover:text-foreground"
+                    onClick={() => setIsLoginOpen(true)}
+                  >
+                    Sign in
+                  </Button>
+                )}
+
                 {loggedIn && (
                   <AccountDropdown
                     isOpen={isAccountOpen}
@@ -242,89 +261,37 @@ export function Header() {
                 )}
               </div>
 
-              {/* Theme Toggle */}
+              {/* Theme Toggle (Desktop only) */}
               <Button
                 variant="ghost"
                 size="icon"
                 aria-label="Toggle theme"
-                className="h-10 w-10 rounded-full hover:bg-muted/60 transition-colors duration-200"
+                className="hidden md:inline-flex h-9 w-9 text-muted-foreground hover:text-foreground"
                 onClick={toggleTheme}
               >
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={theme}
-                    initial={{ y: -12, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: 12, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
+                    initial={reduceMotion ? false : { opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={reduceMotion ? undefined : { opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.15 }}
                   >
                     {theme === "dark" ? (
-                      <Sun className="h-[18px] w-[18px]" aria-hidden />
+                      <Sun className="h-4 w-4" aria-hidden />
                     ) : (
-                      <Moon className="h-[18px] w-[18px]" aria-hidden />
+                      <Moon className="h-4 w-4" aria-hidden />
                     )}
                   </motion.div>
                 </AnimatePresence>
               </Button>
-            </div>
 
-            {/* Mobile Actions */}
-            <div className="md:hidden flex items-center space-x-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Open search"
-                className="h-10 w-10 rounded-full"
-                onClick={() => setIsSearchOpen(!isSearchOpen)}
-              >
-                <Search className="h-[18px] w-[18px]" aria-hidden />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={
-                  wishlist.length > 0
-                    ? `Wishlist, ${wishlist.length} items`
-                    : "Open wishlist"
-                }
-                className="relative h-10 w-10 rounded-full"
-                onClick={() => setIsWishlistOpen(true)}
-              >
-                <Heart className="h-[18px] w-[18px]" aria-hidden />
-                {wishlist.length > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-linear-to-r from-rose-500 to-pink-500 text-[10px] text-white font-medium flex items-center justify-center">
-                    {wishlist.length}
-                  </span>
-                )}
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={
-                  cartItemCount > 0
-                    ? `Cart, ${cartItemCount} items`
-                    : "Open cart"
-                }
-                className="relative h-10 w-10 rounded-full"
-                onClick={() => setIsCartOpen(true)}
-              >
-                <ShoppingBag className="h-[18px] w-[18px]" aria-hidden />
-                {cartItemCount > 0 && (
-                  <>
-                    <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-linear-to-r from-rose-600 to-amber-500 text-[10px] text-white font-medium flex items-center justify-center">
-                      {cartItemCount}
-                    </span>
-                    <span className="sr-only" aria-live="polite">
-                      {cartItemCount} items in cart
-                    </span>
-                  </>
-                )}
-              </Button>
+              {/* Mobile Menu Toggle (Mobile & Tablet) */}
               <Button
                 variant="ghost"
                 size="icon"
                 aria-label="Open menu"
-                className="h-10 w-10 rounded-full"
+                className="md:hidden h-9 w-9 text-muted-foreground hover:text-foreground"
                 onClick={() => setIsMenuOpen(true)}
               >
                 <Menu className="h-5 w-5" aria-hidden />
@@ -332,42 +299,46 @@ export function Header() {
             </div>
           </div>
 
-          {/* Mobile Search Overlay */}
+          {/* Search Input Dropdown (Mobile & Tablet) */}
           <AnimatePresence>
             {isSearchOpen && (
               <motion.div
-                className="absolute top-0 left-0 w-full glass p-4 md:hidden z-10"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.2 }}
+                className="pb-3 pt-1 lg:hidden"
+                initial={reduceMotion ? { opacity: 1 } : { opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
+                transition={{ duration: 0.15 }}
               >
                 <div className="relative">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search products..."
+                    placeholder="Search products, brands..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={handleSearch}
-                    className="w-full pl-10 pr-10 h-11 rounded-full"
+                    className="w-full pl-9 pr-9 h-10 text-sm bg-muted/40"
                     autoFocus
                   />
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full"
+                  <button
+                    type="button"
                     onClick={() => setIsSearchOpen(false)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label="Close search"
                   >
                     <X className="h-4 w-4" />
-                  </Button>
+                  </button>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
-      </motion.header>
+      </header>
 
-      <MegaMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+      <MegaMenu
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        onOpenLogin={() => setIsLoginOpen(true)}
+      />
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
       <WishlistDrawer
         isOpen={isWishlistOpen}

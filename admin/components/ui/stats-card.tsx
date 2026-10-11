@@ -1,5 +1,5 @@
 /**
- * Premium Stats Card – Reusable stat/metric card matching dashboard KPI style
+ * StatsCard – Operational metric card matching ShopSwift design system
  */
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -17,64 +17,41 @@ interface StatsCardProps {
   children?: ReactNode;
 }
 
-/** Falls back to the glow that matches `gradient` so a blue/amber/rose tile
- *  never picks up the default purple halo. */
-const GLOW_BY_GRADIENT: Record<string, string> = {
-  "gradient-purple": "glow-purple",
-  "gradient-emerald": "glow-emerald",
-  "gradient-gold": "glow-gold",
-  "gradient-blue": "glow-blue",
-  "gradient-amber": "glow-amber",
-  "gradient-rose": "glow-rose",
-  "gradient-teal": "glow-teal",
-};
-
 const StatsCard = ({
   title,
   value,
   icon: Icon,
   trend,
-  gradient = "gradient-purple",
-  glowClass,
   subtitle,
   children,
 }: StatsCardProps) => {
   const isPositive = trend && trend.value >= 0;
-  const glow = glowClass ?? GLOW_BY_GRADIENT[gradient] ?? "glow-purple";
 
   return (
     <motion.div
-      whileHover={{ y: -2 }}
-      transition={{ duration: 0.2 }}
-      className="glass-effect rounded-xl p-5 card-hover relative overflow-hidden group"
+      whileHover={{ y: -1 }}
+      transition={{ duration: 0.15 }}
+      className="bg-card border border-border rounded-xl p-4 shadow-2xs group relative overflow-hidden"
     >
-      {/* Background accent */}
-      <div
-        className={cn(
-          "absolute top-0 right-0 w-24 h-24 rounded-full opacity-[0.07] blur-2xl group-hover:opacity-[0.12] transition-opacity",
-          gradient,
-        )}
-      />
-
-      <div className="relative flex items-start justify-between">
-        <div className="space-y-2 flex-1 min-w-0">
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-1.5 flex-1 min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {title}
           </p>
           <p className="text-2xl font-bold tracking-tight text-foreground">
             {value}
           </p>
           {trend && (
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 pt-0.5">
               {isPositive ? (
-                <TrendingUp size={12} className="text-emerald-400" />
+                <TrendingUp size={13} className="text-emerald-600 dark:text-emerald-400" />
               ) : (
-                <TrendingDown size={12} className="text-rose-400" />
+                <TrendingDown size={13} className="text-rose-600 dark:text-rose-400" />
               )}
               <span
                 className={cn(
-                  "text-xs font-medium",
-                  isPositive ? "text-emerald-400" : "text-rose-400",
+                  "text-xs font-semibold",
+                  isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400",
                 )}
               >
                 {isPositive ? "+" : ""}
@@ -92,14 +69,8 @@ const StatsCard = ({
           )}
         </div>
 
-        <div
-          className={cn(
-            "w-10 h-10 rounded-lg flex items-center justify-center shrink-0",
-            gradient,
-            glow,
-          )}
-        >
-          <Icon size={18} className="text-white" />
+        <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+          <Icon size={16} />
         </div>
       </div>
 

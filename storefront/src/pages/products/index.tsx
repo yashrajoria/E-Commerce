@@ -135,19 +135,20 @@ export default function SearchPage({ initialCatalog }: SearchPageProps) {
     return list;
   }, [data?.products, sortBy]);
 
-  // If backend returns prices in minor units (pence/cents), detect and adjust
-  // the UI price range to a sensible default based on loaded products.
-  useEffect(() => {
-    if (
-      filteredProducts.length &&
-      priceRange[0] === 0 &&
-      priceRange[1] === DEFAULT_MAX_PRICE
-    ) {
-      const maxRaw = Math.max(...filteredProducts.map((p) => p.price ?? 0));
-      const max = maxRaw > 1000 ? Math.ceil(maxRaw / 100) : Math.ceil(maxRaw);
-      setPriceRange([0, Math.max(500, max)]);
-    }
-  }, [filteredProducts, priceRange, DEFAULT_MAX_PRICE]);
+  const availableBrands = useMemo(() => {
+    const brandsSet = new Set<string>();
+    (data?.products ?? []).forEach((p) => {
+      if (p.brand) brandsSet.add(p.brand);
+    });
+    return Array.from(brandsSet);
+  }, [data?.products]);
+
+  const maxPriceLimit = useMemo(() => {
+    const prods = data?.products ?? [];
+    if (!prods.length) return 2000;
+    const maxVal = Math.max(...prods.map((p) => p.price ?? 0));
+    return Math.max(200, Math.ceil(maxVal * 1.1));
+  }, [data?.products]);
 
   const totalPages = data?.meta?.totalPages ?? 1;
   // Effect to update state if URL changes (e.g., browser back/forward)
@@ -240,22 +241,22 @@ export default function SearchPage({ initialCatalog }: SearchPageProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="flex items-center gap-4 mb-6">
-            <div className="relative flex-1 max-w-2xl">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <div className="flex items-center gap-3 mb-6">
+            <div className="relative flex-1 max-w-xl">
+              <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder="Search products..."
+                placeholder="Search products, brands, models..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-11 h-11 rounded-full border-border/60 bg-muted/30 focus:bg-background"
+                className="pl-10 h-10 rounded-lg border-border/80 bg-background"
               />
             </div>
             <Button
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
-              className="md:hidden rounded-full"
+              className="md:hidden rounded-lg h-10 text-xs font-semibold"
             >
-              <Filter className="h-4 w-4 mr-2" />
+              <Filter className="h-4 w-4 mr-1.5" />
               Filters
             </Button>
           </div>
@@ -265,7 +266,7 @@ export default function SearchPage({ initialCatalog }: SearchPageProps) {
             {searchQuery && (
               <Badge
                 variant="secondary"
-                className="cursor-pointer rounded-full"
+                className="cursor-pointer rounded-md text-xs font-medium"
                 onClick={() => setSearchQuery("")}
               >
                 Search: &quot;{searchQuery}&quot; ×
@@ -274,7 +275,7 @@ export default function SearchPage({ initialCatalog }: SearchPageProps) {
             {selectedCategory && (
               <Badge
                 variant="secondary"
-                className="cursor-pointer rounded-full"
+                className="cursor-pointer rounded-md text-xs font-medium"
                 onClick={() => setSelectedCategory("")}
               >
                 Category: {selectedCategory} ×
@@ -283,7 +284,7 @@ export default function SearchPage({ initialCatalog }: SearchPageProps) {
             {(priceRange[0] > 0 || priceRange[1] < DEFAULT_MAX_PRICE) && (
               <Badge
                 variant="secondary"
-                className="cursor-pointer rounded-full"
+                className="cursor-pointer rounded-md text-xs font-medium"
                 onClick={() => setPriceRange([0, DEFAULT_MAX_PRICE])}
               >
                 Price: {formatGBP(priceRange[0])} - {formatGBP(priceRange[1])} ×
@@ -360,8 +361,10 @@ export default function SearchPage({ initialCatalog }: SearchPageProps) {
               onCategoryChange={setSelectedCategory}
               priceRange={priceRange}
               onPriceRangeChange={setPriceRange}
+              maxPriceLimit={maxPriceLimit}
               selectedBrands={selectedBrands}
               onBrandsChange={setSelectedBrands}
+              availableBrands={availableBrands}
               selectedRating={selectedRating}
               onRatingChange={setSelectedRating}
               inStockOnly={inStockOnly}
@@ -408,7 +411,7 @@ export default function SearchPage({ initialCatalog }: SearchPageProps) {
                 <p className="text-muted-foreground mb-6">
                   Something went wrong. Please try again.
                 </p>
-                <Button onClick={() => router.reload()} className="rounded-full">
+                <Button onClick={() => router.reload()} className="rounded-lg">
                   Retry
                 </Button>
               </div>
@@ -428,7 +431,7 @@ export default function SearchPage({ initialCatalog }: SearchPageProps) {
                 <Button
                   onClick={clearAllFilters}
                   variant="outline"
-                  className="rounded-full"
+                  className="rounded-lg"
                 >
                   Clear filters
                 </Button>

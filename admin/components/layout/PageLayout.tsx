@@ -77,12 +77,12 @@ const PageLayout = ({
       {/* ── Main Content ── */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* ── Top Header Bar ── */}
-        <header className="sticky top-0 z-30 h-16 border-b border-x-0 border-t-0 border-white/[0.04] glass-effect-strong">
+        <header className="sticky top-0 z-30 h-16 border-b border-border bg-card/80 backdrop-blur-md">
           <div className="h-full px-4 sm:px-6 flex items-center justify-between gap-4">
             {/* Left: Mobile menu + breadcrumb */}
             <div className="flex items-center gap-3">
               <button
-                className="lg:hidden p-2 rounded-lg hover:bg-white/[0.06] text-muted-foreground transition-colors"
+                className="lg:hidden p-2 rounded-lg hover:bg-muted text-muted-foreground transition-colors"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-label="Toggle menu"
               >
@@ -91,7 +91,7 @@ const PageLayout = ({
               <div className="hidden sm:flex items-center gap-2 text-sm">
                 <Link
                   href="/dashboard"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-muted-foreground hover:text-foreground transition-colors font-medium"
                 >
                   Admin
                 </Link>
@@ -106,7 +106,7 @@ const PageLayout = ({
                         {crumb.label}
                       </Link>
                     ) : (
-                      <span className="font-medium text-foreground">
+                      <span className="font-semibold text-foreground">
                         {crumb.label}
                       </span>
                     )}
@@ -124,9 +124,9 @@ const PageLayout = ({
                 />
                 <Input
                   placeholder="Search anything..."
-                  className="pl-9 h-9 bg-white/[0.03] border-white/[0.06] text-sm placeholder:text-muted-foreground/50 focus:bg-white/[0.06] focus:border-primary/30 transition-all rounded-xl"
+                  className="pl-9 h-9 bg-muted/40 border-border text-sm placeholder:text-muted-foreground/60 focus:bg-background focus:border-primary/50 transition-all rounded-lg"
                 />
-                <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] border border-white/10 rounded px-1.5 py-0.5 bg-white/[0.03] text-muted-foreground font-mono hidden lg:inline-block">
+                <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] border border-border rounded px-1.5 py-0.5 bg-background text-muted-foreground font-mono hidden lg:inline-block">
                   ⌘K
                 </kbd>
               </div>
@@ -141,10 +141,10 @@ const PageLayout = ({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-9 w-9 rounded-xl hover:bg-white/[0.06] text-muted-foreground relative"
+                      className="h-9 w-9 rounded-lg hover:bg-muted text-muted-foreground relative"
                     >
                       <Bell size={16} />
-                      <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full animate-pulse" />
+                      <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-accent rounded-full ring-2 ring-background" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Notifications</TooltipContent>
@@ -153,7 +153,7 @@ const PageLayout = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 rounded-xl hover:bg-white/[0.06] text-muted-foreground md:hidden"
+                className="h-9 w-9 rounded-lg hover:bg-muted text-muted-foreground md:hidden"
                 onClick={() => setSearchOpen(!searchOpen)}
               >
                 <Search size={16} />
@@ -162,7 +162,7 @@ const PageLayout = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 rounded-xl hover:bg-white/[0.06] text-muted-foreground"
+                className="h-9 w-9 rounded-lg hover:bg-muted text-muted-foreground"
                 aria-label="Sign out"
                 onClick={async () => {
                   try {

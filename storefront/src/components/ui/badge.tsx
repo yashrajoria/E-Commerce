@@ -1,1 +1,5 @@
-export { Badge, badgeVariants } from "@ecommerce/shared"
+export {
+  Badge,
+  badgeVariants,
+  type BadgeProps,
+} from "@ecommerce/ui";

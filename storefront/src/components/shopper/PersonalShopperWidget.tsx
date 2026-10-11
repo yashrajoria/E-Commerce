@@ -15,6 +15,7 @@ import {
   Zap,
 } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/router";
 import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
 
@@ -61,6 +62,7 @@ const STARTER_PROMPTS = [
 ];
 
 export function PersonalShopperWidget() {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
@@ -103,6 +105,11 @@ export function PersonalShopperWidget() {
     }, 1100);
     return () => clearInterval(interval);
   }, [loading]);
+
+  // Distraction-free funnel: hide floating shopper during checkout
+  if (router?.pathname?.startsWith("/checkout")) {
+    return null;
+  }
 
   const handleToggleItem = (msgId: string, itemId: string) => {
     setCheckedItemsMap((prev) => {
@@ -366,23 +373,24 @@ export function PersonalShopperWidget() {
   return (
     <>
       {/* Floating Trigger Pill */}
-      <div className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-50">
+      <div
+        className={`fixed ${
+          router?.pathname?.includes("[id]") ? "bottom-20 md:bottom-6" : "bottom-4 sm:bottom-6"
+        } right-4 sm:right-6 z-40`}
+      >
         <motion.button
           onClick={() => setIsOpen(true)}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="group relative flex items-center gap-2.5 px-4 py-3 rounded-full bg-linear-to-r from-violet-600 via-indigo-600 to-rose-600 text-white shadow-xl shadow-indigo-500/25 hover:shadow-2xl hover:shadow-indigo-500/40 border border-white/20 backdrop-blur-md transition-all duration-300"
-          aria-label="Open AI Personal Shopper Copilot"
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          className="group relative flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full bg-foreground text-background shadow-lg hover:shadow-xl border border-border/40 transition-all duration-200 cursor-pointer"
+          aria-label="Open AI Personal Shopper"
         >
-          <span className="relative flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-300"></span>
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-foreground/60 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
           </span>
-          <Sparkles className="h-4 w-4 text-amber-300 transition-transform duration-300 group-hover:rotate-12" />
-          <span className="font-semibold text-sm tracking-wide">AI Shopper</span>
-          <span className="hidden sm:inline-block text-[11px] font-medium uppercase tracking-wider bg-white/20 text-white px-2 py-0.5 rounded-full">
-            Copilot
-          </span>
+          <Sparkles className="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-12" />
+          <span className="font-semibold text-xs tracking-tight">AI Shopper</span>
         </motion.button>
       </div>
 
@@ -411,8 +419,8 @@ export function PersonalShopperWidget() {
                 {/* Header */}
                 <div className="px-6 py-4.5 border-b border-border/60 flex items-center justify-between bg-card/60 backdrop-blur-md">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-linear-to-tr from-violet-600 to-rose-500 flex items-center justify-center text-white shadow-md shadow-violet-500/20">
-                      <Sparkles className="h-5 w-5 text-white" />
+                    <div className="w-10 h-10 rounded-xl bg-foreground text-background flex items-center justify-center shadow-xs">
+                      <Sparkles className="h-4.5 w-4.5" />
                     </div>
                     <div>
                       <h2 className="text-base font-bold text-foreground flex items-center gap-2">
