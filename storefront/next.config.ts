@@ -3,7 +3,7 @@ import path from "path";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  transpilePackages: ["@ecommerce/shared"],
+  transpilePackages: ["@ecommerce/shared", "@ecommerce/ui"],
   reactStrictMode: true,
   webpack: (config) => {
     // Avoid overriding React resolution here; let Next/npm handle it to prevent
@@ -20,6 +20,7 @@ const nextConfig: NextConfig = {
       { protocol: "http", hostname: "localhost" },
       { protocol: "https", hostname: "shopswift.s3.amazonaws.com" },
       { protocol: "https", hostname: "*.amazonaws.com" },
+      { protocol: "https", hostname: "ollama.com" },
       { protocol: "https", hostname: "cdn.example.com" },
       { protocol: "https", hostname: "picsum.photos" },
       { protocol: "https", hostname: "vtfryikkounwjuyceztn.supabase.co" },

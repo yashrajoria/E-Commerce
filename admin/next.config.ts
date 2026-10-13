@@ -3,7 +3,7 @@ import path from "path";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  transpilePackages: ['@ecommerce/shared'],
+  transpilePackages: ["@ecommerce/shared", "@ecommerce/ui"],
   reactStrictMode: true,
   webpack: (config) => {
     // Avoid overriding React resolution here; let Next/npm handle it to prevent
