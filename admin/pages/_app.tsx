@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ContextualAIAssistant } from "@/components/ai/ContextualAIAssistant";
 import { resolveAIPageContext } from "@/lib/ai-contextual-assistant";
 import { useAdminSession, AdminSessionProvider } from "@/lib/useAdminSession";
+import { StoreProvider } from "@/lib/useStore";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -237,7 +238,9 @@ function AppContent({ Component, pageProps, router }: AppProps) {
 export default function App(props: AppProps) {
   return (
     <AdminSessionProvider>
-      <AppContent {...props} />
+      <StoreProvider>
+        <AppContent {...props} />
+      </StoreProvider>
     </AdminSessionProvider>
   );
 }

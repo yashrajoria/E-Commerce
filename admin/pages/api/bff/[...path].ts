@@ -18,6 +18,8 @@ const ALLOWED_PREFIXES = [
   "admin/reports",
   "admin/analytics",
   "admin/upload",
+  "admin/stores",
+  "admin/plans",
 ] as const;
 
 function isAllowedBffPath(targetPath: string): boolean {

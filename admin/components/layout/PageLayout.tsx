@@ -8,6 +8,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { LiveIndicator } from "@/components/dashboard/LiveIndicator";
+import { StoreSwitcher } from "@/components/dashboard/StoreSwitcher";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bell, Search, LogOut } from "lucide-react";
 import { MenuIcon, CloseIcon, SearchIcon } from "@ecommerce/shared";
@@ -134,6 +135,7 @@ const PageLayout = ({
 
             {/* Right: Actions */}
             <div className="flex items-center gap-2">
+              <StoreSwitcher />
               <LiveIndicator />
               <TooltipProvider delayDuration={0}>
                 <Tooltip>
