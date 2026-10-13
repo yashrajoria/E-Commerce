@@ -1,28 +1,22 @@
 import { ProductCard } from "@/components/common/product-card";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
+import { CatalogPagination } from "@/components/search/CatalogPagination";
 import { SearchFilters } from "@/components/search/search-filters";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import { useCategories } from "@/hooks/useCategories";
-import { useProducts } from "@/hooks/useProducts";
+  DEFAULT_MAX_PRICE,
+  useProductSearchState,
+} from "@/hooks/useProductSearchState";
+import { fetchProductsSsr, type SsrProductsResponse } from "@/lib/ssrProducts";
+import { formatGBP } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Filter, Grid, List, Search } from "lucide-react";
+import type { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
-import type { GetServerSideProps } from "next";
-import { fetchProductsSsr, type SsrProductsResponse } from "@/lib/ssrProducts";
 
 type SearchPageProps = {
   initialCatalog: SsrProductsResponse | null;
@@ -31,189 +25,44 @@ type SearchPageProps = {
 export default function SearchPage({ initialCatalog }: SearchPageProps) {
   const router = useRouter();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const DEFAULT_MAX_PRICE = 500000;
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [priceRange, setPriceRange] = useState([0, DEFAULT_MAX_PRICE]);
-  const [appliedPriceRange, setAppliedPriceRange] = useState([
-    0,
-    DEFAULT_MAX_PRICE,
-  ]);
-  const [sortBy, setSortBy] = useState("relevance");
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [selectedRating, setSelectedRating] = useState<number | null>(null);
-  const [inStockOnly, setInStockOnly] = useState(false);
-  const [onSaleOnly, setOnSaleOnly] = useState(false);
-  const [freeShippingOnly, setFreeShippingOnly] = useState(false);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [showFilters, setShowFilters] = useState(false);
-  const [productCount, setProductCount] = useState(12);
-  const { data: categories = [] } = useCategories();
-  const selectedCategoryId = useMemo(() => {
-    if (!selectedCategory) return undefined;
-    const match = categories.find((c) => c.name === selectedCategory);
-    return match?.id;
-  }, [categories, selectedCategory]);
-  const formatGBP = (value?: number) =>
-    new Intl.NumberFormat("en-GB", {
-      style: "currency",
-      currency: "GBP",
-    }).format(value ?? 0);
 
-  // Set page from URL query on initial load
-  const [page, setPage] = useState(Number(router.query.page) || 1);
-
-  // Hydrate search + category from URL (header search, category links).
-  useEffect(() => {
-    if (!router.isReady) return;
-    if (typeof router.query.search === "string") {
-      setSearchQuery(router.query.search);
-      setDebouncedSearchQuery(router.query.search);
-    }
-    if (typeof router.query.sortBy === "string") {
-      setSortBy(router.query.sortBy);
-    }
-  }, [router.isReady, router.query.search, router.query.sortBy]);
-
-  // Debounce backend search calls to avoid one request per keystroke.
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
-    }, 350);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
-  // Debounce slider-driven range updates to avoid many backend calls while dragging.
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setAppliedPriceRange(priceRange);
-    }, 350);
-
-    return () => clearTimeout(timer);
-  }, [priceRange]);
-
-  const { data, isLoading, error } = useProducts(
-    productCount,
-    page,
-    {
-      categoryId: selectedCategoryId,
-      minPrice: appliedPriceRange[0],
-      maxPrice: appliedPriceRange[1],
-      sortBy,
-      search: debouncedSearchQuery.trim() || undefined,
-      brands: selectedBrands.length ? selectedBrands : undefined,
-      minRating: selectedRating ?? undefined,
-      inStock: inStockOnly || undefined,
-      onSale: onSaleOnly || undefined,
-      freeShipping: freeShippingOnly || undefined,
-    },
-    {
-      initialData:
-        page === 1 &&
-        !debouncedSearchQuery &&
-        !selectedCategoryId &&
-        !selectedBrands.length &&
-        selectedRating == null &&
-        !inStockOnly &&
-        !onSaleOnly &&
-        !freeShippingOnly &&
-        sortBy === "relevance"
-          ? (initialCatalog ?? undefined)
-          : undefined,
-    },
-  );
-  const categoriesWithCounts = categories;
-  // Filters are sent to the API; trust paginated server results.
-  // Only client-sort by rating when the backend sort map has no rating option.
-  const filteredProducts = useMemo(() => {
-    const list = data?.products ?? [];
-    if (sortBy === "rating") {
-      return [...list].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
-    }
-    return list;
-  }, [data?.products, sortBy]);
-
-  const availableBrands = useMemo(() => {
-    const brandsSet = new Set<string>();
-    (data?.products ?? []).forEach((p) => {
-      if (p.brand) brandsSet.add(p.brand);
-    });
-    return Array.from(brandsSet);
-  }, [data?.products]);
-
-  const maxPriceLimit = useMemo(() => {
-    const prods = data?.products ?? [];
-    if (!prods.length) return 2000;
-    const maxVal = Math.max(...prods.map((p) => p.price ?? 0));
-    return Math.max(200, Math.ceil(maxVal * 1.1));
-  }, [data?.products]);
-
-  const totalPages = data?.meta?.totalPages ?? 1;
-  // Effect to update state if URL changes (e.g., browser back/forward)
-  useEffect(() => {
-    if (router.query.page) {
-      setPage(Number(router.query.page));
-    }
-  }, [router.query.page]);
-
-  // Sync initial category filter from URL when navigating from category links.
-  useEffect(() => {
-    if (typeof router.query.categoryId === "string") {
-      const matched = categories.find((category) => category.id === router.query.categoryId);
-      if (matched) {
-        setSelectedCategory(matched.name);
-        return;
-      }
-    }
-
-    if (typeof router.query.category === "string") {
-      setSelectedCategory(router.query.category);
-    }
-  }, [router.query.category, router.query.categoryId, categories]);
-
-  // Reset to first page when filters change.
-  useEffect(() => {
-    setPage(1);
-  }, [
-    debouncedSearchQuery,
+  const {
+    searchQuery,
+    setSearchQuery,
     selectedCategory,
-    appliedPriceRange,
+    setSelectedCategory,
+    priceRange,
+    setPriceRange,
     sortBy,
+    setSortBy,
     selectedBrands,
+    setSelectedBrands,
     selectedRating,
+    setSelectedRating,
     inStockOnly,
+    setInStockOnly,
     onSaleOnly,
+    setOnSaleOnly,
     freeShippingOnly,
-  ]);
-
-  const clearAllFilters = () => {
-    setSearchQuery("");
-    setSelectedCategory("");
-    setPriceRange([0, DEFAULT_MAX_PRICE]);
-    setSortBy("relevance");
-    setSelectedBrands([]);
-    setSelectedRating(null);
-    setInStockOnly(false);
-    setOnSaleOnly(false);
-    setFreeShippingOnly(false);
-  };
-
-  const handlePageChange = (newPage: number) => {
-    // Prevent going to page 0 or below or beyond total pages
-    if (newPage < 1 || newPage > totalPages) return;
-
-    setPage(newPage);
-    router.push(
-      {
-        pathname: router.pathname,
-        query: { ...router.query, page: newPage },
-      },
-      undefined,
-      { shallow: true },
-    );
-  };
+    setFreeShippingOnly,
+    viewMode,
+    setViewMode,
+    showFilters,
+    setShowFilters,
+    productCount,
+    setProductCount,
+    categories,
+    filteredProducts,
+    availableBrands,
+    maxPriceLimit,
+    totalPages,
+    page,
+    data,
+    isLoading,
+    error,
+    clearAllFilters,
+    handlePageChange,
+  } = useProductSearchState({ initialCatalog });
 
   return (
     <div className="min-h-screen">
@@ -298,6 +147,7 @@ export default function SearchPage({ initialCatalog }: SearchPageProps) {
               {data?.meta?.total ?? filteredProducts.length} products found
               {searchQuery && ` for "${searchQuery}"`}
             </p>
+
             <div className="flex items-center gap-3">
               <select
                 value={productCount}
@@ -356,7 +206,7 @@ export default function SearchPage({ initialCatalog }: SearchPageProps) {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <SearchFilters
-              categories={categoriesWithCounts}
+              categories={categories}
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
               priceRange={priceRange}
@@ -387,21 +237,21 @@ export default function SearchPage({ initialCatalog }: SearchPageProps) {
                     : "grid-cols-1"
                 }`}
               >
-                {Array.from({ length: productCount > 12 ? 12 : productCount }).map(
-                  (_, i) => (
-                    <div
-                      key={i}
-                      className="rounded-2xl border border-border/60 overflow-hidden"
-                    >
-                      <div className="aspect-square bg-muted/40 animate-pulse" />
-                      <div className="p-4 space-y-3">
-                        <div className="h-3 w-1/3 bg-muted/50 rounded animate-pulse" />
-                        <div className="h-4 w-3/4 bg-muted/50 rounded animate-pulse" />
-                        <div className="h-5 w-1/4 bg-muted/50 rounded animate-pulse" />
-                      </div>
+                {Array.from({
+                  length: productCount > 12 ? 12 : productCount,
+                }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="rounded-2xl border border-border/60 overflow-hidden"
+                  >
+                    <div className="aspect-square bg-muted/40 animate-pulse" />
+                    <div className="p-4 space-y-3">
+                      <div className="h-3 w-1/3 bg-muted/50 rounded animate-pulse" />
+                      <div className="h-4 w-3/4 bg-muted/50 rounded animate-pulse" />
+                      <div className="h-5 w-1/4 bg-muted/50 rounded animate-pulse" />
                     </div>
-                  ),
-                )}
+                  </div>
+                ))}
               </div>
             ) : error ? (
               <div className="text-center py-16 rounded-2xl border border-border/60 bg-card/50">
@@ -462,64 +312,11 @@ export default function SearchPage({ initialCatalog }: SearchPageProps) {
           </div>
         </div>
 
-        <Pagination className="mt-8">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => handlePageChange(page - 1)}
-                className={page <= 1 ? "pointer-events-none opacity-50" : ""}
-              />
-            </PaginationItem>
-            {page > 2 && (
-              <PaginationItem>
-                <PaginationLink onClick={() => handlePageChange(1)}>
-                  1
-                </PaginationLink>
-              </PaginationItem>
-            )}
-            {page > 3 && (
-              <PaginationItem>
-                <PaginationEllipsis />
-              </PaginationItem>
-            )}
-            {Array.from(
-              {
-                length:
-                  Math.min(totalPages, page + 1) - Math.max(1, page - 1) + 1,
-              },
-              (_, index) => Math.max(1, page - 1) + index,
-            ).map((pageNumber) => (
-              <PaginationItem key={pageNumber}>
-                <PaginationLink
-                  isActive={pageNumber === page}
-                  onClick={() => handlePageChange(pageNumber)}
-                >
-                  {pageNumber}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            {page < totalPages - 2 && (
-              <PaginationItem>
-                <PaginationEllipsis />
-              </PaginationItem>
-            )}
-            {page < totalPages - 1 && (
-              <PaginationItem>
-                <PaginationLink onClick={() => handlePageChange(totalPages)}>
-                  {totalPages}
-                </PaginationLink>
-              </PaginationItem>
-            )}
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => handlePageChange(page + 1)}
-                className={
-                  page >= totalPages ? "pointer-events-none opacity-50" : ""
-                }
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+        <CatalogPagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
       </main>
 
       <Footer />

@@ -2,20 +2,8 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import {
-  X,
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  Shield,
-  CheckCircle,
-  RefreshCw,
-} from "lucide-react";
+import { X, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import {
   loginUser,
@@ -25,16 +13,10 @@ import {
   validatePassword,
 } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSeparator,
-  InputOTPSlot,
-} from "../ui/input-otp";
 import { useUser } from "@/context/UserContext";
-import { PasswordStrengthIndicator } from "./PasswordStrengthIndicator";
 import { trapFocus } from "@/lib/utils";
-import Link from "next/link";
+import { AuthEmailForm } from "./auth/AuthEmailForm";
+import { OtpVerificationModal } from "./auth/OtpVerificationModal";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -44,7 +26,6 @@ interface LoginModalProps {
 }
 
 export function LoginModal({ isOpen, onClose }: LoginModalProps) {
-  const [showPassword, setShowPassword] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -64,9 +45,13 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const { refetchUser } = useUser();
 
   const modalRef = useRef<HTMLDivElement | null>(null);
-  const otpRef = useRef<HTMLDivElement | null>(null);
   const prevFocused = useRef<HTMLElement | null>(null);
   const reduceMotion = useReducedMotion();
+
+  const onCloseOtp = () => {
+    setIsOtp(false);
+    setPendingLogin(null);
+  };
 
   useEffect(() => {
     if (isLogin && !isOtp) {
@@ -74,7 +59,6 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
     }
     if (!isOpen && !isOtp) {
       setPassword("");
-      setShowPassword(false);
       setIsLogin(true);
       setEmailError(null);
       setPasswordError(null);
@@ -104,37 +88,9 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
     };
   }, [isOpen, onClose]);
 
-  useEffect(() => {
-    if (!isOtp) return;
-    prevFocused.current = document.activeElement as HTMLElement;
-    setTimeout(() => {
-      const first = otpRef.current?.querySelector<HTMLElement>(
-        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      );
-      first?.focus();
-    }, 0);
-
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onCloseOtp();
-      if (e.key === "Tab") trapFocus(otpRef.current, e);
-    };
-
-    document.addEventListener("keydown", handleKey);
-    return () => {
-      document.removeEventListener("keydown", handleKey);
-      prevFocused.current?.focus();
-    };
-  }, [isOtp]);
-
-  const onCloseOtp = () => {
-    setIsOtp(false);
-    setPendingLogin(null);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // reset errors
     setEmailError(null);
     setPasswordError(null);
     setFullNameError(null);
@@ -256,362 +212,126 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
     <>
       <AnimatePresence>
         {isOpen && (
-          <>
+          <motion.div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+            onClick={onClose}
+          >
             <motion.div
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-              initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-              onClick={onClose}
+              ref={modalRef}
+              className="bg-background/95 backdrop-blur-xl rounded-3xl border border-border/50 shadow-2xl w-full max-w-md p-8 relative overflow-hidden"
+              initial={reduceMotion ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={reduceMotion ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.9, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
             >
-              <motion.div
-                ref={modalRef}
-                className="bg-background/95 backdrop-blur-xl rounded-3xl border border-border/50 shadow-2xl w-full max-w-md p-8 relative overflow-hidden"
-                initial={reduceMotion ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={reduceMotion ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.9, y: 20 }}
-                onClick={(e) => e.stopPropagation()}
+              <div className="absolute inset-0 bg-linear-to-br from-rose-500/5 via-amber-500/5 to-rose-500/5 pointer-events-none" />
+
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-4 right-4 hover:bg-muted/50 z-10"
+                onClick={onClose}
               >
-                <div className="absolute inset-0 bg-linear-to-br from-rose-500/5 via-amber-500/5 to-rose-500/5 pointer-events-none" />
+                <X className="h-5 w-5" />
+              </Button>
 
+              <div className="text-center mb-8 relative z-10">
+                <motion.div
+                  className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-linear-to-br from-rose-600 to-amber-500 flex items-center justify-center"
+                  initial={reduceMotion ? { scale: 1 } : { scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={reduceMotion ? { duration: 0 } : { delay: 0.2, type: "spring" }}
+                >
+                  <Shield className="h-8 w-8 text-white" />
+                </motion.div>
+                <h2 className="text-3xl font-bold mb-2 text-gradient-premium">
+                  {isLogin ? "Welcome Back" : "Join ShopSwift"}
+                </h2>
+                <p className="text-muted-foreground">
+                  {isLogin
+                    ? "Sign in to access your account and continue shopping"
+                    : "Create your account and unlock exclusive deals"}
+                </p>
+              </div>
+
+              <div className="space-y-3 mb-6 relative z-10">
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-4 right-4 hover:bg-muted/50 z-10"
-                  onClick={onClose}
+                  variant="outline"
+                  className="w-full h-12 border-2 hover:border-rose-500/50 hover:bg-rose-50/50 dark:hover:bg-rose-950/50 transition-all duration-200"
+                  size="lg"
                 >
-                  <X className="h-5 w-5" />
+                  <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    />
+                    <path
+                      fill="currentColor"
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    />
+                  </svg>
+                  Continue with Google
                 </Button>
+              </div>
 
-                <div className="text-center mb-8 relative z-10">
-                  <motion.div
-                    className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-linear-to-br from-rose-600 to-amber-500 flex items-center justify-center"
-                    initial={reduceMotion ? { scale: 1 } : { scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={reduceMotion ? { duration: 0 } : { delay: 0.2, type: "spring" }}
-                  >
-                    <Shield className="h-8 w-8 text-white" />
-                  </motion.div>
-                  <h2 className="text-3xl font-bold mb-2 text-gradient-premium">
-                    {isLogin ? "Welcome Back" : "Join ShopSwift"}
-                  </h2>
-                  <p className="text-muted-foreground">
-                    {isLogin
-                      ? "Sign in to access your account and continue shopping"
-                      : "Create your account and unlock exclusive deals"}
-                  </p>
-                </div>
-
-                <div className="space-y-3 mb-6 relative z-10">
-                  <Button
-                    variant="outline"
-                    className="w-full h-12 border-2 hover:border-rose-500/50 hover:bg-rose-50/50 dark:hover:bg-rose-950/50 transition-all duration-200"
-                    size="lg"
-                  >
-                    <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
-                      <path
-                        fill="currentColor"
-                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      />
-                      <path
-                        fill="currentColor"
-                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      />
-                    </svg>
-                    Continue with Google
-                  </Button>
-                </div>
-
-                <div className="relative mb-6">
-                  <Separator className="bg-border/50" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="bg-background px-4 text-sm text-muted-foreground font-medium">
-                      or continue with email
-                    </span>
-                  </div>
-                </div>
-
-                <form
-                  className="space-y-5 relative z-10"
-                  onSubmit={handleSubmit}
-                >
-                  {!isLogin && (
-                    <div>
-                      <Label htmlFor="fullName" className="text-sm font-medium">
-                        Full Name
-                      </Label>
-                      <Input
-                        id="fullName"
-                        type="text"
-                        value={fullName}
-                        placeholder="Enter your full name"
-                        onChange={(e) => setFullName(e.target.value)}
-                        className="mt-2 h-12"
-                        required
-                        aria-invalid={!!fullNameError}
-                        aria-describedby={fullNameError ? "fullname-error" : undefined}
-                      />
-                      {fullNameError && (
-                        <p id="fullname-error" className="text-sm text-destructive mt-2" role="alert">
-                          {fullNameError}
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  <div>
-                    <Label htmlFor="email" className="text-sm font-medium">
-                      Email Address
-                    </Label>
-                    <div className="relative mt-2">
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
-                      <Input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Enter your email address"
-                        className="pl-12 h-12"
-                        aria-invalid={!!emailError}
-                        aria-describedby={emailError ? "email-error" : undefined}
-                      />
-                    </div>
-                    {emailError && (
-                      <p id="email-error" className="text-sm text-destructive mt-2" role="alert">
-                        {emailError}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="password" className="text-sm font-medium">
-                      Password
-                    </Label>
-                    <div className="relative mt-2">
-                      <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
-                      <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Enter your password"
-                        className="pl-12 h-12"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        aria-invalid={!!passwordError}
-                        aria-describedby={passwordError ? "password-error" : undefined}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 hover:bg-muted/50"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-
-                    {/* Password Strength Indicator for Registration */}
-                    {!isLogin && (
-                      <PasswordStrengthIndicator password={password} />
-                    )}
-                  </div>
-
-                  {isLogin && (
-                    <div className="text-right">
-                      <Button
-                        variant="link"
-                        className="p-0 h-auto text-rose-600 hover:text-rose-700"
-                        asChild
-                      >
-                        <Link
-                          href="/password/request-reset"
-                          onClick={onClose}
-                        >
-                          Forgot password?
-                        </Link>
-                      </Button>
-                    </div>
-                  )}
-
-                  {passwordError && (
-                    <p id="password-error" className="text-sm text-destructive mt-2" role="alert">
-                      {passwordError}
-                    </p>
-                  )}
-
-                  <Button
-                    type="submit"
-                    className="w-full h-12 bg-linear-to-r from-rose-600 to-amber-500 hover:from-rose-700 hover:to-amber-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 rounded-full"
-                    size="lg"
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <div className="flex items-center space-x-2">
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        <span>
-                          {isLogin ? "Signing in..." : "Creating account..."}
-                        </span>
-                      </div>
-                    ) : isLogin ? (
-                      "Sign In"
-                    ) : (
-                      "Create Account"
-                    )}
-                  </Button>
-                </form>
-
-                <div className="text-center mt-6 relative z-10">
-                  <span className="text-muted-foreground">
-                    {isLogin
-                      ? "Don't have an account? "
-                      : "Already have an account? "}
+              <div className="relative mb-6">
+                <Separator className="bg-border/50" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="bg-background px-4 text-sm text-muted-foreground font-medium">
+                    or continue with email
                   </span>
-                  <Button
-                    variant="link"
-                    className="p-0 h-auto text-rose-600 hover:text-rose-700 font-semibold"
-                    onClick={() => setIsLogin(!isLogin)}
-                  >
-                    {isLogin ? "Sign up" : "Sign in"}
-                  </Button>
                 </div>
-              </motion.div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              </div>
 
-      {/* OTP Modal */}
-      <AnimatePresence>
-        {isOtp && (
-          <>
-            <motion.div
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-              initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-              onClick={onCloseOtp}
-            >
-              <motion.div
-                ref={otpRef}
-                className="bg-background/95 backdrop-blur-xl rounded-3xl border border-border/50 shadow-2xl w-full max-w-sm p-8 relative overflow-hidden"
-                initial={reduceMotion ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={reduceMotion ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.9, y: 20 }}
-                onClick={(e) => e.stopPropagation()}>
-                <div className="absolute inset-0 bg-linear-to-br from-emerald-500/5 via-rose-500/5 to-amber-500/5 pointer-events-none" />
+              <AuthEmailForm
+                isLogin={isLogin}
+                email={email}
+                setEmail={setEmail}
+                password={password}
+                setPassword={setPassword}
+                fullName={fullName}
+                setFullName={setFullName}
+                emailError={emailError}
+                passwordError={passwordError}
+                fullNameError={fullNameError}
+                loading={loading}
+                onSubmit={handleSubmit}
+                onClose={onClose}
+              />
 
+              <div className="text-center mt-6 relative z-10">
+                <span className="text-muted-foreground">
+                  {isLogin
+                    ? "Don't have an account? "
+                    : "Already have an account? "}
+                </span>
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-4 right-4 hover:bg-muted/50"
-                  onClick={onCloseOtp}
+                  variant="link"
+                  className="p-0 h-auto text-rose-600 hover:text-rose-700 font-semibold"
+                  onClick={() => setIsLogin(!isLogin)}
                 >
-                  <X className="h-5 w-5" />
+                  {isLogin ? "Sign up" : "Sign in"}
                 </Button>
-
-                <div className="text-center mb-8 relative z-10">
-                  <motion.div
-                    className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-linear-to-br from-emerald-600 to-rose-600 flex items-center justify-center"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.2, type: "spring" }}
-                  >
-                    <CheckCircle className="h-8 w-8 text-white" />
-                  </motion.div>
-                  <h2 className="text-2xl font-bold mb-2 bg-linear-to-r from-emerald-600 to-rose-600 bg-clip-text text-transparent">
-                    Verify Your Email
-                  </h2>
-                  <p className="text-muted-foreground text-sm">
-                    We&apos;ve sent a 6-digit verification code to
-                  </p>
-                  <Badge className="mt-2">{email}</Badge>
-                </div>
-
-                <div className="space-y-6 flex flex-col relative z-10">
-                  <div className="flex justify-center">
-                    <InputOTP
-                      maxLength={6}
-                      value={otpValue}
-                      onChange={(value) => setOtpValue(value)}
-                    >
-                      <InputOTPGroup>
-                        <InputOTPSlot
-                          index={0}
-                          className="w-12 h-12 text-lg border-2"
-                        />
-                        <InputOTPSlot
-                          index={1}
-                          className="w-12 h-12 text-lg border-2"
-                        />
-                        <InputOTPSlot
-                          index={2}
-                          className="w-12 h-12 text-lg border-2"
-                        />
-                      </InputOTPGroup>
-                      <InputOTPSeparator />
-                      <InputOTPGroup>
-                        <InputOTPSlot
-                          index={3}
-                          className="w-12 h-12 text-lg border-2"
-                        />
-                        <InputOTPSlot
-                          index={4}
-                          className="w-12 h-12 text-lg border-2"
-                        />
-                        <InputOTPSlot
-                          index={5}
-                          className="w-12 h-12 text-lg border-2"
-                        />
-                      </InputOTPGroup>
-                    </InputOTP>
-                  </div>
-
-                  <Button
-                    onClick={handleOtpSubmit}
-                    className="w-full h-12 bg-linear-to-r from-emerald-600 to-rose-600 hover:from-emerald-700 hover:to-rose-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 rounded-full"
-                    disabled={loading || otpValue.length !== 6}
-                  >
-                    {loading ? (
-                      <div className="flex items-center space-x-2">
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        <span>Verifying...</span>
-                      </div>
-                    ) : (
-                      "Verify Email"
-                    )}
-                  </Button>
-
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Didn&apos;t receive the code?
-                    </p>
-                    <Button
-                      variant="link"
-                      className="p-0 h-auto text-rose-600 hover:text-rose-700 font-semibold"
-                      onClick={handleResendCode}
-                      disabled={resendLoading}
-                    >
-                      {resendLoading ? (
-                        <div className="flex items-center space-x-2">
-                          <RefreshCw className="h-4 w-4 animate-spin" />
-                          <span>Sending...</span>
-                        </div>
-                      ) : (
-                        "Resend Code"
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </motion.div>
+              </div>
             </motion.div>
-          </>
+          </motion.div>
         )}
       </AnimatePresence>
+
+      <OtpVerificationModal
+        isOpen={isOtp}
+        email={email}
+        otpValue={otpValue}
+        setOtpValue={setOtpValue}
+        loading={loading}
+        resendLoading={resendLoading}
+        onClose={onCloseOtp}
+        onSubmit={handleOtpSubmit}
+        onResend={handleResendCode}
+      />
     </>
   );
 }
-
