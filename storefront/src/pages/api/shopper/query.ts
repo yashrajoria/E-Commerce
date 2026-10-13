@@ -1,5 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
+export const config = {
+  maxDuration: 30,
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
@@ -17,28 +21,40 @@ export default async function handler(
   const bodyPayload =
     typeof req.body === "string" ? req.body : JSON.stringify(req.body);
 
+  const isDev =
+    process.env.NODE_ENV !== "production" &&
+    (backendUrl.includes("localhost") || backendUrl.includes("127.0.0.1"));
+
   try {
     const response = await fetch(targetUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: bodyPayload,
+      signal: AbortSignal.timeout(25000),
     });
 
     const data = await response.json();
     return res.status(response.status).json(data);
   } catch (error) {
-    console.warn(`[shopper proxy] Failed to reach ${targetUrl}, trying fallback to localhost:8080`, error);
-    try {
-      const fbResponse = await fetch("http://localhost:8080/shopper/query", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: bodyPayload,
-      });
-      const data = await fbResponse.json();
-      return res.status(fbResponse.status).json(data);
-    } catch (fallbackErr) {
-      console.error("[shopper proxy] Fallback to localhost:8080 failed as well", fallbackErr);
-      return res.status(500).json({ error: "AI personal shopper service unreachable" });
+    if (isDev && targetUrl !== "http://localhost:8080/shopper/query") {
+      console.warn(`[shopper proxy] Failed to reach ${targetUrl}, trying local fallback`, error);
+      try {
+        const fbResponse = await fetch("http://localhost:8080/shopper/query", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: bodyPayload,
+          signal: AbortSignal.timeout(5000),
+        });
+        const data = await fbResponse.json();
+        return res.status(fbResponse.status).json(data);
+      } catch (fallbackErr) {
+        console.error("[shopper proxy] Fallback to localhost:8080 failed", fallbackErr);
+      }
     }
+
+    console.error(`[shopper proxy] Failed to reach ${targetUrl}:`, error);
+    return res.status(504).json({
+      error: "AI personal shopper service is temporarily unavailable or taking too long to respond. Please try again shortly.",
+    });
   }
 }
