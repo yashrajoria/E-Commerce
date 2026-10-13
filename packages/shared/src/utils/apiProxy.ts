@@ -15,6 +15,7 @@ type ProxyRequestOptions = {
   sanitizeSetCookie?: boolean;
   // If true, remove top-level sensitive fields (e.g. `role`) from JSON request bodies
   sanitizeRequestBody?: boolean;
+  timeoutMs?: number;
 };
 
 type ProxyResponse = {
@@ -121,6 +122,7 @@ export async function proxyRequest({
   targetPath,
   sanitizeSetCookie = false,
   sanitizeRequestBody = false,
+  timeoutMs = 8500,
 }: ProxyRequestOptions): Promise<ProxyResponse> {
   const backendBaseUrl = getBackendBaseUrl();
   const requestUrl = new URL(req.url ?? "/", "http://localhost");
@@ -155,11 +157,31 @@ export async function proxyRequest({
     }
   }
 
-  const response = await fetch(targetUrl, {
-    method,
-    headers: buildForwardHeaders(req.headers, backendBaseUrl),
-    body: buildRequestBody(method, outgoingBody),
-  });
+  let response: Response;
+  try {
+    response = await fetch(targetUrl, {
+      method,
+      headers: buildForwardHeaders(req.headers, backendBaseUrl),
+      body: buildRequestBody(method, outgoingBody),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+  } catch (error: unknown) {
+    if (
+      error instanceof Error &&
+      (error.name === "AbortError" || error.name === "TimeoutError")
+    ) {
+      return {
+        status: 504,
+        body: JSON.stringify({
+          error: "Gateway Timeout",
+          message:
+            "The backend service took too long to respond. It may be waking up, please retry shortly.",
+        }),
+        headers: { "content-type": "application/json" },
+      };
+    }
+    throw error;
+  }
 
   const headers: Record<string, string | string[]> = {};
   response.headers.forEach((value, key) => {

@@ -16,6 +16,33 @@ export type APIErrorHandler = (type: APIErrorType, message: string, detail?: any
 
 let errorHandler: APIErrorHandler | null = null;
 
+let activeStoreId: string | null = null;
+
+export const setActiveStoreId = (storeId: string | null) => {
+  activeStoreId = storeId;
+};
+
+export const getActiveStoreId = (): string | null => {
+  if (activeStoreId) return activeStoreId;
+  if (typeof window !== "undefined") {
+    try {
+      return localStorage.getItem("shopswift_active_store_id");
+    } catch {
+      return null;
+    }
+  }
+  return null;
+};
+
+// Automatically attach active store ID header to outgoing requests
+axiosInstance.interceptors.request.use((config) => {
+  const storeId = getActiveStoreId();
+  if (storeId && !config.headers["X-Store-ID"] && !config.headers["x-store-id"]) {
+    config.headers["X-Store-ID"] = storeId;
+  }
+  return config;
+});
+
 export const setAPIErrorHandler = (handler: APIErrorHandler) => {
   errorHandler = handler;
 };

@@ -8,6 +8,8 @@ export {
   axiosInstance,
   setAPIErrorHandler,
   setAuthRefreshUrl,
+  setActiveStoreId,
+  getActiveStoreId,
 } from "./utils/axiosInstance";
 export type { APIErrorHandler, APIErrorType } from "./utils/axiosInstance";
 export {

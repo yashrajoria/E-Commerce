@@ -25,6 +25,7 @@ export interface Product {
   totalSales?: number;
   views?: number | string;
   sku?: string;
+  store_id?: string;
 }
 
 export interface Category {
@@ -33,6 +34,7 @@ export interface Category {
   name?: string;
   icon?: string;
   image?: string;
+  store_id?: string;
   productCount?: number;
   directProductCount?: number;
   totalProductCount?: number;
@@ -75,6 +77,7 @@ export interface Order {
   _id?: string;
   order_number?: string;
   customer?: Customer;
+  store_id?: string;
   date?: string;
   amount?: number;
   subtotal?: number;
@@ -96,4 +99,84 @@ export interface Collection {
   image: string;
   products: Product[];
   layout?: "large" | "medium" | "small";
+}
+
+export type StoreRole = "owner" | "admin" | "manager" | "viewer";
+
+export interface Store {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  logo_url?: string;
+  currency: string;
+  timezone: string;
+  domain?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  settings?: StoreSettings;
+  subscription?: StoreSubscription;
+}
+
+export interface StoreMembership {
+  id: string;
+  user_id: string;
+  store_id: string;
+  role: StoreRole;
+  invited_by?: string;
+  accepted: boolean;
+  created_at: string;
+  user?: {
+    id: string;
+    email: string;
+    name: string;
+  };
+  store?: Store;
+}
+
+export interface StoreSettings {
+  store_id: string;
+  contact_email?: string;
+  contact_phone?: string;
+  address?: string;
+  smtp_host?: string;
+  smtp_port?: number;
+  maintenance_mode: boolean;
+  analytics_enabled: boolean;
+  shipping_config?: Record<string, any>;
+  payment_config?: Record<string, any>;
+}
+
+export interface Plan {
+  id: string;
+  name: string;
+  slug: string;
+  price_monthly: number;
+  price_yearly: number;
+  currency: string;
+  is_active: boolean;
+  entitlements?: PlanEntitlement[];
+}
+
+export interface PlanEntitlement {
+  id: string;
+  plan_id: string;
+  feature_key: string;
+  limit_value?: number | null;
+  quota_limit?: number | null;
+  enabled: boolean;
+}
+
+export interface StoreSubscription {
+  id: string;
+  store_id: string;
+  plan_id: string;
+  status: "active" | "past_due" | "cancelled" | "expired" | "trialing";
+  stripe_subscription_id?: string;
+  stripe_customer_id?: string;
+  current_period_start?: string;
+  current_period_end?: string;
+  cancel_at_period_end: boolean;
+  plan?: Plan;
 }
