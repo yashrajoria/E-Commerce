@@ -292,7 +292,7 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
       try {
         setResponseText("");
         let accumulatedText = "";
-        let finalData: any = null;
+        let finalData: Record<string, unknown> | null = null;
 
         await streamAgentQuery(
           {
@@ -316,12 +316,13 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
           },
         );
 
-        const answer = accumulatedText.trim() || (typeof finalData?.answer === "string" ? finalData.answer : "");
+        const doneData = finalData as Record<string, unknown> | null;
+        const answer = accumulatedText.trim() || (typeof doneData?.answer === "string" ? doneData.answer : "");
         if (!answer) {
           throw new Error("Stream completed without producing an answer");
         }
         streamed = true;
-        const cid = typeof finalData?.correlation_id === "string" ? finalData.correlation_id : "";
+        const cid = typeof doneData?.correlation_id === "string" ? doneData.correlation_id : "";
         const timestamp = new Date().toISOString();
 
         const historyItem: PromptHistoryItem = {

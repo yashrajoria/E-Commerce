@@ -85,9 +85,6 @@ export function useProductForm(
         formData.append("image_urls", JSON.stringify(urls));
       }
 
-      for (const pair of formData.entries()) {
-      }
-
       const res = await axios.post("/api/admin/products", formData, {
         withCredentials: true,
       });
@@ -117,7 +114,7 @@ export function useProductForm(
 
       // If there are new files in images, upload them first and include image_urls
       const files = images
-        ? images.map((img: any) => img.file).filter((f: unknown): f is File => f instanceof File)
+        ? images.map((img: { file?: unknown }) => img.file).filter((f: unknown): f is File => f instanceof File)
         : [];
 
       const payload: Record<string, unknown> = { ...data };
@@ -143,10 +140,13 @@ export function useProductForm(
   };
   const deleteSingleProduct = async (productId: string) => {
     try {
-      const res = await axios.delete(`/api/admin/products/${productId}`, {
+      await axios.delete(`/api/admin/products/${productId}`, {
         withCredentials: true,
       });
+      toast.success("Product deleted successfully");
     } catch (err) {
+      console.error("Error deleting product:", err);
+      toast.error("Failed to delete product");
     }
   };
   return {

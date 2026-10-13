@@ -3,20 +3,7 @@
  */
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
 import {
   Palette,
@@ -27,16 +14,23 @@ import {
   Store as StoreIcon,
   Database,
   Zap,
-  Check,
   Users,
-  UserPlus,
-  Trash2,
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import axios from "axios";
 import { useStore } from "@/lib/useStore";
 import type { Plan, StoreSubscription, StoreMembership } from "@ecommerce/shared";
+import {
+  GeneralSettingsTab,
+  BillingSettingsTab,
+  TeamSettingsTab,
+  AppearanceSettingsTab,
+  NotificationsSettingsTab,
+  ShippingSettingsCard,
+  PaymentsSettingsCard,
+  AdvancedSettingsCard,
+} from "@/components/settings";
 
 const Settings = () => {
   const { activeStore, refreshStores } = useStore();
@@ -186,7 +180,6 @@ const Settings = () => {
 
     setSaving(true);
     try {
-      // 1. Update basic store metadata
       await axios.put(
         `/api/bff/admin/stores/${activeStore.id}`,
         {
@@ -197,7 +190,6 @@ const Settings = () => {
         { withCredentials: true }
       );
 
-      // 2. Update store settings JSON
       await axios.put(
         `/api/bff/admin/stores/${activeStore.id}/settings`,
         {
@@ -292,513 +284,89 @@ const Settings = () => {
             </TabsList>
           </div>
 
-          {/* General Tab */}
           <TabsContent value="general" className="space-y-6 mt-6">
-            <Card className="glass-effect border-white/[0.06]">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <StoreIcon className="h-5 w-5 text-purple-400" /> Store Information
-                </CardTitle>
-                <CardDescription>
-                  Configure core identity and localization for{" "}
-                  <span className="font-semibold text-foreground">{activeStore?.name}</span>
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm">Store Name</Label>
-                    <Input
-                      value={storeName}
-                      onChange={(e) => setStoreName(e.target.value)}
-                      className="bg-white/[0.04] border-white/[0.08] rounded-xl h-10 text-xs"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm">Store Slug</Label>
-                    <Input
-                      value={storeSlug}
-                      disabled
-                      className="bg-white/[0.02] border-white/[0.06] rounded-xl h-10 text-xs font-mono text-muted-foreground"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm">Custom Domain (Pro & Business)</Label>
-                    <Input
-                      placeholder="e.g. shop.brand.com"
-                      value={storeDomain}
-                      onChange={(e) => setStoreDomain(e.target.value)}
-                      className="bg-white/[0.04] border-white/[0.08] rounded-xl h-10 text-xs font-mono"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm">Base Currency</Label>
-                    <select
-                      value={currency}
-                      onChange={(e) => setCurrency(e.target.value)}
-                      className="h-10 w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-1 text-xs text-foreground focus:ring-1 focus:ring-ring"
-                    >
-                      <option value="USD">USD ($)</option>
-                      <option value="EUR">EUR (€)</option>
-                      <option value="GBP">GBP (£)</option>
-                      <option value="INR">INR (₹)</option>
-                      <option value="CAD">CAD ($)</option>
-                      <option value="AUD">AUD ($)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm">Contact Email</Label>
-                    <Input
-                      value={storeEmail}
-                      onChange={(e) => setStoreEmail(e.target.value)}
-                      className="bg-white/[0.04] border-white/[0.08] rounded-xl h-10 text-xs"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm">Support Phone</Label>
-                    <Input
-                      value={storePhone}
-                      onChange={(e) => setStorePhone(e.target.value)}
-                      className="bg-white/[0.04] border-white/[0.08] rounded-xl h-10 text-xs"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm">Language</Label>
-                    <select
-                      value={language}
-                      onChange={(e) => setLanguage(e.target.value)}
-                      className="h-10 w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-1 text-xs text-foreground focus:ring-1 focus:ring-ring"
-                    >
-                      <option value="en">English (US)</option>
-                      <option value="es">Spanish</option>
-                      <option value="fr">French</option>
-                      <option value="de">German</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm">Timezone</Label>
-                    <select
-                      value={timezone}
-                      onChange={(e) => setTimezone(e.target.value)}
-                      className="h-10 w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-1 text-xs text-foreground focus:ring-1 focus:ring-ring"
-                    >
-                      <option value="UTC">UTC</option>
-                      <option value="America/New_York">America/New_York (EST)</option>
-                      <option value="America/Los_Angeles">America/Los_Angeles (PST)</option>
-                      <option value="Europe/London">Europe/London (GMT)</option>
-                      <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm">Physical Address</Label>
-                  <Textarea
-                    value={storeAddress}
-                    onChange={(e) => setStoreAddress(e.target.value)}
-                    className="bg-white/[0.04] border-white/[0.08] rounded-xl text-xs"
-                    rows={2}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/[0.06]">
-                  <div>
-                    <p className="text-sm font-medium">Maintenance Mode</p>
-                    <p className="text-xs text-muted-foreground">
-                      Temporarily disable customer purchases and show an under maintenance banner
-                    </p>
-                  </div>
-                  <Switch
-                    checked={maintenanceMode}
-                    onCheckedChange={setMaintenanceMode}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+            <GeneralSettingsTab
+              activeStoreName={activeStore?.name}
+              storeName={storeName}
+              setStoreName={setStoreName}
+              storeSlug={storeSlug}
+              storeDomain={storeDomain}
+              setStoreDomain={setStoreDomain}
+              currency={currency}
+              setCurrency={setCurrency}
+              storeEmail={storeEmail}
+              setStoreEmail={setStoreEmail}
+              storePhone={storePhone}
+              setStorePhone={setStorePhone}
+              language={language}
+              setLanguage={setLanguage}
+              timezone={timezone}
+              setTimezone={setTimezone}
+              storeAddress={storeAddress}
+              setStoreAddress={setStoreAddress}
+              maintenanceMode={maintenanceMode}
+              setMaintenanceMode={setMaintenanceMode}
+            />
           </TabsContent>
 
-          {/* Billing & Subscription Tab */}
           <TabsContent value="billing" className="space-y-6 mt-6">
-            <Card className="glass-effect border-white/[0.06]">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Zap className="h-5 w-5 text-amber-400" /> Subscription & SaaS Tier
-                    </CardTitle>
-                    <CardDescription>
-                      Manage plan quotas, AI query limits, and feature entitlements for this store
-                    </CardDescription>
-                  </div>
-                  <Badge variant="outline" className="border-primary/40 text-primary capitalize px-3 py-1">
-                    Current Plan: {plans.find((p) => p.id === subscription?.plan_id)?.name || "Free"}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {billingLoading ? (
-                  <div className="p-8 text-center text-xs text-muted-foreground">Loading subscription details...</div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {plans.map((plan) => {
-                      const isCurrent = plan.id === subscription?.plan_id;
-                      return (
-                        <div
-                          key={plan.id}
-                          className={`rounded-2xl p-6 border transition-all flex flex-col justify-between ${
-                            isCurrent
-                              ? "bg-primary/5 border-primary shadow-lg shadow-primary/5"
-                              : "bg-white/[0.02] border-white/[0.06] hover:border-white/[0.15]"
-                          }`}
-                        >
-                          <div>
-                            <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-bold text-base text-foreground">{plan.name}</h3>
-                              {isCurrent && (
-                                <Badge className="bg-primary text-white text-[10px]">Active</Badge>
-                              )}
-                            </div>
-                            <div className="mb-4">
-                              <span className="text-2xl font-black text-foreground">
-                                ${plan.price_monthly}
-                              </span>
-                              <span className="text-xs text-muted-foreground"> / month</span>
-                            </div>
-                            <p className="text-xs text-muted-foreground mb-4">
-                              {plan.slug === "free" && "Essential tools to start selling and test your storefront."}
-                              {plan.slug === "pro" && "High-volume commerce with copilot agent and custom domains."}
-                              {plan.slug === "business" && "Full enterprise autonomy with limitless scale and priority queues."}
-                            </p>
-
-                            <Separator className="bg-white/[0.06] mb-4" />
-
-                            <ul className="space-y-2.5 text-xs">
-                              {plan.entitlements?.map((e) => (
-                                <li key={e.feature_key} className="flex items-center gap-2 text-foreground/80">
-                                  <Check className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-                                  <span>
-                                    {e.feature_key === "max_products" && `${e.quota_limit ?? e.limit_value ?? 100} Products`}
-                                    {e.feature_key === "ai_queries_monthly" && `${e.quota_limit ?? e.limit_value ?? 50} AI Copilot Queries/mo`}
-                                    {e.feature_key === "custom_domain" && "Custom Domain Support"}
-                                    {e.feature_key === "priority_support" && "Priority 24/7 SLA"}
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-
-                          <div className="pt-6">
-                            <Button
-                              variant={isCurrent ? "outline" : "default"}
-                              size="sm"
-                              disabled={isCurrent}
-                              onClick={() => handleUpgradePlan(plan.id)}
-                              className={`w-full text-xs font-semibold rounded-xl ${
-                                !isCurrent ? "gradient-purple text-white" : ""
-                              }`}
-                            >
-                              {isCurrent ? "Current Plan" : `Switch to ${plan.name}`}
-                            </Button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <BillingSettingsTab
+              plans={plans}
+              subscription={subscription}
+              billingLoading={billingLoading}
+              onUpgradePlan={handleUpgradePlan}
+            />
           </TabsContent>
 
-          {/* Team & Staff Management Tab */}
           <TabsContent value="team" className="space-y-6 mt-6">
-            <Card className="glass-effect border-white/[0.06]">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <UserPlus className="h-5 w-5 text-purple-400" /> Invite Staff Member
-                </CardTitle>
-                <CardDescription>
-                  Grant team members access to manage catalog, orders, and promotions for {activeStore?.name}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleInviteMember} className="flex flex-col sm:flex-row gap-3">
-                  <Input
-                    placeholder="teammate@company.com"
-                    type="email"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    required
-                    className="h-10 text-xs bg-white/[0.04] border-white/[0.08] rounded-xl flex-1"
-                  />
-                  <select
-                    value={inviteRole}
-                    onChange={(e) => setInviteRole(e.target.value)}
-                    className="h-10 rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-1 text-xs text-foreground focus:ring-1 focus:ring-ring sm:w-36"
-                  >
-                    <option value="admin">Admin</option>
-                    <option value="manager">Manager</option>
-                    <option value="viewer">Viewer</option>
-                  </select>
-                  <Button
-                    type="submit"
-                    disabled={inviting || !inviteEmail.trim()}
-                    className="gradient-purple text-white gap-2 text-xs h-10 px-5 rounded-xl shrink-0"
-                  >
-                    <UserPlus size={14} />
-                    {inviting ? "Inviting..." : "Send Invite"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-
-            <Card className="glass-effect border-white/[0.06]">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Users className="h-5 w-5 text-purple-400" /> Active Members ({members.length})
-                </CardTitle>
-                <CardDescription>Team members with authorized roles in this store</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {members.length === 0 ? (
-                  <p className="text-xs text-muted-foreground py-4 text-center">No additional staff members yet.</p>
-                ) : (
-                  members.map((m) => (
-                    <div
-                      key={m.id}
-                      className="flex items-center justify-between p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.06]"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
-                          {(m.user?.name || m.user?.email || "U")[0].toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="text-xs font-semibold text-foreground">
-                            {m.user?.name || m.user?.email || "Team Member"}
-                          </p>
-                          <p className="text-[11px] text-muted-foreground font-mono">
-                            {m.user?.email || m.user_id}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          variant="outline"
-                          className="capitalize text-[10px] border-primary/30 text-primary"
-                        >
-                          {m.role}
-                        </Badge>
-                        {m.role !== "owner" && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleRemoveMember(m.user_id)}
-                            className="h-8 w-8 text-muted-foreground hover:text-red-400 hover:bg-red-500/10 rounded-lg"
-                          >
-                            <Trash2 size={13} />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  ))
-                )}
-              </CardContent>
-            </Card>
+            <TeamSettingsTab
+              activeStoreName={activeStore?.name}
+              members={members}
+              inviteEmail={inviteEmail}
+              setInviteEmail={setInviteEmail}
+              inviteRole={inviteRole}
+              setInviteRole={setInviteRole}
+              inviting={inviting}
+              onInviteMember={handleInviteMember}
+              onRemoveMember={handleRemoveMember}
+            />
           </TabsContent>
 
-          {/* Appearance Tab */}
           <TabsContent value="appearance" className="space-y-6 mt-6">
-            <Card className="glass-effect border-white/[0.06]">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Palette className="h-5 w-5 text-purple-400" /> Branding & Theme
-                </CardTitle>
-                <CardDescription>Customize the storefront and admin color palette</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm">Primary Brand Accent</Label>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="color"
-                        value={primaryColor}
-                        onChange={(e) => setPrimaryColor(e.target.value)}
-                        className="h-10 w-14 rounded-lg bg-transparent border border-white/[0.1] cursor-pointer"
-                      />
-                      <Input
-                        value={primaryColor}
-                        onChange={(e) => setPrimaryColor(e.target.value)}
-                        className="bg-white/[0.04] border-white/[0.08] rounded-xl h-10 text-xs font-mono"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/[0.06]">
-                  <div>
-                    <p className="text-sm font-medium">Dark Mode Interface</p>
-                    <p className="text-xs text-muted-foreground">Default to dark glassmorphism theme</p>
-                  </div>
-                  <Switch checked={darkMode} onCheckedChange={setDarkMode} />
-                </div>
-              </CardContent>
-            </Card>
+            <AppearanceSettingsTab
+              primaryColor={primaryColor}
+              setPrimaryColor={setPrimaryColor}
+              darkMode={darkMode}
+              setDarkMode={setDarkMode}
+            />
           </TabsContent>
 
-          {/* Notifications / SMTP */}
           <TabsContent value="notifications" className="space-y-6 mt-6">
-            <Card className="glass-effect border-white/[0.06]">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Mail className="h-5 w-5 text-purple-400" /> Email & SMTP Delivery
-                </CardTitle>
-                <CardDescription>Configure outgoing transactional emails</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm">SMTP Host</Label>
-                    <Input
-                      value={smtpHost}
-                      onChange={(e) => setSmtpHost(e.target.value)}
-                      className="bg-white/[0.04] border-white/[0.08] rounded-xl h-10 text-xs font-mono"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm">SMTP Port</Label>
-                    <Input
-                      value={smtpPort}
-                      onChange={(e) => setSmtpPort(e.target.value)}
-                      className="bg-white/[0.04] border-white/[0.08] rounded-xl h-10 text-xs font-mono"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm">Sender Address</Label>
-                  <Input
-                    value={smtpSender}
-                    onChange={(e) => setSmtpSender(e.target.value)}
-                    className="bg-white/[0.04] border-white/[0.08] rounded-xl h-10 text-xs"
-                  />
-                </div>
-              </CardContent>
-            </Card>
+            <NotificationsSettingsTab
+              smtpHost={smtpHost}
+              setSmtpHost={setSmtpHost}
+              smtpPort={smtpPort}
+              setSmtpPort={setSmtpPort}
+              smtpSender={smtpSender}
+              setSmtpSender={setSmtpSender}
+            />
           </TabsContent>
 
-          {/* Shipping Tab */}
           <TabsContent value="shipping" className="space-y-6 mt-6">
-            <Card className="glass-effect border-white/[0.06]">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Truck className="h-5 w-5 text-purple-400" /> Shipping & Fulfillment
-                </CardTitle>
-                <CardDescription>Delivery rules and shipping carrier integration</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {[
-                  { name: "Standard Shipping (3-5 days)", cost: "$5.00", enabled: true },
-                  { name: "Express Next-Day Air", cost: "$15.00", enabled: true },
-                  { name: "Free Shipping on orders > $100", cost: "$0.00", enabled: true },
-                ].map((s) => (
-                  <div
-                    key={s.name}
-                    className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/[0.06]"
-                  >
-                    <div>
-                      <p className="text-sm font-medium">{s.name}</p>
-                      <p className="text-xs text-muted-foreground">{s.cost}</p>
-                    </div>
-                    <Switch defaultChecked={s.enabled} />
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+            <ShippingSettingsCard />
           </TabsContent>
 
-          {/* Payments Tab */}
           <TabsContent value="payments" className="space-y-6 mt-6">
-            <Card className="glass-effect border-white/[0.06]">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-purple-400" /> Payment Gateways
-                </CardTitle>
-                <CardDescription>Accept cards and digital wallets</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {[
-                  { name: "Stripe Card Processing", status: "Connected", enabled: true },
-                  { name: "Apple Pay & Google Pay", status: "Active", enabled: true },
-                  { name: "Cash on Delivery", status: "Optional", enabled: false },
-                ].map((p) => (
-                  <div
-                    key={p.name}
-                    className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/[0.06]"
-                  >
-                    <div>
-                      <p className="text-sm font-medium">{p.name}</p>
-                      <Badge
-                        variant="outline"
-                        className={`text-[10px] mt-0.5 ${
-                          p.status === "Connected" || p.status === "Active"
-                            ? "text-emerald-400 border-emerald-400/20"
-                            : "text-muted-foreground border-white/[0.08]"
-                        }`}
-                      >
-                        {p.status}
-                      </Badge>
-                    </div>
-                    <Switch defaultChecked={p.enabled} />
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+            <PaymentsSettingsCard />
           </TabsContent>
 
-          {/* Advanced Tab */}
           <TabsContent value="advanced" className="space-y-6 mt-6">
-            <Card className="glass-effect border-white/[0.06]">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Database className="h-5 w-5 text-purple-400" /> Platform & Auditing
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {[
-                  {
-                    label: "Auto Backup",
-                    desc: "Automatically backup catalog snapshots daily",
-                    value: autoBackup,
-                    setter: setAutoBackup,
-                  },
-                  {
-                    label: "Analytics & Telemetry",
-                    desc: "Collect real-time performance and cart conversion metrics",
-                    value: analyticsEnabled,
-                    setter: setAnalyticsEnabled,
-                  },
-                ].map(({ label, desc, value, setter }) => (
-                  <div
-                    key={label}
-                    className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/[0.06]"
-                  >
-                    <div>
-                      <p className="text-sm font-medium">{label}</p>
-                      <p className="text-xs text-muted-foreground">{desc}</p>
-                    </div>
-                    <Switch checked={value} onCheckedChange={setter} />
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+            <AdvancedSettingsCard
+              autoBackup={autoBackup}
+              setAutoBackup={setAutoBackup}
+              analyticsEnabled={analyticsEnabled}
+              setAnalyticsEnabled={setAnalyticsEnabled}
+            />
           </TabsContent>
         </Tabs>
       </motion.section>

@@ -7,26 +7,13 @@ import {
 } from "@/components/admin/shared/DataStates";
 import {
   CustomersFilters,
-} from "@/components/customers/CustomersFilters";
-import {
   CustomersTable,
+  CustomerDetailModal,
+  AddCustomerModal,
   ROLE_LABEL,
-  ROLE_STYLE,
-} from "@/components/customers/CustomersTable";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+} from "@/components/customers";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Pagination,
   PaginationContent,
@@ -35,13 +22,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Table } from "@/components/ui/table";
 import { useAdminCustomers } from "@/lib/hooks/useAdminData";
 import type {
@@ -50,13 +30,8 @@ import type {
   CustomerFilter,
   CustomerSortKey,
 } from "@/types/customers";
-import { formatDate, formatRelativeDate } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import axios from "axios";
 import {
-  AtSign,
-  CalendarDays,
-  Copy,
   Download,
   Phone,
   ShieldCheck,
@@ -78,15 +53,6 @@ const toCustomer = (raw: AdminUserRecord): Customer => ({
   createdAt: raw.created_at || "",
 });
 
-const initialsOf = (name: string) =>
-  name
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase() || "?";
-
 const Customers = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [filter, setFilter] = useState<CustomerFilter>({
@@ -97,13 +63,6 @@ const Customers = () => {
   });
   const [selected, setSelected] = useState<Customer | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-    role: "user" as Customer["role"],
-  });
 
   const {
     customers: records,
@@ -223,26 +182,6 @@ const Customers = () => {
     anchor.click();
     URL.revokeObjectURL(url);
     toast.success(`Exported ${filteredCustomers.length} customers`);
-  };
-
-  const handleCreate = async () => {
-    setIsSaving(true);
-    try {
-      const response = await axios.post("/api/customers", form);
-      if (response.status >= 200 && response.status < 300) {
-        toast.success(`${form.name.trim()} added`);
-        setIsAddOpen(false);
-        setForm({ name: "", email: "", password: "", role: "user" });
-        await mutate();
-      }
-    } catch (err) {
-      const message = axios.isAxiosError(err)
-        ? err.response?.data?.error || err.message
-        : "Failed to create customer";
-      toast.error(message);
-    } finally {
-      setIsSaving(false);
-    }
   };
 
   return (
@@ -420,190 +359,22 @@ const Customers = () => {
       )}
 
       {/* ── Customer detail ── */}
-      <Dialog open={Boolean(selected)} onOpenChange={(open) => !open && setSelected(null)}>
-        <DialogContent className="sm:max-w-lg glass-effect-strong border-white/[0.08]">
-          <DialogHeader>
-            <DialogTitle>Customer details</DialogTitle>
-            <DialogDescription>
-              Profile information for this ShopSwift account.
-            </DialogDescription>
-          </DialogHeader>
-
-          {selected && (
-            <div className="space-y-5">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-14 w-14">
-                  <AvatarFallback className="gradient-purple text-white text-base font-semibold">
-                    {initialsOf(selected.name)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0">
-                  <p className="text-lg font-semibold text-foreground truncate">
-                    {selected.name}
-                  </p>
-                  <Badge
-                    variant="outline"
-                    className={`mt-1 gap-1.5 w-fit capitalize ${ROLE_STYLE[selected.role]}`}
-                  >
-                    <span className="status-dot" />
-                    {ROLE_LABEL[selected.role]}
-                  </Badge>
-                </div>
-              </div>
-
-              <dl className="grid gap-3 text-sm">
-                <div className="flex items-center gap-3 glass-effect rounded-xl px-3 py-2.5">
-                  <AtSign className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  <dt className="sr-only">Email</dt>
-                  <dd className="flex-1 min-w-0 truncate">{selected.email}</dd>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 shrink-0"
-                    onClick={() => {
-                      navigator.clipboard.writeText(selected.email);
-                      toast.success("Email copied");
-                    }}
-                  >
-                    <Copy className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-
-                <div className="flex items-center gap-3 glass-effect rounded-xl px-3 py-2.5">
-                  <Phone className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  <dt className="sr-only">Phone</dt>
-                  <dd className="flex-1 min-w-0 tabular-nums">
-                    {selected.phone || (
-                      <span className="text-muted-foreground/50">
-                        No phone on file
-                      </span>
-                    )}
-                  </dd>
-                </div>
-
-                <div className="flex items-center gap-3 glass-effect rounded-xl px-3 py-2.5">
-                  <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  <dt className="sr-only">Joined</dt>
-                  <dd className="flex-1 min-w-0">
-                    {formatDate(selected.createdAt)}
-                    <span className="text-muted-foreground">
-                      {" "}
-                      · {formatRelativeDate(selected.createdAt)}
-                    </span>
-                  </dd>
-                </div>
-              </dl>
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setSelected(null)}
-              className="rounded-xl border-white/[0.08]"
-            >
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CustomerDetailModal
+        customer={selected}
+        onClose={() => setSelected(null)}
+      />
 
       {/* ── Add customer ── */}
-      <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent className="sm:max-w-md glass-effect-strong border-white/[0.08]">
-          <DialogHeader>
-            <DialogTitle>Add customer</DialogTitle>
-            <DialogDescription>
-              Creates a ShopSwift account that can sign in straight away.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-4 py-2">
-            <div className="grid gap-2">
-              <Label htmlFor="customer-name">Full name</Label>
-              <Input
-                id="customer-name"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="Jane Doe"
-                className="bg-white/[0.04] border-white/[0.08] rounded-xl"
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="customer-email">Email</Label>
-              <Input
-                id="customer-email"
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                placeholder="jane@example.com"
-                className="bg-white/[0.04] border-white/[0.08] rounded-xl"
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="customer-password">Temporary password</Label>
-              <Input
-                id="customer-password"
-                type="password"
-                value={form.password}
-                onChange={(e) =>
-                  setForm({ ...form, password: e.target.value })
-                }
-                placeholder="Minimum 8 characters"
-                className="bg-white/[0.04] border-white/[0.08] rounded-xl"
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label>Role</Label>
-              <Select
-                value={form.role}
-                onValueChange={(value) =>
-                  setForm({ ...form, role: value as Customer["role"] })
-                }
-              >
-                <SelectTrigger className="bg-white/[0.04] border-white/[0.08] rounded-xl">
-                  <SelectValue placeholder="Select a role" />
-                </SelectTrigger>
-                <SelectContent className="glass-effect border-white/[0.08]">
-                  <SelectItem value="user">Customer</SelectItem>
-                  <SelectItem value="admin">Staff (admin)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsAddOpen(false)}
-              className="rounded-xl border-white/[0.08]"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleCreate}
-              disabled={
-                isSaving ||
-                !form.name.trim() ||
-                !form.email.trim() ||
-                form.password.length < 8
-              }
-              className="rounded-xl gradient-purple text-white hover:opacity-90 border-0"
-            >
-              {isSaving ? "Adding..." : "Add customer"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AddCustomerModal
+        open={isAddOpen}
+        onOpenChange={setIsAddOpen}
+        onSuccess={mutate}
+      />
     </PageLayout>
   );
 };
 
 export default Customers;
-
 
 import type { GetServerSidePropsContext } from "next";
 

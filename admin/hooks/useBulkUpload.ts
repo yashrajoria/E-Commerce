@@ -165,8 +165,7 @@ const validateBulkUpload = (data?: Record<string, string>[]) => {
       formData.append("file", bulkFile);
 
       const res = await axios.post(
-        // `/api/products?isBulk=1&auto_create_categories=${autoCreateCategories}`,
-        `/api/products?isBulk=1&auto_create_categories=true`,
+        `/api/products?isBulk=1&auto_create_categories=${autoCreateCategories}`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },

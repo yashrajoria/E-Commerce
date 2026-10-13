@@ -141,7 +141,7 @@ export function uploadSingleFile(
       aborted = true;
       try {
         xhr.abort();
-      } catch (e) {
+      } catch {
         // ignore
       }
     },

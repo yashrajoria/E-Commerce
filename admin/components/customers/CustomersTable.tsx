@@ -95,7 +95,7 @@ const SortableHead = ({
   </TableHead>
 );
 
-const initialsOf = (name: string) =>
+export const initialsOf = (name: string) =>
   name
     .split(/\s+/)
     .filter(Boolean)
@@ -103,6 +103,7 @@ const initialsOf = (name: string) =>
     .join("")
     .slice(0, 2)
     .toUpperCase() || "?";
+
 
 export const CustomersTable = ({
   customers,
