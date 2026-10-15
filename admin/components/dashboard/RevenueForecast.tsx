@@ -6,16 +6,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendIndicator } from "@/components/ui/trend-indicator";
 import { Target, Calendar, Zap } from "lucide-react";
 
-interface ForecastMetric {
+export interface ForecastItem {
   label: string;
   current: number;
   target: number;
-  icon: React.ElementType;
-  color: string;
   trend: number;
+  icon?: React.ElementType;
+  color?: string;
 }
 
-const metrics: ForecastMetric[] = [
+export interface RevenueForecastProps {
+  forecasts?: ForecastItem[];
+}
+
+const defaultMetrics: ForecastItem[] = [
   {
     label: "Monthly Revenue",
     current: 42835,
@@ -93,7 +97,21 @@ function RadialProgress({
   );
 }
 
-export default function RevenueForecast() {
+const iconMap: Record<string, { icon: React.ElementType; color: string }> = {
+  "Monthly Revenue": { icon: Target, color: "#1f513f" },
+  "Quarterly Goal": { icon: Calendar, color: "#059669" },
+  "Conversion Rate": { icon: Zap, color: "#d97706" },
+};
+
+export default function RevenueForecast({ forecasts }: RevenueForecastProps = {}) {
+  const displayMetrics = forecasts && forecasts.length > 0
+    ? forecasts.map((f) => ({
+        ...f,
+        icon: f.icon || iconMap[f.label]?.icon || Target,
+        color: f.color || iconMap[f.label]?.color || "#1f513f",
+      }))
+    : defaultMetrics;
+
   return (
     <Card className="bg-card border border-border shadow-2xs overflow-hidden">
       <CardHeader className="pb-3 border-b border-border/60">
@@ -106,7 +124,7 @@ export default function RevenueForecast() {
       </CardHeader>
       <CardContent className="p-3">
         <div className="space-y-2">
-          {metrics.map((metric, idx) => (
+          {displayMetrics.map((metric, idx) => (
             <motion.div
               key={metric.label}
               initial={{ opacity: 0, y: 8 }}
@@ -117,7 +135,7 @@ export default function RevenueForecast() {
               <RadialProgress
                 value={metric.current}
                 max={metric.target}
-                color={metric.color}
+                color={metric.color || "#1f513f"}
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">

@@ -37,7 +37,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 import { Megaphone, Tag, Plus, Copy, DollarSign, Users, Loader2 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useAdminCoupons } from "@/lib/hooks/useAdminData";
+import { useAdminCoupons, useAdminCampaigns } from "@/lib/hooks/useAdminData";
 import { TableSkeleton, EmptyState, ErrorState } from "@/components/admin/shared/DataStates";
 import { toast } from "sonner";
 import axios from "axios";
@@ -59,6 +59,17 @@ type CouponRecord = {
   created_at?: string;
   status?: string;
   active?: boolean;
+};
+
+type CampaignItem = {
+  id?: string;
+  name: string;
+  status: string;
+  reach: number | string;
+  clicks: number | string;
+  conversions: number | string;
+  budget: number | string;
+  spent: number | string;
 };
 
 function normalizeCoupon(raw: CouponRecord): CouponRecord {
@@ -87,12 +98,6 @@ function normalizeCoupon(raw: CouponRecord): CouponRecord {
   };
 }
 
-const campaigns = [
-  { name: "Winter Sale 2024", status: "active", reach: 12500, conversions: 340, revenue: 8500 },
-  { name: "New Year Flash Sale", status: "scheduled", reach: 0, conversions: 0, revenue: 0 },
-  { name: "Valentine's Day Special", status: "completed", reach: 8900, conversions: 210, revenue: 5200 },
-];
-
 const statusColors: Record<string, string> = {
   active: "bg-emerald-400/10 text-emerald-400 border-emerald-400/20",
   expired: "bg-red-400/10 text-red-400 border-red-400/20",
@@ -119,6 +124,7 @@ const Marketing = () => {
   });
 
   const { coupons, error, isLoading, mutate } = useAdminCoupons();
+  const { campaigns, isLoading: campaignsLoading, error: campaignsError } = useAdminCampaigns();
   const couponRows = useMemo(
     () =>
       (Array.isArray(coupons) ? coupons : []).map((c) =>
@@ -449,29 +455,37 @@ const Marketing = () => {
           </TabsContent>
 
           <TabsContent value="campaigns" className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              {campaigns.map((campaign) => (
-                <Card key={campaign.name} className="glass-effect border-white/[0.06]">
-                  <CardContent className="p-5 space-y-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <h3 className="text-sm font-semibold leading-tight">{campaign.name}</h3>
-                      <Badge variant="outline" className={statusColors[campaign.status]}>
-                        {campaign.status}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Reach: <span className="text-foreground">{campaign.reach.toLocaleString()}</span>
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Conversions: <span className="text-foreground">{campaign.conversions.toLocaleString()}</span>
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Revenue: <span className="text-emerald-400 font-semibold">£{campaign.revenue.toLocaleString()}</span>
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            {campaignsLoading ? (
+              <TableSkeleton rows={3} />
+            ) : campaignsError ? (
+              <ErrorState message="Failed to load campaigns from database." />
+            ) : campaigns.length === 0 ? (
+              <EmptyState title="No campaigns found" description="No promotional campaigns found in database." />
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {(campaigns as CampaignItem[]).map((campaign) => (
+                  <Card key={campaign.id || campaign.name} className="glass-effect border-white/[0.06]">
+                    <CardContent className="p-5 space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <h3 className="text-sm font-semibold leading-tight">{campaign.name}</h3>
+                        <Badge variant="outline" className={statusColors[campaign.status] || ""}>
+                          {campaign.status}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Reach: <span className="text-foreground">{Number(campaign.reach).toLocaleString()}</span>
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Conversions: <span className="text-foreground">{Number(campaign.conversions).toLocaleString()}</span>
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Revenue: <span className="text-emerald-400 font-semibold">£{Number(campaign.revenue).toLocaleString()}</span>
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </motion.section>

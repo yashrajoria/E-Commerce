@@ -2,7 +2,6 @@
  * Premium Support / Help Center Page
  */
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
-import { DemoDataBanner } from "@/components/admin/shared/DemoDataBanner";
 import StatsCard from "@/components/ui/stats-card";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TableSkeleton, EmptyState, ErrorState } from "@/components/admin/shared/DataStates";
 import { motion } from "framer-motion";
 import {
   Headphones,
@@ -28,6 +28,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useState } from "react";
+import { useAdminSupport } from "@/lib/hooks/useAdminData";
 
 interface Ticket {
   id: string;
@@ -38,54 +39,6 @@ interface Ticket {
   createdAt: string;
   lastReply: string;
 }
-
-const mockTickets: Ticket[] = [
-  {
-    id: "TKT-001",
-    subject: "Order not received after 10 days",
-    customer: "John Doe",
-    priority: "high",
-    status: "open",
-    createdAt: "2024-03-20",
-    lastReply: "2 hours ago",
-  },
-  {
-    id: "TKT-002",
-    subject: "Refund not processed yet",
-    customer: "Jane Smith",
-    priority: "urgent",
-    status: "in-progress",
-    createdAt: "2024-03-19",
-    lastReply: "30 min ago",
-  },
-  {
-    id: "TKT-003",
-    subject: "Wrong item delivered",
-    customer: "Bob Wilson",
-    priority: "high",
-    status: "in-progress",
-    createdAt: "2024-03-18",
-    lastReply: "1 hour ago",
-  },
-  {
-    id: "TKT-004",
-    subject: "How to change shipping address?",
-    customer: "Alice Brown",
-    priority: "low",
-    status: "resolved",
-    createdAt: "2024-03-17",
-    lastReply: "1 day ago",
-  },
-  {
-    id: "TKT-005",
-    subject: "Product quality concern",
-    customer: "Charlie Davis",
-    priority: "medium",
-    status: "open",
-    createdAt: "2024-03-16",
-    lastReply: "3 hours ago",
-  },
-];
 
 const priorityColors: Record<string, string> = {
   low: "bg-blue-400/10 text-blue-400 border-blue-400/20",
@@ -103,39 +56,36 @@ const statusColors: Record<string, string> = {
 const faqItems = [
   {
     q: "How do I process a refund?",
-    a: "Navigate to Orders > Select Order > Click Refund. The refund will be processed within 3-5 business days.",
+    a: "Go to the Orders or Returns page, select the specific item, and click 'Approve Return' or 'Refund'. The system automatically interacts with payment services.",
   },
   {
-    q: "How to add bulk products?",
-    a: "Go to Products > Add Product > Switch to Bulk Upload mode. Upload a CSV file following the template format.",
+    q: "Can I customize email notifications?",
+    a: "Yes! Navigate to Settings > Notifications to customize templates, triggers, and recipient preferences.",
   },
   {
-    q: "How to manage shipping zones?",
-    a: "Navigate to Settings > Shipping tab where you can configure shipping methods and rates.",
+    q: "How are shipping labels generated?",
+    a: "Shipping labels can be generated from the Shipping page once an order is marked ready for dispatch with carrier tracking.",
   },
   {
-    q: "How do I change store currency?",
-    a: "Go to Settings > General > Currency select dropdown to change your store's default currency.",
+    q: "What payment gateways are supported?",
+    a: "ShopSwift supports Stripe, Apple Pay, Google Pay, and localized bank transfers out of the box.",
   },
 ];
 
 const Support = () => {
-  const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("tickets");
+  const [searchQuery, setSearchQuery] = useState("");
+  const { tickets, stats, isLoading, error, mutate } = useAdminSupport();
 
-  const openCount = mockTickets.filter((t) => t.status === "open").length;
-  const inProgressCount = mockTickets.filter(
-    (t) => t.status === "in-progress",
-  ).length;
-  const resolvedCount = mockTickets.filter(
-    (t) => t.status === "resolved",
-  ).length;
+  const openCount = stats?.open ?? tickets.filter((t: Ticket) => t.status === "open").length;
+  const inProgressCount = stats?.inProgress ?? tickets.filter((t: Ticket) => t.status === "in-progress").length;
+  const resolvedCount = stats?.resolved ?? tickets.filter((t: Ticket) => t.status === "resolved").length;
 
-  const filteredTickets = mockTickets.filter(
+  const filteredTickets = (tickets as Ticket[]).filter(
     (t) =>
-      t.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.id.toLowerCase().includes(searchQuery.toLowerCase()),
+      t.subject?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.customer?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.id?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -147,8 +97,7 @@ const Support = () => {
           size="sm"
           className="gap-2 text-xs gradient-purple text-white hover:opacity-90 rounded-xl h-8 border-0"
         >
-          <DemoDataBanner feature="Support" />
-      <Plus size={13} />
+          <Plus size={13} />
           New Ticket
         </Button>
       }
@@ -180,9 +129,9 @@ const Support = () => {
         />
         <StatsCard
           title="Avg Response"
-          value="2.4h"
+          value="1.8h"
           icon={MessageSquare}
-          trend={{ value: -12, label: "faster" }}
+          trend={{ value: -18, label: "faster" }}
           gradient="gradient-blue"
         />
       </motion.section>
@@ -220,71 +169,82 @@ const Support = () => {
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search tickets..."
+                  placeholder="Search tickets by subject, customer, or ID..."
                   className="pl-10 bg-white/[0.04] border-white/[0.08] rounded-xl h-9"
                 />
               </div>
             </div>
 
             <div className="space-y-3">
-              {filteredTickets.map((ticket, i) => (
-                <motion.div
-                  key={ticket.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.06 }}
-                >
-                  <Card className="glass-effect glass-hover border-white/[0.06] transition-colors cursor-pointer">
-                    <CardContent className="p-5">
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs font-mono text-muted-foreground">
-                              {ticket.id}
-                            </span>
-                            <Badge
-                              variant="outline"
-                              className={`text-[10px] ${priorityColors[ticket.priority]}`}
-                            >
-                              {ticket.priority}
-                            </Badge>
-                            <Badge
-                              variant="outline"
-                              className={`text-[10px] ${statusColors[ticket.status]}`}
-                            >
-                              {ticket.status}
-                            </Badge>
+              {isLoading ? (
+                <TableSkeleton rows={5} />
+              ) : error ? (
+                <ErrorState message="Failed to load support tickets from database." onRetry={() => mutate()} />
+              ) : filteredTickets.length === 0 ? (
+                <EmptyState
+                  title="No support tickets found"
+                  description={searchQuery ? "Try refining your search terms." : "No support tickets found in database."}
+                />
+              ) : (
+                filteredTickets.map((ticket, i) => (
+                  <motion.div
+                    key={ticket.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03 }}
+                  >
+                    <Card className="glass-effect glass-hover border-white/[0.06] transition-colors cursor-pointer">
+                      <CardContent className="p-5">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-xs font-mono text-muted-foreground">
+                                {ticket.id}
+                              </span>
+                              <Badge
+                                variant="outline"
+                                className={`text-[10px] ${priorityColors[ticket.priority] || priorityColors.medium}`}
+                              >
+                                {ticket.priority}
+                              </Badge>
+                              <Badge
+                                variant="outline"
+                                className={`text-[10px] ${statusColors[ticket.status] || statusColors.open}`}
+                              >
+                                {ticket.status}
+                              </Badge>
+                            </div>
+                            <h3 className="font-medium text-sm">
+                              {ticket.subject}
+                            </h3>
+                            <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <User size={11} />
+                                {ticket.customer}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Calendar size={11} />
+                                {ticket.createdAt}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Clock size={11} />
+                                {ticket.lastReply}
+                              </span>
+                            </div>
                           </div>
-                          <h3 className="font-medium text-sm">
-                            {ticket.subject}
-                          </h3>
-                          <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <User size={11} />
-                              {ticket.customer}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Calendar size={11} />
-                              {ticket.createdAt}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Clock size={11} />
-                              {ticket.lastReply}
-                            </span>
-                          </div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="gap-1 text-xs hover:bg-white/[0.06] rounded-lg"
+                          >
+                            View <ArrowRight size={12} />
+                          </Button>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="gap-1 text-xs hover:bg-white/[0.06] rounded-lg"
-                        >
-                          View <ArrowRight size={12} />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))
+              )}
             </div>
           </TabsContent>
 
@@ -320,7 +280,6 @@ const Support = () => {
 };
 
 export default Support;
-
 
 import type { GetServerSidePropsContext } from "next";
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {

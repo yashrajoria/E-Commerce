@@ -70,7 +70,14 @@ const Customers = () => {
     error,
     isLoading,
     mutate,
-  } = useAdminCustomers();
+  } = useAdminCustomers({
+    page: currentPage,
+    pageSize: CUSTOMERS_PER_PAGE,
+    search: filter.search,
+    role: filter.role,
+    sort: filter.sortBy === "createdAt" ? "created_at" : filter.sortBy,
+    order: filter.sortOrder,
+  });
 
   const customers = useMemo(
     () =>
@@ -118,7 +125,11 @@ const Customers = () => {
     return result;
   }, [customers, filter]);
 
-  const totalPages = Math.ceil(filteredCustomers.length / CUSTOMERS_PER_PAGE);
+  const totalPages = Math.max(
+    Math.ceil(filteredCustomers.length / CUSTOMERS_PER_PAGE),
+    Number(meta?.total_pages) || 1,
+    1,
+  );
   const paginatedCustomers = filteredCustomers.slice(
     (currentPage - 1) * CUSTOMERS_PER_PAGE,
     currentPage * CUSTOMERS_PER_PAGE,

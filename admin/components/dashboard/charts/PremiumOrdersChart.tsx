@@ -14,10 +14,17 @@ import { Button } from "@/components/ui/button";
 import { ShoppingCart, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 
-interface OrderData {
+export interface OrderData {
   name: string;
   orders: number;
   prevOrders: number;
+}
+
+export interface PremiumOrdersChartProps {
+  data?: {
+    weekly?: OrderData[];
+    monthly?: OrderData[];
+  };
 }
 
 const weeklyData: OrderData[] = [
@@ -93,12 +100,14 @@ const CustomTooltip = ({
 
 type Period = "weekly" | "monthly";
 
-export default function PremiumOrdersChart() {
+export default function PremiumOrdersChart({ data }: PremiumOrdersChartProps = {}) {
   const [period, setPeriod] = useState<Period>("weekly");
-  const data = period === "weekly" ? weeklyData : monthlyData;
+  const weekly = data?.weekly && data.weekly.length > 0 ? data.weekly : weeklyData;
+  const monthly = data?.monthly && data.monthly.length > 0 ? data.monthly : monthlyData;
+  const chartData = period === "weekly" ? weekly : monthly;
 
-  const totalOrders = data.reduce((sum, d) => sum + d.orders, 0);
-  const avgOrders = Math.round(totalOrders / data.length);
+  const totalOrders = chartData.reduce((sum, d) => sum + d.orders, 0);
+  const avgOrders = chartData.length > 0 ? Math.round(totalOrders / chartData.length) : 0;
 
   return (
     <motion.div
@@ -158,7 +167,7 @@ export default function PremiumOrdersChart() {
         <CardContent className="px-2 pt-4 pb-2 h-[320px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
-              data={data}
+              data={chartData}
               margin={{ top: 10, right: 16, left: 0, bottom: 0 }}
               barCategoryGap="22%"
             >

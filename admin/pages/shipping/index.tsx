@@ -2,12 +2,12 @@
  * Premium Shipping Management Page
  */
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
-import { DemoDataBanner } from "@/components/admin/shared/DemoDataBanner";
 import StatsCard from "@/components/ui/stats-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { TableSkeleton, EmptyState, ErrorState } from "@/components/admin/shared/DataStates";
 import { motion } from "framer-motion";
 import {
   Truck,
@@ -18,6 +18,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useState } from "react";
+import { useAdminShipping } from "@/lib/hooks/useAdminData";
 
 interface Shipment {
   id: string;
@@ -30,64 +31,6 @@ interface Shipment {
   estimatedDate: string;
   progress: number;
 }
-
-const mockShipments: Shipment[] = [
-  {
-    id: "SHP-001",
-    orderId: "ORD-1234",
-    customer: "John Doe",
-    destination: "New York, NY",
-    carrier: "FedEx",
-    tracking: "FDX123456789",
-    status: "in-transit",
-    estimatedDate: "2024-03-22",
-    progress: 65,
-  },
-  {
-    id: "SHP-002",
-    orderId: "ORD-1235",
-    customer: "Jane Smith",
-    destination: "Los Angeles, CA",
-    carrier: "UPS",
-    tracking: "UPS987654321",
-    status: "shipped",
-    estimatedDate: "2024-03-24",
-    progress: 30,
-  },
-  {
-    id: "SHP-003",
-    orderId: "ORD-1236",
-    customer: "Bob Wilson",
-    destination: "Chicago, IL",
-    carrier: "USPS",
-    tracking: "USPS456789123",
-    status: "delivered",
-    estimatedDate: "2024-03-18",
-    progress: 100,
-  },
-  {
-    id: "SHP-004",
-    orderId: "ORD-1237",
-    customer: "Alice Brown",
-    destination: "Houston, TX",
-    carrier: "DHL",
-    tracking: "DHL789123456",
-    status: "delayed",
-    estimatedDate: "2024-03-20",
-    progress: 45,
-  },
-  {
-    id: "SHP-005",
-    orderId: "ORD-1238",
-    customer: "Charlie Davis",
-    destination: "Phoenix, AZ",
-    carrier: "FedEx",
-    tracking: "FDX321654987",
-    status: "processing",
-    estimatedDate: "2024-03-26",
-    progress: 10,
-  },
-];
 
 const statusConfig: Record<
   string,
@@ -122,27 +65,23 @@ const statusConfig: Record<
 
 const Shipping = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const { shipments, stats, isLoading, error, mutate } = useAdminShipping();
 
-  const filtered = mockShipments.filter(
+  const filtered = (shipments as Shipment[]).filter(
     (s) =>
-      s.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.tracking.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.id.toLowerCase().includes(searchQuery.toLowerCase()),
+      s.customer?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.tracking?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.orderId?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const inTransitCount = mockShipments.filter(
-    (s) => s.status === "in-transit" || s.status === "shipped",
-  ).length;
-  const deliveredCount = mockShipments.filter(
-    (s) => s.status === "delivered",
-  ).length;
-  const delayedCount = mockShipments.filter(
-    (s) => s.status === "delayed",
-  ).length;
+  const totalCount = stats?.total ?? shipments.length;
+  const inTransitCount = stats?.inTransit ?? shipments.filter((s: Shipment) => s.status === "in-transit" || s.status === "shipped").length;
+  const deliveredCount = stats?.delivered ?? shipments.filter((s: Shipment) => s.status === "delivered").length;
+  const delayedCount = stats?.delayed ?? shipments.filter((s: Shipment) => s.status === "delayed").length;
 
   return (
     <PageLayout title="Shipping" breadcrumbs={[{ label: "Shipping" }]}>
-      <DemoDataBanner feature="Shipping" />
       {/* KPI Stats */}
       <motion.section
         variants={pageItem}
@@ -150,7 +89,7 @@ const Shipping = () => {
       >
         <StatsCard
           title="Total Shipments"
-          value={mockShipments.length}
+          value={totalCount}
           icon={Truck}
           gradient="gradient-purple"
           glowClass="glow-purple"
@@ -184,97 +123,107 @@ const Shipping = () => {
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by tracking number or customer..."
+              placeholder="Search by tracking number, order, or customer..."
               className="pl-10 bg-white/[0.04] border-white/[0.08] rounded-xl h-9"
             />
           </div>
         </div>
       </motion.section>
 
-      {/* Shipments */}
+      {/* Shipments List */}
       <motion.section variants={pageItem} className="space-y-4">
-        {filtered.map((shipment, i) => (
-          <motion.div
-            key={shipment.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.06 }}
-          >
-            <Card className="glass-effect glass-hover border-white/[0.06] transition-colors">
-              <CardContent className="p-5">
-                <div className="flex flex-col gap-4">
-                  {/* Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl gradient-purple flex items-center justify-center shrink-0">
-                        <Truck className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold">
-                            {shipment.id}
-                          </span>
-                          <Badge
-                            variant="outline"
-                            className={`text-[10px] ${statusConfig[shipment.status].class}`}
-                          >
-                            {statusConfig[shipment.status].label}
-                          </Badge>
+        {isLoading ? (
+          <TableSkeleton rows={5} />
+        ) : error ? (
+          <ErrorState message="Failed to load live shipping data from database." onRetry={() => mutate()} />
+        ) : filtered.length === 0 ? (
+          <EmptyState
+            title="No shipments found"
+            description={searchQuery ? "Try refining your search query." : "No shipments are recorded in the database yet."}
+          />
+        ) : (
+          filtered.map((shipment, i) => (
+            <motion.div
+              key={shipment.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.03 }}
+            >
+              <Card className="glass-effect glass-hover border-white/[0.06] transition-colors">
+                <CardContent className="p-5">
+                  <div className="flex flex-col gap-4">
+                    {/* Header */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl gradient-purple flex items-center justify-center shrink-0">
+                          <Truck className="h-5 w-5 text-white" />
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                          {shipment.orderId} · {shipment.customer}
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold">
+                              {shipment.id}
+                            </span>
+                            <Badge
+                              variant="outline"
+                              className={`text-[10px] ${statusConfig[shipment.status]?.class || statusConfig.processing.class}`}
+                            >
+                              {statusConfig[shipment.status]?.label || shipment.status}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {shipment.orderId} · {shipment.customer}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right text-xs">
+                        <p className="text-muted-foreground">
+                          Carrier:{" "}
+                          <span className="text-foreground font-medium">
+                            {shipment.carrier}
+                          </span>
+                        </p>
+                        <p className="text-muted-foreground font-mono">
+                          {shipment.tracking}
                         </p>
                       </div>
                     </div>
-                    <div className="text-right text-xs">
-                      <p className="text-muted-foreground">
-                        Carrier:{" "}
-                        <span className="text-foreground font-medium">
-                          {shipment.carrier}
-                        </span>
-                      </p>
-                      <p className="text-muted-foreground font-mono">
-                        {shipment.tracking}
-                      </p>
-                    </div>
-                  </div>
 
-                  {/* Progress */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center gap-2 text-xs">
-                        <MapPin size={12} className="text-muted-foreground" />
-                        <span className="text-muted-foreground">
-                          {shipment.destination}
-                        </span>
+                    {/* Progress */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-2 text-xs">
+                          <MapPin size={12} className="text-muted-foreground" />
+                          <span className="text-muted-foreground">
+                            {shipment.destination}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs">
+                          <Clock size={12} className="text-muted-foreground" />
+                          <span className="text-muted-foreground">
+                            ETA: {shipment.estimatedDate}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 text-xs">
-                        <Clock size={12} className="text-muted-foreground" />
-                        <span className="text-muted-foreground">
-                          ETA: {shipment.estimatedDate}
-                        </span>
-                      </div>
+                      <Progress
+                        value={shipment.progress}
+                        className="h-2 bg-white/[0.04]"
+                      />
+                      <p className="text-[10px] text-muted-foreground mt-1 text-right">
+                        {shipment.progress}%
+                      </p>
                     </div>
-                    <Progress
-                      value={shipment.progress}
-                      className="h-2 bg-white/[0.04]"
-                    />
-                    <p className="text-[10px] text-muted-foreground mt-1 text-right">
-                      {shipment.progress}%
-                    </p>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))
+        )}
       </motion.section>
     </PageLayout>
   );
 };
 
 export default Shipping;
-
 
 import type { GetServerSidePropsContext } from "next";
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {

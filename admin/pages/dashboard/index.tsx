@@ -249,7 +249,7 @@ const Dashboard = ({ name }: { name: string }) => {
                   <PremiumRevenueChart data={dashboardData.revenueCharts} />
                 </div>
                 <div className="xl:col-span-2">
-                  <PremiumOrdersChart />
+                  <PremiumOrdersChart data={dashboardData.orderCharts} />
                 </div>
               </motion.section>
 
@@ -263,7 +263,7 @@ const Dashboard = ({ name }: { name: string }) => {
                   <QuickActions />
                   <CustomerInsights insights={dashboardData.customerInsights} />
                 </div>
-                <RevenueForecast />
+                <RevenueForecast forecasts={dashboardData.revenueForecast} />
               </motion.section>
 
               {/* ── Recent Activity (Full Width) ── */}
