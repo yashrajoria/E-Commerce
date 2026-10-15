@@ -66,10 +66,13 @@ type CampaignItem = {
   name: string;
   status: string;
   reach: number | string;
-  clicks: number | string;
+  clicks?: number | string;
   conversions: number | string;
-  budget: number | string;
-  spent: number | string;
+  budget?: number | string;
+  spent?: number | string;
+  revenue?: number | string;
+  startDate?: string;
+  endDate?: string | null;
 };
 
 function normalizeCoupon(raw: CouponRecord): CouponRecord {
