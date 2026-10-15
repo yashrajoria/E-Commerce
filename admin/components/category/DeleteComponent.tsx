@@ -9,17 +9,40 @@ import { DialogHeader, DialogFooter } from "../ui/dialog";
 
 import { Category } from "@/types/shared";
 
+/** Props accepted by {@link DeleteComponent}. */
+interface DeleteComponentProps {
+  /** Whether the delete confirmation dialog is open. */
+  isDeleteOpen: boolean;
+  /** Called with the next open state when the dialog opens or closes. */
+  setIsDeleteOpen: (open: boolean) => void;
+  /** Category targeted for deletion, shown in the confirmation copy. */
+  selectedCategory: Category | null;
+  /** Performs the deletion of {@link DeleteComponentProps.selectedCategory}. */
+  handleDeleteCategory: () => void;
+}
+
+/**
+ * Renders the confirmation dialog for deleting a single category.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <DeleteComponent
+ *   isDeleteOpen={isDeleteOpen}
+ *   setIsDeleteOpen={setIsDeleteOpen}
+ *   selectedCategory={selectedCategory}
+ *   handleDeleteCategory={handleDeleteCategory}
+ * />
+ * ```
+ */
 export default function DeleteComponent({
   isDeleteOpen,
   setIsDeleteOpen,
   selectedCategory,
   handleDeleteCategory,
-}: {
-  isDeleteOpen: boolean;
-  setIsDeleteOpen: (open: boolean) => void;
-  selectedCategory: Category | null;
-  handleDeleteCategory: () => void;
-}) {
+}: DeleteComponentProps) {
   return (
     <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
       <DialogContent className="glass-effect-strong border-white/[0.08]">

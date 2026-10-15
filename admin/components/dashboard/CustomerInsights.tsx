@@ -19,7 +19,29 @@ interface Segment {
   icon: React.ElementType;
 }
 
-export default function CustomerInsights({ insights }: { insights: Array<{ name: string; value: number }> }) {
+/** Props accepted by {@link CustomerInsights}. */
+interface CustomerInsightsProps {
+  /** Cohort breakdown; each entry contributes a donut segment and legend row. */
+  insights: Array<{
+    /** Cohort name, e.g. `"New"`, `"Returning"`, `"VIP"` or `"Inactive"`. */
+    name: string;
+    /** Number of customers in the cohort. */
+    value: number;
+  }>;
+}
+
+/**
+ * Renders the customer-cohort donut chart with legend and total customer count.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <CustomerInsights insights={dashboardData.customerInsights} />
+ * ```
+ */
+export default function CustomerInsights({ insights }: CustomerInsightsProps) {
   if (!insights || insights.length === 0) return null;
 
   // Map the backend insight data to ShopSwift palette
@@ -81,27 +103,41 @@ export default function CustomerInsights({ insights }: { insights: Array<{ name:
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip content={({ active, payload }: TooltipProps<number, string>) => {
-                  if (!active || !payload?.length) return null;
-                  const data = payload[0];
-                  return (
-                    <div className="bg-popover text-popover-foreground rounded-lg p-2.5 min-w-[120px] border border-border shadow-md">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-2.5 h-2.5 rounded-full"
-                          style={{ backgroundColor: (data.payload as Segment).color }}
-                        />
-                        <span className="text-xs font-semibold text-foreground">{data.name}</span>
+                <Tooltip
+                  content={({
+                    active,
+                    payload,
+                  }: TooltipProps<number, string>) => {
+                    if (!active || !payload?.length) return null;
+                    const data = payload[0];
+                    return (
+                      <div className="bg-popover text-popover-foreground rounded-lg p-2.5 min-w-[120px] border border-border shadow-md">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-2.5 h-2.5 rounded-full"
+                            style={{
+                              backgroundColor: (data.payload as Segment).color,
+                            }}
+                          />
+                          <span className="text-xs font-semibold text-foreground">
+                            {data.name}
+                          </span>
+                        </div>
+                        <p className="text-sm font-bold text-foreground mt-1">
+                          {(data.value as number).toLocaleString()} users
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {total > 0
+                            ? (((data.value as number) / total) * 100).toFixed(
+                                1,
+                              )
+                            : 0}
+                          % of total
+                        </p>
                       </div>
-                      <p className="text-sm font-bold text-foreground mt-1">
-                        {(data.value as number).toLocaleString()} users
-                      </p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {total > 0 ? (((data.value as number) / total) * 100).toFixed(1) : 0}% of total
-                      </p>
-                    </div>
-                  );
-                }} />
+                    );
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
             {/* Center label */}
@@ -119,7 +155,8 @@ export default function CustomerInsights({ insights }: { insights: Array<{ name:
           <div className="flex-1 space-y-2">
             {mappedData.map((segment) => {
               const Icon = segment.icon;
-              const percentage = total > 0 ? ((segment.value / total) * 100).toFixed(0) : "0";
+              const percentage =
+                total > 0 ? ((segment.value / total) * 100).toFixed(0) : "0";
               return (
                 <div
                   key={segment.name}
@@ -130,13 +167,18 @@ export default function CustomerInsights({ insights }: { insights: Array<{ name:
                       className="w-2.5 h-2.5 rounded-full shrink-0"
                       style={{ backgroundColor: segment.color }}
                     />
-                    <Icon size={12} className="text-muted-foreground shrink-0" />
+                    <Icon
+                      size={12}
+                      className="text-muted-foreground shrink-0"
+                    />
                     <span className="font-medium text-foreground truncate">
                       {segment.name}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0 text-muted-foreground">
-                    <span className="font-semibold text-foreground">{segment.value}</span>
+                    <span className="font-semibold text-foreground">
+                      {segment.value}
+                    </span>
                     <span className="text-[11px]">({percentage}%)</span>
                   </div>
                 </div>

@@ -21,12 +21,27 @@ import axios from "axios";
 import React, { useState } from "react";
 import { toast } from "sonner";
 
+/** Props accepted by {@link AddCustomerModal}. */
 interface AddCustomerModalProps {
+  /** Whether the dialog is open. */
   open: boolean;
+  /** Called with the next open state when the dialog opens or closes. */
   onOpenChange: (open: boolean) => void;
+  /** Called after the customer is created; awaited so the parent can refresh its list. */
   onSuccess: () => Promise<unknown> | unknown;
 }
 
+/**
+ * Renders the dialog that creates a ShopSwift customer account with name, email, password and role.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <AddCustomerModal open={isAddOpen} onOpenChange={setIsAddOpen} onSuccess={refresh} />
+ * ```
+ */
 export function AddCustomerModal({
   open,
   onOpenChange,
@@ -100,9 +115,7 @@ export function AddCustomerModal({
               id="customer-password"
               type="password"
               value={form.password}
-              onChange={(e) =>
-                setForm({ ...form, password: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
               placeholder="Minimum 8 characters"
               className="bg-white/[0.04] border-white/[0.08] rounded-xl"
             />

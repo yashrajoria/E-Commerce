@@ -1,7 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { proxyAuthAction } from "@/lib/proxyAuthAction";
 
-/** @deprecated Prefer /api/admin/auth/login */
+/**
+ * Handles `POST` requests on the legacy `/api/auth/login` alias, proxying to the upstream `/auth/login` route.
+ *
+ * @deprecated Prefer `/api/admin/auth/login`.
+ * @param req - The Next.js API request; the credentials body is forwarded upstream with any top-level `role` field stripped.
+ * @param res - The Next.js API response.
+ * @returns A promise that resolves once the proxied response has been relayed.
+ */
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,

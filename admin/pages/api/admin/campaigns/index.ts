@@ -47,9 +47,20 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     return res.status(200).json({ campaigns });
   } catch (error) {
     console.error("Campaigns API error:", error);
-    return res.status(500).json({ error: "Failed to fetch campaigns from database" });
+    return res
+      .status(500)
+      .json({ error: "Failed to fetch campaigns from database" });
   }
 }
 
+/**
+ * Handles `GET` requests for the admin campaign list, returning every campaign ordered by creation date descending.
+ *
+ * @remarks
+ * Wrapped with {@link withAdminApi}: requests must pass a same-origin check and carry a valid admin session.
+ *
+ * @param req - The Next.js API request; no query parameters or body are read.
+ * @param res - The Next.js API response.
+ * @returns A promise that resolves once the response has been sent.
+ */
 export default withAdminApi(handler);
-

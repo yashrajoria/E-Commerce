@@ -1,10 +1,20 @@
 import { ImageResponse } from "next/og";
 import type { NextRequest } from "next/server";
 
+/** Route configuration pinning the Open Graph image handler to the Edge runtime. */
 export const config = {
   runtime: "edge",
 };
 
+/**
+ * Handles all HTTP methods on `/api/og` — renders the Open Graph / social share image for a product or page.
+ *
+ * @remarks
+ * Edge-runtime route (`config.runtime = "edge"`) built on `next/og`'s {@link ImageResponse}; the generated card is 1200×630 px. Reads the `title`, `price`, `category`, `badge` and `image` query parameters from `req.url`, each with a default except `price` and `image`, which are omitted from the card when absent. Intended to be requested with `GET`; the handler itself does not enforce a method. Generation failures are caught and returned as a plain text `Response` with status `500` instead of propagating.
+ *
+ * @param req - The incoming request; the card content is read from its search parameters.
+ * @returns A promise resolving to the generated {@link ImageResponse}, or a plain `Response` describing the failure when image generation throws.
+ */
 export default async function handler(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -54,7 +64,8 @@ export default async function handler(req: NextRequest) {
                   width: "48px",
                   height: "48px",
                   borderRadius: "14px",
-                  background: "linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)",
+                  background:
+                    "linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -69,7 +80,8 @@ export default async function handler(req: NextRequest) {
                   fontSize: "30px",
                   fontWeight: 800,
                   letterSpacing: "-0.03em",
-                  background: "linear-gradient(90deg, #ffffff 0%, #cbd5e1 100%)",
+                  background:
+                    "linear-gradient(90deg, #ffffff 0%, #cbd5e1 100%)",
                   backgroundClip: "text",
                   color: "transparent",
                 }}
@@ -225,7 +237,8 @@ export default async function handler(req: NextRequest) {
       },
     );
   } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : "Failed to generate OG image";
+    const message =
+      e instanceof Error ? e.message : "Failed to generate OG image";
     return new Response(message, { status: 500 });
   }
 }

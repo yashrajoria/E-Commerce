@@ -4,10 +4,26 @@ import React from "react";
 import { useProducts } from "@/hooks/useProducts";
 import { ProductCard } from "@/components/common/product-card";
 
+/** Props accepted by {@link RelatedProducts}. */
 interface RelatedProductsProps {
+  /** Identifier of the product being viewed; excluded from the recommendation list. */
   currentProductId: string;
 }
 
+/**
+ * Renders a "You Might Also Like" grid of products related to the one being viewed.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * Loads up to eight products through `useProducts` and shows the first four that differ from `currentProductId`; renders nothing while loading, on error, or when no alternatives remain.
+ *
+ * @example
+ * ```tsx
+ * // Rendered below the product detail content.
+ * <RelatedProducts currentProductId={product.id} />
+ * ```
+ */
 export function RelatedProducts({ currentProductId }: RelatedProductsProps) {
   const { data, isLoading, error } = useProducts(8, 1, true);
   const relatedProducts = (data?.products ?? [])

@@ -3,7 +3,12 @@
  * Centralized settings for UI, API, and business logic
  */
 
-// API Configuration
+/**
+ * API client defaults for callers (base URL, timeout and retry policy).
+ *
+ * @remarks
+ * `baseURL` falls back to `http://localhost:3000` when `NEXT_PUBLIC_API_URL` is unset.
+ */
 export const API_CONFIG = {
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
   timeout: 30000,
@@ -11,14 +16,14 @@ export const API_CONFIG = {
   retryDelay: 1000,
 } as const;
 
-// Pagination
+/** Page-size options and bounds for paginated lists. */
 export const PAGINATION = {
   DEFAULT_PAGE_SIZE: 20,
   MAX_PAGE_SIZE: 100,
   PAGE_SIZES: [10, 20, 50, 100] as const,
 } as const;
 
-// Product Configuration
+/** Product image-upload and pricing limits. */
 export const PRODUCT_CONFIG = {
   MAX_IMAGES: 10,
   MAX_IMAGE_SIZE_MB: 10,
@@ -27,7 +32,7 @@ export const PRODUCT_CONFIG = {
   IMAGE_FORMATS: ['JPEG', 'PNG', 'WebP', 'GIF'] as const,
 } as const;
 
-// Form Configuration
+/** Form interaction timings and input length limits. */
 export const FORM_CONFIG = {
   DEBOUNCE_DELAY: 300,
   MIN_SEARCH_LENGTH: 2,
@@ -36,7 +41,7 @@ export const FORM_CONFIG = {
   VALIDATION_ERROR_DELAY: 3000,
 } as const;
 
-// UI Configuration
+/** Shared animation durations, toast lifetime and skeleton counts. */
 export const UI_CONFIG = {
   ANIMATION_DURATION: 200,
   TOAST_DURATION: 4000,
@@ -48,7 +53,7 @@ export const UI_CONFIG = {
   },
 } as const;
 
-// Checkout Configuration
+/** Checkout funnel steps, order minimums, shipping threshold and currencies. */
 export const CHECKOUT_CONFIG = {
   STEPS: [
     { id: 'contact', label: 'Contact' },
@@ -63,7 +68,7 @@ export const CHECKOUT_CONFIG = {
   SUPPORTED_CURRENCIES: ['USD', 'EUR', 'GBP'] as const,
 } as const;
 
-// Order Configuration
+/** Order and payment lifecycle statuses plus the return window. */
 export const ORDER_CONFIG = {
   STATUSES: [
     'pending',
@@ -82,7 +87,7 @@ export const ORDER_CONFIG = {
   RETURN_WINDOW_DAYS: 30,
 } as const;
 
-// User Configuration
+/** Account validation limits (password, name, bio and avatar size). */
 export const USER_CONFIG = {
   MIN_PASSWORD_LENGTH: 8,
   MAX_PASSWORD_LENGTH: 128,
@@ -91,7 +96,7 @@ export const USER_CONFIG = {
   PROFILE_IMAGE_MAX_SIZE_MB: 5,
 } as const;
 
-// Search Configuration
+/** Search filter keys and available sort options. */
 export const SEARCH_CONFIG = {
   FILTERS: [
     'category',
@@ -108,7 +113,7 @@ export const SEARCH_CONFIG = {
   ] as const,
 } as const;
 
-// Analytics Configuration
+/** Chart palette and animation timing for dashboard visualisations. */
 export const ANALYTICS_CONFIG = {
   CHART_COLORS: {
     primary: '#8b5cf6',
@@ -120,7 +125,7 @@ export const ANALYTICS_CONFIG = {
   CHART_ANIMATION_DURATION: 1000,
 } as const;
 
-// Feature Flags
+/** Boolean switches for optional product features. */
 export const FEATURE_FLAGS = {
   ENABLE_AI_ASSISTANT: true,
   ENABLE_BULK_UPLOAD: true,
@@ -130,7 +135,7 @@ export const FEATURE_FLAGS = {
   ENABLE_REVIEWS: true,
 } as const;
 
-// Error Messages
+/** User-facing error strings keyed by error category. */
 export const ERROR_MESSAGES = {
   NETWORK_ERROR: 'Network error. Please check your connection.',
   SERVER_ERROR: 'Server error. Please try again later.',
@@ -143,7 +148,7 @@ export const ERROR_MESSAGES = {
   GENERIC: 'An error occurred. Please try again.',
 } as const;
 
-// Success Messages
+/** User-facing success strings keyed by action. */
 export const SUCCESS_MESSAGES = {
   CREATED: 'Successfully created.',
   UPDATED: 'Successfully updated.',
@@ -155,7 +160,7 @@ export const SUCCESS_MESSAGES = {
   PASSWORD_CHANGED: 'Password successfully changed.',
 } as const;
 
-// Routes
+/** Route paths for the storefront and admin areas. */
 export const ROUTES = {
   HOME: '/',
   PRODUCTS: '/products',
@@ -175,21 +180,21 @@ export const ROUTES = {
   ADMIN_ANALYTICS: '/analytics',
 } as const;
 
-// Email Configuration
+/** Email validation pattern and length bounds. */
 export const EMAIL_CONFIG = {
   REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
   MIN_LENGTH: 5,
   MAX_LENGTH: 254,
 } as const;
 
-// Phone Configuration
+/** Phone number validation pattern and length bounds. */
 export const PHONE_CONFIG = {
   REGEX: /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}/,
   MIN_LENGTH: 10,
   MAX_LENGTH: 15,
 } as const;
 
-// Storage Keys
+/** Keys used for browser `localStorage` persistence. */
 export const STORAGE_KEYS = {
   CART: 'ecommerce_cart',
   WISHLIST: 'ecommerce_wishlist',
@@ -199,7 +204,7 @@ export const STORAGE_KEYS = {
   PREFERENCES: 'ecommerce_preferences',
 } as const;
 
-// Cache Configuration
+/** Cache lifetimes in milliseconds for each data category. */
 export const CACHE_CONFIG = {
   PRODUCTS: 5 * 60 * 1000, // 5 minutes
   CATEGORIES: 10 * 60 * 1000, // 10 minutes
@@ -207,7 +212,7 @@ export const CACHE_CONFIG = {
   ANALYTICS: 15 * 60 * 1000, // 15 minutes
 } as const;
 
-// Rate Limiting
+/** Rate-limit thresholds for login attempts and API usage. */
 export const RATE_LIMIT = {
   LOGIN_ATTEMPTS: 5,
   LOGIN_WINDOW_MS: 15 * 60 * 1000, // 15 minutes

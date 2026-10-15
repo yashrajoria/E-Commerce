@@ -1,4 +1,21 @@
-export function DemoDataBanner({ feature }: { feature: string }) {
+/** Props accepted by {@link DemoDataBanner}. */
+interface DemoDataBannerProps {
+  /** Human-readable name of the feature whose placeholder values are on display. */
+  feature: string;
+}
+
+/**
+ * Renders an amber status banner warning that a feature still serves demo data.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <DemoDataBanner feature="Customer reviews" />
+ * ```
+ */
+export function DemoDataBanner({ feature }: DemoDataBannerProps) {
   return (
     <div
       role="status"
@@ -6,7 +23,8 @@ export function DemoDataBanner({ feature }: { feature: string }) {
     >
       <strong className="font-semibold">Demo data</strong>
       {" — "}
-      {feature} is not connected to live APIs yet. Values below are placeholders.
+      {feature} is not connected to live APIs yet. Values below are
+      placeholders.
     </div>
   );
 }

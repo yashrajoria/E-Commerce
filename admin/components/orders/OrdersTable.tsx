@@ -28,15 +28,40 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 
+/** Props accepted by {@link OrdersTable}. */
 interface OrdersTableProps {
+  /** Orders to render for the current page. */
   orders: Order[];
+  /** Whether a fetch is in flight, showing a spinner above the table. */
   isLoading: boolean;
+  /** Active sort key and direction, used to mark sortable headers. */
   sortConfig: SortConfig;
+  /** Called with the column key when a sortable header is clicked. */
   onSort: (key: string) => void;
+  /** Called with the order id when "Update Status" is chosen for a row. */
   onStatusUpdate: (orderId: string) => void;
+  /** Called with the order id when a row is clicked. */
   onRowClick: (orderId: string) => void;
 }
 
+/**
+ * Renders the animated orders table with customer avatars, status badges and a per-row actions menu.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <OrdersTable
+ *   orders={orders}
+ *   isLoading={isLoading}
+ *   sortConfig={sortConfig}
+ *   onSort={handleSort}
+ *   onStatusUpdate={handleStatusUpdate}
+ *   onRowClick={handleRowClick}
+ * />
+ * ```
+ */
 export const OrdersTable = ({
   orders,
   isLoading,
@@ -105,7 +130,10 @@ export const OrdersTable = ({
               onClick={() => onRowClick(order.id ?? order._id ?? "")}
             >
               <TableCell className="font-medium">
-                {order.order_number || order.id || order._id || "Order Not Found"}
+                {order.order_number ||
+                  order.id ||
+                  order._id ||
+                  "Order Not Found"}
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-3">

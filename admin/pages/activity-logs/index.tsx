@@ -14,7 +14,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TableSkeleton, EmptyState, ErrorState } from "@/components/admin/shared/DataStates";
+import {
+  TableSkeleton,
+  EmptyState,
+  ErrorState,
+} from "@/components/admin/shared/DataStates";
 import { motion } from "framer-motion";
 import {
   Activity,
@@ -32,16 +36,25 @@ import {
 import { useState } from "react";
 import { useAdminActivityLogs } from "@/lib/hooks/useAdminData";
 
+/** A single admin activity-log entry as returned by the activity-log data hook. */
 interface LogEntry {
+  /** Unique log identifier. */
   id: string;
+  /** Email or display name of the admin user who performed the action. */
   user: string;
+  /** Human-readable description of the performed action. */
   action: string;
+  /** Resource the action was performed on. */
   target: string;
+  /** Classification used for filtering and icon selection. */
   type: "create" | "update" | "delete" | "auth" | "system";
+  /** Pre-formatted timestamp shown in the timeline. */
   timestamp: string;
+  /** Source IP address recorded for the entry. */
   ip: string;
 }
 
+/** Icon, text color, and background tint used to render each {@link LogEntry.type} in the timeline and badges. */
 const typeConfig: Record<
   string,
   { icon: typeof Activity; color: string; bg: string }
@@ -53,6 +66,18 @@ const typeConfig: Record<
   system: { icon: Settings, color: "text-amber-400", bg: "bg-amber-400/10" },
 };
 
+/**
+ * Renders the activity-log audit trail with KPI stats, search and type filters, and the operation timeline.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * // Route: /activity-logs — rendered by the Next.js Pages Router.
+ * <ActivityLogs />
+ * ```
+ */
 const ActivityLogs = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -107,7 +132,10 @@ const ActivityLogs = () => {
         />
         <StatsCard
           title="Security / Auth"
-          value={stats?.security ?? logs.filter((l: LogEntry) => l.type === "auth").length}
+          value={
+            stats?.security ??
+            logs.filter((l: LogEntry) => l.type === "auth").length
+          }
           icon={User}
           gradient="gradient-blue"
         />
@@ -155,11 +183,18 @@ const ActivityLogs = () => {
         {isLoading ? (
           <TableSkeleton rows={6} />
         ) : error ? (
-          <ErrorState message="Failed to load activity logs from database." onRetry={() => mutate()} />
+          <ErrorState
+            message="Failed to load activity logs from database."
+            onRetry={() => mutate()}
+          />
         ) : filtered.length === 0 ? (
           <EmptyState
             title="No activity logs found"
-            description={searchQuery ? "Try refining your search terms." : "No operational activity recorded in the database yet."}
+            description={
+              searchQuery
+                ? "Try refining your search terms."
+                : "No operational activity recorded in the database yet."
+            }
           />
         ) : (
           <div className="relative">
@@ -233,6 +268,12 @@ const ActivityLogs = () => {
 export default ActivityLogs;
 
 import type { GetServerSidePropsContext } from "next";
+/**
+ * Server-side admin auth gate for the Activity Logs route.
+ *
+ * @param ctx - Next.js server-side context for the incoming request, including `req`/`res` and cookies.
+ * @returns The {@link requireAdmin} result: `props` with the authenticated admin user, or a redirect to `/` / `/?error=admin_required` when the session is missing or not an admin.
+ */
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { requireAdmin } = await import("@/lib/ssrAuth");
   return requireAdmin(ctx);

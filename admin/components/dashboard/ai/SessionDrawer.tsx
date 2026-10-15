@@ -9,15 +9,49 @@ import {
 import { Button } from "@/components/ui/button";
 import { PromptHistoryItem } from "@/types/ai-insights";
 
+/** Props accepted by {@link SessionDrawer}. */
 interface SessionDrawerProps {
+  /** Whether the drawer is visible. */
   open: boolean;
+  /** Called when the drawer requests to open or close. */
   onOpenChange: (open: boolean) => void;
+  /** Prior prompt/answer exchanges for the current session. */
   history: PromptHistoryItem[];
+  /** Prompts the merchant has saved for reuse. */
   savedPrompts: string[];
+  /**
+   * Called with a prompt when the user reuses it in the composer.
+   *
+   * @param value - The prompt text to reuse.
+   */
   onUsePrompt: (value: string) => void;
+  /**
+   * Called with a prompt when the user removes it from the vault.
+   *
+   * @param value - The saved prompt to remove.
+   */
   onRemoveSavedPrompt: (value: string) => void;
 }
 
+/**
+ * Renders the session drawer listing saved prompts and recent answers with
+ * reuse and removal actions.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <SessionDrawer
+ *   open={sessionDrawerOpen}
+ *   onOpenChange={setSessionDrawerOpen}
+ *   history={history}
+ *   savedPrompts={savedPrompts}
+ *   onUsePrompt={(value) => setPrompt(value)}
+ *   onRemoveSavedPrompt={removeSavedPrompt}
+ * />
+ * ```
+ */
 export const SessionDrawer = ({
   open,
   onOpenChange,
@@ -30,9 +64,12 @@ export const SessionDrawer = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="glass-effect-strong max-h-[88vh] overflow-auto border-white/15 text-foreground sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-gradient-royal text-xl">Session History</DialogTitle>
+          <DialogTitle className="text-gradient-royal text-xl">
+            Session History
+          </DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            Reuse your prior prompts and keep continuity across this admin session.
+            Reuse your prior prompts and keep continuity across this admin
+            session.
           </DialogDescription>
         </DialogHeader>
 
@@ -91,10 +128,15 @@ export const SessionDrawer = ({
                   className="rounded-xl border border-white/10 bg-white/[0.03] p-3"
                 >
                   <div className="mb-1 flex items-center gap-2 text-xs text-muted-foreground">
-                    <MessageSquareText className="size-3.5" aria-hidden="true" />
+                    <MessageSquareText
+                      className="size-3.5"
+                      aria-hidden="true"
+                    />
                     <span>{item.prompt}</span>
                   </div>
-                  <p className="line-clamp-3 text-sm text-foreground">{item.answer}</p>
+                  <p className="line-clamp-3 text-sm text-foreground">
+                    {item.answer}
+                  </p>
                   <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1">
                       <Clock4 className="size-3.5" aria-hidden="true" />

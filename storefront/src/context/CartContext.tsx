@@ -13,32 +13,79 @@ import { axiosInstance } from "@/utils/axiosInstance";
 import axios from "axios";
 import { useUser } from "./UserContext";
 
+/**
+ * Subscription purchase configuration attached to a cart line item.
+ */
 export interface SubscriptionPlanOption {
+  /** Whether the customer opted into a recurring subscription. */
   isSubscription: boolean;
+  /** Delivery cadence for the subscription. */
   frequency: "2_weeks" | "4_weeks" | "8_weeks";
+  /** Percentage discount applied to each recurring order. */
   discountPercent: number;
 }
 
+/**
+ * Cart line item combining a product with its quantity and optional
+ * subscription plan.
+ */
 export interface CartItem extends Product {
+  /** Number of units of the product in the cart. */
   quantity: number;
+  /** Subscription plan for the line item, when the customer subscribed. */
   subscription?: SubscriptionPlanOption;
 }
 
+/**
+ * Shape of the cart context value exposed by {@link CartProvider}.
+ */
 interface CartContextType {
+  /** Current cart line items. */
   cart: CartItem[];
+  /** Whether the initial local-cart hydration is still running. */
   loading: boolean;
+  /** Whether a server cart sync is in flight. */
   syncing: boolean;
+  /** Adds a line item, merging quantities for the same product and subscription plan. */
   addToCart: (item: CartItem) => void;
+  /** Removes the line item with the given product id. */
   removeFromCart: (id: string | number) => void;
+  /** Sets an absolute quantity for the line item; quantities below 1 are ignored. */
   updateQuantity: (id: number | string, quantity: number) => void;
+  /** Empties the cart locally and on the server (when signed in). */
   clearCart: () => void;
+  /** Whether the cart has been hydrated from `localStorage` on the client. */
   isHydrated: boolean;
+  /** Re-runs the merge of the local cart with the server cart. */
   syncCart: () => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export function CartProvider({ children }: { children: ReactNode }) {
+/**
+ * Props accepted by {@link CartProvider}.
+ */
+interface CartProviderProps {
+  /** Storefront subtree that should have access to the cart context. */
+  children: ReactNode;
+}
+
+/**
+ * Provides cart state and actions to the storefront, hydrating from
+ * `localStorage` and syncing with the server cart when the user is signed in.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * // Mounted once in the Pages Router app shell (src/pages/_app.tsx).
+ * <CartProvider>
+ *   <Component {...pageProps} />
+ * </CartProvider>
+ * ```
+ */
+export function CartProvider({ children }: CartProviderProps) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -65,9 +112,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
               ? Number(data.original_price)
               : undefined,
         images: Array.isArray(data.images)
-          ? data.images
-              .map((img) => String(img))
-              .filter(Boolean)
+          ? data.images.map((img) => String(img)).filter(Boolean)
           : data.image
             ? [String(data.image)]
             : [],
@@ -413,6 +458,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
+/**
+ * Reads the cart context provided by {@link CartProvider}.
+ *
+ * @returns The cart state and actions: `cart`, `loading`, `syncing`, `isHydrated`, `addToCart`, `removeFromCart`, `updateQuantity`, `clearCart`, and `syncCart`.
+ * @throws {@link Error} When called outside a `CartProvider` subtree.
+ */
 export function useCart() {
   const context = React.useContext(CartContext);
   if (!context) {

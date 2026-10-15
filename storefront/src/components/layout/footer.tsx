@@ -18,8 +18,22 @@ import Link from "next/link";
 import { useState } from "react";
 import { BrandLogo } from "./brand-logo";
 
+/** A single label-and-href entry rendered in a footer link column. */
 type FooterLink = { label: string; href: string };
 
+/**
+ * Renders the site footer with a newsletter sign-up, link columns, contact details and social icons.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * Validates the newsletter email client-side and reports success or failure through `useToast`; the form does not call a backend.
+ *
+ * @example
+ * ```tsx
+ * <Footer />
+ * ```
+ */
 export function Footer() {
   const [email, setEmail] = useState("");
   const { showSuccess, showError } = useToast();
@@ -76,7 +90,9 @@ export function Footer() {
             transition={{ duration: 0.3 }}
           >
             <div className="text-center md:text-left">
-              <h3 className="text-lg font-semibold tracking-tight text-foreground mb-1">Stay in the loop</h3>
+              <h3 className="text-lg font-semibold tracking-tight text-foreground mb-1">
+                Stay in the loop
+              </h3>
               <p className="text-muted-foreground text-sm">
                 Curated updates, product drops, and exclusive seasonal releases.
               </p>
@@ -111,12 +127,16 @@ export function Footer() {
           <div className="lg:col-span-2 space-y-4">
             <BrandLogo size="md" />
             <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">
-              Curated everyday products with thoughtful design, durable craftsmanship, and direct delivery.
+              Curated everyday products with thoughtful design, durable
+              craftsmanship, and direct delivery.
             </p>
             <div className="space-y-2 text-sm text-muted-foreground pt-1">
               <div className="flex items-center gap-2.5">
                 <Phone className="h-4 w-4 text-muted-foreground/70" />
-                <a href="tel:+442071234567" className="hover:text-foreground transition-colors">
+                <a
+                  href="tel:+442071234567"
+                  className="hover:text-foreground transition-colors"
+                >
                   +44 (0) 20 7123 4567
                 </a>
               </div>
@@ -163,7 +183,8 @@ export function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex flex-col md:flex-row items-center gap-2 md:gap-6 text-xs text-muted-foreground">
               <span>
-                &copy; {new Date().getFullYear()} ShopSwift Ltd. All rights reserved.
+                &copy; {new Date().getFullYear()} ShopSwift Ltd. All rights
+                reserved.
               </span>
               <div className="flex gap-4">
                 <Link

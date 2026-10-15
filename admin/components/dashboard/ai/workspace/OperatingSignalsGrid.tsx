@@ -8,16 +8,42 @@ import {
 } from "lucide-react";
 import React, { useMemo } from "react";
 
+/** Props accepted by {@link OperatingSignalsGrid}. */
 interface OperatingSignalsGridProps {
+  /** Number of exchanges stored in the session history. */
   historyCount: number;
+  /** Number of prompts saved in the vault. */
   savedPromptsCount: number;
+  /** Number of tool definitions available to the assistant. */
   toolsCount: number;
+  /** Title of the page the user arrived from, when a context handoff happened. */
   sourceTitle?: string;
+  /** Latest response latency in milliseconds, when recorded. */
   latencyMs?: number | null;
+  /** Whether the user prefers reduced motion; disables entrance offsets. */
   prefersReducedMotion?: boolean | null;
+  /** Base delay, in seconds, applied to the grid's entrance animation. */
   staggerDelay: number;
 }
 
+/**
+ * Renders the four operating-signal tiles summarising session memory, prompt
+ * library, tool readiness and handoff/latency status.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <OperatingSignalsGrid
+ *   historyCount={history.length}
+ *   savedPromptsCount={savedPrompts.length}
+ *   toolsCount={toolDefinitions.length}
+ *   latencyMs={diagnostics?.latencyMs}
+ *   staggerDelay={0.1}
+ * />
+ * ```
+ */
 export function OperatingSignalsGrid({
   historyCount,
   savedPromptsCount,

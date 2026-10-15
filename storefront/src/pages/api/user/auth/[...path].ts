@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { proxyRequest } from "@ecommerce/shared";
 
+/** Whitelisted auth actions proxied by this catch-all route. */
 const SUPPORTED_AUTH_PATHS = new Set([
   "login",
   "logout",
@@ -12,6 +13,16 @@ const SUPPORTED_AUTH_PATHS = new Set([
   "resend-verification",
 ]);
 
+/**
+ * Handles all HTTP methods on `/api/user/auth/<action>` — a public proxy for the storefront's authentication flows.
+ *
+ * @remarks
+ * Public route: these endpoints issue and renew the session, so no auth cookie is required. Only actions listed in {@link SUPPORTED_AUTH_PATHS} are proxied; anything else yields `404`. Requests are forwarded to `/auth/<action>` on the API gateway, except `refresh`, which targets the public `/bff/auth/refresh` route because gateway `/auth/refresh` would require an access JWT that is already expired. `sanitizeSetCookie` rewrites proxied `Set-Cookie` headers (Domain removed, `Path=/` enforced) and `sanitizeRequestBody` strips client-supplied `role` fields from the body.
+ *
+ * @param req - The Next.js API request; the catch-all `path` segment selects the auth action to proxy.
+ * @param res - The Next.js API response; mirrors the proxied status, headers and body.
+ * @returns A promise that resolves once the response has been sent.
+ */
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,

@@ -8,12 +8,27 @@ import Image from "next/image";
 import { resolveProductImageUrl } from "@ecommerce/shared";
 import type { Product, Category } from "@/types/shared";
 
+/** Props accepted by {@link ProductCard}. */
 interface ProductCardProps {
+  /** Product rendered by the card. */
   product: Product;
+  /** Categories used to resolve the product's category label. */
   categories: Category[];
+  /** Called with the product when its edit button is pressed. */
   onEdit?: (product: Product) => void;
 }
 
+/**
+ * Renders an animated product card with image, category and stock badges, price and a manage-product link.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <ProductCard product={product} categories={categories} onEdit={handleEditProduct} />
+ * ```
+ */
 const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
   const getCategoryName = (categoryId?: string) => {
     if (!categoryId) return "-";
@@ -80,12 +95,15 @@ const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
             </motion.div>
 
             <div className="absolute top-2.5 left-2.5">
-              <Badge variant="secondary" className="bg-background/90 backdrop-blur-xs text-foreground border border-border font-medium text-xs">
+              <Badge
+                variant="secondary"
+                className="bg-background/90 backdrop-blur-xs text-foreground border border-border font-medium text-xs"
+              >
                 {getCategoryName(
                   product.category_ids?.[0] ||
                     (typeof product.category === "string"
                       ? product.category
-                      : product.category?.id ?? product.category?.name)
+                      : (product.category?.id ?? product.category?.name)),
                 )}
               </Badge>
             </div>
@@ -104,9 +122,7 @@ const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
             </div>
 
             {/* Edit Button */}
-            <div
-              className="absolute top-2.5 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-            >
+            <div className="absolute top-2.5 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               <Button
                 size="icon"
                 variant="secondary"
@@ -124,9 +140,7 @@ const ProductCard = ({ product, categories, onEdit }: ProductCardProps) => {
           </div>
 
           <div className="p-3.5">
-            <h3
-              className="font-semibold text-sm mb-1.5 line-clamp-1 text-foreground group-hover:text-primary transition-colors"
-            >
+            <h3 className="font-semibold text-sm mb-1.5 line-clamp-1 text-foreground group-hover:text-primary transition-colors">
               {product.name}
             </h3>
 

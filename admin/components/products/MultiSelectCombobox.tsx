@@ -19,15 +19,32 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
+/** Props accepted by {@link MultiSelectCombobox}. */
+interface MultiSelectComboboxProps {
+  /** Selected category names; treated as an empty array when no value is passed. */
+  value: string[];
+  /** Called with the next selection when a category is toggled or a tag is removed. */
+  onChange: (value: string[]) => void;
+  /** Categories available to choose from. */
+  categories: Category[];
+}
+
+/**
+ * Renders a searchable popover for picking multiple product categories, showing the selection as removable tags.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <MultiSelectCombobox value={selectedCategories} onChange={setSelectedCategories} categories={categories} />
+ * ```
+ */
 export function MultiSelectCombobox({
   value = [],
   onChange,
   categories,
-}: {
-  value: string[];
-  onChange: (value: string[]) => void;
-  categories: Category[];
-}) {
+}: MultiSelectComboboxProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -78,9 +95,7 @@ export function MultiSelectCombobox({
                       value={name}
                       onSelect={() => {
                         if (isSelected) {
-                          onChange(
-                            value.filter((item) => item !== name),
-                          );
+                          onChange(value.filter((item) => item !== name));
                         } else {
                           onChange([...value, name]);
                         }

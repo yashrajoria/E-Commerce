@@ -2,12 +2,17 @@ import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import React from "react";
 
+/** A prebuilt workflow-lane card with a ready-to-run prompt. */
 export interface TemplateCard {
+  /** Lane title shown on the card. */
   title: string;
+  /** Short explanation of what the lane investigates. */
   description: string;
+  /** Prompt wording inserted into the composer when the lane is opened. */
   prompt: string;
 }
 
+/** Built-in workflow lanes offered on the AI Insights workspace. */
 export const TEMPLATE_CARDS: TemplateCard[] = [
   {
     title: "Revenue Pulse",
@@ -32,12 +37,35 @@ export const TEMPLATE_CARDS: TemplateCard[] = [
   },
 ];
 
+/** Props accepted by {@link TemplateCardsGrid}. */
 interface TemplateCardsGridProps {
+  /**
+   * Called with the lane's prompt when a template card is clicked.
+   *
+   * @param prompt - Prompt wording for the selected lane.
+   */
   onSelectPrompt: (prompt: string) => void;
+  /** Whether the user prefers reduced motion; disables entrance offsets and hover movement. */
   prefersReducedMotion?: boolean | null;
+  /** Base delay, in seconds, applied to the grid's entrance animation. */
   staggerDelay: number;
 }
 
+/**
+ * Renders the grid of workflow-lane template cards that autofill the composer.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <TemplateCardsGrid
+ *   onSelectPrompt={handleSelectTemplate}
+ *   prefersReducedMotion={prefersReducedMotion}
+ *   staggerDelay={staggerDelay}
+ * />
+ * ```
+ */
 export function TemplateCardsGrid({
   onSelectPrompt,
   prefersReducedMotion,
@@ -61,9 +89,7 @@ export function TemplateCardsGrid({
             duration: 0.24,
             delay: prefersReducedMotion ? 0 : 0.06 + index * 0.04,
           }}
-          whileHover={
-            prefersReducedMotion ? undefined : { y: -3, scale: 1.01 }
-          }
+          whileHover={prefersReducedMotion ? undefined : { y: -3, scale: 1.01 }}
           whileTap={prefersReducedMotion ? undefined : { scale: 0.99 }}
           className="glass-effect glass-hover rounded-[26px] border border-white/10 p-4 text-left transition hover:border-[hsla(23,83%,58%,0.3)]"
         >
@@ -94,4 +120,3 @@ export function TemplateCardsGrid({
     </motion.section>
   );
 }
-

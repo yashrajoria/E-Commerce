@@ -6,6 +6,14 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "../../utils";
 
+/**
+ * Class-variance-authority recipe behind {@link Button}'s styling.
+ *
+ * @remarks
+ * Variants: `default`, `destructive`, `outline`, `secondary`, `ghost` and
+ * `link`. Sizes: `default`, `sm`, `lg`, `icon`, `icon-sm` and `icon-lg`.
+ * Call it directly to reuse the button look on other elements, such as links.
+ */
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
   {
@@ -38,11 +46,32 @@ const buttonVariants = cva(
   },
 );
 
+/** Props accepted by {@link Button}. */
 type ButtonProps = React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
+    /**
+     * Renders the single child element instead of a `<button>`, merging the
+     * button props onto it through Radix `Slot`.
+     *
+     * @defaultValue false
+     */
     asChild?: boolean;
   };
 
+/**
+ * Renders a themeable button, or the child element when `asChild` is set.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. Built on the cva recipe in
+ * {@link buttonVariants}, with variants for tone and size.
+ *
+ * @example
+ * ```tsx
+ * <Button variant="outline" size="sm" onClick={handleSave}>
+ *   Save changes
+ * </Button>
+ * ```
+ */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp: React.ElementType = asChild ? Slot : "button";

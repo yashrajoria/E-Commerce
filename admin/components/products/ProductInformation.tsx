@@ -29,13 +29,38 @@ import { Switch } from "../ui/switch";
 
 import type { UploadedImage } from "@ecommerce/shared/src/types/common";
 
+/** Props accepted by {@link ProductInformation}. */
 type ProductInformationProps = {
+  /** Rendering mode; `"edit"` wraps the form body in a dialog, any other value renders it inline. */
   type?: string;
+  /** Called when files are chosen in the image upload input. */
   handleImageUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  /**
+   * Images already attached to the product.
+   *
+   * @defaultValue []
+   */
   uploadedImages?: UploadedImage[];
+  /** Called with the index of the image whose remove button was pressed. */
   removeImage?: (index: number) => void;
 };
 
+/**
+ * Renders the shared product form sections (details, pricing, brand, SKU, categories and images) inside a React Hook Form context.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <ProductInformation
+ *   type="create"
+ *   handleImageUpload={handleImageUpload}
+ *   uploadedImages={uploadedImages}
+ *   removeImage={removeImage}
+ * />
+ * ```
+ */
 const ProductInformation: React.FC<ProductInformationProps> = ({
   type,
   handleImageUpload,
@@ -288,7 +313,7 @@ const ProductInformation: React.FC<ProductInformationProps> = ({
                     Categories
                   </FormLabel>
                   <FormControl>
-                      <MultiSelectCombobox
+                    <MultiSelectCombobox
                       value={
                         Array.isArray(field.value)
                           ? field.value

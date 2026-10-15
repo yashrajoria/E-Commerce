@@ -9,13 +9,39 @@ import {
 } from "@/components/ui/pagination";
 import React from "react";
 
+/** Props accepted by {@link CatalogPagination}. */
 interface CatalogPaginationProps {
+  /** Current 1-based page number. */
   page: number;
+  /** Total number of pages; the component renders nothing when this is 1 or fewer. */
   totalPages: number;
+  /** Called with the requested page when the user picks a page, previous or next. */
   onPageChange: (page: number) => void;
+  /**
+   * Extra class names applied to the pagination root.
+   *
+   * @defaultValue "mt-8"
+   */
   className?: string;
 }
 
+/**
+ * Renders a windowed page list with first, previous, next and last controls for catalog listings.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * Shows a moving window of page numbers around `page` with ellipses, and dims the previous/next controls at the bounds; it does not clamp values, so the caller owns page bounds.
+ *
+ * @example
+ * ```tsx
+ * <CatalogPagination
+ *   page={page}
+ *   totalPages={totalPages}
+ *   onPageChange={handlePageChange}
+ * />
+ * ```
+ */
 export function CatalogPagination({
   page,
   totalPages,
@@ -35,9 +61,7 @@ export function CatalogPagination({
         </PaginationItem>
         {page > 2 && (
           <PaginationItem>
-            <PaginationLink onClick={() => onPageChange(1)}>
-              1
-            </PaginationLink>
+            <PaginationLink onClick={() => onPageChange(1)}>1</PaginationLink>
           </PaginationItem>
         )}
         {page > 3 && (
@@ -75,11 +99,12 @@ export function CatalogPagination({
         <PaginationItem>
           <PaginationNext
             onClick={() => onPageChange(page + 1)}
-            className={page >= totalPages ? "pointer-events-none opacity-50" : ""}
+            className={
+              page >= totalPages ? "pointer-events-none opacity-50" : ""
+            }
           />
         </PaginationItem>
       </PaginationContent>
     </Pagination>
   );
 }
-

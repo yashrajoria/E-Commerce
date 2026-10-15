@@ -9,6 +9,11 @@ const toastStyles: Record<ToastType, string> = {
   warning: "bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800",
 };
 
+/**
+ * Toast notification helper built on Sonner.
+ *
+ * @returns Convenience methods for displaying styled toasts: `showSuccess`, `showError`, `showInfo`, and `showWarning`, each accepting the message text.
+ */
 export function useToast() {
   const show = (message: string, type: ToastType = "info") => {
     toast.custom(() => (

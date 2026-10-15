@@ -4,6 +4,20 @@ import React from "react";
 import Head from "next/head";
 import { Login, Register, AuthProvider } from "@ecommerce/shared";
 
+/**
+ * Development demo that renders the shared {@link Login} and {@link Register} forms.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. Not a routed page: it lives in
+ * `src/pages`, which the app's root Pages Router directory takes precedence
+ * over, so it renders only when imported directly.
+ *
+ * @example
+ * ```tsx
+ * // Demo entry — not reachable through the Next.js router.
+ * <AdminAuthDemo />
+ * ```
+ */
 export default function AdminAuthDemo() {
   return (
     <AuthProvider>
@@ -14,12 +28,14 @@ export default function AdminAuthDemo() {
         <div className="max-w-3xl w-full grid md:grid-cols-2 gap-8">
           <section className="p-6 bg-card border rounded-lg">
             <h2 className="text-xl font-semibold mb-4">Login (shared)</h2>
-            <Login onSuccess={() => alert('Admin login success (shared)')} />
+            <Login onSuccess={() => alert("Admin login success (shared)")} />
           </section>
 
           <section className="p-6 bg-card border rounded-lg">
             <h2 className="text-xl font-semibold mb-4">Register (shared)</h2>
-            <Register onSuccess={() => alert('Admin register success (shared)')} />
+            <Register
+              onSuccess={() => alert("Admin register success (shared)")}
+            />
           </section>
         </div>
       </div>

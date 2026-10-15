@@ -10,11 +10,28 @@ import { Heart, HeartOff, ShoppingBag, X } from "lucide-react";
 import Image from "next/image";
 import { formatGBP, trapFocus } from "@/lib/utils";
 
+/** Props accepted by {@link WishlistDrawer}. */
 interface WishlistDrawerProps {
+  /** Whether the drawer panel is rendered. */
   isOpen: boolean;
+  /** Called when the user dismisses the drawer via backdrop click, Escape key, or the close button. */
   onClose: () => void;
 }
 
+/**
+ * Renders the slide-over wishlist with saved items, add-to-bag, and remove actions.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <WishlistDrawer
+ *   isOpen={isWishlistOpen}
+ *   onClose={() => setIsWishlistOpen(false)}
+ * />
+ * ```
+ */
 export function WishlistDrawer({ isOpen, onClose }: WishlistDrawerProps) {
   const { addToCart } = useCart();
   const { wishlist, removeFromWishlist, clearWishlist } = useWishlist();
@@ -28,7 +45,7 @@ export function WishlistDrawer({ isOpen, onClose }: WishlistDrawerProps) {
     prevFocused.current = document.activeElement as HTMLElement;
     setTimeout(() => {
       const first = panelRef.current?.querySelector<HTMLElement>(
-        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
       );
       first?.focus();
     }, 0);
@@ -65,7 +82,11 @@ export function WishlistDrawer({ isOpen, onClose }: WishlistDrawerProps) {
             initial={reduceMotion ? { x: 0 } : { x: 440 }}
             animate={{ x: 0 }}
             exit={reduceMotion ? { x: 0 } : { x: 440 }}
-            transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 30 }}
+            transition={
+              reduceMotion
+                ? { duration: 0 }
+                : { type: "spring", stiffness: 300, damping: 30 }
+            }
           >
             <div className="flex flex-col h-full">
               {/* Header */}

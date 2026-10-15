@@ -1,8 +1,12 @@
 import axios from "axios";
 
+/** Presigned-upload descriptor returned by `GET /api/admin/products/presign`. */
 type PresignResponse = {
+  /** URL to upload the file to (S3 POST target or PUT URL). */
   upload_url?: string;
+  /** S3 POST form fields; when present the upload is a multipart POST. */
   fields?: Record<string, string>;
+  /** Final public URL of the uploaded file. */
   url?: string; // final file URL
 };
 
@@ -35,6 +39,21 @@ function xhrUpload(
   });
 }
 
+/**
+ * Uploads a list of files sequentially through the presign proxy.
+ *
+ * @remarks
+ * Each file is presigned individually against
+ * `GET /api/admin/products/presign` and uploaded with XHR so progress can be
+ * reported. S3 POST presigns are sent as multipart form data; plain presigns
+ * are sent as a `PUT` with the file as the body.
+ *
+ * @param files - Files to upload, in order.
+ * @param sku - Optional product SKU forwarded to the presign endpoint for key naming.
+ * @param onProgress - Called with `(fileIndex, percent)` as each upload progresses.
+ * @returns The uploaded file URLs, in the same order as `files`.
+ * @throws {@link Error} When an upload fails or the presign endpoint returns no upload info.
+ */
 export async function uploadFiles(
   files: File[],
   sku?: string,
@@ -76,6 +95,15 @@ export async function uploadFiles(
   return uploadedUrls;
 }
 
+/**
+ * Starts a cancellable single-file upload through the presign proxy.
+ *
+ * @param file - The file to upload.
+ * @param sku - Optional product SKU forwarded to the presign endpoint for key naming.
+ * @param onProgress - Called with the upload percentage (0-100) as the file transfers.
+ * @returns An object with the upload `promise` (resolving to the file URL) and a
+ * `cancel` function that aborts the request and rejects the promise.
+ */
 export function uploadSingleFile(
   file: File,
   sku?: string,
@@ -87,7 +115,9 @@ export function uploadSingleFile(
   const promise = new Promise<string>(async (resolve, reject) => {
     try {
       const presignUrl = `/api/admin/products/presign${sku ? `?sku=${encodeURIComponent(sku)}` : ""}`;
-      const presignRes = await axios.get<PresignResponse>(presignUrl, { withCredentials: true });
+      const presignRes = await axios.get<PresignResponse>(presignUrl, {
+        withCredentials: true,
+      });
       const presign = presignRes.data;
 
       if (presign.fields && presign.upload_url) {
@@ -148,4 +178,5 @@ export function uploadSingleFile(
   };
 }
 
+/** Default export of {@link uploadFiles} for consumers that import the hook module directly. */
 export default uploadFiles;

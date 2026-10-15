@@ -4,11 +4,34 @@
  */
 import { motion } from "framer-motion";
 
+/** Props accepted by {@link LiveIndicator}. */
 interface LiveIndicatorProps {
+  /**
+   * Text shown next to the pulsing dot.
+   *
+   * @defaultValue "Live"
+   */
   label?: string;
+  /**
+   * Extra classes merged onto the pill container.
+   *
+   * @defaultValue ""
+   */
   className?: string;
 }
 
+/**
+ * Renders an animated live-status pill with a pulsing dot for the dashboard header.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <LiveIndicator />
+ * <LiveIndicator label="Streaming" className="ml-auto" />
+ * ```
+ */
 export function LiveIndicator({
   label = "Live",
   className = "",

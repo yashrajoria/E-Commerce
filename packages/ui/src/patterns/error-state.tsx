@@ -3,14 +3,45 @@ import { cn } from "../lib/utils";
 import { Button } from "../primitives/button";
 import { AlertCircle, RefreshCw } from "lucide-react";
 
+/** Props accepted by {@link ErrorState}. */
 export interface ErrorStateProps {
+  /**
+   * Error headline.
+   *
+   * @defaultValue "Unable to load data"
+   */
   title?: string;
+  /**
+   * Explanation of the failure rendered below the title.
+   *
+   * @defaultValue "Something went wrong while retrieving information. Please try again."
+   */
   description?: string;
+  /**
+   * When supplied, renders a retry button that calls this handler; without it the retry button is hidden.
+   */
   onRetry?: () => void;
+  /**
+   * Text shown on the retry button.
+   *
+   * @defaultValue "Retry"
+   */
   actionLabel?: string;
+  /** Extra classes merged onto the outer container. */
   className?: string;
 }
 
+/**
+ * Renders an alert-styled failure panel with an optional retry action.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <ErrorState description="Failed to load customer reviews." onRetry={() => mutate()} />
+ * ```
+ */
 export function ErrorState({
   title = "Unable to load data",
   description = "Something went wrong while retrieving information. Please try again.",
@@ -22,7 +53,7 @@ export function ErrorState({
     <div
       className={cn(
         "flex min-h-[260px] flex-col items-center justify-center rounded-lg border border-destructive/20 bg-destructive/5 p-8 text-center",
-        className
+        className,
       )}
       role="alert"
     >

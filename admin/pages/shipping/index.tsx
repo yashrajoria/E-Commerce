@@ -7,7 +7,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { TableSkeleton, EmptyState, ErrorState } from "@/components/admin/shared/DataStates";
+import {
+  TableSkeleton,
+  EmptyState,
+  ErrorState,
+} from "@/components/admin/shared/DataStates";
 import { motion } from "framer-motion";
 import {
   Truck,
@@ -20,18 +24,29 @@ import {
 import { useState } from "react";
 import { useAdminShipping } from "@/lib/hooks/useAdminData";
 
+/** A shipment tracked by the shipping workspace. */
 interface Shipment {
+  /** Unique shipment identifier. */
   id: string;
+  /** Order the shipment fulfils. */
   orderId: string;
+  /** Name of the receiving customer. */
   customer: string;
+  /** Destination city/region label. */
   destination: string;
+  /** Carrier name. */
   carrier: string;
+  /** Carrier tracking number. */
   tracking: string;
+  /** Current delivery status. */
   status: "processing" | "shipped" | "in-transit" | "delivered" | "delayed";
+  /** Estimated delivery date. */
   estimatedDate: string;
+  /** Delivery progress as a percentage from 0 to 100. */
   progress: number;
 }
 
+/** Badge label, badge classes, and progress-bar color for each {@link Shipment.status}. */
 const statusConfig: Record<
   string,
   { label: string; class: string; progressClass: string }
@@ -63,6 +78,18 @@ const statusConfig: Record<
   },
 };
 
+/**
+ * Renders the shipping workspace with delivery KPI stats, search, and carrier shipment cards.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration. Shipment rows come from {@link useAdminShipping}.
+ *
+ * @example
+ * ```tsx
+ * // Route: /shipping — rendered by the Next.js Pages Router.
+ * <Shipping />
+ * ```
+ */
 const Shipping = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { shipments, stats, isLoading, error, mutate } = useAdminShipping();
@@ -76,9 +103,17 @@ const Shipping = () => {
   );
 
   const totalCount = stats?.total ?? shipments.length;
-  const inTransitCount = stats?.inTransit ?? shipments.filter((s: Shipment) => s.status === "in-transit" || s.status === "shipped").length;
-  const deliveredCount = stats?.delivered ?? shipments.filter((s: Shipment) => s.status === "delivered").length;
-  const delayedCount = stats?.delayed ?? shipments.filter((s: Shipment) => s.status === "delayed").length;
+  const inTransitCount =
+    stats?.inTransit ??
+    shipments.filter(
+      (s: Shipment) => s.status === "in-transit" || s.status === "shipped",
+    ).length;
+  const deliveredCount =
+    stats?.delivered ??
+    shipments.filter((s: Shipment) => s.status === "delivered").length;
+  const delayedCount =
+    stats?.delayed ??
+    shipments.filter((s: Shipment) => s.status === "delayed").length;
 
   return (
     <PageLayout title="Shipping" breadcrumbs={[{ label: "Shipping" }]}>
@@ -135,11 +170,18 @@ const Shipping = () => {
         {isLoading ? (
           <TableSkeleton rows={5} />
         ) : error ? (
-          <ErrorState message="Failed to load live shipping data from database." onRetry={() => mutate()} />
+          <ErrorState
+            message="Failed to load live shipping data from database."
+            onRetry={() => mutate()}
+          />
         ) : filtered.length === 0 ? (
           <EmptyState
             title="No shipments found"
-            description={searchQuery ? "Try refining your search query." : "No shipments are recorded in the database yet."}
+            description={
+              searchQuery
+                ? "Try refining your search query."
+                : "No shipments are recorded in the database yet."
+            }
           />
         ) : (
           filtered.map((shipment, i) => (
@@ -167,7 +209,8 @@ const Shipping = () => {
                               variant="outline"
                               className={`text-[10px] ${statusConfig[shipment.status]?.class || statusConfig.processing.class}`}
                             >
-                              {statusConfig[shipment.status]?.label || shipment.status}
+                              {statusConfig[shipment.status]?.label ||
+                                shipment.status}
                             </Badge>
                           </div>
                           <p className="text-xs text-muted-foreground">
@@ -226,6 +269,12 @@ const Shipping = () => {
 export default Shipping;
 
 import type { GetServerSidePropsContext } from "next";
+/**
+ * Server-side admin auth gate for the Shipping route.
+ *
+ * @param ctx - Next.js server-side context for the incoming request, including `req`/`res` and cookies.
+ * @returns The {@link requireAdmin} result: `props` with the authenticated admin user, or a redirect to `/` / `/?error=admin_required` when the session is missing or not an admin.
+ */
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { requireAdmin } = await import("@/lib/ssrAuth");
   return requireAdmin(ctx);

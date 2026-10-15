@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 // ── Page-level animation variants (same as dashboard) ──
+/** Framer Motion variants for the animated page-content wrapper. */
 export const pageContainer = {
   hidden: { opacity: 0 },
   show: {
@@ -29,6 +30,7 @@ export const pageContainer = {
   },
 };
 
+/** Framer Motion variants for page sections staggered inside {@link pageContainer}. */
 export const pageItem = {
   hidden: { opacity: 0, y: 12 },
   show: {
@@ -38,20 +40,52 @@ export const pageItem = {
   },
 };
 
+/** A single breadcrumb trail entry rendered in the layout header. */
 interface Breadcrumb {
+  /** Text shown for the crumb. */
   label: string;
+  /** Target route; when omitted the crumb is rendered as plain text. */
   href?: string;
 }
 
+/** Props accepted by {@link PageLayout}. */
 interface PageLayoutProps {
+  /** Page title, rendered in the document head and used by assistive tech. */
   title: string;
+  /** Optional `<meta name="description">` content. */
   metaDescription?: string;
+  /**
+   * Breadcrumb trail shown after the "Admin" root link.
+   *
+   * @defaultValue []
+   */
   breadcrumbs?: Breadcrumb[];
+  /** Extra controls rendered at the end of the header action row. */
   headerActions?: ReactNode;
+  /** Page body rendered inside the animated content container. */
   children: ReactNode;
+  /**
+   * Maximum width utility class applied to the content container.
+   *
+   * @defaultValue "max-w-[1600px]"
+   */
   maxWidth?: string;
 }
 
+/**
+ * Renders the shared admin chrome — head metadata, dashboard sidebar, sticky
+ * header with search/navigation actions and the animated page content area.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <PageLayout title="Reviews" breadcrumbs={[{ label: "Reviews" }]}>
+ *   <ReviewsTable />
+ * </PageLayout>
+ * ```
+ */
 const PageLayout = ({
   title,
   metaDescription,
@@ -88,7 +122,11 @@ const PageLayout = ({
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-label="Toggle menu"
               >
-                {mobileMenuOpen ? <CloseIcon size={18} /> : <MenuIcon size={18} />}
+                {mobileMenuOpen ? (
+                  <CloseIcon size={18} />
+                ) : (
+                  <MenuIcon size={18} />
+                )}
               </button>
               <div className="hidden sm:flex items-center gap-2 text-sm">
                 <Link

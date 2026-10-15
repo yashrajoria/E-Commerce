@@ -7,7 +7,14 @@ const jsonError = (res: NextApiResponse, status: number, error: string) =>
   res.status(status).json({ error });
 
 async function handleGet(req: NextApiRequest, res: NextApiResponse) {
-  const { page = "1", page_size = "20", search = "", role = "", sort = "", order = "" } = req.query;
+  const {
+    page = "1",
+    page_size = "20",
+    search = "",
+    role = "",
+    sort = "",
+    order = "",
+  } = req.query;
   const cookie = req.headers.cookie;
 
   try {
@@ -102,4 +109,17 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   return jsonError(res, 405, "Method not allowed");
 }
 
+/**
+ * Lists and provisions users/customers at `/api/customers`.
+ *
+ * @remarks
+ * Wrapped in {@link withAdminApi}, which enforces same-origin checks and an admin session before the proxy runs.
+ * `GET` proxies `GET bff/admin/users`, forwarding `page`, `page_size`, `search`, `role`, `sort`, and `order` and
+ * returning `{ users, meta }`; `POST` proxies `POST bff/admin/users` to provision an account (see {@link handlePost}).
+ * Any other method receives `405`.
+ *
+ * @param req - The Next.js API request; `POST` bodies must carry `name`, `email`, `password` (min 8 characters), and `role` (`admin` or `user`).
+ * @param res - The Next.js API response.
+ * @returns A promise that resolves once the user list or the created account has been sent.
+ */
 export default withAdminApi(handler);

@@ -76,12 +76,27 @@ function AnimatedCounter({
   return (
     <span>
       {prefix}
-      {value >= 1000 ? display.toLocaleString(undefined, { maximumFractionDigits: value % 1 === 0 ? 0 : 2 }) : display}
+      {value >= 1000
+        ? display.toLocaleString(undefined, {
+            maximumFractionDigits: value % 1 === 0 ? 0 : 2,
+          })
+        : display}
       {suffix}
     </span>
   );
 }
 
+/**
+ * Renders the key-metrics band whose counters animate once the section scrolls into view.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <StatsSection />
+ * ```
+ */
 export default function StatsSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
@@ -122,7 +137,7 @@ export default function StatsSection() {
                   {stat.description}
                 </p>
               </div>
-              
+
               {/* Corner accent */}
               <div className="absolute -top-2 -right-2 w-4 h-4 border-t border-r border-white/0 group-hover:border-white/10 transition-all rounded-tr-md" />
             </motion.div>

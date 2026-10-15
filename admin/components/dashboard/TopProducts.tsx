@@ -21,7 +21,25 @@ interface TopProduct {
   image?: string;
 }
 
-export default function TopProducts({ products }: { products: TopProduct[] }) {
+/** Props accepted by {@link TopProducts}. */
+interface TopProductsProps {
+  /** Ranked products to display, highest performer first. */
+  products: TopProduct[];
+}
+
+/**
+ * Renders the ranked top-products widget with rank badges, progress bars and
+ * revenue figures.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <TopProducts products={dashboardData.topProducts} />
+ * ```
+ */
+export default function TopProducts({ products }: TopProductsProps) {
   if (!products || products.length === 0) return null;
 
   return (
@@ -84,10 +102,7 @@ export default function TopProducts({ products }: { products: TopProduct[] }) {
                     {formatCurrency(product.revenue)}
                   </span>
                 </div>
-                <Progress
-                  value={product.fill}
-                  className="h-1 bg-muted"
-                />
+                <Progress value={product.fill} className="h-1 bg-muted" />
               </div>
             </motion.div>
           ))}

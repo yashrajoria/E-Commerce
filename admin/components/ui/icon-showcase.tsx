@@ -3,8 +3,8 @@
  * Visual display of all available brand icons
  */
 
-import React from 'react';
-import { motion } from 'framer-motion';
+import React from "react";
+import { motion } from "framer-motion";
 import {
   AdminIcon,
   StorefrontIcon,
@@ -24,30 +24,53 @@ import {
   ChevronRightIcon,
 } from "@ecommerce/shared";
 
+/** Props accepted by {@link IconShowcase}. */
 interface IconShowcaseProps {
+  /**
+   * Pixel size passed to every swatch icon.
+   *
+   * @defaultValue 32
+   */
   size?: number;
+  /**
+   * Whether to display the icon name under each swatch.
+   *
+   * @defaultValue true
+   */
   showNames?: boolean;
 }
 
 const iconList = [
-  { name: 'Admin', icon: AdminIcon, color: 'text-purple-500' },
-  { name: 'Storefront', icon: StorefrontIcon, color: 'text-yellow-500' },
-  { name: 'Logo', icon: LogoIcon, color: 'text-purple-600' },
-  { name: 'Product', icon: ProductIcon, color: 'text-blue-500' },
-  { name: 'Category', icon: CategoryIcon, color: 'text-indigo-500' },
-  { name: 'Orders', icon: OrdersIcon, color: 'text-green-500' },
-  { name: 'Customers', icon: CustomersIcon, color: 'text-pink-500' },
-  { name: 'Analytics', icon: AnalyticsIcon, color: 'text-orange-500' },
-  { name: 'Settings', icon: SettingsIcon, color: 'text-gray-500' },
-  { name: 'Cart', icon: CartIcon, color: 'text-yellow-600' },
-  { name: 'Wishlist', icon: WishlistIcon, color: 'text-red-500' },
-  { name: 'Search', icon: SearchIcon, color: 'text-cyan-500' },
-  { name: 'Menu', icon: MenuIcon, color: 'text-gray-400' },
-  { name: 'Close', icon: CloseIcon, color: 'text-red-400' },
-  { name: 'Chevron Right', icon: ChevronRightIcon, color: 'text-gray-600' },
-  { name: 'Check', icon: CheckIcon, color: 'text-emerald-500' },
+  { name: "Admin", icon: AdminIcon, color: "text-purple-500" },
+  { name: "Storefront", icon: StorefrontIcon, color: "text-yellow-500" },
+  { name: "Logo", icon: LogoIcon, color: "text-purple-600" },
+  { name: "Product", icon: ProductIcon, color: "text-blue-500" },
+  { name: "Category", icon: CategoryIcon, color: "text-indigo-500" },
+  { name: "Orders", icon: OrdersIcon, color: "text-green-500" },
+  { name: "Customers", icon: CustomersIcon, color: "text-pink-500" },
+  { name: "Analytics", icon: AnalyticsIcon, color: "text-orange-500" },
+  { name: "Settings", icon: SettingsIcon, color: "text-gray-500" },
+  { name: "Cart", icon: CartIcon, color: "text-yellow-600" },
+  { name: "Wishlist", icon: WishlistIcon, color: "text-red-500" },
+  { name: "Search", icon: SearchIcon, color: "text-cyan-500" },
+  { name: "Menu", icon: MenuIcon, color: "text-gray-400" },
+  { name: "Close", icon: CloseIcon, color: "text-red-400" },
+  { name: "Chevron Right", icon: ChevronRightIcon, color: "text-gray-600" },
+  { name: "Check", icon: CheckIcon, color: "text-emerald-500" },
 ];
 
+/**
+ * Renders a catalogue of the shared brand icons as a hoverable swatch grid.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side `framer-motion` hover/tap animation, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * // Rendered on an internal design-system showcase page.
+ * <IconShowcase size={24} showNames={false} />
+ * ```
+ */
 export function IconShowcase({
   size = 32,
   showNames = true,
@@ -81,7 +104,7 @@ export function IconShowcase({
       <div className="mt-12 p-6 rounded-lg glass-effect border border-white/10">
         <h2 className="text-xl font-semibold mb-4">Usage Example</h2>
         <pre className="text-sm text-muted-foreground overflow-x-auto">
-{`import {
+          {`import {
   AdminIcon,
   ProductIcon,
   OrdersIcon,
@@ -109,7 +132,9 @@ export function Dashboard() {
           </div>
           <div className="flex flex-col items-center">
             <AdminIcon size={24} className="text-purple-500 mb-2" />
-            <span className="text-xs text-muted-foreground">size={`24`} (default)</span>
+            <span className="text-xs text-muted-foreground">
+              size={`24`} (default)
+            </span>
           </div>
           <div className="flex flex-col items-center">
             <AdminIcon size={32} className="text-purple-500 mb-2" />

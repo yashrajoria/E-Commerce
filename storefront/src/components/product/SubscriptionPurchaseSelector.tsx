@@ -6,25 +6,51 @@ import { formatGBP } from "@/lib/utils";
 import { RefreshCw, Sparkles } from "lucide-react";
 import type { SubscriptionPlanOption } from "@/lib/types";
 
+/** Props accepted by {@link SubscriptionPurchaseSelector}. */
 interface SubscriptionPurchaseSelectorProps {
+  /** One-time purchase price in GBP; the 15% subscription discount is derived from it. */
   basePrice: number;
+  /** Currently selected purchase mode, including the delivery frequency used by the subscription option. */
   selectedPlan: SubscriptionPlanOption;
+  /** Called with the next plan when the user switches between one-time purchase and subscription, or changes the frequency. */
   onChange: (plan: SubscriptionPlanOption) => void;
 }
 
+/**
+ * Delivery intervals offered for subscribe-and-save purchases, keyed to `SubscriptionPlanOption.frequency`.
+ */
 export const FREQUENCIES = [
   { value: "2_weeks", label: "Every 2 Weeks" },
   { value: "4_weeks", label: "Every 4 Weeks (Most Popular)" },
   { value: "8_weeks", label: "Every 8 Weeks" },
 ] as const;
 
+/**
+ * Renders the purchase-mode selector that toggles between a one-time purchase and a discounted subscription.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * Applies a fixed 15% subscribe-and-save discount to `basePrice` and reveals a delivery-frequency `<select>` while the subscription option is active; the selected plan is owned by the parent and reported through `onChange`.
+ *
+ * @example
+ * ```tsx
+ * <SubscriptionPurchaseSelector
+ *   basePrice={product.price}
+ *   selectedPlan={subscriptionPlan}
+ *   onChange={setSubscriptionPlan}
+ * />
+ * ```
+ */
 export function SubscriptionPurchaseSelector({
   basePrice,
   selectedPlan,
   onChange,
 }: SubscriptionPurchaseSelectorProps) {
   const discountPercent = 15;
-  const subscriptionPrice = Number((basePrice * (1 - discountPercent / 100)).toFixed(2));
+  const subscriptionPrice = Number(
+    (basePrice * (1 - discountPercent / 100)).toFixed(2),
+  );
   const isSub = selectedPlan.isSubscription;
 
   return (
@@ -50,14 +76,22 @@ export function SubscriptionPurchaseSelector({
               !isSub ? "border-primary bg-primary" : "border-muted-foreground"
             }`}
           >
-            {!isSub && <div className="h-1.5 w-1.5 rounded-full bg-primary-foreground" />}
+            {!isSub && (
+              <div className="h-1.5 w-1.5 rounded-full bg-primary-foreground" />
+            )}
           </div>
           <div>
-            <span className="text-xs font-semibold text-foreground block">One-time purchase</span>
-            <span className="text-[11px] text-muted-foreground">Standard delivery without renewal</span>
+            <span className="text-xs font-semibold text-foreground block">
+              One-time purchase
+            </span>
+            <span className="text-[11px] text-muted-foreground">
+              Standard delivery without renewal
+            </span>
           </div>
         </div>
-        <span className="text-sm font-bold text-foreground">{formatGBP(basePrice)}</span>
+        <span className="text-sm font-bold text-foreground">
+          {formatGBP(basePrice)}
+        </span>
       </div>
 
       {/* Option 2: Subscribe & Save (15% Off) */}
@@ -85,14 +119,18 @@ export function SubscriptionPurchaseSelector({
           <div className="flex items-start gap-2.5">
             <div
               className={`h-4 w-4 rounded-full border flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
-                isSub ? "border-emerald-600 bg-emerald-600" : "border-muted-foreground"
+                isSub
+                  ? "border-emerald-600 bg-emerald-600"
+                  : "border-muted-foreground"
               }`}
             >
               {isSub && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-foreground">Subscribe & Replenish</span>
+                <span className="text-xs font-bold text-foreground">
+                  Subscribe & Replenish
+                </span>
                 <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
                   (Save {formatGBP(basePrice - subscriptionPrice)})
                 </span>
@@ -124,7 +162,10 @@ export function SubscriptionPurchaseSelector({
               onChange={(e) =>
                 onChange({
                   isSubscription: true,
-                  frequency: e.target.value as "2_weeks" | "4_weeks" | "8_weeks",
+                  frequency: e.target.value as
+                    | "2_weeks"
+                    | "4_weeks"
+                    | "8_weeks",
                   discountPercent,
                 })
               }

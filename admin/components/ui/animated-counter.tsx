@@ -4,23 +4,60 @@
  */
 import { useEffect, useRef, useState, useCallback } from "react";
 
+/** Props accepted by {@link AnimatedCounter}. */
 interface AnimatedCounterProps {
-  /** Target value to count to */
+  /** Target value to count to. */
   value: number;
-  /** Duration of animation in ms */
+  /**
+   * Duration of animation in ms.
+   *
+   * @defaultValue 1200
+   */
   duration?: number;
-  /** Prefix string (e.g. "$") */
+  /**
+   * Prefix string (e.g. "$").
+   *
+   * @defaultValue ""
+   */
   prefix?: string;
-  /** Suffix string (e.g. "%") */
+  /**
+   * Suffix string (e.g. "%").
+   *
+   * @defaultValue ""
+   */
   suffix?: string;
-  /** Number of decimal places */
+  /**
+   * Number of decimal places.
+   *
+   * @defaultValue 0
+   */
   decimals?: number;
-  /** Custom className */
+  /**
+   * Custom className.
+   *
+   * @defaultValue ""
+   */
   className?: string;
-  /** Whether to format with commas */
+  /**
+   * Whether to format with commas.
+   *
+   * @defaultValue true
+   */
   formatNumber?: boolean;
 }
 
+/**
+ * Renders a number that eases from its previous value to `value` on every change.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * // Used inside a KPI card to animate revenue totals.
+ * <AnimatedCounter value={128450.5} prefix="$" decimals={2} />
+ * ```
+ */
 export function AnimatedCounter({
   value,
   duration = 1200,

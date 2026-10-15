@@ -10,6 +10,18 @@ import { CollectionsSection } from "@/components/sections/collections-sections";
 import { Footer } from "@/components/layout/footer";
 import Head from "next/head";
 
+/**
+ * Storefront landing page: hero banner, category tiles, featured products, and curated collections.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * // Route: / — rendered by the Next.js Pages Router.
+ * <Home />
+ * ```
+ */
 export default function Home() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   return (

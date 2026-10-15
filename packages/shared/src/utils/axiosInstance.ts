@@ -1,37 +1,79 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { API_ROUTES } from '../api/apiRoutes';
 
-// Create the Axios instance with base configuration
+/**
+ * Shared Axios instance used for browser API calls.
+ *
+ * @remarks
+ * Configured with `withCredentials` and no `baseURL`, so requests stay
+ * same-origin and carry the HttpOnly session cookies. Interceptors attach the
+ * active store id as an `X-Store-ID` header, retry a request once after a
+ * silent token refresh on `401`, and forward `403`/`429`/`5xx` failures to
+ * the handler registered with {@link setAPIErrorHandler}.
+ */
 export const axiosInstance = axios.create({
   baseURL: undefined,
   withCredentials: true,
 });
 
-/** 
- * Types for the error callbacks that apps can register 
+/**
+ * Error categories passed to an {@link APIErrorHandler}.
+ *
+ * @remarks
+ * The shared response interceptor reports `FORBIDDEN` (403), `RATE_LIMITED`
+ * (429) and `SERVER_ERROR` (5xx); `NOT_FOUND` is reserved for consumers that
+ * surface 404s themselves.
  */
 export type APIErrorType = 'FORBIDDEN' | 'RATE_LIMITED' | 'NOT_FOUND' | 'SERVER_ERROR';
 
-export type APIErrorHandler = (type: APIErrorType, message: string, detail?: any) => void;
+/**
+ * Callback invoked when the shared axios instance sees a handled error response.
+ *
+ * @remarks
+ * Register one per app with {@link setAPIErrorHandler} to surface toasts or
+ * similar feedback.
+ */
+export type APIErrorHandler = (
+  /** Normalized error category. */
+  type: APIErrorType,
+  /** Human-readable message supplied by the interceptor. */
+  message: string,
+  /** Optional backend payload carrying extra detail. */
+  detail?: any,
+) => void;
 
 let errorHandler: APIErrorHandler | null = null;
 
 let activeStoreId: string | null = null;
 
+/**
+ * Stores the active store id used by the request interceptor.
+ *
+ * @param storeId - Store identifier to send as `X-Store-ID`, or `null` to clear it.
+ * @returns Nothing; the value is held in module memory.
+ */
 export const setActiveStoreId = (storeId: string | null) => {
   activeStoreId = storeId;
 };
 
+/**
+ * Resolves the store id that outgoing requests should be scoped to.
+ *
+ * @returns The in-memory store id when set, otherwise the persisted
+ * `shopswift_active_store_id` value in the browser, otherwise
+ * `NEXT_PUBLIC_DEFAULT_STORE_ID` — or `null` when none is available.
+ */
 export const getActiveStoreId = (): string | null => {
   if (activeStoreId) return activeStoreId;
   if (typeof window !== "undefined") {
     try {
-      return localStorage.getItem("shopswift_active_store_id");
+      const stored = localStorage.getItem("shopswift_active_store_id");
+      if (stored) return stored;
     } catch {
-      return null;
+      // ignore local storage access issues
     }
   }
-  return null;
+  return process.env.NEXT_PUBLIC_DEFAULT_STORE_ID || null;
 };
 
 // Automatically attach active store ID header to outgoing requests
@@ -43,6 +85,12 @@ axiosInstance.interceptors.request.use((config) => {
   return config;
 });
 
+/**
+ * Registers the fallback handler for handled error responses.
+ *
+ * @param handler - Callback that receives the error category, message and optional detail.
+ * @returns Nothing; the handler is held in module memory.
+ */
 export const setAPIErrorHandler = (handler: APIErrorHandler) => {
   errorHandler = handler;
 };
@@ -50,6 +98,16 @@ export const setAPIErrorHandler = (handler: APIErrorHandler) => {
 /** Default storefront refresh; admin apps should override to `/api/admin/auth/refresh`. */
 let authRefreshUrl = API_ROUTES.AUTH.REFRESH;
 
+/**
+ * Overrides the endpoint used for the silent `401` token refresh.
+ *
+ * @remarks
+ * Defaults to the storefront refresh route in {@link API_ROUTES}; admin apps
+ * call this once during setup with `/api/admin/auth/refresh`.
+ *
+ * @param url - Refresh endpoint to call when a request receives a `401`.
+ * @returns Nothing; the URL is held in module memory.
+ */
 export const setAuthRefreshUrl = (url: string) => {
   authRefreshUrl = url;
 };

@@ -69,6 +69,17 @@ const CustomTooltip = ({
   return null;
 };
 
+/**
+ * Renders the revenue-vs-profit area chart with a weekly/monthly period toggle.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <RevenueChart />
+ * ```
+ */
 export default function RevenueChart() {
   const [period, setPeriod] = useState<"weekly" | "monthly">("monthly");
   const data = period === "monthly" ? monthlyData : weeklyData;

@@ -8,7 +8,9 @@ type AdminUser = {
   role?: string;
 };
 
+/** Successful authorization outcome carrying the resolved admin user (when available). */
 export type GuardOk = { ok: true; user: AdminUser | null };
+/** Denied authorization outcome; the caller has already sent the error response. */
 export type GuardDeny = { ok: false };
 
 const STATUS_CACHE_TTL_MS = 5_000;
@@ -26,8 +28,16 @@ function hasAuthCookies(cookieHeader: string): boolean {
 }
 
 /**
- * Block cross-site mutating requests (basic CSRF defense for cookie sessions).
- * Safe methods are allowed without Origin (e.g. top-level navigations / SSR).
+ * Rejects cross-site mutating requests as a basic CSRF defense for cookie sessions.
+ *
+ * @remarks
+ * `GET`, `HEAD` and `OPTIONS` are always allowed, as are requests without an
+ * `Origin`/`Referer` on safe methods. Mutating requests must carry an
+ * `Origin` (preferred) or `Referer` whose host matches `Host`.
+ *
+ * @param req - The incoming Next.js API request.
+ * @param res - The Next.js API response; receives a 400/403 JSON body when the check fails.
+ * @returns `true` when the request may proceed, `false` when it was rejected.
  */
 export function assertSameOrigin(
   req: NextApiRequest,
@@ -213,8 +223,17 @@ async function fetchAdminStatus(
 }
 
 /**
- * Enforce same-origin (mutating) + real admin session before proxying.
- * Returns true when the request may proceed.
+ * Enforces same-origin (for mutating methods) plus a real admin session before proxying.
+ *
+ * @remarks
+ * Looks up the session through the backend `auth/status` endpoint, transparently
+ * refreshing expired access tokens via `bff/auth/refresh` and forwarding rotated
+ * cookies. Results are cached per cookie fingerprint for 5 seconds. On success
+ * the resolved user is stashed on `req.adminUser` for downstream handlers.
+ *
+ * @param req - The incoming Next.js API request.
+ * @param res - The Next.js API response; receives 401/403 JSON when access is denied.
+ * @returns `true` when the request may proceed, `false` when the check already sent a response.
  */
 export async function assertAdminApiAccess(
   req: NextApiRequest,
@@ -254,7 +273,13 @@ type ApiHandler = (
   res: NextApiResponse,
 ) => unknown | Promise<unknown>;
 
-/** Wrap a Next API handler with admin authn/authz + CSRF origin checks. */
+/**
+ * Wraps a Next.js API handler with admin authentication/authorization and CSRF origin checks.
+ *
+ * @param handler - The route handler to protect.
+ * @returns A handler that calls {@link assertAdminApiAccess} first and invokes
+ * `handler` only when the caller is a same-origin admin.
+ */
 export function withAdminApi(handler: ApiHandler): ApiHandler {
   return async (req, res) => {
     if (!(await assertAdminApiAccess(req, res))) {

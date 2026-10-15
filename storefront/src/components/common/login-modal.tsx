@@ -18,13 +18,32 @@ import { trapFocus } from "@/lib/utils";
 import { AuthEmailForm } from "./auth/AuthEmailForm";
 import { OtpVerificationModal } from "./auth/OtpVerificationModal";
 
+/** Props accepted by {@link LoginModal}. */
 interface LoginModalProps {
+  /** Whether the modal is rendered. */
   isOpen: boolean;
+  /** Unused by this implementation; sign-in state is managed through {@link useUser}. */
   setLoggedIn?: (value: boolean) => void;
+  /** Unused by this implementation; sign-in state is managed through {@link useUser}. */
   loggedIn?: boolean;
+  /** Called when the user dismisses the modal or a successful sign-in completes. */
   onClose: () => void;
 }
 
+/**
+ * Renders the sign-in / registration modal and drives the email-password and OTP verification flows.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <LoginModal
+ *   isOpen={isLoginModalOpen}
+ *   onClose={() => setIsLoginModalOpen(false)}
+ * />
+ * ```
+ */
 export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
@@ -71,7 +90,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
     prevFocused.current = document.activeElement as HTMLElement;
     setTimeout(() => {
       const first = modalRef.current?.querySelector<HTMLElement>(
-        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
       );
       first?.focus();
     }, 0);
@@ -222,9 +241,17 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
             <motion.div
               ref={modalRef}
               className="bg-background/95 backdrop-blur-xl rounded-3xl border border-border/50 shadow-2xl w-full max-w-md p-8 relative overflow-hidden"
-              initial={reduceMotion ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.9, y: 20 }}
+              initial={
+                reduceMotion
+                  ? { opacity: 1, scale: 1, y: 0 }
+                  : { opacity: 0, scale: 0.9, y: 20 }
+              }
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={reduceMotion ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.9, y: 20 }}
+              exit={
+                reduceMotion
+                  ? { opacity: 1, scale: 1, y: 0 }
+                  : { opacity: 0, scale: 0.9, y: 20 }
+              }
               onClick={(e) => e.stopPropagation()}
             >
               <div className="absolute inset-0 bg-linear-to-br from-rose-500/5 via-amber-500/5 to-rose-500/5 pointer-events-none" />
@@ -243,7 +270,11 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                   className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-linear-to-br from-rose-600 to-amber-500 flex items-center justify-center"
                   initial={reduceMotion ? { scale: 1 } : { scale: 0 }}
                   animate={{ scale: 1 }}
-                  transition={reduceMotion ? { duration: 0 } : { delay: 0.2, type: "spring" }}
+                  transition={
+                    reduceMotion
+                      ? { duration: 0 }
+                      : { delay: 0.2, type: "spring" }
+                  }
                 >
                   <Shield className="h-8 w-8 text-white" />
                 </motion.div>

@@ -55,15 +55,28 @@ const createSessionId = () => {
 };
 
 const deriveIdentityFromStatus = (raw: unknown): string => {
-  const data = typeof raw === "object" && raw !== null ? (raw as Record<string, unknown>) : {};
+  const data =
+    typeof raw === "object" && raw !== null
+      ? (raw as Record<string, unknown>)
+      : {};
   const nested =
-    typeof data.data === "object" && data.data !== null ? (data.data as Record<string, unknown>) : data;
+    typeof data.data === "object" && data.data !== null
+      ? (data.data as Record<string, unknown>)
+      : data;
   const user =
     typeof nested.user === "object" && nested.user !== null
       ? (nested.user as Record<string, unknown>)
       : nested;
 
-  const candidates = [user.id, user._id, user.userId, user.email, nested.id, nested.userId, data.id];
+  const candidates = [
+    user.id,
+    user._id,
+    user.userId,
+    user.email,
+    nested.id,
+    nested.userId,
+    data.id,
+  ];
 
   for (const value of candidates) {
     const next = asString(value);
@@ -96,7 +109,10 @@ const formatHistoryFromMessages = (
       id: idSource,
       prompt: pendingUserPrompt.content,
       answer: message.content,
-      createdAt: message.timestamp || pendingUserPrompt.timestamp || new Date().toISOString(),
+      createdAt:
+        message.timestamp ||
+        pendingUserPrompt.timestamp ||
+        new Date().toISOString(),
       correlationId: message.correlation_id || "",
       latencyMs: null,
     });
@@ -107,12 +123,38 @@ const formatHistoryFromMessages = (
   return items.slice(-RECENT_PROMPTS_LIMIT).reverse();
 };
 
+/** Configuration accepted by {@link useAIInsights}. */
 interface UseAIInsightsOptions {
+  /** Maximum prompt length before submission is blocked; defaults to 3000. */
   maxPromptLength?: number;
+  /** Namespace segment for the localStorage keys holding session/recent/saved prompts; defaults to `"workspace"`. */
   storageNamespace?: string;
+  /** Optional transform applied to the prompt right before it is sent to the agent. */
   transformPrompt?: (prompt: string) => string;
 }
 
+/**
+ * Drives the AI Insights workspace: session bootstrap, streaming prompts, history and saved prompts.
+ *
+ * @remarks
+ * On mount it loads the agent tool catalog, resolves the signed-in identity from
+ * `/api/admin/auth/status`, restores the session id, recent prompts and saved
+ * prompts from `localStorage` (namespaced per identity), and replays the server
+ * conversation history. Submitting streams the answer from
+ * `/api/bff/admin/agent/stream` and transparently falls back to the non-streaming
+ * `queryAgent` when streaming fails; failures are converted to friendly copy
+ * with technical details kept for the diagnostics panel. Lifecycle is tracked as
+ * a {@link RequestLifecycle} value.
+ *
+ * @param options - Optional prompt-length limit, storage namespace and prompt transform.
+ * @returns The assistant state and actions: `lifecycle`, `sessionId`, `prompt`,
+ * `setPrompt`, `responseText`, `liveStatus`, `diagnostics`, `tools`, `history`,
+ * `recentPrompts`, `savedPrompts`, `friendlyError`, `technicalError`,
+ * `showTechnicalDetails`, `isClearDialogOpen`, `setIsClearDialogOpen`,
+ * `canSubmit`, `promptValidationMessage`, `submitPrompt`, `retry`,
+ * `clearPrompt`, `clearSession`, `savePrompt`, `removeSavedPrompt`,
+ * `toggleTechnicalDetails` and `maxPromptLength`.
+ */
 export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
   const maxPromptLength = options.maxPromptLength ?? DEFAULT_MAX_PROMPT_LENGTH;
   const storageNamespace = options.storageNamespace ?? "workspace";
@@ -124,7 +166,9 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
   const [liveStatus, setLiveStatus] = useState<string | null>(null);
   const [friendlyError, setFriendlyError] = useState<string | null>(null);
   const [technicalError, setTechnicalError] = useState<unknown>(null);
-  const [diagnostics, setDiagnostics] = useState<AIInsightsDiagnostics | null>(null);
+  const [diagnostics, setDiagnostics] = useState<AIInsightsDiagnostics | null>(
+    null,
+  );
   const [tools, setTools] = useState<AgentToolDefinition[]>([]);
   const [history, setHistory] = useState<PromptHistoryItem[]>([]);
   const [recentPrompts, setRecentPrompts] = useState<string[]>([]);
@@ -141,7 +185,11 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
 
   const canSubmit = useMemo(() => {
     const trimmed = prompt.trim();
-    return trimmed.length > 0 && trimmed.length <= maxPromptLength && lifecycle !== "loading";
+    return (
+      trimmed.length > 0 &&
+      trimmed.length <= maxPromptLength &&
+      lifecycle !== "loading"
+    );
   }, [lifecycle, maxPromptLength, prompt]);
 
   const promptValidationMessage = useMemo(() => {
@@ -162,14 +210,17 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
     storage.setItem(key, JSON.stringify(value));
   }, []);
 
-  const createStorageKeys = useCallback((identity: string) => {
-    const safeIdentity = identity.replace(/[^a-zA-Z0-9_-]/g, "_");
-    return {
-      session: `ai-insights:${storageNamespace}:session:${safeIdentity}`,
-      recent: `ai-insights:${storageNamespace}:recent:${safeIdentity}`,
-      saved: `ai-insights:${storageNamespace}:saved:${safeIdentity}`,
-    };
-  }, [storageNamespace]);
+  const createStorageKeys = useCallback(
+    (identity: string) => {
+      const safeIdentity = identity.replace(/[^a-zA-Z0-9_-]/g, "_");
+      return {
+        session: `ai-insights:${storageNamespace}:session:${safeIdentity}`,
+        recent: `ai-insights:${storageNamespace}:recent:${safeIdentity}`,
+        saved: `ai-insights:${storageNamespace}:saved:${safeIdentity}`,
+      };
+    },
+    [storageNamespace],
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -217,14 +268,12 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
         }
 
         setSessionId(activeSessionId);
-        const recent = parseMaybeArray<string>(storage?.getItem(keys.recent) ?? null).slice(
-          0,
-          RECENT_PROMPTS_LIMIT,
-        );
-        const saved = parseMaybeArray<string>(storage?.getItem(keys.saved) ?? null).slice(
-          0,
-          SAVED_PROMPTS_LIMIT,
-        );
+        const recent = parseMaybeArray<string>(
+          storage?.getItem(keys.recent) ?? null,
+        ).slice(0, RECENT_PROMPTS_LIMIT);
+        const saved = parseMaybeArray<string>(
+          storage?.getItem(keys.saved) ?? null,
+        ).slice(0, SAVED_PROMPTS_LIMIT);
 
         setRecentPrompts(recent);
         setSavedPrompts(saved);
@@ -264,7 +313,10 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
       }
 
       setRecentPrompts((previous) => {
-        const next = [trimmed, ...previous.filter((item) => item !== trimmed)].slice(0, RECENT_PROMPTS_LIMIT);
+        const next = [
+          trimmed,
+          ...previous.filter((item) => item !== trimmed),
+        ].slice(0, RECENT_PROMPTS_LIMIT);
         persistArray(storageKeys.recent, next);
         return next;
       });
@@ -275,7 +327,11 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
   const submitPrompt = useCallback(
     async (value?: string) => {
       const nextPrompt = (value ?? prompt).trim();
-      if (!nextPrompt || nextPrompt.length > maxPromptLength || lifecycle === "loading") {
+      if (
+        !nextPrompt ||
+        nextPrompt.length > maxPromptLength ||
+        lifecycle === "loading"
+      ) {
         return;
       }
 
@@ -284,9 +340,13 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
       setLifecycle("loading");
       setLiveStatus("Analyzing prompt & querying operations agent...");
       lastPromptRef.current = nextPrompt;
-      trackAIInsightsEvent("prompt_submitted", { promptLength: nextPrompt.length });
+      trackAIInsightsEvent("prompt_submitted", {
+        promptLength: nextPrompt.length,
+      });
 
-      const requestPrompt = transformPrompt ? transformPrompt(nextPrompt) : nextPrompt;
+      const requestPrompt = transformPrompt
+        ? transformPrompt(nextPrompt)
+        : nextPrompt;
       let streamed = false;
 
       try {
@@ -317,12 +377,17 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
         );
 
         const doneData = finalData as Record<string, unknown> | null;
-        const answer = accumulatedText.trim() || (typeof doneData?.answer === "string" ? doneData.answer : "");
+        const answer =
+          accumulatedText.trim() ||
+          (typeof doneData?.answer === "string" ? doneData.answer : "");
         if (!answer) {
           throw new Error("Stream completed without producing an answer");
         }
         streamed = true;
-        const cid = typeof doneData?.correlation_id === "string" ? doneData.correlation_id : "";
+        const cid =
+          typeof doneData?.correlation_id === "string"
+            ? doneData.correlation_id
+            : "";
         const timestamp = new Date().toISOString();
 
         const historyItem: PromptHistoryItem = {
@@ -334,7 +399,9 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
           latencyMs: null,
         };
 
-        setHistory((previous) => [historyItem, ...previous].slice(0, RECENT_PROMPTS_LIMIT));
+        setHistory((previous) =>
+          [historyItem, ...previous].slice(0, RECENT_PROMPTS_LIMIT),
+        );
         updatePromptCollections(nextPrompt);
         setLifecycle("success");
         setLiveStatus(null);
@@ -343,7 +410,10 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
           toolsCalled: 0,
         });
       } catch (streamErr) {
-        console.warn("[useAIInsights] Stream attempt failed, falling back to queryAgent:", streamErr);
+        console.warn(
+          "[useAIInsights] Stream attempt failed, falling back to queryAgent:",
+          streamErr,
+        );
       }
 
       if (!streamed) {
@@ -373,7 +443,9 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
             latencyMs: result.latencyMs,
           };
 
-          setHistory((previous) => [historyItem, ...previous].slice(0, RECENT_PROMPTS_LIMIT));
+          setHistory((previous) =>
+            [historyItem, ...previous].slice(0, RECENT_PROMPTS_LIMIT),
+          );
           updatePromptCollections(nextPrompt);
 
           setLifecycle(result.partialSuccess ? "partial" : "success");
@@ -394,7 +466,14 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
         }
       }
     },
-    [lifecycle, maxPromptLength, prompt, sessionId, transformPrompt, updatePromptCollections],
+    [
+      lifecycle,
+      maxPromptLength,
+      prompt,
+      sessionId,
+      transformPrompt,
+      updatePromptCollections,
+    ],
   );
 
   const retry = useCallback(async () => {
@@ -441,7 +520,10 @@ export const useAIInsights = (options: UseAIInsightsOptions = {}) => {
     }
 
     setSavedPrompts((previous) => {
-      const next = [trimmed, ...previous.filter((item) => item !== trimmed)].slice(0, SAVED_PROMPTS_LIMIT);
+      const next = [
+        trimmed,
+        ...previous.filter((item) => item !== trimmed),
+      ].slice(0, SAVED_PROMPTS_LIMIT);
       persistArray(storageKeys.saved, next);
       return next;
     });

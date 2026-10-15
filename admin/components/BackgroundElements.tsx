@@ -201,7 +201,18 @@ const GridLines = () => {
   );
 };
 
-// Main Background Elements Component
+/**
+ * Renders the fixed, non-interactive page backdrop of particles, grid lines and floating gradient shapes.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration. The particle set is generated after mount, so the server-rendered markup contains none.
+ *
+ * @example
+ * ```tsx
+ * // Mounted once at the app root, behind all page content.
+ * <BackgroundElements />
+ * ```
+ */
 const BackgroundElements: React.FC = () => {
   const [particles, setParticles] = useState<number[]>([]);
 

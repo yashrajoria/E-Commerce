@@ -16,17 +16,34 @@ import React from "react";
 import { toast } from "sonner";
 import { ROLE_LABEL, ROLE_STYLE, initialsOf } from "./CustomersTable";
 
+/** Props accepted by {@link CustomerDetailModal}. */
 interface CustomerDetailModalProps {
+  /** Customer to display, or `null` to keep the dialog closed. */
   customer: Customer | null;
+  /** Called when the dialog is dismissed. */
   onClose: () => void;
 }
 
+/**
+ * Renders a read-only profile dialog for a customer, including copy-to-clipboard actions.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <CustomerDetailModal customer={selectedCustomer} onClose={() => setSelectedCustomer(null)} />
+ * ```
+ */
 export function CustomerDetailModal({
   customer,
   onClose,
 }: CustomerDetailModalProps) {
   return (
-    <Dialog open={Boolean(customer)} onOpenChange={(open) => !open && onClose()}>
+    <Dialog
+      open={Boolean(customer)}
+      onOpenChange={(open) => !open && onClose()}
+    >
       <DialogContent className="sm:max-w-lg glass-effect-strong border-white/[0.08]">
         <DialogHeader>
           <DialogTitle>Customer details</DialogTitle>
@@ -115,4 +132,3 @@ export function CustomerDetailModal({
     </Dialog>
   );
 }
-

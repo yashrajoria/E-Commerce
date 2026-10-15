@@ -32,6 +32,17 @@ const steps = [
   },
 ];
 
+/**
+ * Renders the three-step onboarding walkthrough with an animated connecting line.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <HowItWorks />
+ * ```
+ */
 export default function HowItWorks() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });

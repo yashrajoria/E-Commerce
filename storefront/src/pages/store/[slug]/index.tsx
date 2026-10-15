@@ -9,20 +9,46 @@ import type { Product } from "@/lib/types";
 import { Store as StoreIcon, Sparkles, ShoppingBag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
+/**
+ * Props for {@link StoreHomePage}, seeded by {@link getServerSideProps}.
+ */
 interface StorePageProps {
+  /** Merchant store resolved from the `slug` route parameter. */
   store: Store;
+  /** Public products for the store's catalog. */
   products: Product[];
+  /** Total number of public products reported alongside the fetched page. */
   total: number;
 }
 
-export default function StoreHomePage({ store, products, total }: StorePageProps) {
+/**
+ * Merchant storefront home page: store hero (name, currency, description) and
+ * the store's public product grid, with an empty-catalog placeholder.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * // Route: /store/[slug] — rendered by the Next.js Pages Router with SSR-seeded data.
+ * <StoreHomePage store={store} products={products} total={total} />
+ * ```
+ */
+export default function StoreHomePage({
+  store,
+  products,
+  total,
+}: StorePageProps) {
   return (
     <>
       <Head>
         <title>{store.name} | ShopSwift Store</title>
         <meta
           name="description"
-          content={store.description || `Browse and buy from ${store.name} on ShopSwift.`}
+          content={
+            store.description ||
+            `Browse and buy from ${store.name} on ShopSwift.`
+          }
         />
         <meta property="og:title" content={`${store.name} - ShopSwift`} />
         <meta
@@ -48,19 +74,25 @@ export default function StoreHomePage({ store, products, total }: StorePageProps
                       <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
                         {store.name}
                       </h1>
-                      <Badge variant="outline" className="text-xs uppercase font-mono">
+                      <Badge
+                        variant="outline"
+                        className="text-xs uppercase font-mono"
+                      >
                         {store.currency}
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground max-w-xl">
-                      {store.description || `Welcome to ${store.name}. Verified merchant store.`}
+                      {store.description ||
+                        `Welcome to ${store.name}. Verified merchant store.`}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
                   <div className="px-4 py-2 rounded-xl bg-muted/60 border border-border text-center">
-                    <span className="block text-xl font-bold leading-none">{total}</span>
+                    <span className="block text-xl font-bold leading-none">
+                      {total}
+                    </span>
                     <span className="text-[11px] text-muted-foreground uppercase font-semibold">
                       Products
                     </span>
@@ -88,7 +120,8 @@ export default function StoreHomePage({ store, products, total }: StorePageProps
                   Catalog being curated
                 </h3>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                  This merchant hasn&apos;t published any public products yet. Check back soon!
+                  This merchant hasn&apos;t published any public products yet.
+                  Check back soon!
                 </p>
               </div>
             ) : (
@@ -107,6 +140,12 @@ export default function StoreHomePage({ store, products, total }: StorePageProps
   );
 }
 
+/**
+ * Resolves the merchant store and its public products for `/store/[slug]`.
+ *
+ * @param context - The Next.js Pages Router context for the request; `params.slug` identifies the store.
+ * @returns Props with `store`, `products`, and `total` — or `{ notFound: true }` when the slug is missing, the store lookup fails, or the backend returns a non-OK status.
+ */
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const slug = ctx.params?.slug;
   if (!slug || typeof slug !== "string") {
@@ -115,10 +154,13 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
   try {
     const backendUrl = getBackendBaseUrl();
-    const res = await fetch(`${backendUrl}/stores/by-slug/${encodeURIComponent(slug)}`, {
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(4000),
-    });
+    const res = await fetch(
+      `${backendUrl}/stores/by-slug/${encodeURIComponent(slug)}`,
+      {
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(4000),
+      },
+    );
 
     if (!res.ok) {
       return { notFound: true };

@@ -6,30 +6,99 @@ import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 
 import { cn } from "../../utils";
 
+/**
+ * Renders the root of a select control, owning open state and selected value.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. Built on Radix UI's select
+ * primitive; compose it with {@link SelectTrigger}, {@link SelectValue} and
+ * {@link SelectContent}.
+ *
+ * @example
+ * ```tsx
+ * <Select value={category} onValueChange={setCategory}>
+ *   <SelectTrigger className="w-40">
+ *     <SelectValue placeholder="All categories" />
+ *   </SelectTrigger>
+ *   <SelectContent>
+ *     <SelectItem value="books">Books</SelectItem>
+ *     <SelectItem value="toys">Toys</SelectItem>
+ *   </SelectContent>
+ * </Select>
+ * ```
+ */
 function Select(props: React.ComponentProps<typeof SelectPrimitive.Root>) {
   return <SelectPrimitive.Root data-slot="select" {...props} />;
 }
 
+/**
+ * Groups {@link SelectItem}s behind an optional {@link SelectLabel}.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <SelectGroup>
+ *   <SelectLabel>Status</SelectLabel>
+ *   <SelectItem value="active">Active</SelectItem>
+ * </SelectGroup>
+ * ```
+ */
 function SelectGroup(
   props: React.ComponentProps<typeof SelectPrimitive.Group>,
 ) {
   return <SelectPrimitive.Group data-slot="select-group" {...props} />;
 }
 
+/**
+ * Renders the selected value, or its placeholder, inside a {@link SelectTrigger}.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <SelectValue placeholder="All categories" />
+ * ```
+ */
 function SelectValue(
   props: React.ComponentProps<typeof SelectPrimitive.Value>,
 ) {
   return <SelectPrimitive.Value data-slot="select-value" {...props} />;
 }
 
+/** Props accepted by {@link SelectTrigger}. */
+type SelectTriggerProps = React.ComponentProps<
+  typeof SelectPrimitive.Trigger
+> & {
+  /**
+   * Control height preset.
+   *
+   * @defaultValue "default"
+   */
+  size?: "sm" | "default";
+};
+
+/**
+ * Renders the button that opens the select and displays the current value.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <SelectTrigger size="sm" className="w-40">
+ *   <SelectValue placeholder="Select a category" />
+ * </SelectTrigger>
+ * ```
+ */
 function SelectTrigger({
   className,
   size = "default",
   children,
   ...props
-}: React.ComponentProps<typeof SelectPrimitive.Trigger> & {
-  size?: "sm" | "default";
-}) {
+}: SelectTriggerProps) {
   return (
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
@@ -48,6 +117,21 @@ function SelectTrigger({
   );
 }
 
+/**
+ * Renders the popover listbox in a portal, with scroll affordances.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. Defaults to the `popper`
+ * position so the list is offset from the trigger.
+ *
+ * @example
+ * ```tsx
+ * <SelectContent>
+ *   <SelectItem value="books">Books</SelectItem>
+ *   <SelectItem value="toys">Toys</SelectItem>
+ * </SelectContent>
+ * ```
+ */
 function SelectContent({
   className,
   children,
@@ -83,6 +167,17 @@ function SelectContent({
   );
 }
 
+/**
+ * Renders a non-selectable heading inside a {@link SelectGroup}.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <SelectLabel>Status</SelectLabel>
+ * ```
+ */
 function SelectLabel({
   className,
   ...props
@@ -96,6 +191,18 @@ function SelectLabel({
   );
 }
 
+/**
+ * Renders a selectable option, showing a check mark while selected.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. The `value` prop is required by
+ * the underlying Radix item.
+ *
+ * @example
+ * ```tsx
+ * <SelectItem value="books">Books</SelectItem>
+ * ```
+ */
 function SelectItem({
   className,
   children,
@@ -120,6 +227,17 @@ function SelectItem({
   );
 }
 
+/**
+ * Renders a divider between select option groups.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <SelectSeparator />
+ * ```
+ */
 function SelectSeparator({
   className,
   ...props
@@ -133,6 +251,18 @@ function SelectSeparator({
   );
 }
 
+/**
+ * Renders the scroll-up affordance shown when the list overflows.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. Rendered automatically by
+ * {@link SelectContent}; rarely used directly.
+ *
+ * @example
+ * ```tsx
+ * <SelectScrollUpButton />
+ * ```
+ */
 function SelectScrollUpButton({
   className,
   ...props
@@ -151,6 +281,18 @@ function SelectScrollUpButton({
   );
 }
 
+/**
+ * Renders the scroll-down affordance shown when the list overflows.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. Rendered automatically by
+ * {@link SelectContent}; rarely used directly.
+ *
+ * @example
+ * ```tsx
+ * <SelectScrollDownButton />
+ * ```
+ */
 function SelectScrollDownButton({
   className,
   ...props

@@ -4,6 +4,7 @@ import { AddressBook } from "@/components/account/address-book";
 import { OrderHistory } from "@/components/account/order-history";
 import { SubscriptionsManager } from "@/components/account/SubscriptionsManager";
 import { WishlistItems } from "@/components/account/wishlist-items";
+import { StoreCredit } from "@/components/account/StoreCredit";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -20,6 +21,7 @@ import { updatePassword, updateUserData } from "@/lib/user";
 import { motion } from "framer-motion";
 import {
   Bell,
+  Coins,
   CreditCard,
   Heart,
   LogOut,
@@ -34,6 +36,21 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Head from "next/head";
 
+/**
+ * Account dashboard with tabs for profile editing, order history,
+ * subscriptions, wishlist, addresses, payment methods, store credit, and
+ * settings.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. The active tab follows the
+ * `?tab=` router query and a loading spinner renders while the user context resolves.
+ *
+ * @example
+ * ```tsx
+ * // Route: /account (optionally /account?tab=orders) — rendered by the Next.js Pages Router.
+ * <AccountPage />
+ * ```
+ */
 export default function AccountPage() {
   const [activeTab, setActiveTab] = useState("profile");
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -93,10 +110,15 @@ export default function AccountPage() {
     try {
       const updates: Partial<typeof profile> = {};
       const original = {
-        name: safeString(user?.name ?? (user?.profile as Record<string, unknown>)?.name),
-        email: safeString(user?.email ?? (user?.profile as Record<string, unknown>)?.email),
+        name: safeString(
+          user?.name ?? (user?.profile as Record<string, unknown>)?.name,
+        ),
+        email: safeString(
+          user?.email ?? (user?.profile as Record<string, unknown>)?.email,
+        ),
         phone_number: safeString(
-          user?.phone_number ?? (user?.profile as Record<string, unknown>)?.phone_number,
+          user?.phone_number ??
+            (user?.profile as Record<string, unknown>)?.phone_number,
         ),
       };
 
@@ -195,7 +217,10 @@ export default function AccountPage() {
                     <h1 className="text-xl font-bold tracking-tight text-foreground">
                       {user?.name || "Member Account"}
                     </h1>
-                    <Badge variant="secondary" className="text-[10px] py-0 px-2 font-normal">
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] py-0 px-2 font-normal"
+                    >
                       Verified
                     </Badge>
                   </div>
@@ -212,7 +237,13 @@ export default function AccountPage() {
                     Orders
                   </span>
                   <p className="text-sm font-semibold text-foreground mt-0.5">
-                    {safeNumber(getNested((user as Record<string, unknown>)?.orders, "meta", "total_orders"))}
+                    {safeNumber(
+                      getNested(
+                        (user as Record<string, unknown>)?.orders,
+                        "meta",
+                        "total_orders",
+                      ),
+                    )}
                   </p>
                 </div>
                 <div>
@@ -220,7 +251,10 @@ export default function AccountPage() {
                     Wishlist
                   </span>
                   <p className="text-sm font-semibold text-foreground mt-0.5">
-                    {((user as Record<string, unknown>)?.wishlist as unknown[])?.length ?? localWishlist.length ?? 0}
+                    {((user as Record<string, unknown>)?.wishlist as unknown[])
+                      ?.length ??
+                      localWishlist.length ??
+                      0}
                   </p>
                 </div>
                 <div>
@@ -230,9 +264,16 @@ export default function AccountPage() {
                   <p className="text-sm font-semibold text-foreground mt-0.5">
                     {(() => {
                       const d = safeDateFrom(
-                        user?.created_at ?? (user?.profile as Record<string, unknown>)?.created_at,
+                        user?.created_at ??
+                          (user?.profile as Record<string, unknown>)
+                            ?.created_at,
                       );
-                      return d ? d.toLocaleDateString("en-GB", { month: "short", year: "numeric" }) : "—";
+                      return d
+                        ? d.toLocaleDateString("en-GB", {
+                            month: "short",
+                            year: "numeric",
+                          })
+                        : "—";
                     })()}
                   </p>
                 </div>
@@ -290,6 +331,13 @@ export default function AccountPage() {
                 <span>Payment</span>
               </TabsTrigger>
               <TabsTrigger
+                value="credit"
+                className="flex items-center gap-1.5 py-2 text-xs font-medium"
+              >
+                <Coins className="h-3.5 w-3.5" />
+                <span>Store Credit</span>
+              </TabsTrigger>
+              <TabsTrigger
                 value="settings"
                 className="flex items-center gap-1.5 py-2 text-xs font-medium"
               >
@@ -307,7 +355,10 @@ export default function AccountPage() {
                   </h3>
                   <div className="space-y-4">
                     <div className="space-y-1.5">
-                      <Label htmlFor="name" className="text-xs font-medium text-foreground">
+                      <Label
+                        htmlFor="name"
+                        className="text-xs font-medium text-foreground"
+                      >
                         Full Name
                       </Label>
                       <Input
@@ -320,7 +371,10 @@ export default function AccountPage() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label htmlFor="email" className="text-xs font-medium text-foreground">
+                      <Label
+                        htmlFor="email"
+                        className="text-xs font-medium text-foreground"
+                      >
                         Email Address
                       </Label>
                       <Input
@@ -332,7 +386,10 @@ export default function AccountPage() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label htmlFor="phone_number" className="text-xs font-medium text-foreground">
+                      <Label
+                        htmlFor="phone_number"
+                        className="text-xs font-medium text-foreground"
+                      >
                         Phone Number
                       </Label>
                       <Input
@@ -364,7 +421,10 @@ export default function AccountPage() {
                   </h3>
                   <div className="space-y-4">
                     <div className="space-y-1.5">
-                      <Label htmlFor="currentPassword" className="text-xs font-medium text-foreground">
+                      <Label
+                        htmlFor="currentPassword"
+                        className="text-xs font-medium text-foreground"
+                      >
                         Current Password
                       </Label>
                       <Input
@@ -376,7 +436,10 @@ export default function AccountPage() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label htmlFor="newPassword" className="text-xs font-medium text-foreground">
+                      <Label
+                        htmlFor="newPassword"
+                        className="text-xs font-medium text-foreground"
+                      >
                         New Password
                       </Label>
                       <Input
@@ -388,7 +451,10 @@ export default function AccountPage() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label htmlFor="confirmPassword" className="text-xs font-medium text-foreground">
+                      <Label
+                        htmlFor="confirmPassword"
+                        className="text-xs font-medium text-foreground"
+                      >
                         Confirm Password
                       </Label>
                       <Input
@@ -451,11 +517,18 @@ export default function AccountPage() {
                         VISA
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-foreground">•••• •••• •••• 4242</p>
-                        <p className="text-[11px] text-muted-foreground">Expires 12/26</p>
+                        <p className="text-xs font-medium text-foreground">
+                          •••• •••• •••• 4242
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          Expires 12/26
+                        </p>
                       </div>
                     </div>
-                    <Badge variant="secondary" className="text-[10px] font-normal">
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] font-normal"
+                    >
                       Default
                     </Badge>
                   </div>
@@ -464,6 +537,9 @@ export default function AccountPage() {
                   </Button>
                 </div>
               </div>
+            </TabsContent>
+            <TabsContent value="credit">
+              <StoreCredit />
             </TabsContent>
 
             {/* Settings Tab */}
@@ -477,8 +553,12 @@ export default function AccountPage() {
                     <div className="flex items-center gap-3">
                       <Bell className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="font-medium text-foreground">Email Notifications</p>
-                        <p className="text-muted-foreground">Receive order updates and dispatch notices.</p>
+                        <p className="font-medium text-foreground">
+                          Email Notifications
+                        </p>
+                        <p className="text-muted-foreground">
+                          Receive order updates and dispatch notices.
+                        </p>
                       </div>
                     </div>
                     <Button variant="outline" size="sm" className="h-8 text-xs">
@@ -490,8 +570,12 @@ export default function AccountPage() {
                     <div className="flex items-center gap-3">
                       <Shield className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="font-medium text-foreground">Privacy & Data</p>
-                        <p className="text-muted-foreground">Manage cookies and data retention.</p>
+                        <p className="font-medium text-foreground">
+                          Privacy & Data
+                        </p>
+                        <p className="text-muted-foreground">
+                          Manage cookies and data retention.
+                        </p>
                       </div>
                     </div>
                     <Button variant="outline" size="sm" className="h-8 text-xs">
@@ -506,7 +590,8 @@ export default function AccountPage() {
                   Session &amp; Account
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  Sign out from your current device or manage your account status.
+                  Sign out from your current device or manage your account
+                  status.
                 </p>
                 <div className="flex gap-3 pt-2">
                   <Button

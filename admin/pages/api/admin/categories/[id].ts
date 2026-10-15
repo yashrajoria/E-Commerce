@@ -2,10 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { proxyRequest } from "@ecommerce/shared";
 import { withAdminApi } from "@/lib/requireAdminApi";
 
-async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query;
   if (!id || Array.isArray(id)) {
     return res.status(400).json({ message: "Category ID is required" });
@@ -13,7 +10,9 @@ async function handler(
 
   if (!["PUT", "DELETE"].includes(req.method || "")) {
     res.setHeader("Allow", ["PUT", "DELETE"]);
-    return res.status(405).json({ message: `Method ${req.method} Not Allowed` });
+    return res
+      .status(405)
+      .json({ message: `Method ${req.method} Not Allowed` });
   }
 
   try {
@@ -33,4 +32,14 @@ async function handler(
   }
 }
 
+/**
+ * Handles `PUT` and `DELETE` requests for a single admin category, proxying to the upstream `/bff/admin/categories/{id}` route.
+ *
+ * @remarks
+ * Wrapped with {@link withAdminApi}: requests must pass a same-origin check and carry a valid admin session. A missing or repeated `id` query parameter returns `400`; any other method returns `405` with an `Allow: PUT, DELETE` header.
+ *
+ * @param req - The Next.js API request; `req.query.id` selects the category and is appended to the upstream path.
+ * @param res - The Next.js API response.
+ * @returns A promise that resolves once the upstream response has been relayed.
+ */
 export default withAdminApi(handler);

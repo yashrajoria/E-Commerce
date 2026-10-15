@@ -29,31 +29,75 @@ import { API_ROUTES } from "@/pages/api/constants/apiRoutes";
 import { toast } from "sonner";
 import { ShopTogetherShareModal } from "@/components/cart/ShopTogetherShareModal";
 
+/**
+ * Props accepted by {@link CartItemRow}.
+ */
+interface CartItemRowProps {
+  /** Cart line item to render. */
+  item: {
+    /** Product identifier. */
+    id: string;
+    /** Product display name. */
+    name: string;
+    /** Unit price in major currency units. */
+    price: number;
+    /** Pre-discount price, shown struck through when higher than `price`. */
+    originalPrice?: number;
+    /** Number of units in the cart. */
+    quantity: number;
+    /** Image URLs; the first entry is rendered as the thumbnail. */
+    images?: string[];
+    /** Category name or object with the category name. */
+    category?: string | { name: string };
+    /** Optional badge label (for example `"Best Seller"`). */
+    badge?: string;
+  };
+  /** Position of the row in the cart list; drives the entrance animation delay. */
+  index: number;
+  /**
+   * Called when the customer changes the row quantity.
+   *
+   * @param id - Product identifier of the row.
+   * @param qty - New absolute quantity.
+   */
+  onUpdateQuantity: (id: string, qty: number) => void;
+  /**
+   * Called when the customer removes the row.
+   *
+   * @param id - Product identifier of the row.
+   */
+  onRemove: (id: string) => void;
+}
+
+/**
+ * Renders a single cart line item with thumbnail, price, quantity stepper,
+ * and remove action.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <CartItemRow
+ *   item={cartItems[0]}
+ *   index={0}
+ *   onUpdateQuantity={handleUpdateQuantity}
+ *   onRemove={removeFromCart}
+ * />
+ * ```
+ */
 function CartItemRow({
   item,
   index,
   onUpdateQuantity,
   onRemove,
-}: {
-  item: {
-    id: string;
-    name: string;
-    price: number;
-    originalPrice?: number;
-    quantity: number;
-    images?: string[];
-    category?: string | { name: string };
-    badge?: string;
-  };
-  index: number;
-  onUpdateQuantity: (id: string, qty: number) => void;
-  onRemove: (id: string) => void;
-}) {
+}: CartItemRowProps) {
   const [imageFailed, setImageFailed] = useState(false);
   const rawImage = item.images?.[0];
   const isLocalStack = rawImage?.includes("localhost:4566");
   const hasValidImage = rawImage && !isLocalStack && !imageFailed;
-  const categoryName = typeof item.category === "string" ? item.category : item.category?.name;
+  const categoryName =
+    typeof item.category === "string" ? item.category : item.category?.name;
 
   return (
     <motion.div
@@ -80,21 +124,20 @@ function CartItemRow({
       <div className="flex-1 min-w-0">
         <h3 className="font-semibold text-base leading-snug">{item.name}</h3>
         {categoryName && (
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {categoryName}
-          </p>
+          <p className="text-xs text-muted-foreground mt-0.5">{categoryName}</p>
         )}
         <div className="flex items-center gap-2 mt-2">
-          <span className="font-semibold text-sm">
-            {formatGBP(item.price)}
-          </span>
+          <span className="font-semibold text-sm">{formatGBP(item.price)}</span>
           {item.originalPrice && item.originalPrice > item.price && (
             <span className="text-xs text-muted-foreground line-through">
               {formatGBP(item.originalPrice)}
             </span>
           )}
           {item.badge && (
-            <Badge variant="secondary" className="text-[10px] py-0 px-1.5 font-normal">
+            <Badge
+              variant="secondary"
+              className="text-[10px] py-0 px-1.5 font-normal"
+            >
               {item.badge}
             </Badge>
           )}
@@ -149,8 +192,27 @@ function CartItemRow({
   );
 }
 
+/**
+ * Shopping bag page: line items, promo-code validation, free-delivery
+ * progress, order summary, shared-cart merging, and the Shop Together modal.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * // Route: /cart — rendered by the Next.js Pages Router.
+ * <CartPage />
+ * ```
+ */
 export default function CartPage() {
-  const { cart: cartItems, updateQuantity, removeFromCart, addToCart, isHydrated } = useCart();
+  const {
+    cart: cartItems,
+    updateQuantity,
+    removeFromCart,
+    addToCart,
+    isHydrated,
+  } = useCart();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
@@ -158,7 +220,9 @@ export default function CartPage() {
   const [promoMessage, setPromoMessage] = useState<string | null>(null);
   const [promoOk, setPromoOk] = useState(false);
   const [applyingPromo, setApplyingPromo] = useState(false);
-  const [sharedCartItems, setSharedCartItems] = useState<CartItem[] | null>(null);
+  const [sharedCartItems, setSharedCartItems] = useState<CartItem[] | null>(
+    null,
+  );
   const [isShopTogetherOpen, setIsShopTogetherOpen] = useState(false);
   const router = useRouter();
 
@@ -167,7 +231,9 @@ export default function CartPage() {
     const param = Array.isArray(rawParam) ? rawParam[0] : rawParam;
     if (param) {
       try {
-        const decoded = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(param)))));
+        const decoded = JSON.parse(
+          decodeURIComponent(escape(atob(decodeURIComponent(param)))),
+        );
         if (Array.isArray(decoded) && decoded.length > 0) {
           setSharedCartItems(decoded);
         }
@@ -189,7 +255,9 @@ export default function CartPage() {
         subscription: item.subscription,
       });
     });
-    toast.success(`Loaded ${sharedCartItems.length} shared items into your bag!`);
+    toast.success(
+      `Loaded ${sharedCartItems.length} shared items into your bag!`,
+    );
     setSharedCartItems(null);
     router.replace("/cart", undefined, { shallow: true });
   };
@@ -260,7 +328,10 @@ export default function CartPage() {
   const shipping = isFreeShipping ? 0 : 4.99;
   const tax = Math.max(0, subtotal - discount) * 0.08;
   const total = Math.max(0, subtotal - discount) + shipping + tax;
-  const remainingForFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
+  const remainingForFreeShipping = Math.max(
+    0,
+    freeShippingThreshold - subtotal,
+  );
 
   if (!isHydrated) {
     return (
@@ -306,7 +377,9 @@ export default function CartPage() {
               <ShoppingBag className="h-6 w-6" />
             </div>
             <h1 className="text-xl font-semibold tracking-tight mb-2">
-              {sharedCartItems ? "Shared Bag Received!" : "Your shopping bag is empty"}
+              {sharedCartItems
+                ? "Shared Bag Received!"
+                : "Your shopping bag is empty"}
             </h1>
             <p className="text-sm text-muted-foreground mb-6">
               {sharedCartItems
@@ -314,8 +387,13 @@ export default function CartPage() {
                 : "You haven't added any items to your bag yet."}
             </p>
             {sharedCartItems ? (
-              <Button onClick={handleMergeSharedCart} size="default" className="gap-2">
-                <ShoppingBag className="h-4 w-4" /> Load Shared Items ({sharedCartItems.length})
+              <Button
+                onClick={handleMergeSharedCart}
+                size="default"
+                className="gap-2"
+              >
+                <ShoppingBag className="h-4 w-4" /> Load Shared Items (
+                {sharedCartItems.length})
               </Button>
             ) : (
               <Button asChild size="default">
@@ -354,7 +432,8 @@ export default function CartPage() {
           </Button>
           <h1 className="text-2xl font-bold tracking-tight">Shopping Bag</h1>
           <Badge variant="secondary" className="text-xs font-medium">
-            {cartItems.reduce((acc, i) => acc + i.quantity, 0)} {cartItems.length === 1 ? "item" : "items"}
+            {cartItems.reduce((acc, i) => acc + i.quantity, 0)}{" "}
+            {cartItems.length === 1 ? "item" : "items"}
           </Badge>
         </div>
 
@@ -369,7 +448,8 @@ export default function CartPage() {
                   Friend Shared Shopping Bag ({sharedCartItems.length} items)
                 </h3>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Someone invited you to shop together! Click below to merge these items into your bag.
+                  Someone invited you to shop together! Click below to merge
+                  these items into your bag.
                 </p>
               </div>
             </div>
@@ -437,7 +517,9 @@ export default function CartPage() {
                 {promoMessage && (
                   <p
                     className={`text-xs mt-2 ${
-                      promoOk ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"
+                      promoOk
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : "text-destructive"
                     }`}
                   >
                     {promoMessage}
@@ -453,7 +535,8 @@ export default function CartPage() {
                     <span>Free standard shipping unlocked</span>
                   ) : (
                     <span>
-                      Add {formatGBP(remainingForFreeShipping)} more for free delivery
+                      Add {formatGBP(remainingForFreeShipping)} more for free
+                      delivery
                     </span>
                   )}
                 </div>
@@ -473,7 +556,9 @@ export default function CartPage() {
               <div className="space-y-2.5 text-xs">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span className="font-medium text-foreground">{formatGBP(subtotal)}</span>
+                  <span className="font-medium text-foreground">
+                    {formatGBP(subtotal)}
+                  </span>
                 </div>
 
                 {discount > 0 && (
@@ -484,15 +569,21 @@ export default function CartPage() {
                 )}
 
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Estimated Shipping</span>
+                  <span className="text-muted-foreground">
+                    Estimated Shipping
+                  </span>
                   <span className="font-medium text-foreground">
                     {shipping === 0 ? "Free" : formatGBP(shipping)}
                   </span>
                 </div>
 
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Estimated Tax (8%)</span>
-                  <span className="font-medium text-foreground">{formatGBP(tax)}</span>
+                  <span className="text-muted-foreground">
+                    Estimated Tax (8%)
+                  </span>
+                  <span className="font-medium text-foreground">
+                    {formatGBP(tax)}
+                  </span>
                 </div>
               </div>
 
@@ -507,12 +598,15 @@ export default function CartPage() {
 
               <div className="space-y-2.5 pt-2">
                 <Button asChild size="lg" className="w-full">
-                  <Link href="/checkout">
-                    Proceed to Checkout
-                  </Link>
+                  <Link href="/checkout">Proceed to Checkout</Link>
                 </Button>
                 <div className="grid grid-cols-2 gap-2">
-                  <Button asChild variant="outline" size="sm" className="h-10 text-xs font-semibold">
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="h-10 text-xs font-semibold"
+                  >
                     <Link href="/products">Continue Shopping</Link>
                   </Button>
                   <Button

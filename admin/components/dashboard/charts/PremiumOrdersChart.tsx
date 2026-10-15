@@ -14,15 +14,23 @@ import { Button } from "@/components/ui/button";
 import { ShoppingCart, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 
+/** A single period's order counts, current versus previous. */
 export interface OrderData {
+  /** Period label, e.g. `"Mon"` or `"Jan"`. */
   name: string;
+  /** Orders placed in the current period. */
   orders: number;
+  /** Orders placed in the comparison period. */
   prevOrders: number;
 }
 
+/** Props accepted by {@link PremiumOrdersChart}. */
 export interface PremiumOrdersChartProps {
+  /** Order series per period; omit either series to use the built-in sample data. */
   data?: {
+    /** Seven-day series rendered when the weekly toggle is active. */
     weekly?: OrderData[];
+    /** Twelve-month series rendered when the monthly toggle is active. */
     monthly?: OrderData[];
   };
 }
@@ -59,7 +67,8 @@ const CustomTooltip = ({
 }: TooltipProps<number, string>) => {
   if (!active || !payload?.length) return null;
 
-  const current = payload[1]?.value as number ?? payload[0]?.value as number;
+  const current =
+    (payload[1]?.value as number) ?? (payload[0]?.value as number);
   const prev = payload[0]?.value as number;
   const change = prev > 0 ? ((current - prev) / prev) * 100 : 0;
 
@@ -72,14 +81,20 @@ const CustomTooltip = ({
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-xs bg-[#1f513f]" />
-            <span className="text-xs text-muted-foreground font-medium">Current</span>
+            <span className="text-xs text-muted-foreground font-medium">
+              Current
+            </span>
           </div>
-          <span className="text-sm font-semibold text-foreground">{current}</span>
+          <span className="text-sm font-semibold text-foreground">
+            {current}
+          </span>
         </div>
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-xs bg-muted-foreground/30" />
-            <span className="text-xs text-muted-foreground font-medium">Previous</span>
+            <span className="text-xs text-muted-foreground font-medium">
+              Previous
+            </span>
           </div>
           <span className="text-sm font-medium text-muted-foreground">
             {prev}
@@ -100,14 +115,31 @@ const CustomTooltip = ({
 
 type Period = "weekly" | "monthly";
 
-export default function PremiumOrdersChart({ data }: PremiumOrdersChartProps = {}) {
+/**
+ * Renders the orders analytics bar chart comparing current with previous
+ * period volume, with weekly/monthly toggle and summary metrics.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <PremiumOrdersChart data={dashboardData.orderCharts} />
+ * ```
+ */
+export default function PremiumOrdersChart({
+  data,
+}: PremiumOrdersChartProps = {}) {
   const [period, setPeriod] = useState<Period>("weekly");
-  const weekly = data?.weekly && data.weekly.length > 0 ? data.weekly : weeklyData;
-  const monthly = data?.monthly && data.monthly.length > 0 ? data.monthly : monthlyData;
+  const weekly =
+    data?.weekly && data.weekly.length > 0 ? data.weekly : weeklyData;
+  const monthly =
+    data?.monthly && data.monthly.length > 0 ? data.monthly : monthlyData;
   const chartData = period === "weekly" ? weekly : monthly;
 
   const totalOrders = chartData.reduce((sum, d) => sum + d.orders, 0);
-  const avgOrders = chartData.length > 0 ? Math.round(totalOrders / chartData.length) : 0;
+  const avgOrders =
+    chartData.length > 0 ? Math.round(totalOrders / chartData.length) : 0;
 
   return (
     <motion.div
@@ -130,14 +162,18 @@ export default function PremiumOrdersChart({ data }: PremiumOrdersChartProps = {
                   <p className="text-2xl font-bold tracking-tight text-foreground">
                     {totalOrders.toLocaleString()}
                   </p>
-                  <p className="text-xs text-muted-foreground font-medium">Total Volume</p>
+                  <p className="text-xs text-muted-foreground font-medium">
+                    Total Volume
+                  </p>
                 </div>
                 <div className="w-px h-8 bg-border" />
                 <div>
                   <p className="text-lg font-semibold text-[#b45309] dark:text-[#f59e0b]">
                     {avgOrders}
                   </p>
-                  <p className="text-xs text-muted-foreground font-medium">Daily Avg</p>
+                  <p className="text-xs text-muted-foreground font-medium">
+                    Daily Avg
+                  </p>
                 </div>
                 <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-200/50 dark:border-emerald-800/40">
                   <TrendingUp size={12} />

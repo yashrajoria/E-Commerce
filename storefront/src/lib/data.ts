@@ -1,3 +1,9 @@
+/**
+ * Legacy sample-data module. The category, featured-product, and collection
+ * fixtures below are commented out; live catalog data now comes from the API
+ * via `@/hooks/useProducts` and `@/lib/ssrProducts`. Retained for reference only.
+ */
+
 // import { Collection, Product, Category } from "./types";
 
 // export const categories: Category[] = [

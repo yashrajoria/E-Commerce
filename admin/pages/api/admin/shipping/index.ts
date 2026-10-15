@@ -54,11 +54,24 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       else if (st === "delayed") progress = 45;
       else progress = 15;
 
-      const normStatus: "processing" | "shipped" | "in-transit" | "delivered" | "delayed" =
+      const normStatus:
+        | "processing"
+        | "shipped"
+        | "in-transit"
+        | "delivered"
+        | "delayed" =
         st === "in_transit"
           ? "in-transit"
-          : st === "delivered" || st === "shipped" || st === "delayed" || st === "in-transit"
-            ? (st as "processing" | "shipped" | "in-transit" | "delivered" | "delayed")
+          : st === "delivered" ||
+              st === "shipped" ||
+              st === "delayed" ||
+              st === "in-transit"
+            ? (st as
+                | "processing"
+                | "shipped"
+                | "in-transit"
+                | "delivered"
+                | "delayed")
             : "processing";
 
       const estDate = r.estimated_delivery
@@ -92,9 +105,20 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     return res.status(200).json({ shipments, stats });
   } catch (error) {
     console.error("Shipping API error:", error);
-    return res.status(500).json({ error: "Failed to fetch shipments from database" });
+    return res
+      .status(500)
+      .json({ error: "Failed to fetch shipments from database" });
   }
 }
 
+/**
+ * Handles `GET` requests for the admin shipment list, joining shipments with their order, customer and address records.
+ *
+ * @remarks
+ * Wrapped with {@link withAdminApi}: requests must pass a same-origin check and carry a valid admin session.
+ *
+ * @param req - The Next.js API request; no query parameters or body are read.
+ * @param res - The Next.js API response.
+ * @returns A promise that resolves once the response has been sent.
+ */
 export default withAdminApi(handler);
-

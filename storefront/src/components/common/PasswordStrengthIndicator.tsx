@@ -4,11 +4,29 @@ import React from "react";
 import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import { validatePassword, type PasswordValidation } from "@/lib/auth";
 
+/** Props accepted by {@link PasswordStrengthIndicator}. */
 interface PasswordStrengthIndicatorProps {
+  /** Current password value being scored; the component renders nothing while empty. */
   password: string;
+  /**
+   * Whether to render the checklist of individual password requirements.
+   *
+   * @defaultValue true
+   */
   showRequirements?: boolean;
 }
 
+/**
+ * Renders a password strength meter, requirement checklist, and unmet-requirements warning.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <PasswordStrengthIndicator password={password} showRequirements />
+ * ```
+ */
 export function PasswordStrengthIndicator({
   password,
   showRequirements = true,

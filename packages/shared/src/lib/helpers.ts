@@ -11,7 +11,11 @@ import type {
 } from '@ecommerce/shared/src/types/common';
 
 /**
- * Format currency for display
+ * Formats a numeric amount as a currency string for display.
+ *
+ * @param amount - Amount in major units.
+ * @param currency - ISO 4217 currency code. Defaults to `'USD'`.
+ * @returns The formatted string in the `en-US` locale, e.g. `"$1,240.00"`.
  */
 export function formatCurrency(
   amount: number,
@@ -24,14 +28,25 @@ export function formatCurrency(
 }
 
 /**
- * Format percentage
+ * Formats a ratio as a percentage string.
+ *
+ * @param value - Ratio to format, e.g. `0.42` for 42%.
+ * @param decimals - Number of decimal places to keep. Defaults to `1`.
+ * @returns The formatted percentage, e.g. `"42.0%"`.
  */
 export function formatPercentage(value: number, decimals: number = 1): string {
   return `${(value * 100).toFixed(decimals)}%`;
 }
 
 /**
- * Parse CSV file to records
+ * Parses a CSV file into header-keyed records.
+ *
+ * @remarks
+ * The first line supplies the headers and numeric-looking values are coerced
+ * to numbers. Parse failures are reported through `error` rather than thrown.
+ *
+ * @param file - CSV file selected by the user.
+ * @returns A promise resolving to the parsed records, plus an `error` message when parsing failed.
  */
 export async function parseCSV(
   file: File
@@ -62,7 +77,11 @@ export async function parseCSV(
 }
 
 /**
- * Validate image file
+ * Validates an image file's MIME type and size.
+ *
+ * @param file - File to check.
+ * @param maxSizeMB - Maximum allowed size in megabytes. Defaults to `10`.
+ * @returns `{ valid: true }`, or `{ valid: false, error }` describing the failed check.
  */
 export function validateImageFile(
   file: File,
@@ -89,7 +108,13 @@ export function validateImageFile(
 }
 
 /**
- * Retry failed requests with exponential backoff
+ * Retries an async operation with exponential backoff.
+ *
+ * @param fn - Operation to attempt; invoked again after each failure.
+ * @param maxRetries - Maximum number of attempts. Defaults to `3`.
+ * @param baseDelay - Delay before the first retry in milliseconds, doubling after each failure. Defaults to `1000`.
+ * @returns A promise resolving with the first successful result.
+ * @throws {@link Error} The error from the final attempt when every retry fails.
  */
 export async function retryWithBackoff<T>(
   fn: () => Promise<T>,
@@ -115,7 +140,15 @@ export async function retryWithBackoff<T>(
 }
 
 /**
- * Deep merge objects
+ * Recursively merges a partial source into a target object.
+ *
+ * @remarks
+ * Nested plain objects are merged key by key; arrays and non-object values
+ * are replaced by the source value.
+ *
+ * @param target - Base object; not mutated.
+ * @param source - Partial overrides to apply.
+ * @returns A new object combining `target` and `source`.
  */
 export function deepMerge<T extends object>(target: T, source: Partial<T>): T {
   const output = { ...target };
@@ -144,7 +177,11 @@ export function deepMerge<T extends object>(target: T, source: Partial<T>): T {
 }
 
 /**
- * Debounce function calls
+ * Delays a function call until input has settled for `wait` milliseconds.
+ *
+ * @param fn - Function to debounce.
+ * @param wait - Quiet period in milliseconds before the call is made.
+ * @returns A debounced wrapper; every call restarts the timer.
  */
 export function debounce<T extends (...args: any[]) => any>(
   fn: T,
@@ -164,7 +201,11 @@ export function debounce<T extends (...args: any[]) => any>(
 }
 
 /**
- * Throttle function calls
+ * Limits a function to at most one call per `wait` milliseconds.
+ *
+ * @param fn - Function to throttle.
+ * @param wait - Minimum interval between calls in milliseconds.
+ * @returns A throttled wrapper that fires immediately, then at most once per interval.
  */
 export function throttle<T extends (...args: any[]) => any>(
   fn: T,
@@ -195,7 +236,10 @@ export function throttle<T extends (...args: any[]) => any>(
 }
 
 /**
- * Generate unique ID
+ * Generates a short random identifier.
+ *
+ * @param prefix - Optional prefix joined with a hyphen (e.g. `"order"` gives `"order-1a2b3c4d5"`). Defaults to `''`.
+ * @returns The generated identifier.
  */
 export function generateId(prefix: string = ''): string {
   const id = Math.random().toString(36).substr(2, 9);
@@ -203,7 +247,11 @@ export function generateId(prefix: string = ''): string {
 }
 
 /**
- * Safely parse JSON
+ * Parses a JSON string without throwing.
+ *
+ * @param json - JSON string to parse.
+ * @param fallback - Value returned when parsing throws.
+ * @returns The parsed value, or `fallback`.
  */
 export function safeParseJSON<T>(json: string, fallback: T): T {
   try {
@@ -214,7 +262,12 @@ export function safeParseJSON<T>(json: string, fallback: T): T {
 }
 
 /**
- * Get nested object value safely
+ * Reads a nested property by dot-separated path.
+ *
+ * @param obj - Object to read from.
+ * @param path - Dot-separated key path, e.g. `"user.profile.name"`.
+ * @param defaultValue - Value returned when any segment is missing. Defaults to `undefined`.
+ * @returns The resolved value, or `defaultValue`.
  */
 export function getNestedValue(
   obj: any,
@@ -236,7 +289,11 @@ export function getNestedValue(
 }
 
 /**
- * Truncate text
+ * Shortens text to a maximum length, appending an ellipsis.
+ *
+ * @param text - Text to shorten.
+ * @param maxLength - Maximum number of characters kept before the ellipsis.
+ * @returns The original text when it already fits, otherwise the truncated text plus `"..."`.
  */
 export function truncateText(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
@@ -244,7 +301,10 @@ export function truncateText(text: string, maxLength: number): string {
 }
 
 /**
- * Check if API response is successful
+ * Narrows an API response envelope to one that carries a payload.
+ *
+ * @param response - Response envelope to test.
+ * @returns `true` when `success` is `true` and `data` is set, narrowing the type so `data` is available.
  */
 export function isSuccessResponse<T>(
   response: ApiResponse<T>
@@ -253,7 +313,10 @@ export function isSuccessResponse<T>(
 }
 
 /**
- * Format file size for display
+ * Formats a byte count as a human-readable file size.
+ *
+ * @param bytes - Size in bytes.
+ * @returns The formatted size with a unit, e.g. `"1.5 MB"`.
  */
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 Bytes';
@@ -266,7 +329,10 @@ export function formatFileSize(bytes: number): string {
 }
 
 /**
- * Relative time format (e.g., "2 hours ago")
+ * Describes how long ago a date occurred.
+ *
+ * @param date - Date instance or parseable date string.
+ * @returns A label such as `"just now"` or `"5 minutes ago"`; anything older than roughly a month is formatted as a locale date string.
  */
 export function getRelativeTime(date: Date | string): string {
   const now = new Date();

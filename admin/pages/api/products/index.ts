@@ -7,6 +7,7 @@ import formidable from "formidable";
 import fs from "fs";
 import { withAdminApi } from "@/lib/requireAdminApi";
 
+/** Route configuration — disables the default body parser so `formidable` can consume the multipart bodies. */
 export const config = {
   api: {
     bodyParser: false,
@@ -27,7 +28,13 @@ const normalizeProductsResponse = (raw: unknown) => {
       : payload;
 
   const productsCandidate =
-    payload.products ?? payload.items ?? payload.results ?? nested.products ?? nested.items ?? nested.results ?? nested.data;
+    payload.products ??
+    payload.items ??
+    payload.results ??
+    nested.products ??
+    nested.items ??
+    nested.results ??
+    nested.data;
   const products = Array.isArray(productsCandidate)
     ? productsCandidate
     : Array.isArray(nested.products)
@@ -39,7 +46,11 @@ const normalizeProductsResponse = (raw: unknown) => {
           : [];
 
   const metaCandidate =
-    payload.meta ?? nested.meta ?? payload.pagination ?? nested.pagination ?? undefined;
+    payload.meta ??
+    nested.meta ??
+    payload.pagination ??
+    nested.pagination ??
+    undefined;
   const meta =
     metaCandidate && typeof metaCandidate === "object"
       ? metaCandidate
@@ -48,7 +59,12 @@ const normalizeProductsResponse = (raw: unknown) => {
   return { products, meta };
 };
 
-const parseForm = (req: NextApiRequest): Promise<{ fields: Record<string, unknown>; files: Record<string, unknown> }> => {
+const parseForm = (
+  req: NextApiRequest,
+): Promise<{
+  fields: Record<string, unknown>;
+  files: Record<string, unknown>;
+}> => {
   const form = formidable({ keepExtensions: true });
   return new Promise((resolve, reject) => {
     form.parse(req, (err, fields, files) => {
@@ -125,9 +141,17 @@ async function handleCreateProduct(req: NextApiRequest, res: NextApiResponse) {
 
     // Handle image files
     const rawImages = (files as Record<string, unknown>)?.images;
-    const imagesArray = Array.isArray(rawImages) ? rawImages : rawImages ? [rawImages] : [];
+    const imagesArray = Array.isArray(rawImages)
+      ? rawImages
+      : rawImages
+        ? [rawImages]
+        : [];
     for (const img of imagesArray) {
-      if (img && typeof img === "object" && "filepath" in (img as Record<string, unknown>)) {
+      if (
+        img &&
+        typeof img === "object" &&
+        "filepath" in (img as Record<string, unknown>)
+      ) {
         const fileObj = img as Record<string, unknown>;
         const filepath = String(fileObj.filepath);
         try {
@@ -161,13 +185,17 @@ async function handleCreateProduct(req: NextApiRequest, res: NextApiResponse) {
     const sessionCookie = extractSessionCookie(req);
 
     // Submit to Go backend (admin BFF so JWT role is injected)
-    const response = await axios.post(`${API_URL}bff/admin/products`, formData, {
-      headers: {
-        ...formData.getHeaders(),
-        Cookie: sessionCookie,
+    const response = await axios.post(
+      `${API_URL}bff/admin/products`,
+      formData,
+      {
+        headers: {
+          ...formData.getHeaders(),
+          Cookie: sessionCookie,
+        },
+        withCredentials: true,
       },
-      withCredentials: true,
-    });
+    );
 
     return res.status(response.status).json({
       message: "Product created successfully",
@@ -176,7 +204,12 @@ async function handleCreateProduct(req: NextApiRequest, res: NextApiResponse) {
   } catch (uploadErr: unknown) {
     // Normalize error using helper
     const { data } = getResponseInfo(uploadErr);
-    const msg = typeof data === "string" ? data : uploadErr instanceof Error ? uploadErr.message : String(uploadErr);
+    const msg =
+      typeof data === "string"
+        ? data
+        : uploadErr instanceof Error
+          ? uploadErr.message
+          : String(uploadErr);
     console.error("Upload failed:", msg);
     return res.status(500).json({ message: "Error uploading product" });
   }
@@ -200,7 +233,9 @@ async function handleGetProducts(req: NextApiRequest, res: NextApiResponse) {
       withCredentials: true,
     });
 
-    return res.status(response.status).json(normalizeProductsResponse(response.data));
+    return res
+      .status(response.status)
+      .json(normalizeProductsResponse(response.data));
   } catch (err: unknown) {
     console.error("Error fetching products:", err);
     return res.status(500).json({ message: "Error fetching products" });
@@ -211,10 +246,16 @@ async function handleBulkUpload(req: NextApiRequest, res: NextApiResponse) {
   const { files } = await parseForm(req);
   const rawFile = (files as Record<string, unknown>)?.file;
   const file = Array.isArray(rawFile) ? rawFile[0] : rawFile;
-  if (!file || typeof file !== "object" || !("filepath" in (file as Record<string, unknown>)))
+  if (
+    !file ||
+    typeof file !== "object" ||
+    !("filepath" in (file as Record<string, unknown>))
+  )
     return res.status(400).json({ message: "No file uploaded" });
 
-  const fileStream = fs.createReadStream(String((file as Record<string, unknown>).filepath));
+  const fileStream = fs.createReadStream(
+    String((file as Record<string, unknown>).filepath),
+  );
   const formData = new FormData();
   formData.append("file", fileStream, file.originalFilename || "upload.csv");
 
@@ -233,10 +274,7 @@ async function handleBulkUpload(req: NextApiRequest, res: NextApiResponse) {
   res.status(response.status).json(response.data);
 }
 
-async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     if (req.method === "POST" && req.query.isBulk === "1") {
       return await handleBulkUpload(req, res);
@@ -247,16 +285,34 @@ async function handler(
     } else {
       return res.status(405).json({ message: "Method not allowed" });
     }
-    
   } catch (error: unknown) {
     console.error("API error:", error);
     // Attempt to extract status/message safely
     const { status, data } = getResponseInfo(error);
-    const message = typeof data === "object" && data !== null && "message" in (data as { message?: unknown })
-      ? (data as { message?: string }).message
-      : undefined;
-    return res.status(status || 500).json({ message: message || "Server error" });
+    const message =
+      typeof data === "object" &&
+      data !== null &&
+      "message" in (data as { message?: unknown })
+        ? (data as { message?: string }).message
+        : undefined;
+    return res
+      .status(status || 500)
+      .json({ message: message || "Server error" });
   }
 }
 
+/**
+ * Handles product listing and creation at `/api/products`.
+ *
+ * @remarks
+ * Wrapped in {@link withAdminApi}, which enforces same-origin checks and an admin session before the proxy runs.
+ * `GET` proxies `GET bff/admin/products` (forwarding `page` and `perPage`) and normalizes the varied backend shapes to
+ * `{ products, meta }`. `POST` parses the multipart form and creates the product through `POST bff/admin/products`,
+ * while a `POST` carrying `isBulk=1` streams the uploaded CSV to
+ * `POST bff/admin/products/bulk?auto_create_categories={value}`. Any other method receives `405`.
+ *
+ * @param req - The Next.js API request; `POST` bodies are multipart form data parsed with `formidable`.
+ * @param res - The Next.js API response.
+ * @returns A promise that resolves once the product list, created product, or bulk-upload result has been sent.
+ */
 export default withAdminApi(handler);

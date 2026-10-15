@@ -26,8 +26,7 @@ function isAllowedBffPath(targetPath: string): boolean {
   if (!targetPath || targetPath.includes("..")) return false;
   const normalized = targetPath.replace(/^\/+/, "").replace(/\/+$/, "");
   return ALLOWED_PREFIXES.some(
-    (prefix) =>
-      normalized === prefix || normalized.startsWith(`${prefix}/`),
+    (prefix) => normalized === prefix || normalized.startsWith(`${prefix}/`),
   );
 }
 
@@ -60,4 +59,17 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
+/**
+ * Catch-all proxy for admin BFF requests under `/api/bff/[...path]`.
+ *
+ * @remarks
+ * Wrapped in {@link withAdminApi}, which enforces same-origin checks and an admin session before the proxy runs.
+ * Only paths matching an entry in {@link ALLOWED_PREFIXES} are accepted (`403` otherwise), and any path containing
+ * `..` is rejected. Accepted requests are forwarded to the backend as `/bff/{path}` through `proxyRequest`, with the
+ * upstream headers copied back and `Set-Cookie` sanitized.
+ *
+ * @param req - The Next.js API request; `req.query.path` holds the catch-all segments appended to `/bff/`.
+ * @param res - The Next.js API response.
+ * @returns A promise that resolves once the proxied status, headers, and body have been sent.
+ */
 export default withAdminApi(handler);

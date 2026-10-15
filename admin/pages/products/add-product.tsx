@@ -13,6 +13,18 @@ import { useState } from "react";
 import type { UploadedImage } from "@/hooks/useProductForm";
 import { AIMerchantStudioModal } from "@/components/ai/AIMerchantStudioModal";
 
+/**
+ * Renders the add-product screen with its single/bulk toggle, product form, and AI Merchant Studio modal.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration. Form state comes from {@link useProductForm} and bulk CSV state from {@link useBulkUpload}.
+ *
+ * @example
+ * ```tsx
+ * // Route: /products/add-product — rendered by the Next.js Pages Router.
+ * <AddProductPage />
+ * ```
+ */
 const AddProductPage = () => {
   const [uploadMode, setUploadMode] = useState<"single" | "bulk">("single");
   const [imagePreview, setImagePreview] = useState<File | null>(null);
@@ -59,8 +71,10 @@ const AddProductPage = () => {
   }) => {
     form.setValue("name", data.name, { shouldValidate: true });
     form.setValue("description", data.description, { shouldValidate: true });
-    if (data.price) form.setValue("price", data.price, { shouldValidate: true });
-    if (data.brand) form.setValue("brand", data.brand, { shouldValidate: true });
+    if (data.price)
+      form.setValue("price", data.price, { shouldValidate: true });
+    if (data.brand)
+      form.setValue("brand", data.brand, { shouldValidate: true });
   };
 
   return (
@@ -153,7 +167,9 @@ const AddProductPage = () => {
               <ProductInformation
                 type="create"
                 handleImageUpload={handleImageUpload}
-                uploadedImages={uploadedImages as unknown as import("@ecommerce/shared/src/types/common").UploadedImage[]}
+                uploadedImages={
+                  uploadedImages as unknown as import("@ecommerce/shared/src/types/common").UploadedImage[]
+                }
                 removeImage={removeImage}
               />
 
@@ -220,6 +236,12 @@ const AddProductPage = () => {
 
 export default AddProductPage;
 
+/**
+ * Server-side admin auth gate for the add-product route.
+ *
+ * @param ctx - Next.js server-side context for the incoming request, including `req`/`res` and cookies.
+ * @returns The {@link requireAuth} result: `props` with the authenticated admin user, or a redirect to `/` / `/?error=admin_required` when the session is missing or not an admin.
+ */
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { requireAuth } = await import("@/lib/ssrAuth");
   return requireAuth(ctx);

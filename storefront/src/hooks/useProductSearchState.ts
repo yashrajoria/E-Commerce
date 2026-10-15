@@ -4,12 +4,33 @@ import type { SsrProductsResponse } from "@/lib/ssrProducts";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
+/**
+ * Default upper bound for the catalog price filter, used until product data
+ * supplies a tighter `maxPriceLimit`.
+ */
 export const DEFAULT_MAX_PRICE = 500000;
 
+/**
+ * Options accepted by {@link useProductSearchState}.
+ */
 interface UseProductSearchStateOptions {
+  /** SSR-fetched first page of the catalog, forwarded to React Query as `initialData`. */
   initialCatalog?: SsrProductsResponse | null;
 }
 
+/**
+ * Client-side state manager for the product catalog page.
+ *
+ * @remarks
+ * Owns search text, category, price range, brand/rating/availability toggles,
+ * sort order, view mode, and page state. It hydrates `search`, `sortBy`,
+ * `category`, `categoryId`, and `page` from the router query, debounces search
+ * text and the price slider by 350 ms, and feeds the combined filters into
+ * {@link useProducts} and {@link useCategories}.
+ *
+ * @param options - Optional initial catalog data passed through to {@link useProducts}; omit to run without an SSR-seeded first page.
+ * @returns The catalog state: filter values with their setters, derived values (`filteredProducts`, `availableBrands`, `maxPriceLimit`, `totalPages`, `page`, `categories`), the underlying React Query result (`data`, `isLoading`, `error`), and the helpers `clearAllFilters` and `handlePageChange`.
+ */
 export function useProductSearchState({
   initialCatalog,
 }: UseProductSearchStateOptions = {}) {
@@ -228,4 +249,3 @@ export function useProductSearchState({
     handlePageChange,
   };
 }
-

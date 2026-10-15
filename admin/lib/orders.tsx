@@ -1,7 +1,19 @@
 import { Clock, RefreshCw, Truck, CheckCircle, XCircle } from "lucide-react";
-import type { OrderStatus, Order, SortConfig, OrdersFilter } from "@/types/shared";
+import type {
+  OrderStatus,
+  Order,
+  SortConfig,
+  OrdersFilter,
+} from "@/types/shared";
 
-// Status icons mapping
+/**
+ * Mapping of every {@link OrderStatus} to the icon rendered in the orders table.
+ *
+ * @remarks
+ * Exported from a `.tsx` module because the values are JSX elements. Call sites
+ * index it with a concrete status, falling back to `"pending"` when the order
+ * has none.
+ */
 export const statusIcons = {
   pending: <Clock className="h-4 w-4 text-amber-500" />,
   processing: <RefreshCw className="h-4 w-4 text-blue-400" />,
@@ -10,7 +22,12 @@ export const statusIcons = {
   cancelled: <XCircle className="h-4 w-4 text-rose-500" />,
 };
 
-// Status badge styling
+/**
+ * Returns the Tailwind classes for an order status badge.
+ *
+ * @param status - Order status to style.
+ * @returns The badge class string for `status`, falling back to the `"pending"` styling.
+ */
 export const getStatusBadgeStyle = (status: OrderStatus) => {
   const styles = {
     pending: "bg-amber-500/10 text-amber-500 border-amber-500/20",
@@ -22,7 +39,20 @@ export const getStatusBadgeStyle = (status: OrderStatus) => {
   return styles[status] || styles.pending;
 };
 
-// Filter and sort orders
+/**
+ * Filters and sorts an order list for the orders table.
+ *
+ * @remarks
+ * Search matches order number, customer name and customer email
+ * case-insensitively; `status: "all"` bypasses the status filter. Sorting keys
+ * are `"date"`, `"total"` and `"customer"`; unknown keys leave the filtered
+ * order untouched.
+ *
+ * @param orders - Orders to filter and sort.
+ * @param filter - Search term and status filter to apply.
+ * @param sortConfig - Sort key and direction; `"desc"` reverses the comparison.
+ * @returns A new array containing the matching orders in sorted order.
+ */
 export const filterOrders = (
   orders: Order[],
   filter: OrdersFilter,
@@ -31,17 +61,12 @@ export const filterOrders = (
   const filteredOrders = orders.filter((order) => {
     const search = (filter.search ?? "").toLowerCase();
     const matchesSearch =
-      (order.order_number ?? "")
-        .toLowerCase()
-        .includes(search) ||
-      (order.customer?.name ?? "")
-        .toLowerCase()
-        .includes(search) ||
-      (order.customer?.email ?? "")
-        .toLowerCase()
-        .includes(search);
+      (order.order_number ?? "").toLowerCase().includes(search) ||
+      (order.customer?.name ?? "").toLowerCase().includes(search) ||
+      (order.customer?.email ?? "").toLowerCase().includes(search);
 
-    const matchesStatus = filter.status === "all" || (order.status ?? "") === filter.status;
+    const matchesStatus =
+      filter.status === "all" || (order.status ?? "") === filter.status;
 
     return matchesSearch && matchesStatus;
   });

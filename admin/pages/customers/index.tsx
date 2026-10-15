@@ -31,19 +31,21 @@ import type {
   CustomerSortKey,
 } from "@/types/customers";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  Download,
-  Phone,
-  ShieldCheck,
-  UserPlus,
-  Users,
-} from "lucide-react";
+import { Download, Phone, ShieldCheck, UserPlus, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
+/** Number of customer rows requested per page from the admin users API. */
 const CUSTOMERS_PER_PAGE = 10;
+/** Length of the "recent signups" window used by the KPI stats, in milliseconds. */
 const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
 
+/**
+ * Normalizes a raw admin user record into the display {@link Customer} shape used by the customers table.
+ *
+ * @param raw - Admin user record as returned by the admin users API.
+ * @returns A {@link Customer} with fallback name, coerced role, and trimmed phone.
+ */
 const toCustomer = (raw: AdminUserRecord): Customer => ({
   id: raw.id || raw.email,
   name: raw.name?.trim() || raw.email || "Unnamed account",
@@ -53,6 +55,18 @@ const toCustomer = (raw: AdminUserRecord): Customer => ({
   createdAt: raw.created_at || "",
 });
 
+/**
+ * Renders the customer directory with KPI stats, filters, the paged table, CSV export, and detail/add modals.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration. Paged customer data comes from {@link useAdminCustomers}.
+ *
+ * @example
+ * ```tsx
+ * // Route: /customers — rendered by the Next.js Pages Router.
+ * <Customers />
+ * ```
+ */
 const Customers = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [filter, setFilter] = useState<CustomerFilter>({
@@ -389,6 +403,12 @@ export default Customers;
 
 import type { GetServerSidePropsContext } from "next";
 
+/**
+ * Server-side admin auth gate for the Customers route.
+ *
+ * @param ctx - Next.js server-side context for the incoming request, including `req`/`res` and cookies.
+ * @returns The {@link requireAdmin} result: `props` with the authenticated admin user, or a redirect to `/` / `/?error=admin_required` when the session is missing or not an admin.
+ */
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { requireAdmin } = await import("@/lib/ssrAuth");
   return requireAdmin(ctx);

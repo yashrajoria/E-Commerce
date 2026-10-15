@@ -59,9 +59,20 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     return res.status(200).json({ tickets, stats });
   } catch (error) {
     console.error("Support API error:", error);
-    return res.status(500).json({ error: "Failed to fetch support tickets from database" });
+    return res
+      .status(500)
+      .json({ error: "Failed to fetch support tickets from database" });
   }
 }
 
+/**
+ * Handles `GET` requests for the admin support ticket list, returning the 100 most recent tickets with summary statistics.
+ *
+ * @remarks
+ * Wrapped with {@link withAdminApi}: requests must pass a same-origin check and carry a valid admin session.
+ *
+ * @param req - The Next.js API request; no query parameters or body are read.
+ * @param res - The Next.js API response.
+ * @returns A promise that resolves once the response has been sent.
+ */
 export default withAdminApi(handler);
-

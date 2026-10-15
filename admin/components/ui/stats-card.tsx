@@ -6,17 +6,38 @@ import { motion } from "framer-motion";
 import { LucideIcon, TrendingUp, TrendingDown } from "lucide-react";
 import { ReactNode } from "react";
 
+/** Props accepted by {@link StatsCard}. */
 interface StatsCardProps {
+  /** Metric name displayed in small caps above the value. */
   title: string;
+  /** Formatted metric value. */
   value: string | number;
+  /** Lucide icon rendered in the tinted square on the right. */
   icon: LucideIcon;
+  /** Signed percentage change shown with a trending arrow and colour. */
   trend?: { value: number; label?: string };
+  /** Optional gradient utility class; currently accepted but not applied by the card. */
   gradient?: string;
+  /** Optional glow utility class; currently accepted but not applied by the card. */
   glowClass?: string;
+  /** Secondary line shown under the value. */
   subtitle?: string;
+  /** Extra content rendered below the header row, e.g. a sparkline. */
   children?: ReactNode;
 }
 
+/**
+ * Renders a single operational KPI tile with icon, value, optional trend and subtitle.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side `framer-motion` animation, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * // Rendered from the activity-logs page header.
+ * <StatsCard title="Total Activities" value={totalCount} icon={Activity} />
+ * ```
+ */
 const StatsCard = ({
   title,
   value,
@@ -44,14 +65,22 @@ const StatsCard = ({
           {trend && (
             <div className="flex items-center gap-1.5 pt-0.5">
               {isPositive ? (
-                <TrendingUp size={13} className="text-emerald-600 dark:text-emerald-400" />
+                <TrendingUp
+                  size={13}
+                  className="text-emerald-600 dark:text-emerald-400"
+                />
               ) : (
-                <TrendingDown size={13} className="text-rose-600 dark:text-rose-400" />
+                <TrendingDown
+                  size={13}
+                  className="text-rose-600 dark:text-rose-400"
+                />
               )}
               <span
                 className={cn(
                   "text-xs font-semibold",
-                  isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400",
+                  isPositive
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-rose-600 dark:text-rose-400",
                 )}
               >
                 {isPositive ? "+" : ""}

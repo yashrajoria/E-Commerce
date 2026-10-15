@@ -15,6 +15,18 @@ import CTASection from "@/components/landing/CTASection";
 import Footer from "@/components/landing/Footer";
 import AuthModal from "@/components/landing/AuthModal";
 
+/**
+ * Renders the admin marketing landing page with its hero, feature, pricing, and CTA sections plus the login modal.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * // Route: / — rendered by the Next.js Pages Router.
+ * <LandingPage />
+ * ```
+ */
 export default function LandingPage() {
   const router = useRouter();
   const [authOpen, setAuthOpen] = useState(false);

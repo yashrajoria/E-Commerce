@@ -9,7 +9,24 @@ import {
 } from "@/components/ui/table";
 import { ImageIcon } from "lucide-react";
 import Image from "next/image";
-export default function CSVPreviewTable({ csvData }: { csvData: Record<string, unknown>[] }) {
+/** Props accepted by {@link CSVPreviewTable}. */
+interface CSVPreviewTableProps {
+  /** Rows parsed from the CSV, each keyed by its column header. */
+  csvData: Record<string, unknown>[];
+}
+
+/**
+ * Renders a static preview table of the products parsed from an uploaded CSV.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <CSVPreviewTable csvData={csvData} />
+ * ```
+ */
+export default function CSVPreviewTable({ csvData }: CSVPreviewTableProps) {
   return (
     <div className="rounded-lg border overflow-hidden">
       <div className="bg-gray-50 dark:bg-gray-800/50 p-4 border-b">
@@ -34,13 +51,27 @@ export default function CSVPreviewTable({ csvData }: { csvData: Record<string, u
             {csvData.map((product, index) => (
               <TableRow key={index}>
                 <TableCell className="font-medium">{index + 1}</TableCell>
-                <TableCell>{String((product as Record<string, unknown>).Name ?? (product as Record<string, unknown>).name ?? "")}</TableCell>
+                <TableCell>
+                  {String(
+                    (product as Record<string, unknown>).Name ??
+                      (product as Record<string, unknown>).name ??
+                      "",
+                  )}
+                </TableCell>
                 <TableCell>
                   {(product as Record<string, unknown>).ImageURL ? (
                     <div className="h-12 w-12 rounded-md overflow-hidden border border-gray-200 dark:border-gray-800">
                       <Image
-                        src={String((product as Record<string, unknown>).ImageURL) || "/placeholder.svg"}
-                        alt={String((product as Record<string, unknown>).Name ?? (product as Record<string, unknown>).name ?? "")}
+                        src={
+                          String(
+                            (product as Record<string, unknown>).ImageURL,
+                          ) || "/placeholder.svg"
+                        }
+                        alt={String(
+                          (product as Record<string, unknown>).Name ??
+                            (product as Record<string, unknown>).name ??
+                            "",
+                        )}
                         width={100}
                         height={100}
                         className="h-full w-full object-cover"
@@ -52,10 +83,27 @@ export default function CSVPreviewTable({ csvData }: { csvData: Record<string, u
                     </div>
                   )}
                 </TableCell>
-                <TableCell>${String((product as Record<string, unknown>).price ?? (product as Record<string, unknown>).Price ?? "0.00")}</TableCell>
-                <TableCell>{String((product as Record<string, unknown>).Quantity ?? (product as Record<string, unknown>).quantity ?? "0")}</TableCell>
+                <TableCell>
+                  $
+                  {String(
+                    (product as Record<string, unknown>).price ??
+                      (product as Record<string, unknown>).Price ??
+                      "0.00",
+                  )}
+                </TableCell>
+                <TableCell>
+                  {String(
+                    (product as Record<string, unknown>).Quantity ??
+                      (product as Record<string, unknown>).quantity ??
+                      "0",
+                  )}
+                </TableCell>
                 <TableCell className="max-w-[200px] truncate">
-                  {String((product as Record<string, unknown>).Description ?? (product as Record<string, unknown>).description ?? "")}
+                  {String(
+                    (product as Record<string, unknown>).Description ??
+                      (product as Record<string, unknown>).description ??
+                      "",
+                  )}
                 </TableCell>
               </TableRow>
             ))}

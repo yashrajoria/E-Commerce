@@ -14,18 +14,33 @@ interface ProductsResponse {
   products: Product[];
 }
 
+/**
+ * Filter parameters forwarded to the catalog API by {@link useProducts}.
+ */
 export interface ProductFilters {
+  /** Free-text search term. */
   search?: string;
+  /** Category name filter. */
   category?: string;
+  /** Category identifier filter (takes precedence over `category` on the API). */
   categoryId?: string;
+  /** Minimum price in major currency units. */
   minPrice?: number;
+  /** Maximum price in major currency units. */
   maxPrice?: number;
+  /** Storefront sort key (`price-low`, `price-high`, `newest`, `rating`), mapped to an API sort value. */
   sortBy?: string;
+  /** Restrict results to featured products; omitted entirely when `undefined`. */
   isFeatured?: boolean;
+  /** Brand names to include (sent as repeated `brand` params). */
   brands?: string[];
+  /** Minimum average rating. */
   minRating?: number;
+  /** Restrict to in-stock products. */
   inStock?: boolean;
+  /** Restrict to discounted products. */
   onSale?: boolean;
+  /** Restrict to products with free shipping. */
   freeShipping?: boolean;
 }
 
@@ -144,6 +159,13 @@ const fetchProductById = async (
   };
 };
 
+/**
+ * React Query hook that loads a single product by id, disabled until an id is available.
+ *
+ * @param id - Product identifier (string or number); the query stays disabled for `undefined`, `null`, or empty values.
+ * @param options - Optional configuration; `initialData` seeds the cache with an SSR-fetched product.
+ * @returns The React Query result — `data` is the normalized {@link Product} once loaded, with `isLoading`/`error` surfacing request state.
+ */
 export function useProductById(
   id?: string | number,
   options?: { initialData?: Product },
@@ -163,6 +185,20 @@ export function useProductById(
   });
 }
 
+/**
+ * React Query hook that loads a page of products with optional filters.
+ *
+ * @remarks
+ * The legacy boolean `isFeaturedOrFilters` argument is still accepted and is
+ * normalized to `{ isFeatured }`. Previous page data is kept while a new page
+ * loads ({@link keepPreviousData}), and 429 responses are not retried.
+ *
+ * @param productCount - Page size; defaults to 12 when omitted.
+ * @param page - 1-based page number; defaults to 1 when omitted.
+ * @param isFeaturedOrFilters - Either a boolean featured flag (legacy) or a {@link ProductFilters} object.
+ * @param options - Optional configuration; `initialData` seeds the cache with an SSR-fetched page.
+ * @returns The React Query result whose `data` holds `{ meta, products }` for the requested page.
+ */
 export function useProducts(
   productCount?: number,
   page?: number,

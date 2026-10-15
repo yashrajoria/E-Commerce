@@ -1,3 +1,7 @@
+/**
+ * Re-exports shared formatting/utility helpers (`cn`, `formatGBP`, `trapFocus`)
+ * from `@ecommerce/shared` and adds the storefront Lucide icon resolver.
+ */
 export { cn, formatGBP, trapFocus } from "@ecommerce/shared";
 
 import {
@@ -39,6 +43,13 @@ const ICON_MAP: Record<string, ComponentType<LucideProps>> = {
   Gift,
 };
 
+/**
+ * Resolves a Lucide icon name to its component, falling back to the package
+ * icon for unknown or missing names.
+ *
+ * @param name - Lucide icon name stored on a category (for example `"Shirt"`); may be nullish.
+ * @returns The matching Lucide icon component, or `Package` when `name` is empty or unrecognized.
+ */
 export function getLucideIcon(name?: string | null) {
   if (!name) return Package;
   return ICON_MAP[name] || Package;

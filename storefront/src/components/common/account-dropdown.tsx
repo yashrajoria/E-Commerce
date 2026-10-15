@@ -21,6 +21,12 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/router";
 
+/**
+ * Minimal view of the authenticated user consumed by {@link AccountDropdown}.
+ *
+ * @remarks
+ * Every field is optional because the payload may arrive either flat or nested under `profile`.
+ */
 type AccountUser = {
   name?: string;
   email?: string;
@@ -37,11 +43,28 @@ type AccountUser = {
   };
 };
 
+/** Props accepted by {@link AccountDropdown}. */
 interface AccountDropdownProps {
+  /** Whether the dropdown panel is rendered. */
   isOpen: boolean;
+  /** Called when the user dismisses the panel via backdrop click, Escape, or a menu action. */
   onClose: () => void;
 }
 
+/**
+ * Renders the signed-in account menu with profile shortcuts, order/wishlist counts, and sign-out.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <AccountDropdown
+ *   isOpen={isAccountOpen}
+ *   onClose={() => setIsAccountOpen(false)}
+ * />
+ * ```
+ */
 export function AccountDropdown({ isOpen, onClose }: AccountDropdownProps) {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const prevFocused = useRef<HTMLElement | null>(null);
@@ -51,7 +74,7 @@ export function AccountDropdown({ isOpen, onClose }: AccountDropdownProps) {
     prevFocused.current = document.activeElement as HTMLElement;
     setTimeout(() => {
       const first = panelRef.current?.querySelector<HTMLElement>(
-        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
       );
       first?.focus();
     }, 0);
@@ -94,10 +117,23 @@ export function AccountDropdown({ isOpen, onClose }: AccountDropdownProps) {
     return cur as T | undefined;
   };
 
-  const displayName = getProp<string>(safeUser, "name") || getProp<string>(safeUser, "profile", "name") || "";
-  const avatarUrl = getProp<string>(safeUser, "avatar") || getProp<string>(safeUser, "profile", "avatar") || "";
-  const userOrdersCount = Number(getProp<number>(safeUser, "orders", "meta", "total_orders") ?? 0);
-  const userWishlistCount = Number(getProp<number[]>(safeUser, "wishlist")?.length ?? getProp<number[]>(safeUser, "wishlists")?.length ?? localWishlist?.length ?? 0);
+  const displayName =
+    getProp<string>(safeUser, "name") ||
+    getProp<string>(safeUser, "profile", "name") ||
+    "";
+  const avatarUrl =
+    getProp<string>(safeUser, "avatar") ||
+    getProp<string>(safeUser, "profile", "avatar") ||
+    "";
+  const userOrdersCount = Number(
+    getProp<number>(safeUser, "orders", "meta", "total_orders") ?? 0,
+  );
+  const userWishlistCount = Number(
+    getProp<number[]>(safeUser, "wishlist")?.length ??
+      getProp<number[]>(safeUser, "wishlists")?.length ??
+      localWishlist?.length ??
+      0,
+  );
 
   const menuItems = [
     {
@@ -181,18 +217,21 @@ export function AccountDropdown({ isOpen, onClose }: AccountDropdownProps) {
       {isOpen && (
         <>
           {/* Backdrop */}
-          <div
-            className="fixed inset-0 z-40"
-            onClick={onClose}
-          />
+          <div className="fixed inset-0 z-40" onClick={onClose} />
 
           {/* Dropdown Container */}
           <motion.div
             ref={panelRef}
             className="absolute top-full right-0 mt-2 w-80 z-50 origin-top-right"
-            initial={reduceMotion ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.96, y: -4 }}
+            initial={
+              reduceMotion
+                ? { opacity: 1, scale: 1 }
+                : { opacity: 0, scale: 0.96, y: -4 }
+            }
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: -4 }}
+            exit={
+              reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: -4 }
+            }
             transition={{ duration: 0.15, ease: "easeOut" }}
           >
             <div className="bg-card text-card-foreground rounded-xl border border-border shadow-lg overflow-hidden">
@@ -221,12 +260,20 @@ export function AccountDropdown({ isOpen, onClose }: AccountDropdownProps) {
                 {/* Quick stats */}
                 <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-border/40">
                   <div className="p-2 rounded-lg bg-muted/40 border border-border/40 text-center">
-                    <div className="text-sm font-bold text-foreground">{userOrdersCount}</div>
-                    <div className="text-[11px] text-muted-foreground">Orders</div>
+                    <div className="text-sm font-bold text-foreground">
+                      {userOrdersCount}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground">
+                      Orders
+                    </div>
                   </div>
                   <div className="p-2 rounded-lg bg-muted/40 border border-border/40 text-center">
-                    <div className="text-sm font-bold text-foreground">{userWishlistCount}</div>
-                    <div className="text-[11px] text-muted-foreground">Wishlist</div>
+                    <div className="text-sm font-bold text-foreground">
+                      {userWishlistCount}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground">
+                      Wishlist
+                    </div>
                   </div>
                 </div>
               </div>
@@ -246,7 +293,10 @@ export function AccountDropdown({ isOpen, onClose }: AccountDropdownProps) {
                     </div>
                     <div className="flex items-center gap-1.5">
                       {item.badge && (
-                        <Badge variant="secondary" className="text-[10px] h-4.5 px-1.5">
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] h-4.5 px-1.5"
+                        >
                           {item.badge}
                         </Badge>
                       )}

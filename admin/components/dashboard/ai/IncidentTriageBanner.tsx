@@ -17,6 +17,18 @@ import {
   PendingMutation,
 } from "@/lib/ai-insights-api";
 
+/**
+ * Renders the autonomous ops sentry banner that lists pending tool mutations
+ * awaiting approval and lets the operator approve, dismiss or rescan.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <IncidentTriageBanner />
+ * ```
+ */
 export const IncidentTriageBanner: React.FC = () => {
   const [incidents, setIncidents] = useState<PendingMutation[]>([]);
   const [loading, setLoading] = useState(false);
@@ -65,7 +77,8 @@ export const IncidentTriageBanner: React.FC = () => {
         <div className="flex items-center gap-2.5 text-emerald-400">
           <CheckCircle2 className="size-4 shrink-0" />
           <span>
-            <strong className="font-semibold">Autonomous Ops Sentry:</strong> All systems operating normally. Zero pending incidents.
+            <strong className="font-semibold">Autonomous Ops Sentry:</strong>{" "}
+            All systems operating normally. Zero pending incidents.
           </span>
         </div>
         <Button
@@ -123,7 +136,10 @@ export const IncidentTriageBanner: React.FC = () => {
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="border-amber-400 text-amber-300">
+                    <Badge
+                      variant="outline"
+                      className="border-amber-400 text-amber-300"
+                    >
                       <AlertTriangle className="mr-1 size-3" />
                       Pending Approval
                     </Badge>
@@ -161,7 +177,9 @@ export const IncidentTriageBanner: React.FC = () => {
                     className="h-8 gap-1.5 bg-amber-500 text-xs font-semibold text-black hover:bg-amber-400"
                   >
                     <Zap className="size-3.5" />
-                    {actionInProgress === incident.request_id ? "Executing..." : "Approve & Execute"}
+                    {actionInProgress === incident.request_id
+                      ? "Executing..."
+                      : "Approve & Execute"}
                   </Button>
                 </div>
               </div>

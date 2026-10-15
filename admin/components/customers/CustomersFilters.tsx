@@ -10,11 +10,25 @@ import {
 import type { CustomerFilter } from "@/types/customers";
 import { RotateCcw, Search } from "lucide-react";
 
+/** Props accepted by {@link CustomersFilters}. */
 interface CustomersFiltersProps {
+  /** Current search and role filter values. */
   filter: CustomerFilter;
+  /** Called with the changed filter fields, merged into the current filter. */
   onFilterChange: (filter: Partial<CustomerFilter>) => void;
 }
 
+/**
+ * Renders the customer search box, role select and reset button.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <CustomersFilters filter={filter} onFilterChange={updateFilter} />
+ * ```
+ */
 export const CustomersFilters = ({
   filter,
   onFilterChange,

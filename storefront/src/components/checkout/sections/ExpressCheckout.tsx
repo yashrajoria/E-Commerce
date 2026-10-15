@@ -1,5 +1,16 @@
 import { motion } from "framer-motion";
 
+/**
+ * Renders the Express Checkout panel with Apple Pay and Google Pay shortcuts.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * {currentStep === 1 && <ExpressCheckout />}
+ * ```
+ */
 export function ExpressCheckout() {
   return (
     <motion.section

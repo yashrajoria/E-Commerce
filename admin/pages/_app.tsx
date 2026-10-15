@@ -18,14 +18,28 @@ import { ThemeProvider } from "next-themes";
 // Admin JWT refresh must not hit storefront `/api/user/auth/refresh`.
 setAuthRefreshUrl("/api/admin/auth/refresh");
 
-/** Premium error fallback with glassmorphism styling */
-function ErrorFallback({
-  error,
-  resetErrorBoundary,
-}: {
+/** Props accepted by {@link ErrorFallback}. */
+interface ErrorFallbackProps {
+  /** The error thrown by the failed subtree, rendered as its message. */
   error: unknown; // Change the type to match FallbackProps
+  /** Resets the boundary's error state so the subtree can render again. */
   resetErrorBoundary: () => void;
-}) {
+}
+
+/**
+ * Renders the glassmorphism error card used as the {@link ErrorBoundary} fallback when a page throws.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <ErrorBoundary FallbackComponent={ErrorFallback}>
+ *   <Component {...pageProps} />
+ * </ErrorBoundary>
+ * ```
+ */
+function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps) {
   const errorMessage = (error as Error).message; // Explicitly cast error to Error
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-6">
@@ -62,7 +76,17 @@ function ErrorFallback({
   );
 }
 
-/** Top loading bar for route transitions */
+/**
+ * Renders a gradient progress bar pinned to the top of the viewport while a Pages Router route transition is in flight.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <RouteProgressBar />
+ * ```
+ */
 function RouteProgressBar() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -107,6 +131,17 @@ function RouteProgressBar() {
   );
 }
 
+/**
+ * Applies the admin auth gate and shell (theme, toaster, progress, AI assistant) around the active page.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration. Redirects unauthenticated visitors of `/products`, `/orders`, `/dashboard`, and the other protected prefixes to `/?error=admin_required` once {@link useAdminSession} finishes loading.
+ *
+ * @param Component - The active Pages Router page component for the current route.
+ * @param pageProps - Props returned by the page's data-fetching function (for example `getServerSideProps`).
+ * @param router - The Next.js router instance for the current route.
+ * @returns The themed admin shell with the rendered page, or a full-screen {@link LoadingSpinner} while the session check is pending or rejected.
+ */
 function AppContent({ Component, pageProps, router }: AppProps) {
   const { loading, authenticated, isAdmin } = useAdminSession();
 
@@ -168,13 +203,19 @@ function AppContent({ Component, pageProps, router }: AppProps) {
   }, []);
 
   useEffect(() => {
-    document.documentElement.classList.remove("theme-admin", "theme-storefront");
+    document.documentElement.classList.remove(
+      "theme-admin",
+      "theme-storefront",
+    );
     document.body.classList.remove("theme-admin", "theme-storefront");
     document.documentElement.classList.add(surfaceTheme);
     document.body.classList.add(surfaceTheme);
 
     return () => {
-      document.documentElement.classList.remove("theme-admin", "theme-storefront");
+      document.documentElement.classList.remove(
+        "theme-admin",
+        "theme-storefront",
+      );
       document.body.classList.remove("theme-admin", "theme-storefront");
     };
   }, [surfaceTheme]);
@@ -187,7 +228,9 @@ function AppContent({ Component, pageProps, router }: AppProps) {
 
   if (needsAuth && loading) {
     return (
-      <div className={`${surfaceTheme} min-h-screen flex items-center justify-center`}>
+      <div
+        className={`${surfaceTheme} min-h-screen flex items-center justify-center`}
+      >
         <LoadingSpinner />
       </div>
     );
@@ -195,7 +238,9 @@ function AppContent({ Component, pageProps, router }: AppProps) {
 
   if (needsAuth && (!authenticated || !isAdmin)) {
     return (
-      <div className={`${surfaceTheme} min-h-screen flex items-center justify-center`}>
+      <div
+        className={`${surfaceTheme} min-h-screen flex items-center justify-center`}
+      >
         <LoadingSpinner />
       </div>
     );
@@ -236,6 +281,21 @@ function AppContent({ Component, pageProps, router }: AppProps) {
   );
 }
 
+/**
+ * Root admin `_app` component that wraps every route with the theme, admin session, and store providers.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @param props - The standard Pages Router app props (`Component`, `pageProps`, `router`) forwarded to {@link AppContent}.
+ * @returns The provider stack rendering the active page.
+ *
+ * @example
+ * ```tsx
+ * // Next.js mounts <App /> around every admin route:
+ * // <App Component={DashboardPage} pageProps={{ … }} router={router} />
+ * ```
+ */
 export default function App(props: AppProps) {
   return (
     <ThemeProvider

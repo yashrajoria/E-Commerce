@@ -1,2 +1,2 @@
-// Transitional alias to the existing admin dashboard handler.
+/** Transitional route alias re-exporting the admin dashboard handler from `pages/api/dashboard/index`. */
 export { default } from "../../dashboard/index";

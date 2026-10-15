@@ -10,6 +10,32 @@ import {
 import { cn } from "../../utils";
 import { Button, buttonVariants } from "./button";
 
+/**
+ * Renders the pagination landmark that wraps the page controls.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. Compose it with
+ * {@link PaginationContent}, {@link PaginationItem} and the link components.
+ *
+ * @example
+ * ```tsx
+ * <Pagination>
+ *   <PaginationContent>
+ *     <PaginationItem>
+ *       <PaginationPrevious href="/products?page=1" />
+ *     </PaginationItem>
+ *     <PaginationItem>
+ *       <PaginationLink href="/products?page=2" isActive>
+ *         2
+ *       </PaginationLink>
+ *     </PaginationItem>
+ *     <PaginationItem>
+ *       <PaginationNext href="/products?page=3" />
+ *     </PaginationItem>
+ *   </PaginationContent>
+ * </Pagination>
+ * ```
+ */
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (
     <nav
@@ -22,6 +48,21 @@ function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   );
 }
 
+/**
+ * Renders the horizontal list holding {@link PaginationItem} entries.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <PaginationContent>
+ *   <PaginationItem>
+ *     <PaginationLink href="/products?page=1">1</PaginationLink>
+ *   </PaginationItem>
+ * </PaginationContent>
+ * ```
+ */
 function PaginationContent({
   className,
   ...props
@@ -35,15 +76,49 @@ function PaginationContent({
   );
 }
 
+/**
+ * Renders a list item wrapper for a single pagination control.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <PaginationItem>
+ *   <PaginationLink href="/products?page=2">2</PaginationLink>
+ * </PaginationItem>
+ * ```
+ */
 function PaginationItem({ ...props }: React.ComponentProps<"li">) {
   return <li data-slot="pagination-item" {...props} />;
 }
 
+/**
+ * Props accepted by {@link PaginationLink}.
+ *
+ * @remarks
+ * The `size` prop reuses the button sizes from {@link Button} and defaults to
+ * `"icon"` when unset.
+ */
 type PaginationLinkProps = {
+  /** Marks this link as the current page — sets `aria-current="page"` and the active button style. */
   isActive?: boolean;
 } & Pick<React.ComponentProps<typeof Button>, "size"> &
   React.ComponentProps<"a">;
 
+/**
+ * Renders a styled anchor for a page number.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <PaginationLink href="/products?page=2" isActive>
+ *   2
+ * </PaginationLink>
+ * ```
+ */
 function PaginationLink({
   className,
   isActive,
@@ -67,6 +142,17 @@ function PaginationLink({
   );
 }
 
+/**
+ * Renders the previous-page link with a chevron and label.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <PaginationPrevious href="/products?page=1" />
+ * ```
+ */
 function PaginationPrevious({
   className,
   ...props
@@ -84,6 +170,17 @@ function PaginationPrevious({
   );
 }
 
+/**
+ * Renders the next-page link with a chevron and label.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <PaginationNext href="/products?page=3" />
+ * ```
+ */
 function PaginationNext({
   className,
   ...props
@@ -101,6 +198,17 @@ function PaginationNext({
   );
 }
 
+/**
+ * Renders a non-interactive ellipsis standing in for skipped page ranges.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <PaginationEllipsis />
+ * ```
+ */
 function PaginationEllipsis({
   className,
   ...props

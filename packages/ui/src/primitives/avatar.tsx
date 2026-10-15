@@ -4,6 +4,20 @@ import * as React from "react";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
 import { cn } from "../lib/utils";
 
+/**
+ * Renders a circular, clipped container for {@link AvatarImage} and {@link AvatarFallback}.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <Avatar>
+ *   <AvatarImage src={user.avatarUrl} alt={user.name} />
+ *   <AvatarFallback>YR</AvatarFallback>
+ * </Avatar>
+ * ```
+ */
 export const Avatar = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
@@ -12,13 +26,24 @@ export const Avatar = React.forwardRef<
     ref={ref}
     className={cn(
       "relative flex h-9 w-9 shrink-0 overflow-hidden rounded-full border border-border",
-      className
+      className,
     )}
     {...props}
   />
 ));
 Avatar.displayName = AvatarPrimitive.Root.displayName;
 
+/**
+ * Renders the avatar photo inside an {@link Avatar}.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <AvatarImage src="/avatars/yash.png" alt="Yash Rajoria" />
+ * ```
+ */
 export const AvatarImage = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Image>,
   React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
@@ -31,6 +56,17 @@ export const AvatarImage = React.forwardRef<
 ));
 AvatarImage.displayName = AvatarPrimitive.Image.displayName;
 
+/**
+ * Renders fallback content inside an {@link Avatar} when the image is missing or still loading.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <AvatarFallback>YR</AvatarFallback>
+ * ```
+ */
 export const AvatarFallback = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Fallback>,
   React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>
@@ -39,7 +75,7 @@ export const AvatarFallback = React.forwardRef<
     ref={ref}
     className={cn(
       "flex h-full w-full items-center justify-center rounded-full bg-muted font-medium text-xs text-muted-foreground",
-      className
+      className,
     )}
     {...props}
   />

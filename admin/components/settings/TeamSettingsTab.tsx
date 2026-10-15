@@ -12,18 +12,49 @@ import { Badge } from "@/components/ui/badge";
 import { Users, UserPlus, Trash2 } from "lucide-react";
 import type { StoreMembership } from "@ecommerce/shared";
 
+/** Props accepted by {@link TeamSettingsTab}. */
 export interface TeamSettingsTabProps {
+  /** Name of the active store, shown in the invite card description. */
   activeStoreName?: string;
+  /** Current team memberships for the store. */
   members: StoreMembership[];
+  /** Controlled invite email address. */
   inviteEmail: string;
+  /** Called with the next invite email as the user types. */
   setInviteEmail: (v: string) => void;
+  /** Controlled role key for the pending invite. */
   inviteRole: string;
+  /** Called with the next role key when the role select changes. */
   setInviteRole: (v: string) => void;
+  /** Whether an invite request is in flight. */
   inviting: boolean;
+  /** Called with the invite form's submit event to send the invitation. */
   onInviteMember: (e: React.FormEvent) => Promise<void>;
+  /** Called with the member's user id to revoke their access. */
   onRemoveMember: (userId: string) => Promise<void>;
 }
 
+/**
+ * Renders the team settings: an invite form and the list of current store members with role badges.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <TeamSettingsTab
+ *   activeStoreName={activeStore?.name}
+ *   members={members}
+ *   inviteEmail={inviteEmail}
+ *   setInviteEmail={setInviteEmail}
+ *   inviteRole={inviteRole}
+ *   setInviteRole={setInviteRole}
+ *   inviting={inviting}
+ *   onInviteMember={handleInviteMember}
+ *   onRemoveMember={handleRemoveMember}
+ * />
+ * ```
+ */
 export const TeamSettingsTab: React.FC<TeamSettingsTabProps> = ({
   activeStoreName,
   members,
@@ -43,11 +74,15 @@ export const TeamSettingsTab: React.FC<TeamSettingsTabProps> = ({
             <UserPlus className="h-5 w-5 text-purple-400" /> Invite Staff Member
           </CardTitle>
           <CardDescription>
-            Grant team members access to manage catalog, orders, and promotions for {activeStoreName}
+            Grant team members access to manage catalog, orders, and promotions
+            for {activeStoreName}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={onInviteMember} className="flex flex-col sm:flex-row gap-3">
+          <form
+            onSubmit={onInviteMember}
+            className="flex flex-col sm:flex-row gap-3"
+          >
             <Input
               placeholder="teammate@company.com"
               type="email"
@@ -80,13 +115,18 @@ export const TeamSettingsTab: React.FC<TeamSettingsTabProps> = ({
       <Card className="glass-effect border-white/[0.06]">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <Users className="h-5 w-5 text-purple-400" /> Active Members ({members.length})
+            <Users className="h-5 w-5 text-purple-400" /> Active Members (
+            {members.length})
           </CardTitle>
-          <CardDescription>Team members with authorized roles in this store</CardDescription>
+          <CardDescription>
+            Team members with authorized roles in this store
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {members.length === 0 ? (
-            <p className="text-xs text-muted-foreground py-4 text-center">No additional staff members yet.</p>
+            <p className="text-xs text-muted-foreground py-4 text-center">
+              No additional staff members yet.
+            </p>
           ) : (
             members.map((m) => (
               <div
@@ -132,4 +172,3 @@ export const TeamSettingsTab: React.FC<TeamSettingsTabProps> = ({
     </>
   );
 };
-

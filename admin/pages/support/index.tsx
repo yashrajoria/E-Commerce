@@ -4,16 +4,15 @@
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
 import StatsCard from "@/components/ui/stats-card";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TableSkeleton, EmptyState, ErrorState } from "@/components/admin/shared/DataStates";
+import {
+  TableSkeleton,
+  EmptyState,
+  ErrorState,
+} from "@/components/admin/shared/DataStates";
 import { motion } from "framer-motion";
 import {
   Headphones,
@@ -30,22 +29,32 @@ import {
 import { useState } from "react";
 import { useAdminSupport } from "@/lib/hooks/useAdminData";
 
+/** A support ticket as returned by the admin support hook. */
 interface Ticket {
+  /** Unique ticket identifier. */
   id: string;
+  /** Ticket subject line. */
   subject: string;
+  /** Name of the customer who opened the ticket. */
   customer: string;
+  /** Support priority used for badge coloring. */
   priority: "low" | "medium" | "high" | "urgent";
+  /** Current ticket status used for badge coloring. */
   status: "open" | "in-progress" | "resolved" | "closed";
+  /** Pre-formatted creation date. */
   createdAt: string;
+  /** Pre-formatted label for the last reply. */
   lastReply: string;
 }
 
+/** Tailwind badge classes for each {@link Ticket.priority}. */
 const priorityColors: Record<string, string> = {
   low: "bg-blue-400/10 text-blue-400 border-blue-400/20",
   medium: "bg-amber-400/10 text-amber-400 border-amber-400/20",
   high: "bg-orange-400/10 text-orange-400 border-orange-400/20",
   urgent: "bg-red-400/10 text-red-400 border-red-400/20",
 };
+/** Tailwind badge classes for each {@link Ticket.status}. */
 const statusColors: Record<string, string> = {
   open: "bg-blue-400/10 text-blue-400 border-blue-400/20",
   "in-progress": "bg-amber-400/10 text-amber-400 border-amber-400/20",
@@ -53,6 +62,7 @@ const statusColors: Record<string, string> = {
   closed: "bg-zinc-400/10 text-zinc-400 border-zinc-400/20",
 };
 
+/** Static FAQ entries rendered by the Support page's FAQ tab. */
 const faqItems = [
   {
     q: "How do I process a refund?",
@@ -72,14 +82,31 @@ const faqItems = [
   },
 ];
 
+/**
+ * Renders the support workspace with ticket KPI stats plus Tickets and FAQ tabs, including ticket search.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration. Ticket rows come from {@link useAdminSupport}.
+ *
+ * @example
+ * ```tsx
+ * // Route: /support — rendered by the Next.js Pages Router.
+ * <Support />
+ * ```
+ */
 const Support = () => {
   const [activeTab, setActiveTab] = useState("tickets");
   const [searchQuery, setSearchQuery] = useState("");
   const { tickets, stats, isLoading, error, mutate } = useAdminSupport();
 
-  const openCount = stats?.open ?? tickets.filter((t: Ticket) => t.status === "open").length;
-  const inProgressCount = stats?.inProgress ?? tickets.filter((t: Ticket) => t.status === "in-progress").length;
-  const resolvedCount = stats?.resolved ?? tickets.filter((t: Ticket) => t.status === "resolved").length;
+  const openCount =
+    stats?.open ?? tickets.filter((t: Ticket) => t.status === "open").length;
+  const inProgressCount =
+    stats?.inProgress ??
+    tickets.filter((t: Ticket) => t.status === "in-progress").length;
+  const resolvedCount =
+    stats?.resolved ??
+    tickets.filter((t: Ticket) => t.status === "resolved").length;
 
   const filteredTickets = (tickets as Ticket[]).filter(
     (t) =>
@@ -179,11 +206,18 @@ const Support = () => {
               {isLoading ? (
                 <TableSkeleton rows={5} />
               ) : error ? (
-                <ErrorState message="Failed to load support tickets from database." onRetry={() => mutate()} />
+                <ErrorState
+                  message="Failed to load support tickets from database."
+                  onRetry={() => mutate()}
+                />
               ) : filteredTickets.length === 0 ? (
                 <EmptyState
                   title="No support tickets found"
-                  description={searchQuery ? "Try refining your search terms." : "No support tickets found in database."}
+                  description={
+                    searchQuery
+                      ? "Try refining your search terms."
+                      : "No support tickets found in database."
+                  }
                 />
               ) : (
                 filteredTickets.map((ticket, i) => (
@@ -282,6 +316,12 @@ const Support = () => {
 export default Support;
 
 import type { GetServerSidePropsContext } from "next";
+/**
+ * Server-side admin auth gate for the Support route.
+ *
+ * @param ctx - Next.js server-side context for the incoming request, including `req`/`res` and cookies.
+ * @returns The {@link requireAdmin} result: `props` with the authenticated admin user, or a redirect to `/` / `/?error=admin_required` when the session is missing or not an admin.
+ */
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { requireAdmin } = await import("@/lib/ssrAuth");
   return requireAdmin(ctx);

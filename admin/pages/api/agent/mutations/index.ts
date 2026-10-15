@@ -5,7 +5,9 @@ import { withAdminApi } from "@/lib/requireAdminApi";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {
-    return res.status(405).json({ success: false, message: "Method not allowed" });
+    return res
+      .status(405)
+      .json({ success: false, message: "Method not allowed" });
   }
 
   const API_URL = getAdminApiBaseUrl();
@@ -36,4 +38,15 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
+/**
+ * Proxies `GET /api/agent/mutations` to the backend `GET agent/mutations/pending` endpoint.
+ *
+ * @remarks
+ * Wrapped in {@link withAdminApi}, which enforces same-origin checks and an admin session before the proxy runs.
+ * Returns the list of pending agent mutations using the incoming cookies, with a 10 second upstream timeout.
+ *
+ * @param req - The Next.js API request. Must be a `GET`; no query parameters or body are read.
+ * @param res - The Next.js API response.
+ * @returns A promise that resolves once the pending mutations payload has been sent.
+ */
 export default withAdminApi(handler);

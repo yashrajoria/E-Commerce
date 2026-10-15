@@ -24,19 +24,53 @@ interface Activity {
   variant: "success" | "warning" | "error" | "info" | "neutral";
 }
 
-export default function RecentActivity({ activities }: { activities: Array<{ id: string; type: string; description: string; time: string; variant: string }> }) {
+/** Props accepted by {@link RecentActivity}. */
+interface RecentActivityProps {
+  /** Recent audit-trail entries supplied by the dashboard data endpoint. */
+  activities: Array<{
+    /** Unique event identifier. */
+    id: string;
+    /** Backend event type, used for the status badge label. */
+    type: string;
+    /** Human-readable event description. */
+    description: string;
+    /** Display timestamp for the event. */
+    time: string;
+    /** Badge colour variant; unknown values fall back to neutral rendering. */
+    variant: string;
+  }>;
+}
+
+/**
+ * Renders the operational audit-trail list with icon-mapped events and status badges.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <RecentActivity activities={dashboardData.recentActivity} />
+ * ```
+ */
+export default function RecentActivity({ activities }: RecentActivityProps) {
   if (!activities || activities.length === 0) return null;
 
   const mappedActivities: Activity[] = activities.map((act) => {
     let icon = Clock;
-    
+
     // Naively map backend types to icons
     const typeStr = act.type?.toLowerCase() || "";
     if (typeStr.includes("order")) icon = ShoppingCart;
     if (typeStr.includes("payment")) icon = Wallet;
-    if (typeStr.includes("stock") || typeStr.includes("inventory") || typeStr.includes("product")) icon = Package;
+    if (
+      typeStr.includes("stock") ||
+      typeStr.includes("inventory") ||
+      typeStr.includes("product")
+    )
+      icon = Package;
     if (typeStr.includes("customer") || typeStr.includes("user")) icon = Users;
-    if (act.variant === "warning" || act.variant === "error") icon = AlertTriangle;
+    if (act.variant === "warning" || act.variant === "error")
+      icon = AlertTriangle;
     if (act.variant === "success") icon = CheckCircle2;
 
     return {
@@ -45,7 +79,12 @@ export default function RecentActivity({ activities }: { activities: Array<{ id:
       description: act.description,
       time: act.time,
       icon,
-      variant: act.variant as "success" | "warning" | "error" | "info" | "neutral",
+      variant: act.variant as
+        | "success"
+        | "warning"
+        | "error"
+        | "info"
+        | "neutral",
     };
   });
 

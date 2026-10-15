@@ -3,10 +3,23 @@ import { Plus, Download, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
+/** Props accepted by {@link ProductsHeader}. */
 interface ProductsHeaderProps {
+  /** Total number of products, shown in the header summary. */
   productsCount: number;
 }
 
+/**
+ * Renders the sticky products page header with the product count and import, export and create-product actions.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <ProductsHeader productsCount={productsCount} />
+ * ```
+ */
 const ProductsHeader = ({ productsCount }: ProductsHeaderProps) => {
   return (
     <motion.header

@@ -57,10 +57,11 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     `);
 
     const colors = ["#8b5cf6", "#10b981", "#f59e0b", "#3b82f6", "#ec4899"];
-    const totalProducts = categoryRows.reduce(
-      (sum, c) => sum + (Number(c.product_count) || 0),
-      0
-    ) || 1;
+    const totalProducts =
+      categoryRows.reduce(
+        (sum, c) => sum + (Number(c.product_count) || 0),
+        0,
+      ) || 1;
 
     const categoryData = categoryRows.map((c, idx) => ({
       name: c.category_name,
@@ -108,7 +109,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const totOrd = Number(totals[0]?.total_orders) || 0;
     const totCust = Number(totals[0]?.total_customers) || 0;
     const visitors = totOrd * 24 + 1200;
-    const convRate = totOrd > 0 ? Number(((totOrd / visitors) * 100).toFixed(2)) : 3.8;
+    const convRate =
+      totOrd > 0 ? Number(((totOrd / visitors) * 100).toFixed(2)) : 3.8;
 
     const stats = {
       totalRevenue: totRev,
@@ -119,11 +121,31 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     };
 
     const trafficSources = [
-      { source: "Direct", visitors: Math.round(visitors * 0.38), percentage: 38 },
-      { source: "Organic Search", visitors: Math.round(visitors * 0.28), percentage: 28 },
-      { source: "Social Media", visitors: Math.round(visitors * 0.18), percentage: 18 },
-      { source: "Email", visitors: Math.round(visitors * 0.11), percentage: 11 },
-      { source: "Referral", visitors: Math.round(visitors * 0.05), percentage: 5 },
+      {
+        source: "Direct",
+        visitors: Math.round(visitors * 0.38),
+        percentage: 38,
+      },
+      {
+        source: "Organic Search",
+        visitors: Math.round(visitors * 0.28),
+        percentage: 28,
+      },
+      {
+        source: "Social Media",
+        visitors: Math.round(visitors * 0.18),
+        percentage: 18,
+      },
+      {
+        source: "Email",
+        visitors: Math.round(visitors * 0.11),
+        percentage: 11,
+      },
+      {
+        source: "Referral",
+        visitors: Math.round(visitors * 0.05),
+        percentage: 5,
+      },
     ];
 
     return res.status(200).json({
@@ -135,9 +157,20 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     });
   } catch (error) {
     console.error("Analytics API error:", error);
-    return res.status(500).json({ error: "Failed to generate analytics from database" });
+    return res
+      .status(500)
+      .json({ error: "Failed to generate analytics from database" });
   }
 }
 
+/**
+ * Handles `GET` requests for dashboard analytics: monthly revenue, category mix, top products, traffic sources and totals.
+ *
+ * @remarks
+ * Wrapped with {@link withAdminApi}: requests must pass a same-origin check and carry a valid admin session.
+ *
+ * @param req - The Next.js API request; no query parameters or body are read.
+ * @param res - The Next.js API response.
+ * @returns A promise that resolves once the response has been sent.
+ */
 export default withAdminApi(handler);
-

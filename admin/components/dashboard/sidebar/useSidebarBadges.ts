@@ -75,7 +75,10 @@ const writeCachedBadgeCounts = (value: BadgeCounts) => {
   badgeCountsMemoryCache = entry;
 
   if (typeof window !== "undefined") {
-    window.sessionStorage.setItem(SIDEBAR_BADGE_CACHE_KEY, JSON.stringify(entry));
+    window.sessionStorage.setItem(
+      SIDEBAR_BADGE_CACHE_KEY,
+      JSON.stringify(entry),
+    );
   }
 };
 
@@ -114,8 +117,7 @@ const extractDashboardBadgeCounts = (payload: unknown): BadgeCounts => {
     typeof dashboard.inventorySummary === "object" &&
     dashboard.inventorySummary !== null
       ? (dashboard.inventorySummary as Record<string, unknown>)
-      : typeof dashboard.inventory === "object" &&
-          dashboard.inventory !== null
+      : typeof dashboard.inventory === "object" && dashboard.inventory !== null
         ? (dashboard.inventory as Record<string, unknown>)
         : undefined;
 
@@ -286,6 +288,18 @@ const fetchSidebarBadgeCounts = async (): Promise<BadgeCounts> => {
   return nextCounts;
 };
 
+/**
+ * Fetches dashboard record counts for the sidebar navigation badges, backed by
+ * a five-minute in-memory and `sessionStorage` cache.
+ *
+ * @remarks
+ * The `/api/admin/dashboard` payload is parsed first; any count it does not
+ * provide is fetched from the matching admin list endpoint. Cached counts are
+ * returned synchronously on first render and refreshed after mount.
+ *
+ * @returns The latest {@link BadgeCounts} — an empty object until the first
+ * fetch resolves, or whenever every request fails.
+ */
 export function useSidebarBadges(): BadgeCounts {
   const [badgeCounts, setBadgeCounts] = useState<BadgeCounts>(
     () => readCachedBadgeCounts() ?? {},
@@ -319,4 +333,3 @@ export function useSidebarBadges(): BadgeCounts {
 
   return badgeCounts;
 }
-

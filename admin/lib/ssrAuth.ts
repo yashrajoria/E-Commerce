@@ -85,7 +85,20 @@ function forwardSetCookies(
   ctx.res.setHeader("Set-Cookie", setCookieHeader);
 }
 
-/** SSR guard: authenticated + role=admin */
+/**
+ * Server-side guard for admin pages: requires an authenticated session whose role is `admin`.
+ *
+ * @remarks
+ * Calls the backend `auth/status` endpoint with the request cookie jar. When the
+ * access JWT has expired (15m) but the `refresh_token` is still valid, it
+ * rotates cookies through `bff/auth/refresh` and forwards any `Set-Cookie`
+ * headers to the browser before retrying the status check.
+ *
+ * @param ctx - Next.js `getServerSideProps` context providing the request cookies and response.
+ * @returns `{ props: { user } }` for admins; a redirect to `/` when the session
+ * is missing or expired; a redirect to `/?error=admin_required` when the session
+ * belongs to a non-admin role.
+ */
 export async function requireAdmin(
   ctx: GetServerSidePropsContext,
 ): Promise<GetServerSidePropsResult<PropsWithUser>> {
@@ -147,7 +160,14 @@ export async function requireAdmin(
   }
 }
 
-/** @deprecated use requireAdmin */
+/**
+ * Alias of {@link requireAdmin} kept for older pages.
+ *
+ * @deprecated Use {@link requireAdmin} instead.
+ *
+ * @param ctx - Next.js `getServerSideProps` context.
+ * @returns The same result as {@link requireAdmin}.
+ */
 export async function requireAuth(
   ctx: GetServerSidePropsContext,
 ): Promise<GetServerSidePropsResult<PropsWithUser>> {

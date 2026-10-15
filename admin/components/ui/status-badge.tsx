@@ -4,6 +4,7 @@
  */
 import { cn } from "@/lib/utils";
 
+/** Colour and dot style of a {@link StatusBadge}. */
 type StatusVariant =
   | "success"
   | "warning"
@@ -12,13 +13,25 @@ type StatusVariant =
   | "neutral"
   | "gold";
 
+/** Props accepted by {@link StatusBadge}. */
 interface StatusBadgeProps {
+  /** Semantic colour scheme applied to the badge and its pulse dot. */
   variant: StatusVariant;
+  /** Text shown inside the badge. */
   label: string;
-  /** Show animated pulse dot */
+  /**
+   * Show animated pulse dot.
+   *
+   * @defaultValue false
+   */
   pulse?: boolean;
-  /** Size variant */
+  /**
+   * Size variant.
+   *
+   * @defaultValue "sm"
+   */
   size?: "sm" | "md";
+  /** Additional classes merged onto the badge. */
   className?: string;
 }
 
@@ -40,6 +53,18 @@ const dotStyles: Record<StatusVariant, string> = {
   gold: "bg-yellow-400",
 };
 
+/**
+ * Renders a pill-shaped status chip with an optional pulsing indicator dot.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * // Used by the dashboard activity feed for each log entry.
+ * <StatusBadge variant="success" label="Completed" pulse />
+ * ```
+ */
 export function StatusBadge({
   variant,
   label,

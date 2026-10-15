@@ -61,6 +61,17 @@ const CustomTooltip = ({
   return null;
 };
 
+/**
+ * Renders the weekly orders bar chart with a this-week/last-week toggle.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <OrdersChart />
+ * ```
+ */
 export default function OrdersChart() {
   const [period, setPeriod] = useState<"thisWeek" | "lastWeek">("thisWeek");
   const data = period === "thisWeek" ? weeklyData : lastWeekData;

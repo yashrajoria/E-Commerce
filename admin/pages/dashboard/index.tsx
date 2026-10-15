@@ -25,6 +25,7 @@ import axios from "axios";
 import { toast } from "sonner";
 
 // ── Page-level animation variants ──
+/** Framer Motion container variants that stagger the dashboard sections into view on mount. */
 const pageContainer = {
   hidden: { opacity: 0 },
   show: {
@@ -33,6 +34,7 @@ const pageContainer = {
   },
 };
 
+/** Framer Motion variants that fade and lift an individual dashboard section into view. */
 const pageItem = {
   hidden: { opacity: 0, y: 12 },
   show: {
@@ -42,15 +44,29 @@ const pageItem = {
   },
 };
 
+/** Props accepted by {@link Dashboard}. */
+interface DashboardProps {
+  /** Display name of the signed-in admin, rendered in the welcome heading. */
+  name: string;
+}
 
-
-const Dashboard = ({ name }: { name: string }) => {
+/**
+ * Renders the main dashboard with welcome header, KPI cards, charts, top products, insights, and activity.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration. Metrics are fetched from `/api/admin/dashboard` on mount.
+ *
+ * @example
+ * ```tsx
+ * // Route: /dashboard — rendered by the Next.js Pages Router.
+ * <Dashboard name="Alex" />
+ * ```
+ */
+const Dashboard = ({ name }: DashboardProps) => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [dashboardData, setDashboardData] = useState<any | null>(
-    null,
-  );
+  const [dashboardData, setDashboardData] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch dashboard metrics on mount
@@ -291,7 +307,15 @@ const Dashboard = ({ name }: { name: string }) => {
 
 export default Dashboard;
 
-export async function getServerSideProps(ctx: import("next").GetServerSidePropsContext) {
+/**
+ * Server-side admin auth gate for the Dashboard route.
+ *
+ * @param ctx - Next.js server-side context for the incoming request, including `req`/`res` and cookies.
+ * @returns The {@link requireAdmin} result: `props` with the authenticated admin user, or a redirect to `/` / `/?error=admin_required` when the session is missing or not an admin.
+ */
+export async function getServerSideProps(
+  ctx: import("next").GetServerSidePropsContext,
+) {
   const { requireAdmin } = await import("@/lib/ssrAuth");
   return requireAdmin(ctx);
 }

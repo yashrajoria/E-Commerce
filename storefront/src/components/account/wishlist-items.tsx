@@ -11,32 +11,68 @@ import { formatCurrency } from "@ecommerce/shared";
 import Image from "next/image";
 import Link from "next/link";
 
+/** Props accepted by {@link WishlistItemCard}. */
+interface WishlistItemCardProps {
+  /** Wishlist entry to render. */
+  item: {
+    /** Product identifier. */
+    id: string;
+    /** Product display name. */
+    name: string;
+    /** Current price in major currency units. */
+    price: number;
+    /** Pre-discount price, shown struck through when higher than `price`. */
+    originalPrice?: number;
+    /** Product image URLs; the first usable one is rendered. */
+    images?: string[];
+    /** Category name or category object. */
+    category?: string | { name: string };
+    /** Optional promo badge text. */
+    badge?: string;
+  };
+  /** Position in the grid, used to stagger the entry animation. */
+  index: number;
+  /**
+   * Removes the item from the wishlist.
+   *
+   * @param id - Product id to remove.
+   */
+  onRemove: (id: string) => void;
+  /** Adds the item to the cart with quantity `1`. */
+  onAddToCart: () => void;
+}
+
+/**
+ * Renders a single wishlist product card with remove and add-to-bag actions.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. Falls back to a package icon when the product image is missing or
+ * served from the local stack.
+ *
+ * @example
+ * ```tsx
+ * <WishlistItemCard
+ *   item={item}
+ *   index={index}
+ *   onRemove={removeFromWishlist}
+ *   onAddToCart={() => addToCart({ ...item, quantity: 1 })}
+ * />
+ * ```
+ */
 function WishlistItemCard({
   item,
   index,
   onRemove,
   onAddToCart,
-}: {
-  item: {
-    id: string;
-    name: string;
-    price: number;
-    originalPrice?: number;
-    images?: string[];
-    category?: string | { name: string };
-    badge?: string;
-  };
-  index: number;
-  onRemove: (id: string) => void;
-  onAddToCart: () => void;
-}) {
+}: WishlistItemCardProps) {
   const [imageFailed, setImageFailed] = useState(false);
   const rawImage = item.images?.[0];
   const isLocalStack = rawImage?.includes("localhost:4566");
   const hasValidImage = rawImage && !isLocalStack && !imageFailed;
   const currency = process.env.NEXT_PUBLIC_CURRENCY ?? "GBP";
   const locale = process.env.NEXT_PUBLIC_LOCALE ?? "en-GB";
-  const categoryName = typeof item.category === "string" ? item.category : item.category?.name;
+  const categoryName =
+    typeof item.category === "string" ? item.category : item.category?.name;
 
   return (
     <motion.div
@@ -67,7 +103,10 @@ function WishlistItemCard({
           <Trash2 className="h-3.5 w-3.5" />
         </button>
         {item.badge && (
-          <Badge variant="secondary" className="absolute top-2 left-2 text-[10px] py-0 px-1.5 font-normal">
+          <Badge
+            variant="secondary"
+            className="absolute top-2 left-2 text-[10px] py-0 px-1.5 font-normal"
+          >
             {item.badge}
           </Badge>
         )}
@@ -77,7 +116,9 @@ function WishlistItemCard({
         <div>
           <h3 className="font-semibold text-sm line-clamp-1">{item.name}</h3>
           {categoryName && (
-            <p className="text-xs text-muted-foreground mt-0.5">{categoryName}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {categoryName}
+            </p>
           )}
           <div className="flex items-center gap-2 mt-2">
             <span className="font-semibold text-sm">
@@ -102,6 +143,20 @@ function WishlistItemCard({
   );
 }
 
+/**
+ * Renders the customer's wishlist grid, or an empty state when nothing is saved.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. Reads from the wishlist and cart contexts; removing a card calls
+ * `removeFromWishlist` and adding to the bag calls `addToCart`.
+ *
+ * @example
+ * ```tsx
+ * <TabsContent value="wishlist">
+ *   <WishlistItems />
+ * </TabsContent>
+ * ```
+ */
 export function WishlistItems() {
   const { wishlist, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();

@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { getOrders } from "@/lib/order"; // Import the API function
 import { useUser } from "@/context/UserContext"; // To check if the user is loaded/logged in
 
+/**
+ * Order summary shape returned by the orders endpoint.
+ */
 interface Order {
   id: string;
   date: string;
@@ -10,13 +13,25 @@ interface Order {
   items: Array<{ product_id: string; quantity: number }>;
 }
 
+/**
+ * State returned by {@link useUserOrders}.
+ */
 interface UseOrdersResult {
+  /** Orders loaded for the signed-in user. */
   orders: Order[];
+  /** Whether an order request is currently in flight. */
   loading: boolean;
+  /** Human-readable error message when loading failed, otherwise `null`. */
   error: string | null;
+  /** Re-triggers the next order fetch. */
   refetch: () => void;
 }
 
+/**
+ * Loads the signed-in user's order history once the user context has resolved.
+ *
+ * @returns {@link UseOrdersResult} with the orders, a loading flag, an error message, and a `refetch` trigger.
+ */
 export const useUserOrders = (): UseOrdersResult => {
   const { user, loading: userLoading } = useUser();
   const [orders, setOrders] = useState<Order[]>([]);

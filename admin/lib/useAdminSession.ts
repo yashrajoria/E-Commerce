@@ -11,18 +11,29 @@ import {
 } from "react";
 import axios from "axios";
 
+/** Identity fields the admin panel reads off the `/api/admin/auth/status` response. */
 export type AdminSessionUser = {
+  /** Identity-service user id. */
   id?: string;
+  /** Login email address. */
   email?: string;
+  /** Display name. */
   name?: string;
+  /** Raw role string, lower-cased when extracted. */
   role?: string;
 };
 
+/** Session state exposed by {@link AdminSessionProvider} and consumed through {@link useAdminSession}. */
 type AdminSession = {
+  /** `true` while the session status request is in flight. */
   loading: boolean;
+  /** `true` when the status response identified a user. */
   authenticated: boolean;
+  /** `true` when the resolved role is exactly `admin`. */
   isAdmin: boolean;
+  /** Resolved user, or `null` when unauthenticated. */
   user: AdminSessionUser | null;
+  /** Re-runs the status check, refreshing tokens first when the access token expired. */
   refresh: () => Promise<void>;
 };
 
@@ -71,10 +82,30 @@ function extractUser(payload: unknown): AdminSessionUser | null {
   };
 }
 
+/** Props accepted by {@link AdminSessionProvider}. */
+interface AdminSessionProviderProps {
+  /** The subtree that may call {@link useAdminSession}. */
+  children: ReactNode;
+}
+
 /**
- * Shared admin session for the whole app (login + _app gate must use the same state).
+ * Provides the shared admin session (loading, authenticated, isAdmin, user, refresh) to the app.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router);
+ * relies on client-side state/effects, so it runs in the browser after
+ * hydration. Errors on background refreshes deliberately keep the last known
+ * user so a single bad response does not hard-logout a still-valid admin.
+ *
+ * @example
+ * ```tsx
+ * // pages/_app.tsx
+ * <AdminSessionProvider>
+ *   <AppContent {...pageProps} />
+ * </AdminSessionProvider>
+ * ```
  */
-export function AdminSessionProvider({ children }: { children: ReactNode }) {
+export function AdminSessionProvider({ children }: AdminSessionProviderProps) {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<AdminSessionUser | null>(null);
   const hasLoadedOnce = useRef(false);
@@ -147,16 +178,19 @@ export function AdminSessionProvider({ children }: { children: ReactNode }) {
     [loading, user, role, refresh],
   );
 
-  return createElement(
-    AdminSessionContext.Provider,
-    { value },
-    children,
-  );
+  return createElement(AdminSessionContext.Provider, { value }, children);
 }
 
 /**
- * Admin-app session based on /api/admin/auth/status (gateway JWT → /auth/status).
- * Prefer this over shared storefront useAuth for RBAC.
+ * Reads the shared admin session from context.
+ *
+ * @remarks
+ * Backed by `/api/admin/auth/status` (gateway JWT → `/auth/status`). Prefer this
+ * over the shared storefront `useAuth` for RBAC decisions.
+ *
+ * @returns The {@link AdminSession} object: `loading`, `authenticated`,
+ * `isAdmin`, `user` and the `refresh` callback.
+ * @throws {@link Error} When called outside {@link AdminSessionProvider}.
  */
 export function useAdminSession(): AdminSession {
   const ctx = useContext(AdminSessionContext);

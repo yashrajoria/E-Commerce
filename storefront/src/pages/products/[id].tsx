@@ -33,10 +33,27 @@ import type { Product } from "@/lib/types";
 import type { GetServerSideProps } from "next";
 import { fetchProductByIdSsr } from "@/lib/ssrProducts";
 
+/**
+ * Props for {@link ProductPage}, seeded by {@link getServerSideProps}.
+ */
 type ProductPageProps = {
+  /** SSR-fetched product for the route id, or `null` when it could not be loaded. */
   initialProduct: Product | null;
 };
 
+/**
+ * Product detail page: gallery, pricing, subscription selector, quantity
+ * picker, wishlist/share actions, detail tabs, and related products.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * // Route: /products/[id] — rendered by the Next.js Pages Router with SSR-seeded data.
+ * <ProductPage initialProduct={ssrProduct} />
+ * ```
+ */
 export default function ProductPage({ initialProduct }: ProductPageProps) {
   const [quantity, setQuantity] = useState(1);
   const router = useRouter();
@@ -92,12 +109,14 @@ export default function ProductPage({ initialProduct }: ProductPageProps) {
       price: effectivePrice ?? product.price,
       images: product?.images ?? [],
       quantity,
-      subscription: subscriptionPlan.isSubscription ? subscriptionPlan : undefined,
+      subscription: subscriptionPlan.isSubscription
+        ? subscriptionPlan
+        : undefined,
     });
     showSuccess(
       subscriptionPlan.isSubscription
         ? `${product.name} subscribed (${subscriptionPlan.frequency.replace("_", " ")}) with 15% discount!`
-        : `${product.name} has been added to your cart.`
+        : `${product.name} has been added to your cart.`,
     );
   };
 
@@ -217,7 +236,10 @@ export default function ProductPage({ initialProduct }: ProductPageProps) {
               aria-label="Breadcrumb"
               className="text-xs text-muted-foreground flex items-center gap-1.5"
             >
-              <Link href="/" className="hover:text-foreground transition-colors">
+              <Link
+                href="/"
+                className="hover:text-foreground transition-colors"
+              >
                 Home
               </Link>
               <span>/</span>
@@ -236,22 +258,33 @@ export default function ProductPage({ initialProduct }: ProductPageProps) {
                 <span className="hover:text-foreground">Category</span>
               )}
               <span>/</span>
-              <span aria-current="page" className="text-foreground font-medium truncate max-w-xs">{product?.name}</span>
+              <span
+                aria-current="page"
+                className="text-foreground font-medium truncate max-w-xs"
+              >
+                {product?.name}
+              </span>
             </nav>
 
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mb-2">{product?.name}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mb-2">
+                {product?.name}
+              </h1>
               <div className="flex items-center space-x-3 mb-4">
                 {rating > 0 && (
                   <div className="flex items-center space-x-1">
                     <Star className="h-4 w-4 fill-foreground text-foreground" />
-                    <span className="text-sm font-semibold">{rating.toFixed(1)}</span>
+                    <span className="text-sm font-semibold">
+                      {rating.toFixed(1)}
+                    </span>
                     <span className="text-xs text-muted-foreground">
                       ({product?.reviews ?? 0} reviews)
                     </span>
                   </div>
                 )}
-                {product?.badge && <Badge variant="secondary">{product?.badge}</Badge>}
+                {product?.badge && (
+                  <Badge variant="secondary">{product?.badge}</Badge>
+                )}
               </div>
             </div>
 
@@ -375,8 +408,8 @@ export default function ProductPage({ initialProduct }: ProductPageProps) {
                   aria-hidden
                 />
                 <span>
-                  Free standard delivery on orders over {formatGBP(50)} · Express
-                  from {formatGBP(9.99)}
+                  Free standard delivery on orders over {formatGBP(50)} ·
+                  Express from {formatGBP(9.99)}
                 </span>
               </li>
               <li className="flex items-start gap-2">
@@ -416,7 +449,9 @@ export default function ProductPage({ initialProduct }: ProductPageProps) {
 
             <TabsContent value="description" className="mt-6">
               <div className="prose prose-neutral dark:prose-invert max-w-none">
-                <h3 className="text-lg font-semibold mb-3">About this product</h3>
+                <h3 className="text-lg font-semibold mb-3">
+                  About this product
+                </h3>
                 {product.description ? (
                   <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
                     {product.description}
@@ -434,7 +469,9 @@ export default function ProductPage({ initialProduct }: ProductPageProps) {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between gap-4 border-b border-border/50 py-2">
                     <span className="text-muted-foreground">Name</span>
-                    <span className="font-medium text-right">{product.name}</span>
+                    <span className="font-medium text-right">
+                      {product.name}
+                    </span>
                   </div>
                   {categoryName ? (
                     <div className="flex justify-between gap-4 border-b border-border/50 py-2">
@@ -503,7 +540,9 @@ export default function ProductPage({ initialProduct }: ProductPageProps) {
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur-md p-3 sm:hidden safe-area-pb">
         <div className="flex items-center gap-3 max-w-lg mx-auto">
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold truncate text-foreground">{product.name}</p>
+            <p className="text-xs font-semibold truncate text-foreground">
+              {product.name}
+            </p>
             <p className="text-xs text-muted-foreground font-medium">
               {formatGBP(product.price)}
             </p>
@@ -526,6 +565,13 @@ export default function ProductPage({ initialProduct }: ProductPageProps) {
   );
 }
 
+/**
+ * Prefetches the product for the route id so the detail page can render from
+ * SSR data.
+ *
+ * @param context - The Next.js Pages Router context for the request; `params.id` identifies the product.
+ * @returns Props containing `initialProduct` (or `null` when the fetch fails) — or `{ notFound: true }` when no id is present.
+ */
 export const getServerSideProps: GetServerSideProps<ProductPageProps> = async (
   ctx,
 ) => {

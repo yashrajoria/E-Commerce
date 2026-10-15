@@ -6,16 +6,37 @@ import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 import { motion, type HTMLMotionProps } from "framer-motion";
 
+/** Props accepted by {@link GlassCard}; extends `framer-motion`'s div props. */
 interface GlassCardProps extends HTMLMotionProps<"div"> {
-  /** Glassmorphism intensity */
+  /**
+   * Glassmorphism intensity.
+   *
+   * @defaultValue "medium"
+   */
   intensity?: "subtle" | "medium" | "strong";
-  /** Enable gradient border effect */
+  /**
+   * Enable gradient border effect.
+   *
+   * @defaultValue false
+   */
   gradientBorder?: boolean;
-  /** Enable hover glow effect */
+  /**
+   * Enable hover glow effect.
+   *
+   * @defaultValue false
+   */
   hoverGlow?: boolean;
-  /** Glow color variant */
+  /**
+   * Glow color variant.
+   *
+   * @defaultValue "purple"
+   */
   glowColor?: "purple" | "emerald" | "gold" | "blue";
-  /** Enable hover lift animation */
+  /**
+   * Enable hover lift animation.
+   *
+   * @defaultValue true
+   */
   hoverLift?: boolean;
 }
 
@@ -32,6 +53,19 @@ const intensityMap = {
   strong: "glass-effect-strong",
 };
 
+/**
+ * Renders a frosted-glass panel with optional gradient border, hover glow and hover lift.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side `framer-motion` animation, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <GlassCard intensity="strong" hoverGlow glowColor="emerald">
+ *   <p className="p-6">Revenue overview</p>
+ * </GlassCard>
+ * ```
+ */
 export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
   (
     {

@@ -27,7 +27,13 @@ const isTransientError = (error: unknown): boolean => {
   }
 
   const status = error.response.status;
-  return status === 408 || status === 429 || status === 502 || status === 503 || status === 504;
+  return (
+    status === 408 ||
+    status === 429 ||
+    status === 502 ||
+    status === 503 ||
+    status === 504
+  );
 };
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -58,7 +64,10 @@ const normalizeToolResults = (toolResults: unknown): AgentToolResult[] => {
     return [];
   }
 
-  return toolResults.filter((item): item is AgentToolResult => typeof item === "object" && item !== null);
+  return toolResults.filter(
+    (item): item is AgentToolResult =>
+      typeof item === "object" && item !== null,
+  );
 };
 
 const normalizeToolsCalled = (toolsCalled: unknown): string[] => {
@@ -81,6 +90,14 @@ const deriveAnswer = (raw: AgentQueryResponseRaw): string => {
   return "I could not generate a full answer this time. Please try again.";
 };
 
+/**
+ * Normalizes a raw agent response into the shape the AI Insights UI consumes.
+ *
+ * @param raw - Response body from the BFF `agent/query` endpoint.
+ * @param requestedSessionId - Session id used as a fallback when the backend omits one.
+ * @returns An {@link AgentQueryResult} with a guaranteed non-empty answer,
+ * sanitized tool results/names and `partialSuccess` set when any tool call failed.
+ */
 export const normalizeQueryResponse = (
   raw: AgentQueryResponseRaw,
   requestedSessionId: string,
@@ -110,14 +127,29 @@ export const normalizeQueryResponse = (
         : requestedSessionId,
     toolResults,
     toolsCalled,
-    correlationId: typeof raw.correlation_id === "string" ? raw.correlation_id : "",
-    timestamp: typeof raw.timestamp === "string" ? raw.timestamp : new Date().toISOString(),
+    correlationId:
+      typeof raw.correlation_id === "string" ? raw.correlation_id : "",
+    timestamp:
+      typeof raw.timestamp === "string"
+        ? raw.timestamp
+        : new Date().toISOString(),
     latencyMs: typeof raw.latency_ms === "number" ? raw.latency_ms : null,
     partialSuccess,
     technicalDetails: raw.error,
   };
 };
 
+/**
+ * Sends a prompt to the operations agent and normalizes the answer.
+ *
+ * @remarks
+ * `POST /api/bff/admin/agent/query` with a 25s timeout and one retry for
+ * transient failures (timeout, network error, 408/429/502/503/504).
+ *
+ * @param payload - Session id and prompt to send.
+ * @returns The normalized {@link AgentQueryResult}.
+ * @throws {@link Error} When the request fails after the retry budget is exhausted.
+ */
 export const queryAgent = async (
   payload: AgentQueryRequest,
 ): Promise<AgentQueryResult> => {
@@ -133,14 +165,29 @@ export const queryAgent = async (
   return normalizeQueryResponse(raw, payload.session_id);
 };
 
+/** Callbacks invoked while consuming a streaming agent answer. */
 export interface AgentStreamCallbacks {
+  /** Receives human-readable progress messages, e.g. `("tool", "Searching orders...")`. */
   onStatus?: (step: string, message: string) => void;
+  /** Receives each streamed answer fragment. */
   onToken?: (delta: string) => void;
+  /** Receives action-card payloads the agent wants to render. */
   onActionCard?: (card: Record<string, unknown>) => void;
+  /** Receives the final `done` payload (session id, correlation id, answer). */
   onDone?: (data: Record<string, unknown>) => void;
+  /** Receives the server-reported error message before the stream rejects. */
   onError?: (err: string) => void;
 }
 
+/**
+ * Streams an agent answer over Server-Sent Events via `/api/bff/admin/agent/stream`.
+ *
+ * @param payload - Session id and prompt to send.
+ * @param callbacks - Handlers for status, token, action-card, done and error frames.
+ * @returns A promise that resolves when the stream ends.
+ * @throws {@link Error} When the response is not ok, has no body, or the server
+ * sends an `error` frame.
+ */
 export const streamAgentQuery = async (
   payload: AgentQueryRequest,
   callbacks: AgentStreamCallbacks,
@@ -185,7 +232,10 @@ export const streamAgentQuery = async (
       }
 
       if (eventType === "status" && callbacks.onStatus) {
-        callbacks.onStatus(String(parsedData.step || ""), String(parsedData.message || ""));
+        callbacks.onStatus(
+          String(parsedData.step || ""),
+          String(parsedData.message || ""),
+        );
       } else if (eventType === "token" && callbacks.onToken) {
         callbacks.onToken(String(parsedData.delta || ""));
       } else if (eventType === "action_card" && callbacks.onActionCard) {
@@ -193,7 +243,10 @@ export const streamAgentQuery = async (
       } else if (eventType === "done" && callbacks.onDone) {
         callbacks.onDone(parsedData);
       } else if (eventType === "error") {
-        const errorMsg = typeof parsedData.error === "string" ? parsedData.error : "Unknown stream error";
+        const errorMsg =
+          typeof parsedData.error === "string"
+            ? parsedData.error
+            : "Unknown stream error";
         if (callbacks.onError) callbacks.onError(errorMsg);
         throw new Error(errorMsg);
       }
@@ -201,6 +254,14 @@ export const streamAgentQuery = async (
   }
 };
 
+/**
+ * Loads the stored conversation history for an agent session.
+ *
+ * @param sessionId - Session id to fetch; an empty value short-circuits to `[]`.
+ * @returns The valid user/assistant/system messages, or `[]` when the backend
+ * returns an unexpected shape.
+ * @throws {@link Error} When the request fails after the retry budget is exhausted.
+ */
 export const fetchSessionHistory = async (
   sessionId: string,
 ): Promise<AgentSessionMessage[]> => {
@@ -214,7 +275,12 @@ export const fetchSessionHistory = async (
   });
 
   const container = raw.data ?? raw;
-  const messages = container.messages ?? container.history ?? raw.messages ?? raw.history ?? [];
+  const messages =
+    container.messages ??
+    container.history ??
+    raw.messages ??
+    raw.history ??
+    [];
   if (!Array.isArray(messages)) {
     return [];
   }
@@ -223,11 +289,20 @@ export const fetchSessionHistory = async (
     (item): item is AgentSessionMessage =>
       typeof item === "object" &&
       item !== null &&
-      (item.role === "user" || item.role === "assistant" || item.role === "system") &&
+      (item.role === "user" ||
+        item.role === "assistant" ||
+        item.role === "system") &&
       typeof item.content === "string",
   );
 };
 
+/**
+ * Clears an agent session and its stored history (`DELETE` on the session resource).
+ *
+ * @param sessionId - Session id to clear; an empty value is a no-op.
+ * @returns A promise that resolves once the backend confirms the deletion.
+ * @throws {@link Error} When the delete request fails after the retry budget is exhausted.
+ */
 export const clearAgentSession = async (sessionId: string): Promise<void> => {
   if (!sessionId) {
     return;
@@ -239,6 +314,12 @@ export const clearAgentSession = async (sessionId: string): Promise<void> => {
   });
 };
 
+/**
+ * Loads the catalog of tools the operations agent can call.
+ *
+ * @returns The enabled tool definitions, or `[]` when the backend returns an unexpected shape.
+ * @throws {@link Error} When the request fails after the retry budget is exhausted.
+ */
 export const fetchAgentTools = async (): Promise<AgentToolDefinition[]> => {
   const raw = await requestWithRetry<AgentToolsResponseRaw>({
     method: "GET",
@@ -259,6 +340,12 @@ export const fetchAgentTools = async (): Promise<AgentToolDefinition[]> => {
   );
 };
 
+/**
+ * Maps an unknown request error to operator-friendly copy.
+ *
+ * @param error - The caught value; only axios errors are classified.
+ * @returns A short message covering timeouts, rate limits, auth failures and 5xx outages.
+ */
 export const toFriendlyErrorMessage = (error: unknown): string => {
   if (!axios.isAxiosError(error)) {
     return "Something unexpected happened. Please try again in a moment.";
@@ -282,6 +369,13 @@ export const toFriendlyErrorMessage = (error: unknown): string => {
   return "We could not complete your request right now. Please retry.";
 };
 
+/**
+ * Extracts technical diagnostics from an unknown error for the details panel.
+ *
+ * @param error - The caught value.
+ * @returns For axios errors an object with `message`, `code`, `status` and
+ * `data`; otherwise the original value unchanged.
+ */
 export const extractTechnicalDetails = (error: unknown): unknown => {
   if (!axios.isAxiosError(error)) {
     return error;
@@ -296,24 +390,42 @@ export const extractTechnicalDetails = (error: unknown): unknown => {
   };
 };
 
+/** A write the agent wants to perform that awaits explicit admin approval. */
 export interface PendingMutation {
+  /** Mutation id. */
   id: string;
+  /** Request id used when confirming the mutation. */
   request_id: string;
+  /** Id of the admin/user the mutation was requested for, or `null` when unknown. */
   user_id: string | null;
+  /** Prompt that produced the mutation. */
   prompt: string;
+  /** Tool the agent wants to run. */
   tool: string;
+  /** Tool arguments as parsed JSON or a raw string. */
   arguments: Record<string, unknown> | string;
+  /** Whether the tool performs a write. */
   mutating: boolean;
+  /** Current approval status, e.g. `"pending"`. */
   status: string;
+  /** ISO timestamp when the mutation was queued. */
   created_at?: string;
 }
 
+/**
+ * Loads the mutations currently awaiting admin approval.
+ *
+ * @returns The pending {@link PendingMutation} records, or `[]` when the request fails.
+ */
 export const fetchPendingMutations = async (): Promise<PendingMutation[]> => {
   try {
-    const response = await axios.get<PendingMutation[]>("/api/agent/mutations", {
-      withCredentials: true,
-      timeout: 10000,
-    });
+    const response = await axios.get<PendingMutation[]>(
+      "/api/agent/mutations",
+      {
+        withCredentials: true,
+        timeout: 10000,
+      },
+    );
     return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     console.error("fetchPendingMutations error:", error);
@@ -321,6 +433,14 @@ export const fetchPendingMutations = async (): Promise<PendingMutation[]> => {
   }
 };
 
+/**
+ * Approves or rejects a pending agent mutation.
+ *
+ * @param requestId - Request id of the mutation to confirm.
+ * @param approve - `true` to allow the mutation, `false` to reject it.
+ * @returns `{ success: true, data }` with the backend payload, or
+ * `{ success: false, data: error }` when the request failed.
+ */
 export const confirmMutation = async (
   requestId: string,
   approve: boolean,
@@ -338,6 +458,13 @@ export const confirmMutation = async (
   }
 };
 
+/**
+ * Triggers an on-demand agent watchdog scan.
+ *
+ * @returns The scan summary: number of anomalies detected, incidents created
+ * and optional per-anomaly details.
+ * @throws {@link Error} When the scan request fails.
+ */
 export const triggerWatchdogScan = async (): Promise<{
   anomalies_detected: number;
   incidents_created: number;
@@ -350,4 +477,3 @@ export const triggerWatchdogScan = async (): Promise<{
   );
   return response.data;
 };
-

@@ -2,7 +2,16 @@
 
 import React, { useEffect, useRef } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { X, ChevronRight, Home, User, Heart, Sun, Moon, LogIn } from "lucide-react";
+import {
+  X,
+  ChevronRight,
+  Home,
+  User,
+  Heart,
+  Sun,
+  Moon,
+  LogIn,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCategories } from "@/hooks/useCategories";
 import { useUser } from "@/context/UserContext";
@@ -12,12 +21,33 @@ import Link from "next/link";
 import { getLucideIcon, trapFocus } from "@/lib/utils";
 import { BrandLogo } from "./brand-logo";
 
+/** Props accepted by {@link MegaMenu}. */
 interface MegaMenuProps {
+  /** Whether the slide-in panel is visible. */
   isOpen: boolean;
+  /** Called when the user dismisses the menu through the close button, backdrop, a navigation link or the Escape key. */
   onClose: () => void;
+  /** Called when a signed-out visitor chooses "Sign in to Account"; the menu closes before this runs. */
   onOpenLogin?: () => void;
 }
 
+/**
+ * Renders the mobile slide-in navigation drawer with categories, account actions and a theme toggle.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * Fetches categories with `useCategories`, traps keyboard focus inside the panel while open, and restores focus to the previously active element on close.
+ *
+ * @example
+ * ```tsx
+ * <MegaMenu
+ *   isOpen={isMenuOpen}
+ *   onClose={() => setIsMenuOpen(false)}
+ *   onOpenLogin={() => setIsLoginOpen(true)}
+ * />
+ * ```
+ */
 export function MegaMenu({ isOpen, onClose, onOpenLogin }: MegaMenuProps) {
   const { data: categories = [], isLoading, error } = useCategories();
   const { user } = useUser();
@@ -32,7 +62,7 @@ export function MegaMenu({ isOpen, onClose, onOpenLogin }: MegaMenuProps) {
     prevFocused.current = document.activeElement as HTMLElement;
     setTimeout(() => {
       const first = panelRef.current?.querySelector<HTMLElement>(
-        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
       );
       first?.focus();
     }, 0);
@@ -69,7 +99,11 @@ export function MegaMenu({ isOpen, onClose, onOpenLogin }: MegaMenuProps) {
             initial={reduceMotion ? { x: 0 } : { x: -320 }}
             animate={{ x: 0 }}
             exit={reduceMotion ? { x: 0 } : { x: -320 }}
-            transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 30 }}
+            transition={
+              reduceMotion
+                ? { duration: 0 }
+                : { type: "spring", stiffness: 300, damping: 30 }
+            }
           >
             <div className="flex flex-col h-full">
               {/* Header */}
@@ -101,7 +135,9 @@ export function MegaMenu({ isOpen, onClose, onOpenLogin }: MegaMenuProps) {
                   onClick={onClose}
                   className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium hover:bg-muted transition-colors"
                 >
-                  <span className="font-semibold text-xs uppercase tracking-wider text-muted-foreground w-4 text-center">ALL</span>
+                  <span className="font-semibold text-xs uppercase tracking-wider text-muted-foreground w-4 text-center">
+                    ALL
+                  </span>
                   <span>All Products</span>
                 </Link>
               </div>
@@ -210,10 +246,14 @@ export function MegaMenu({ isOpen, onClose, onOpenLogin }: MegaMenuProps) {
                 </Button>
 
                 <div className="pt-2 flex items-center justify-between border-t border-border/60">
-                  <span className="text-xs text-muted-foreground">Appearance</span>
+                  <span className="text-xs text-muted-foreground">
+                    Appearance
+                  </span>
                   <button
                     type="button"
-                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                    onClick={() =>
+                      setTheme(theme === "dark" ? "light" : "dark")
+                    }
                     className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-md bg-muted text-foreground hover:bg-muted/80 transition-colors cursor-pointer"
                   >
                     {theme === "dark" ? (

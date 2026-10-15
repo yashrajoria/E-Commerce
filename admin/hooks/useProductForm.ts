@@ -1,4 +1,3 @@
- 
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { useForm } from "react-hook-form";
@@ -7,7 +6,7 @@ import z from "zod";
 import uploadFiles from "./useUpload";
 import type React from "react";
 
-// Define form schema for single product
+/** Validation schema for the single-product form (name, category, price, quantity, description, images, brand, sku, is_featured). */
 const singleProductSchema = z.object({
   name: z.string().min(2, "Product name must be at least 2 characters"),
   category: z.array(z.string()).min(1, "At least one category is required"),
@@ -31,8 +30,30 @@ const singleProductSchema = z.object({
   is_featured: z.boolean().optional(),
 });
 
-export type UploadedImage = { file: File | null; url?: string; name?: string; preview?: string };
+/** An image staged for upload: the file plus an optional preview/URL once uploaded. */
+export type UploadedImage = {
+  file: File | null;
+  url?: string;
+  name?: string;
+  preview?: string;
+};
 
+/**
+ * Builds the react-hook-form instance and submit helpers for the product forms.
+ *
+ * @remarks
+ * New files are uploaded through {@link uploadFiles} and sent to the API as an
+ * `image_urls` JSON array; the form and the image-preview state are reset after
+ * a successful create. Failures surface as toasts rather than thrown errors.
+ *
+ * @param setImagePreview - Setter for the legacy single-image preview state.
+ * @param setUploadedImages - Setter for the multi-image list state.
+ * @param images - Currently staged multi-image list, uploaded on create/update.
+ * @param imagePreview - Currently staged single-image preview, uploaded when no list is present.
+ * @param initialData - Partial values merged into the form defaults (used by the edit flow).
+ * @returns The react-hook-form instance plus `onSubmitSingleProduct`,
+ * `updateSingleProduct`, `deleteSingleProduct` and `isSubmitting`.
+ */
 export function useProductForm(
   setImagePreview: React.Dispatch<React.SetStateAction<File | null>>,
   setUploadedImages: React.Dispatch<React.SetStateAction<UploadedImage[]>>,
@@ -74,7 +95,11 @@ export function useProductForm(
       // If files are provided, try presign+upload flow and send image URLs instead
       if (images && images.length > 0) {
         const files = images
-          .map((img: unknown) => (img && typeof img === "object" ? (img as Record<string, unknown>).file : undefined))
+          .map((img: unknown) =>
+            img && typeof img === "object"
+              ? (img as Record<string, unknown>).file
+              : undefined,
+          )
           .filter((f: unknown): f is File => f instanceof File);
         if (files.length > 0) {
           const urls = await uploadFiles(files, data.sku);
@@ -110,11 +135,16 @@ export function useProductForm(
     data: z.infer<typeof singleProductSchema>,
   ) => {
     try {
-      const id = typeof productId === "string" ? productId : (productId as { _id?: string })?._id || "";
+      const id =
+        typeof productId === "string"
+          ? productId
+          : (productId as { _id?: string })?._id || "";
 
       // If there are new files in images, upload them first and include image_urls
       const files = images
-        ? images.map((img: { file?: unknown }) => img.file).filter((f: unknown): f is File => f instanceof File)
+        ? images
+            .map((img: { file?: unknown }) => img.file)
+            .filter((f: unknown): f is File => f instanceof File)
         : [];
 
       const payload: Record<string, unknown> = { ...data };

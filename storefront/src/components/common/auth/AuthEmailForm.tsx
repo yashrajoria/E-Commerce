@@ -8,22 +8,61 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { PasswordStrengthIndicator } from "../PasswordStrengthIndicator";
 
+/** Props accepted by {@link AuthEmailForm}. */
 export interface AuthEmailFormProps {
+  /** Whether the form is in sign-in mode; `false` switches it to registration. */
   isLogin: boolean;
+  /** Controlled email input value. */
   email: string;
+  /** Updates the controlled email value. */
   setEmail: (val: string) => void;
+  /** Controlled password input value. */
   password: string;
+  /** Updates the controlled password value. */
   setPassword: (val: string) => void;
+  /** Controlled full-name value; only rendered and validated when registering. */
   fullName: string;
+  /** Updates the controlled full-name value. */
   setFullName: (val: string) => void;
+  /** Validation message for the email field, or `null` when the field is valid. */
   emailError: string | null;
+  /** Validation message for the password field, or `null` when the field is valid. */
   passwordError: string | null;
+  /** Validation message for the full-name field, or `null` when the field is valid. */
   fullNameError: string | null;
+  /** Whether a submit is in flight; swaps the submit label for a spinner and disables the button. */
   loading: boolean;
+  /** Handles form submission for both sign-in and registration. */
   onSubmit: (e: React.FormEvent) => Promise<void>;
+  /** Closes the hosting modal, e.g. when the user follows the forgot-password link. */
   onClose: () => void;
 }
 
+/**
+ * Renders the email/password form shared by the sign-in and registration flows.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <AuthEmailForm
+ *   isLogin={isLogin}
+ *   email={email}
+ *   setEmail={setEmail}
+ *   password={password}
+ *   setPassword={setPassword}
+ *   fullName={fullName}
+ *   setFullName={setFullName}
+ *   emailError={emailError}
+ *   passwordError={passwordError}
+ *   fullNameError={fullNameError}
+ *   loading={loading}
+ *   onSubmit={handleSubmit}
+ *   onClose={onClose}
+ * />
+ * ```
+ */
 export function AuthEmailForm({
   isLogin,
   email,
@@ -60,7 +99,11 @@ export function AuthEmailForm({
             aria-describedby={fullNameError ? "fullname-error" : undefined}
           />
           {fullNameError && (
-            <p id="fullname-error" className="text-sm text-destructive mt-2" role="alert">
+            <p
+              id="fullname-error"
+              className="text-sm text-destructive mt-2"
+              role="alert"
+            >
               {fullNameError}
             </p>
           )}
@@ -85,7 +128,11 @@ export function AuthEmailForm({
           />
         </div>
         {emailError && (
-          <p id="email-error" className="text-sm text-destructive mt-2" role="alert">
+          <p
+            id="email-error"
+            className="text-sm text-destructive mt-2"
+            role="alert"
+          >
             {emailError}
           </p>
         )}
@@ -140,7 +187,11 @@ export function AuthEmailForm({
       )}
 
       {passwordError && (
-        <p id="password-error" className="text-sm text-destructive mt-2" role="alert">
+        <p
+          id="password-error"
+          className="text-sm text-destructive mt-2"
+          role="alert"
+        >
           {passwordError}
         </p>
       )}
@@ -165,4 +216,3 @@ export function AuthEmailForm({
     </form>
   );
 }
-

@@ -12,6 +12,17 @@ import {
 
 export type { ProductCardProps };
 
+/**
+ * Renders a product card in the resolved layout variant, delegating to one of the four card implementations.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. Resolves the variant from `variant`, falling back to the legacy `viewMode`, then renders {@link GridProductCard}, {@link HorizontalProductCard}, {@link CompactProductCard}, or {@link FeaturedProductCard}.
+ *
+ * @example
+ * ```tsx
+ * <ProductCard product={product} variant="horizontal" priority />
+ * ```
+ */
 export function ProductCard({
   product,
   variant,
@@ -52,11 +63,7 @@ export function ProductCard({
     case "grid":
     default:
       return (
-        <GridProductCard
-          product={product}
-          state={state}
-          priority={priority}
-        />
+        <GridProductCard product={product} state={state} priority={priority} />
       );
   }
 }

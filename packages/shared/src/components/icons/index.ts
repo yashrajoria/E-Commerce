@@ -1,7 +1,4 @@
-/**
- * Icon System Index
- * Export all icons for easy access throughout the application
- */
+/** Barrel module re-exporting the custom brand icons from `./BrandIcons` plus a curated set of `lucide-react` icons for easy access throughout the application. */
 
 export {
   AdminIcon,

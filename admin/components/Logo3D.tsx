@@ -1,6 +1,17 @@
 import { useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 
+/**
+ * Renders the animated "ShopSwift Admin" logo with a mouse-driven 3D tilt effect.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <Logo3D />
+ * ```
+ */
 const Logo3D = () => {
   const logoRef = useRef<HTMLDivElement>(null);
 

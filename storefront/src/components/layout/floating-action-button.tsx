@@ -6,6 +6,20 @@ import { ShoppingBag, Menu, X, HelpCircle, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/context/CartContext";
 
+/**
+ * Renders the mobile-only floating action launcher with cart, help and offers shortcuts.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * Reads the current cart through `useCart` so the Cart action can display a live item-count badge.
+ *
+ * @example
+ * ```tsx
+ * // Mounted once per layout, typically near the root of a page.
+ * <FloatingActionButton />
+ * ```
+ */
 export function FloatingActionButton() {
   const [isOpen, setIsOpen] = useState(false);
   const { cart } = useCart();
@@ -66,4 +80,3 @@ export function FloatingActionButton() {
     </div>
   );
 }
-

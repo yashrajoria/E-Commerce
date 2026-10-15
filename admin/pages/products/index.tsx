@@ -1,4 +1,7 @@
-import { ErrorState, TableSkeleton } from "@/components/admin/shared/DataStates";
+import {
+  ErrorState,
+  TableSkeleton,
+} from "@/components/admin/shared/DataStates";
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
 import ProductCard from "@/components/products/ProductCard";
 import ProductsFilters from "@/components/products/ProductFilters";
@@ -41,8 +44,21 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
+/** Initial number of products requested per page; user-selectable through the filters bar. */
 const PRODUCTS_PER_PAGE = 12;
 
+/**
+ * Renders the product catalog with KPI stats, the filters bar, grid/list views, pagination, and out-of-stock toggling.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration. Paged products come from {@link useAdminProducts} and categories from {@link useCategories}.
+ *
+ * @example
+ * ```tsx
+ * // Route: /products — rendered by the Next.js Pages Router.
+ * <Products />
+ * ```
+ */
 const Products = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
@@ -126,8 +142,8 @@ const Products = () => {
         <StatsCard
           title="In Stock"
           value={
-            productList.filter((p: Product) => (p.quantity || 0) > 0)
-              ?.length || 0
+            productList.filter((p: Product) => (p.quantity || 0) > 0)?.length ||
+            0
           }
           icon={Package}
         />
@@ -194,7 +210,10 @@ const Products = () => {
         ) : productsError ? (
           <motion.section key="error" variants={pageItem}>
             <div className="glass-effect rounded-xl">
-              <ErrorState message={productsError.message} onRetry={() => mutate()} />
+              <ErrorState
+                message={productsError.message}
+                onRetry={() => mutate()}
+              />
             </div>
           </motion.section>
         ) : (products?.length || 0) === 0 ? (
@@ -264,84 +283,88 @@ const Products = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {displayedProducts.map((product: Product, index: number) => (
-                      <motion.tr
-                        key={product._id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.02 }}
-                        className="border-b border-border/60 hover:bg-muted/40 transition-colors"
-                      >
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-lg bg-muted border border-border overflow-hidden flex items-center justify-center shrink-0">
-                              {product.images?.[0] ? (
-                                <Image
-                                  src={resolveProductImageUrl(product.images[0])}
-                                  width={100}
-                                  height={100}
-                                  alt={product.name || "Product image"}
-                                  className="h-full w-full object-cover"
-                                />
-                              ) : (
-                                <Package
-                                  size={16}
-                                  className="text-muted-foreground"
-                                />
-                              )}
+                    {displayedProducts.map(
+                      (product: Product, index: number) => (
+                        <motion.tr
+                          key={product._id}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.02 }}
+                          className="border-b border-border/60 hover:bg-muted/40 transition-colors"
+                        >
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 rounded-lg bg-muted border border-border overflow-hidden flex items-center justify-center shrink-0">
+                                {product.images?.[0] ? (
+                                  <Image
+                                    src={resolveProductImageUrl(
+                                      product.images[0],
+                                    )}
+                                    width={100}
+                                    height={100}
+                                    alt={product.name || "Product image"}
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <Package
+                                    size={16}
+                                    className="text-muted-foreground"
+                                  />
+                                )}
+                              </div>
+                              <div>
+                                <span className="font-semibold text-sm text-foreground">
+                                  {product.name}
+                                </span>
+                                <p className="text-xs text-muted-foreground truncate max-w-[240px]">
+                                  {product.description}
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <span className="font-semibold text-sm text-foreground">
-                                {product.name}
-                              </span>
-                              <p className="text-xs text-muted-foreground truncate max-w-[240px]">
-                                {product.description}
-                              </p>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className="text-xs border-border bg-muted/50 font-normal"
-                          >
-                            {typeof product.category === "string"
-                              ? product.category
-                              : product.category?.name ?? "General"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="font-semibold text-sm text-foreground">
-                          £{product.price?.toFixed(2)}
-                        </TableCell>
-                        <TableCell className="text-sm text-foreground">
-                          {product.quantity}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={
-                              (product.quantity || 0) >= 1
-                                ? "bg-primary/10 text-primary border-primary/20 font-medium"
-                                : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 font-medium"
-                            }
-                          >
-                            {(product.quantity || 0) >= 1
-                              ? "In Stock"
-                              : "Out of Stock"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-8 w-8 hover:bg-muted rounded-md text-muted-foreground hover:text-foreground"
-                            onClick={() => handleEditProduct(product)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </motion.tr>
-                    ))}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className="text-xs border-border bg-muted/50 font-normal"
+                            >
+                              {typeof product.category === "string"
+                                ? product.category
+                                : (product.category?.name ?? "General")}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-semibold text-sm text-foreground">
+                            £{product.price?.toFixed(2)}
+                          </TableCell>
+                          <TableCell className="text-sm text-foreground">
+                            {product.quantity}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={
+                                (product.quantity || 0) >= 1
+                                  ? "bg-primary/10 text-primary border-primary/20 font-medium"
+                                  : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 font-medium"
+                              }
+                            >
+                              {(product.quantity || 0) >= 1
+                                ? "In Stock"
+                                : "Out of Stock"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8 hover:bg-muted rounded-md text-muted-foreground hover:text-foreground"
+                              onClick={() => handleEditProduct(product)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </motion.tr>
+                      ),
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
@@ -401,6 +424,12 @@ export default Products;
 
 import type { GetServerSidePropsContext } from "next";
 
+/**
+ * Server-side admin auth gate for the Products route.
+ *
+ * @param ctx - Next.js server-side context for the incoming request, including `req`/`res` and cookies.
+ * @returns The {@link requireAuth} result: `props` with the authenticated admin user, or a redirect to `/` / `/?error=admin_required` when the session is missing or not an admin.
+ */
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { requireAuth } = await import("@/lib/ssrAuth");
   return requireAuth(ctx);

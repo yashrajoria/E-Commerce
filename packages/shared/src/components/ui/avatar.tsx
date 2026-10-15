@@ -5,6 +5,21 @@ import * as AvatarPrimitive from "@radix-ui/react-avatar";
 
 import { cn } from "../../utils";
 
+/**
+ * Renders a circular avatar container that clips its content.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. Built on Radix UI's avatar
+ * primitive; pair it with {@link AvatarImage} and {@link AvatarFallback}.
+ *
+ * @example
+ * ```tsx
+ * <Avatar>
+ *   <AvatarImage src={user.avatar ?? undefined} alt={user.name} />
+ *   <AvatarFallback>{user.name?.[0] ?? "U"}</AvatarFallback>
+ * </Avatar>
+ * ```
+ */
 function Avatar({
   className,
   ...props
@@ -21,6 +36,17 @@ function Avatar({
   );
 }
 
+/**
+ * Renders the avatar image, waiting for the source to load before revealing it.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <AvatarImage src="/avatars/ada.png" alt="Ada Lovelace" />
+ * ```
+ */
 function AvatarImage({
   className,
   ...props
@@ -34,6 +60,17 @@ function AvatarImage({
   );
 }
 
+/**
+ * Renders fallback content shown while {@link AvatarImage} loads or when it fails.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <AvatarFallback>AL</AvatarFallback>
+ * ```
+ */
 function AvatarFallback({
   className,
   ...props

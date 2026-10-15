@@ -3,10 +3,29 @@ import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
 import type { ActionCard, BundleItem, Message } from "./types";
 
+/**
+ * Manages the AI Personal Shopper conversation and exposes its state and handlers.
+ *
+ * @remarks
+ * Streams assistant answers from `/api/shopper/stream` (Server-Sent Events) and falls back to a single `/api/shopper/query` request when the stream returns no content. Coupons delivered with a bundle are persisted to `localStorage` as `saved_coupon` and `applied_coupon`. The hook expects the cart context (`useCart`) and a sonner toaster to be mounted.
+ *
+ * @returns An object containing:
+ * - `prompt` / `setPrompt` — the draft input value and its setter.
+ * - `loading` — true while a shopper request is in flight.
+ * - `liveStatus` — the latest streaming status label, or null when idle.
+ * - `messages` — the ordered chat turns, seeded with a welcome message.
+ * - `checkedItemsMap` — per-message, per-bundle-item checkbox state.
+ * - `handleToggleItem` — toggles one bundle item for a given message id.
+ * - `handleAddBundleToCart` — adds the selected items of a bundle to the cart and saves its coupon code.
+ * - `handleSubmit` — sends a prompt (or the current draft) and streams the assistant reply.
+ * - `clearChat` — starts a fresh session id and transcript.
+ */
 export function useShopperChat() {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sessionId, setSessionId] = useState<string>(() => `shopper-${Date.now()}`);
+  const [sessionId, setSessionId] = useState<string>(
+    () => `shopper-${Date.now()}`,
+  );
   const [liveStatus, setLiveStatus] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -16,7 +35,9 @@ export function useShopperChat() {
       timestamp: new Date(),
     },
   ]);
-  const [checkedItemsMap, setCheckedItemsMap] = useState<Record<string, Record<string, boolean>>>({});
+  const [checkedItemsMap, setCheckedItemsMap] = useState<
+    Record<string, Record<string, boolean>>
+  >({});
 
   const { addToCart } = useCart();
 
@@ -70,7 +91,7 @@ export function useShopperChat() {
       {
         duration: 4000,
         icon: "🎉",
-      }
+      },
     );
   };
 
@@ -142,14 +163,19 @@ export function useShopperChat() {
             }
 
             if (eventType === "status") {
-              setLiveStatus(typeof parsedData.message === "string" ? parsedData.message : null);
+              setLiveStatus(
+                typeof parsedData.message === "string"
+                  ? parsedData.message
+                  : null,
+              );
             } else if (eventType === "token") {
-              const delta = typeof parsedData.delta === "string" ? parsedData.delta : "";
+              const delta =
+                typeof parsedData.delta === "string" ? parsedData.delta : "";
               if (delta) receivedContent = true;
               setMessages((prev) =>
                 prev.map((m) =>
-                  m.id === assistantMsgId ? { ...m, text: m.text + delta } : m
-                )
+                  m.id === assistantMsgId ? { ...m, text: m.text + delta } : m,
+                ),
               );
             } else if (eventType === "action_card") {
               const card = parsedData as unknown as ActionCard;
@@ -166,17 +192,17 @@ export function useShopperChat() {
               }
               setMessages((prev) =>
                 prev.map((m) =>
-                  m.id === assistantMsgId ? { ...m, actionCard: card } : m
-                )
+                  m.id === assistantMsgId ? { ...m, actionCard: card } : m,
+                ),
               );
             } else if (eventType === "steps") {
-              const stepsArr = Array.isArray(parsedData.steps) ? (parsedData.steps as string[]) : [];
+              const stepsArr = Array.isArray(parsedData.steps)
+                ? (parsedData.steps as string[])
+                : [];
               setMessages((prev) =>
                 prev.map((m) =>
-                  m.id === assistantMsgId
-                    ? { ...m, steps: stepsArr }
-                    : m
-                )
+                  m.id === assistantMsgId ? { ...m, steps: stepsArr } : m,
+                ),
               );
             } else if (eventType === "done") {
               if (typeof parsedData.answer === "string" && parsedData.answer) {
@@ -185,12 +211,15 @@ export function useShopperChat() {
                   prev.map((m) =>
                     m.id === assistantMsgId && !m.text
                       ? { ...m, text: parsedData.answer as string }
-                      : m
-                  )
+                      : m,
+                  ),
                 );
               }
             } else if (eventType === "error") {
-              const errMsg = typeof parsedData.error === "string" ? parsedData.error : "Stream returned error";
+              const errMsg =
+                typeof parsedData.error === "string"
+                  ? parsedData.error
+                  : "Stream returned error";
               throw new Error(errMsg);
             }
           }
@@ -203,7 +232,10 @@ export function useShopperChat() {
         }
       }
     } catch (streamErr) {
-      console.warn("[shopper] Streaming attempt failed, falling back to sync query:", streamErr);
+      console.warn(
+        "[shopper] Streaming attempt failed, falling back to sync query:",
+        streamErr,
+      );
       setMessages((prev) => prev.filter((m) => m.id !== assistantMsgId));
       streamedSuccessfully = false;
     }
@@ -289,4 +321,3 @@ export function useShopperChat() {
     clearChat,
   };
 }
-

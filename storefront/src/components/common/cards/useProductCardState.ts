@@ -7,6 +7,16 @@ import { resolveProductImageUrl } from "@ecommerce/shared";
 import React, { useState } from "react";
 import type { ProductCardState } from "./types";
 
+/**
+ * Derives image, category, stock, discount, and action-handler state for a product card.
+ *
+ * @remarks
+ * Client hook — combines local React state with the storefront cart and wishlist contexts.
+ *
+ * @param product - Product whose card state should be computed.
+ * @returns A {@link ProductCardState} carrying the resolved image and category, wishlist/stock/discount flags, and the `handleAddToCart`, `handleWishlistToggle`, and `setImageError` callbacks.
+ * @throws {@link Error} When called outside `CartProvider` or `WishlistProvider`, via the underlying `useCart`/`useWishlist` guards.
+ */
 export function useProductCardState(product: Product): ProductCardState {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, hasWishlistItem } = useWishlist();
@@ -57,7 +67,8 @@ export function useProductCardState(product: Product): ProductCardState {
     product.originalPrice > product.price;
   const discountPercent = hasLegitimateDiscount
     ? Math.round(
-        ((product.originalPrice! - product.price) / product.originalPrice!) * 100
+        ((product.originalPrice! - product.price) / product.originalPrice!) *
+          100,
       )
     : null;
 
@@ -75,4 +86,3 @@ export function useProductCardState(product: Product): ProductCardState {
     setImageError,
   };
 }
-

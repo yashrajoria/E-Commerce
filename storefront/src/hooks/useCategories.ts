@@ -4,11 +4,20 @@ import { axiosInstance } from "@/utils/axiosInstance";
 import { useQuery } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 
+/**
+ * Normalized storefront category consumed by catalog filters and the
+ * categories page.
+ */
 export interface Category {
+  /** Unique category identifier. */
   id: string;
+  /** Display name of the category. */
   name: string;
+  /** Lucide icon name, defaulting to `"Package"` when the API omits it. */
   icon: string;
+  /** Image URL, defaulting to the local placeholder when the API omits it. */
   image: string;
+  /** Product count for the category (total/products/direct, whichever the API provides). */
   productCount: number;
 }
 
@@ -35,11 +44,14 @@ const normalizeCategory = (item: RawCategory): Category | null => {
     icon: item.icon ?? "Package",
     image: item.image ?? "/icons8-image-100.png",
     productCount:
-      typeof item.totalProductCount === "number" && Number.isFinite(item.totalProductCount)
+      typeof item.totalProductCount === "number" &&
+      Number.isFinite(item.totalProductCount)
         ? item.totalProductCount
-        : typeof item.directProductCount === "number" && Number.isFinite(item.directProductCount)
+        : typeof item.directProductCount === "number" &&
+            Number.isFinite(item.directProductCount)
           ? item.directProductCount
-          : typeof item.productCount === "number" && Number.isFinite(item.productCount)
+          : typeof item.productCount === "number" &&
+              Number.isFinite(item.productCount)
             ? item.productCount
             : 0,
   };
@@ -86,13 +98,24 @@ const fetchCategories = async (signal?: AbortSignal): Promise<Category[]> => {
           ? payload.data
           : [];
     categories.push(...(pageItems as RawCategory[]));
-    totalPages = Number(payload?.meta?.totalPages ?? payload?.meta?.total_pages ?? 1) || 1;
+    totalPages =
+      Number(payload?.meta?.totalPages ?? payload?.meta?.total_pages ?? 1) || 1;
     page += 1;
   } while (page <= totalPages);
 
   return flattenCategoryTree(categories);
 };
 
+/**
+ * React Query hook that loads the full category tree from the catalog API.
+ *
+ * @remarks
+ * Pages through the catalog categories endpoint ({@link API_ROUTES}.CATEGORIES.ALL, 100 per page), normalizes each
+ * entry, and flattens the tree into a deduplicated {@link Category} list.
+ * Results stay fresh for 15 minutes; rate-limited (429) responses are not retried.
+ *
+ * @returns The React Query result — `data` holds the flattened categories and `isLoading`/`error` surface request state.
+ */
 export function useCategories() {
   return useQuery<Category[]>({
     queryKey: ["categories"],

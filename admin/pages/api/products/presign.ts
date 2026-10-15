@@ -7,10 +7,7 @@ import { withAdminApi } from "@/lib/requireAdminApi";
 
 const API_URL = getAdminApiBaseUrl();
 
-async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {
     return res.status(405).json({ message: "Method not allowed" });
   }
@@ -40,4 +37,16 @@ async function handler(
   }
 }
 
+/**
+ * Proxies `GET /api/products/presign` to the backend admin presign endpoint.
+ *
+ * @remarks
+ * Wrapped in {@link withAdminApi}, which enforces same-origin checks and an admin session before the proxy runs.
+ * Calls `GET bff/admin/products/presign` (with an optional `sku` query parameter) because the public products API
+ * does not inject the `X-User-Role` header; failures are mapped through `getResponseInfo`.
+ *
+ * @param req - The Next.js API request; the optional `sku` query parameter is forwarded to the backend.
+ * @param res - The Next.js API response.
+ * @returns A promise that resolves once the presign data or an error response has been sent.
+ */
 export default withAdminApi(handler);

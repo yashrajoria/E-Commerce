@@ -6,6 +6,12 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "../../utils";
 
+/**
+ * Class-variance-authority recipe behind {@link Badge}'s styling.
+ *
+ * @remarks
+ * Variants: `default`, `secondary`, `destructive` and `outline`.
+ */
 const badgeVariants = cva(
   "inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden",
   {
@@ -27,13 +33,36 @@ const badgeVariants = cva(
   },
 );
 
+/** Props accepted by {@link Badge}. */
+type BadgeProps = React.ComponentProps<"span"> &
+  VariantProps<typeof badgeVariants> & {
+    /**
+     * Renders the single child element instead of a `<span>`, merging the
+     * badge props onto it through Radix `Slot`.
+     *
+     * @defaultValue false
+     */
+    asChild?: boolean;
+  };
+
+/**
+ * Renders a compact status label or tag.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. Styling comes from the cva
+ * recipe in {@link badgeVariants}.
+ *
+ * @example
+ * ```tsx
+ * <Badge variant="secondary">Processing</Badge>
+ * ```
+ */
 function Badge({
   className,
   variant,
   asChild = false,
   ...props
-}: React.ComponentProps<"span"> &
-  VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
+}: BadgeProps) {
   const Comp = asChild ? Slot : "span";
 
   return (

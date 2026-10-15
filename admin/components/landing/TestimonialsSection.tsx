@@ -47,6 +47,17 @@ const testimonials = [
   },
 ];
 
+/**
+ * Renders the auto-rotating testimonial carousel with manual navigation controls.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <TestimonialsSection />
+ * ```
+ */
 export default function TestimonialsSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });

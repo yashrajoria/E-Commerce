@@ -4,6 +4,25 @@ import * as React from "react";
 
 import { cn } from "../../utils";
 
+/**
+ * Renders a rounded, bordered surface that groups related content.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. Compose it with
+ * {@link CardHeader}, {@link CardTitle}, {@link CardDescription},
+ * {@link CardAction}, {@link CardContent} and {@link CardFooter}.
+ *
+ * @example
+ * ```tsx
+ * <Card className="w-80">
+ *   <CardHeader>
+ *     <CardTitle>Revenue</CardTitle>
+ *     <CardDescription>Last 30 days</CardDescription>
+ *   </CardHeader>
+ *   <CardContent>{formatCurrency(12400)}</CardContent>
+ * </Card>
+ * ```
+ */
 function Card({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -17,6 +36,20 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/**
+ * Renders the header row of a {@link Card} that lays out title, description and action.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <CardHeader>
+ *   <CardTitle>Recent orders</CardTitle>
+ *   <CardDescription>Updated hourly</CardDescription>
+ * </CardHeader>
+ * ```
+ */
 function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -30,6 +63,17 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/**
+ * Renders the semibold title line of a {@link Card}.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <CardTitle>Revenue</CardTitle>
+ * ```
+ */
 function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -40,6 +84,17 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/**
+ * Renders muted helper text below a {@link CardTitle}.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <CardDescription>Last 30 days</CardDescription>
+ * ```
+ */
 function CardDescription({
   className,
   ...props
@@ -53,6 +108,24 @@ function CardDescription({
   );
 }
 
+/**
+ * Renders an action slot aligned to the top-right of a {@link CardHeader}.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <CardHeader>
+ *   <CardTitle>Revenue</CardTitle>
+ *   <CardAction>
+ *     <Button size="sm" variant="ghost">
+ *       Export
+ *     </Button>
+ *   </CardAction>
+ * </CardHeader>
+ * ```
+ */
 function CardAction({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -66,6 +139,17 @@ function CardAction({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/**
+ * Renders the main body area of a {@link Card} with horizontal padding.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <CardContent>{formatCurrency(12400)}</CardContent>
+ * ```
+ */
 function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -76,6 +160,19 @@ function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/**
+ * Renders the footer row of a {@link Card} for secondary actions or metadata.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <CardFooter>
+ *   <Button variant="outline">View all orders</Button>
+ * </CardFooter>
+ * ```
+ */
 function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div

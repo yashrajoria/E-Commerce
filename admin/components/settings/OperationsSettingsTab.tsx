@@ -10,6 +10,17 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Truck, CreditCard, Database } from "lucide-react";
 
+/**
+ * Renders the shipping and fulfillment card with the enabled delivery options and their costs.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <ShippingSettingsCard />
+ * ```
+ */
 export const ShippingSettingsCard: React.FC = () => {
   return (
     <Card className="glass-effect border-white/[0.06]">
@@ -17,13 +28,23 @@ export const ShippingSettingsCard: React.FC = () => {
         <CardTitle className="text-lg flex items-center gap-2">
           <Truck className="h-5 w-5 text-purple-400" /> Shipping & Fulfillment
         </CardTitle>
-        <CardDescription>Delivery rules and shipping carrier integration</CardDescription>
+        <CardDescription>
+          Delivery rules and shipping carrier integration
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {[
-          { name: "Standard Shipping (3-5 days)", cost: "$5.00", enabled: true },
+          {
+            name: "Standard Shipping (3-5 days)",
+            cost: "$5.00",
+            enabled: true,
+          },
           { name: "Express Next-Day Air", cost: "$15.00", enabled: true },
-          { name: "Free Shipping on orders > $100", cost: "$0.00", enabled: true },
+          {
+            name: "Free Shipping on orders > $100",
+            cost: "$0.00",
+            enabled: true,
+          },
         ].map((s) => (
           <div
             key={s.name}
@@ -41,6 +62,17 @@ export const ShippingSettingsCard: React.FC = () => {
   );
 };
 
+/**
+ * Renders the payment gateways card with each provider's connection status.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <PaymentsSettingsCard />
+ * ```
+ */
 export const PaymentsSettingsCard: React.FC = () => {
   return (
     <Card className="glass-effect border-white/[0.06]">
@@ -52,7 +84,11 @@ export const PaymentsSettingsCard: React.FC = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         {[
-          { name: "Stripe Card Processing", status: "Connected", enabled: true },
+          {
+            name: "Stripe Card Processing",
+            status: "Connected",
+            enabled: true,
+          },
           { name: "Apple Pay & Google Pay", status: "Active", enabled: true },
           { name: "Cash on Delivery", status: "Optional", enabled: false },
         ].map((p) => (
@@ -81,13 +117,34 @@ export const PaymentsSettingsCard: React.FC = () => {
   );
 };
 
+/** Props accepted by {@link AdvancedSettingsCard}. */
 export interface AdvancedSettingsCardProps {
+  /** Whether daily catalog backups are enabled. */
   autoBackup: boolean;
+  /** Called with the next auto-backup value when the switch toggles. */
   setAutoBackup: (v: boolean) => void;
+  /** Whether analytics and telemetry collection is enabled. */
   analyticsEnabled: boolean;
+  /** Called with the next analytics value when the switch toggles. */
   setAnalyticsEnabled: (v: boolean) => void;
 }
 
+/**
+ * Renders the platform and auditing card with auto-backup and analytics toggles.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <AdvancedSettingsCard
+ *   autoBackup={autoBackup}
+ *   setAutoBackup={setAutoBackup}
+ *   analyticsEnabled={analyticsEnabled}
+ *   setAnalyticsEnabled={setAnalyticsEnabled}
+ * />
+ * ```
+ */
 export const AdvancedSettingsCard: React.FC<AdvancedSettingsCardProps> = ({
   autoBackup,
   setAutoBackup,
@@ -131,4 +188,3 @@ export const AdvancedSettingsCard: React.FC<AdvancedSettingsCardProps> = ({
     </Card>
   );
 };
-

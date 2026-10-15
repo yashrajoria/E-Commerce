@@ -41,14 +41,20 @@ const getStatusBadge = (status: string) => {
     case "delivered":
     case "paid":
       return (
-        <Badge variant="secondary" className="gap-1 text-[11px] font-normal text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
+        <Badge
+          variant="secondary"
+          className="gap-1 text-[11px] font-normal text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20"
+        >
           <CheckCircle className="h-3 w-3" />
           <span className="capitalize">{status.replace("_", " ")}</span>
         </Badge>
       );
     case "shipped":
       return (
-        <Badge variant="secondary" className="gap-1 text-[11px] font-normal text-foreground bg-muted border border-border">
+        <Badge
+          variant="secondary"
+          className="gap-1 text-[11px] font-normal text-foreground bg-muted border border-border"
+        >
           <Truck className="h-3 w-3" />
           <span className="capitalize">{status.replace("_", " ")}</span>
         </Badge>
@@ -56,14 +62,20 @@ const getStatusBadge = (status: string) => {
     case "pending":
     case "pending_payment":
       return (
-        <Badge variant="secondary" className="gap-1 text-[11px] font-normal text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20">
+        <Badge
+          variant="secondary"
+          className="gap-1 text-[11px] font-normal text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20"
+        >
           <Clock className="h-3 w-3" />
           <span className="capitalize">{status.replace("_", " ")}</span>
         </Badge>
       );
     default:
       return (
-        <Badge variant="secondary" className="gap-1 text-[11px] font-normal text-muted-foreground bg-muted border border-border">
+        <Badge
+          variant="secondary"
+          className="gap-1 text-[11px] font-normal text-muted-foreground bg-muted border border-border"
+        >
           <Package className="h-3 w-3" />
           <span className="capitalize">{status.replace("_", " ")}</span>
         </Badge>
@@ -80,21 +92,42 @@ function safeNumber(v: unknown) {
   return Number.isFinite(n) ? n : 0;
 }
 
-export function OrderHistory({ orders: ordersProp }: { orders?: unknown }) {
+/** Props accepted by {@link OrderHistory}. */
+interface OrderHistoryProps {
+  /** Optional pre-fetched orders; when not an array the component falls back to {@link useUserOrders}. */
+  orders?: unknown;
+}
+
+/**
+ * Renders the customer's order history with status badges and return/exchange actions.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. Normalizes PascalCase or snake_case order records, resolves product
+ * names through parallel product queries, and opens {@link ReturnExchangeModal} for the selected order.
+ *
+ * @example
+ * ```tsx
+ * <TabsContent value="orders">
+ *   <OrderHistory orders={user?.orders} />
+ * </TabsContent>
+ * ```
+ */
+export function OrderHistory({ orders: ordersProp }: OrderHistoryProps) {
   const data = useUserOrders();
-  const [selectedOrderForReturn, setSelectedOrderForReturn] = useState<NormalizedOrder | null>(null);
+  const [selectedOrderForReturn, setSelectedOrderForReturn] =
+    useState<NormalizedOrder | null>(null);
 
   let rawOrders: RawRecord[] = [];
   if (Array.isArray(ordersProp)) {
-    rawOrders = ordersProp.filter(
-      (item): item is RawRecord => Boolean(item && typeof item === "object"),
+    rawOrders = ordersProp.filter((item): item is RawRecord =>
+      Boolean(item && typeof item === "object"),
     );
   } else if (data) {
     const hookData = data as OrdersHookData;
     const nested = hookData?.orders?.orders;
     if (Array.isArray(nested)) {
-      rawOrders = nested.filter(
-        (item): item is RawRecord => Boolean(item && typeof item === "object"),
+      rawOrders = nested.filter((item): item is RawRecord =>
+        Boolean(item && typeof item === "object"),
       );
     }
   }
@@ -204,7 +237,13 @@ export function OrderHistory({ orders: ordersProp }: { orders?: unknown }) {
               </div>
               <div className="flex items-center gap-4 text-xs">
                 <span className="text-muted-foreground">
-                  {order.date ? new Date(order.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—"}
+                  {order.date
+                    ? new Date(order.date).toLocaleDateString("en-GB", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })
+                    : "—"}
                 </span>
                 <span className="font-semibold text-foreground">
                   {formatGBP(order.total)}

@@ -2,16 +2,14 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { proxyRequest } from "@ecommerce/shared";
 import { withAdminApi } from "@/lib/requireAdminApi";
 
+/** Route configuration — keeps the default body parser enabled so the JSON `items` payload arrives as `req.body`. */
 export const config = {
   api: {
     bodyParser: true,
   },
 };
 
-async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method not allowed" });
   }
@@ -89,4 +87,18 @@ async function handler(
   return res.status(207).json({ results });
 }
 
+/**
+ * Bulk-creates categories at `POST /api/categories/bulk`.
+ *
+ * @remarks
+ * Wrapped in {@link withAdminApi}, which enforces same-origin checks and an admin session before the proxy runs.
+ * Requires a JSON body whose `items` field is an array. It first tries the backend bulk endpoint
+ * `POST /bff/admin/categories/bulk`; if that answers `404`/`405` or throws, it falls back to creating each item
+ * individually through `POST /bff/admin/categories`. The fallback answers `207` with a per-item `results` array of
+ * status/data/error entries.
+ *
+ * @param req - The Next.js API request; `req.body.items` must be an array of category payloads.
+ * @param res - The Next.js API response.
+ * @returns A promise that resolves once the proxied bulk response or the per-item fallback summary has been sent.
+ */
 export default withAdminApi(handler);

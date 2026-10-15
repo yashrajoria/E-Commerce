@@ -1,15 +1,10 @@
 import { motion } from "framer-motion";
-import {
-  ArrowRight,
-  Play,
-  Shield,
-  Lock,
-  Globe,
-  Database,
-} from "lucide-react";
+import { ArrowRight, Play, Shield, Lock, Globe, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+/** Props accepted by {@link HeroSection}. */
 interface HeroSectionProps {
+  /** Called when the visitor clicks the "Deploy Dashboard" button. */
   onGetStarted: () => void;
 }
 
@@ -19,43 +14,57 @@ const trustBadges = [
   { icon: Database, label: "Real-time Syncing" },
 ];
 
+/**
+ * Renders the landing-page hero with headline, primary actions, trust badges and a mock dashboard.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <HeroSection onGetStarted={openLogin} />
+ * ```
+ */
 export default function HeroSection({ onGetStarted }: HeroSectionProps) {
   return (
     <section className="relative min-h-[95vh] flex items-center justify-center overflow-hidden pt-28 pb-16">
       {/* ── Background Elements ── */}
       <div className="absolute inset-0 z-0">
         {/* Subtle grid with fade */}
-        <div 
-          className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07]" 
-          style={{ 
+        <div
+          className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07]"
+          style={{
             backgroundImage: `linear-gradient(to right, #888 1px, transparent 1px), linear-gradient(to bottom, #888 1px, transparent 1px)`,
-            backgroundSize: '60px 60px',
-            maskImage: 'radial-gradient(circle at center, black, transparent 80%)'
-          }} 
+            backgroundSize: "60px 60px",
+            maskImage:
+              "radial-gradient(circle at center, black, transparent 80%)",
+          }}
         />
-        
+
         {/* Deep ambient glows */}
         <motion.div
           className="absolute top-1/4 -left-32 w-[600px] h-[600px] rounded-full blur-[120px]"
           style={{
-            background: "radial-gradient(circle, hsla(23, 83%, 58%, 0.08) 0%, transparent 70%)",
+            background:
+              "radial-gradient(circle, hsla(23, 83%, 58%, 0.08) 0%, transparent 70%)",
           }}
-          animate={{ 
+          animate={{
             scale: [1, 1.1, 1],
             opacity: [0.3, 0.5, 0.3],
-            x: [0, 20, 0] 
+            x: [0, 20, 0],
           }}
           transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
           className="absolute bottom-1/4 -right-32 w-[500px] h-[500px] rounded-full blur-[100px]"
           style={{
-            background: "radial-gradient(circle, hsla(191, 73%, 56%, 0.06) 0%, transparent 70%)",
+            background:
+              "radial-gradient(circle, hsla(191, 73%, 56%, 0.06) 0%, transparent 70%)",
           }}
-          animate={{ 
+          animate={{
             scale: [1, 1.2, 1],
             opacity: [0.2, 0.4, 0.2],
-            x: [0, -30, 0]
+            x: [0, -30, 0],
           }}
           transition={{
             duration: 15,
@@ -76,7 +85,9 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
         >
           <div className="group inline-flex items-center gap-2.5 px-4 py-2 rounded-full glass-effect glass-hover border border-white/[0.08] text-sm font-medium text-foreground/80 transition-all cursor-pointer">
             <span className="flex h-2 w-2 rounded-full bg-primary" />
-            <span className="text-xs uppercase tracking-[0.1em] font-semibold">Introducing V2.0</span>
+            <span className="text-xs uppercase tracking-[0.1em] font-semibold">
+              Introducing V2.0
+            </span>
             <div className="w-[1px] h-3 bg-white/10 mx-1" />
             <span>AI-Powered Inventory Prediction</span>
             <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
@@ -91,11 +102,16 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
           className="space-y-6"
         >
           <h1 className="text-6xl sm:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.95] max-w-5xl mx-auto">
-            The <span className="text-gradient">Intelligence</span> Layer for Your <span className="text-foreground/90 italic serif font-medium">Business</span>
+            The <span className="text-gradient">Intelligence</span> Layer for
+            Your{" "}
+            <span className="text-foreground/90 italic serif font-medium">
+              Business
+            </span>
           </h1>
           <p className="mt-8 text-xl sm:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-light">
-            An industrial-grade e-commerce engine designed for high-growth brands. 
-            Powerful metrics, predictive analytics, and effortless operations.
+            An industrial-grade e-commerce engine designed for high-growth
+            brands. Powerful metrics, predictive analytics, and effortless
+            operations.
           </p>
         </motion.div>
 
@@ -153,25 +169,25 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 40 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ 
-            duration: 1, 
-            delay: 0.8, 
-            ease: [0.22, 1, 0.36, 1] 
+          transition={{
+            duration: 1,
+            delay: 0.8,
+            ease: [0.22, 1, 0.36, 1],
           }}
           className="mt-24 relative max-w-5xl mx-auto group"
         >
           {/* Multi-layered shadows and glows */}
-          <motion.div 
+          <motion.div
             className="absolute -inset-20 bg-primary/20 rounded-[4rem] blur-[100px] z-0"
-            animate={{ 
+            animate={{
               opacity: [0.1, 0.25, 0.1],
-              scale: [0.8, 1.1, 0.8]
+              scale: [0.8, 1.1, 0.8],
             }}
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           />
           <div className="absolute -inset-10 bg-primary/10 rounded-[3rem] blur-[80px] opacity-0 group-hover:opacity-100 transition-opacity duration-1000 z-0" />
           <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-transparent to-accent/20 rounded-3xl blur-md opacity-50 z-0" />
-          
+
           <div className="relative glass-effect-strong rounded-3xl border border-white/[0.1] overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] z-10">
             {/* Browser-style Title Bar */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.05] bg-white/[0.02]">
@@ -191,21 +207,45 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
               {/* Top Metrics Row */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { label: "Net Revenue", value: "£42.8k", trend: "+12%", color: "text-primary" },
-                  { label: "Conversion", value: "3.24%", trend: "+0.8%", color: "text-accent" },
-                  { label: "Avg. Ticket", value: "£154", trend: "-2%", color: "text-muted-foreground" },
-                  { label: "Active Subs", value: "1,284", trend: "+24%", color: "text-emerald-400" },
+                  {
+                    label: "Net Revenue",
+                    value: "£42.8k",
+                    trend: "+12%",
+                    color: "text-primary",
+                  },
+                  {
+                    label: "Conversion",
+                    value: "3.24%",
+                    trend: "+0.8%",
+                    color: "text-accent",
+                  },
+                  {
+                    label: "Avg. Ticket",
+                    value: "£154",
+                    trend: "-2%",
+                    color: "text-muted-foreground",
+                  },
+                  {
+                    label: "Active Subs",
+                    value: "1,284",
+                    trend: "+24%",
+                    color: "text-emerald-400",
+                  },
                 ].map((kpi, i) => (
                   <motion.div
                     key={kpi.label}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 1.2 + (i * 0.1) }}
+                    transition={{ delay: 1.2 + i * 0.1 }}
                     className="p-5 rounded-2xl bg-white/[0.03] border border-white/[0.05] flex flex-col items-start"
                   >
-                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold mb-2">{kpi.label}</span>
+                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold mb-2">
+                      {kpi.label}
+                    </span>
                     <span className="text-2xl font-bold mb-1">{kpi.value}</span>
-                    <span className={`text-[10px] font-bold ${kpi.trend.startsWith('+') ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    <span
+                      className={`text-[10px] font-bold ${kpi.trend.startsWith("+") ? "text-emerald-400" : "text-rose-400"}`}
+                    >
                       {kpi.trend} vs LY
                     </span>
                   </motion.div>
@@ -218,13 +258,20 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
                   <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-3">
                       <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                      <span className="text-xs font-bold tracking-tight uppercase">Performance Stream</span>
+                      <span className="text-xs font-bold tracking-tight uppercase">
+                        Performance Stream
+                      </span>
                     </div>
                     <div className="flex gap-1">
-                      {[1,2,3,4,5].map(j => <div key={j} className="w-1 h-3 rounded-full bg-white/10" />)}
+                      {[1, 2, 3, 4, 5].map((j) => (
+                        <div
+                          key={j}
+                          className="w-1 h-3 rounded-full bg-white/10"
+                        />
+                      ))}
                     </div>
                   </div>
-                  
+
                   {/* CSS Chart bars */}
                   <div className="flex items-end gap-2 h-32">
                     {Array.from({ length: 30 }).map((_, i) => (
@@ -232,20 +279,23 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
                         key={i}
                         className="flex-1 rounded-t-sm bg-primary/20"
                         initial={{ height: 0 }}
-                        animate={{ 
+                        animate={{
                           height: `${30 + Math.sin(i * 0.4) * 40 + Math.random() * 30}%`,
-                          backgroundColor: i > 20 ? 'rgba(var(--primary), 0.4)' : 'rgba(var(--primary), 0.1)'
+                          backgroundColor:
+                            i > 20
+                              ? "rgba(var(--primary), 0.4)"
+                              : "rgba(var(--primary), 0.1)",
                         }}
-                        transition={{ 
-                          duration: 1.5, 
-                          delay: 1.5 + (i * 0.03),
-                          ease: "circOut" 
+                        transition={{
+                          duration: 1.5,
+                          delay: 1.5 + i * 0.03,
+                          ease: "circOut",
                         }}
                       />
                     ))}
                   </div>
                 </div>
-                
+
                 {/* Side Utility Panel */}
                 <div className="rounded-2xl border border-dashed border-white/10 p-6 flex flex-col justify-between">
                   <div className="space-y-4">
@@ -254,21 +304,32 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
                         <Lock className="w-4 h-4 text-primary" />
                       </div>
                       <div>
-                        <p className="text-xs font-bold uppercase tracking-tight">Access Control</p>
-                        <p className="text-[10px] text-muted-foreground">Admin-only layer active</p>
+                        <p className="text-xs font-bold uppercase tracking-tight">
+                          Access Control
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">
+                          Admin-only layer active
+                        </p>
                       </div>
                     </div>
                     <div className="h-[1px] bg-white/5 w-full" />
                     <div className="space-y-2">
-                      {[1,2,3].map(s => (
-                        <div key={s} className="flex items-center justify-between">
+                      {[1, 2, 3].map((s) => (
+                        <div
+                          key={s}
+                          className="flex items-center justify-between"
+                        >
                           <div className="w-1/2 h-2 rounded-full bg-white/5" />
                           <div className="w-1/4 h-2 rounded-full bg-primary/20" />
                         </div>
                       ))}
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm" className="w-full text-[10px] uppercase tracking-widest font-bold opacity-50">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-[10px] uppercase tracking-widest font-bold opacity-50"
+                  >
                     Configuration required
                   </Button>
                 </div>
@@ -285,7 +346,9 @@ export default function HeroSection({ onGetStarted }: HeroSectionProps) {
         transition={{ delay: 3 }}
         className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
       >
-        <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40 font-bold">Discover</span>
+        <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/40 font-bold">
+          Discover
+        </span>
         <motion.div
           animate={{ y: [0, 6, 0] }}
           transition={{ duration: 2, repeat: Infinity }}

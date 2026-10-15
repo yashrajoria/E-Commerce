@@ -8,11 +8,35 @@ import Image from "next/image";
 import Link from "next/link";
 import { getLucideIcon } from "@/lib/utils";
 
+/** Props accepted by {@link CategoriesSection}. */
 type CategoriesSectionProps = {
+  /**
+   * Layout hint: `"carousel"` renders the scroll-arrow buttons next to the header.
+   *
+   * @defaultValue "carousel"
+   */
   layout?: "carousel" | "grid";
+  /**
+   * Case-insensitive substring matched against category names to narrow the list; empty shows all.
+   *
+   * @defaultValue ""
+   */
   filter?: string;
 };
 
+/**
+ * Renders the "Shop by Category" band with a horizontally scrollable row of category cards.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * Loads categories with `useCategories`, caps the list at ten entries (after applying `filter`), shows a skeleton row while loading, and renders nothing on error or when no category matches.
+ *
+ * @example
+ * ```tsx
+ * <CategoriesSection />
+ * ```
+ */
 export function CategoriesSection({
   layout = "carousel",
   filter = "",
@@ -22,7 +46,9 @@ export function CategoriesSection({
 
   const visibleCategories = categories
     .filter((category) =>
-      filter ? category.name.toLowerCase().includes(filter.toLowerCase()) : true,
+      filter
+        ? category.name.toLowerCase().includes(filter.toLowerCase())
+        : true,
     )
     .slice(0, 10);
 
@@ -133,7 +159,9 @@ export function CategoriesSection({
                     {category.name.replace(/-/g, " ")}
                   </h3>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {category.productCount ? `${category.productCount} items` : "Explore"}
+                    {category.productCount
+                      ? `${category.productCount} items`
+                      : "Explore"}
                   </p>
                 </div>
               </Link>

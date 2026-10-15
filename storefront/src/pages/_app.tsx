@@ -19,6 +19,19 @@ const inter = Inter({ subsets: ["latin"] });
 
 import { PersonalShopperWidget } from "@/components/shopper/PersonalShopperWidget";
 
+/**
+ * Root Pages Router component: mounts global providers (theming, auth,
+ * wishlist, cart, React Query), global metadata, and the shopper widget.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * // Next.js renders the app shell for every route — equivalent to:
+ * <App Component={Component} pageProps={pageProps} />
+ * ```
+ */
 export default function App({ Component, pageProps }: AppProps) {
   const [queryClient] = useState(
     () =>

@@ -6,13 +6,42 @@ import { MinusIcon } from "lucide-react";
 
 import { cn } from "../../utils";
 
+/** Props accepted by {@link InputOTP}. */
+type InputOTPProps = React.ComponentProps<typeof OTPInput> & {
+  /** Extra class names applied to the container element that lays out the slots. */
+  containerClassName?: string;
+};
+
+/**
+ * Renders an accessible one-time-password field composed of slot children.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. Wrap {@link InputOTPSlot} items
+ * in {@link InputOTPGroup} and separate groups with
+ * {@link InputOTPSeparator}.
+ *
+ * @example
+ * ```tsx
+ * <InputOTP maxLength={6} value={code} onChange={setCode}>
+ *   <InputOTPGroup>
+ *     <InputOTPSlot index={0} />
+ *     <InputOTPSlot index={1} />
+ *     <InputOTPSlot index={2} />
+ *   </InputOTPGroup>
+ *   <InputOTPSeparator />
+ *   <InputOTPGroup>
+ *     <InputOTPSlot index={3} />
+ *     <InputOTPSlot index={4} />
+ *     <InputOTPSlot index={5} />
+ *   </InputOTPGroup>
+ * </InputOTP>
+ * ```
+ */
 function InputOTP({
   className,
   containerClassName,
   ...props
-}: React.ComponentProps<typeof OTPInput> & {
-  containerClassName?: string;
-}) {
+}: InputOTPProps) {
   return (
     <OTPInput
       data-slot="input-otp"
@@ -26,6 +55,20 @@ function InputOTP({
   );
 }
 
+/**
+ * Groups {@link InputOTPSlot} children into a single row.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <InputOTPGroup>
+ *   <InputOTPSlot index={0} />
+ *   <InputOTPSlot index={1} />
+ * </InputOTPGroup>
+ * ```
+ */
 function InputOTPGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -36,13 +79,30 @@ function InputOTPGroup({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/** Props accepted by {@link InputOTPSlot}. */
+type InputOTPSlotProps = React.ComponentProps<"div"> & {
+  /** Zero-based position of this slot in the OTP sequence. */
+  index: number;
+};
+
+/**
+ * Renders a single character cell for an {@link InputOTP}.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. The character, focus ring and
+ * blinking caret are read from the surrounding OTP context, so the slot must
+ * be rendered inside an {@link InputOTP} of matching `maxLength`.
+ *
+ * @example
+ * ```tsx
+ * <InputOTPSlot index={0} />
+ * ```
+ */
 function InputOTPSlot({
   index,
   className,
   ...props
-}: React.ComponentProps<"div"> & {
-  index: number;
-}) {
+}: InputOTPSlotProps) {
   const inputOTPContext = React.useContext(OTPInputContext);
   const { char, hasFakeCaret, isActive } = inputOTPContext?.slots[index] ?? {};
 
@@ -66,6 +126,17 @@ function InputOTPSlot({
   );
 }
 
+/**
+ * Renders a decorative separator between two OTP groups.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <InputOTPSeparator />
+ * ```
+ */
 function InputOTPSeparator({ ...props }: React.ComponentProps<"div">) {
   return (
     <div data-slot="input-otp-separator" role="separator" {...props}>

@@ -13,14 +13,23 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AIInsightsDiagnostics, RequestLifecycle } from "@/types/ai-insights";
 
+/** Props accepted by {@link AnswerCanvas}. */
 interface AnswerCanvasProps {
+  /** Current request lifecycle state; selects loading, error, empty or answer view. */
   lifecycle: RequestLifecycle;
+  /** The generated answer text; an empty string shows the empty state. */
   answer: string;
+  /** Merchant-friendly error message shown when the request fails. */
   errorMessage: string | null;
+  /** Diagnostics for the latest response, including tools called and latency. */
   diagnostics: AIInsightsDiagnostics | null;
+  /** Raw technical error payload, used as a fallback for the details panel. */
   technicalError: unknown;
+  /** Whether the technical details panel is expanded. */
   showTechnicalDetails: boolean;
+  /** Called when the user toggles the technical details panel. */
   onToggleTechnicalDetails: () => void;
+  /** Called when the user retries a failed request. */
   onRetry: () => void;
 }
 
@@ -34,6 +43,27 @@ const formatLatency = (latencyMs: number | null) => {
   return `${(latencyMs / 1000).toFixed(2)} s`;
 };
 
+/**
+ * Renders the AI answer canvas, switching between loading, error, empty and
+ * answer states with copy actions and response diagnostics.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <AnswerCanvas
+ *   lifecycle={lifecycle}
+ *   answer={responseText}
+ *   errorMessage={friendlyError}
+ *   diagnostics={diagnostics}
+ *   technicalError={technicalError}
+ *   showTechnicalDetails={showTechnicalDetails}
+ *   onToggleTechnicalDetails={toggleTechnicalDetails}
+ *   onRetry={retry}
+ * />
+ * ```
+ */
 export const AnswerCanvas = ({
   lifecycle,
   answer,
@@ -143,11 +173,17 @@ export const AnswerCanvas = ({
           className="rounded-2xl border border-[hsla(35,74%,64%,0.35)] bg-[hsla(35,74%,64%,0.1)] p-5 text-[hsl(35,74%,92%)]"
         >
           <div className="flex items-start gap-3">
-            <AlertTriangle className="mt-0.5 size-5 text-[hsl(35,74%,70%)]" aria-hidden="true" />
+            <AlertTriangle
+              className="mt-0.5 size-5 text-[hsl(35,74%,70%)]"
+              aria-hidden="true"
+            />
             <div className="space-y-3">
-              <h3 className="text-lg font-semibold">Request could not be completed</h3>
+              <h3 className="text-lg font-semibold">
+                Request could not be completed
+              </h3>
               <p className="text-sm text-[hsl(35,74%,86%)]">
-                {errorMessage || "Something went wrong while generating insights."}
+                {errorMessage ||
+                  "Something went wrong while generating insights."}
               </p>
               <div className="flex flex-wrap items-center gap-2">
                 <Button
@@ -164,7 +200,9 @@ export const AnswerCanvas = ({
                   onClick={onToggleTechnicalDetails}
                   className="h-9 rounded-xl border-white/25 bg-transparent text-foreground hover:bg-white/[0.08]"
                 >
-                  {showTechnicalDetails ? "Hide technical details" : "Show technical details"}
+                  {showTechnicalDetails
+                    ? "Hide technical details"
+                    : "Show technical details"}
                 </Button>
               </div>
               {showTechnicalDetails && technicalDetailsText.length > 0 && (
@@ -187,27 +225,39 @@ export const AnswerCanvas = ({
           transition={{ duration: 0.22 }}
           className="glass-effect rounded-[28px] p-6"
         >
-          <h3 className="text-gradient text-lg font-semibold">AI answer canvas</h3>
+          <h3 className="text-gradient text-lg font-semibold">
+            AI answer canvas
+          </h3>
           <p className="mt-2 text-sm text-muted-foreground">
-            Ask a question to generate actionable insights with tool-backed evidence.
+            Ask a question to generate actionable insights with tool-backed
+            evidence.
           </p>
           <div className="mt-5 grid gap-3 md:grid-cols-3">
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-              <p className="text-sm font-semibold text-foreground">Ask for a decision</p>
+              <p className="text-sm font-semibold text-foreground">
+                Ask for a decision
+              </p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Use the workspace for an answer that ends in next actions, not just description.
+                Use the workspace for an answer that ends in next actions, not
+                just description.
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-              <p className="text-sm font-semibold text-foreground">Inspect the evidence</p>
+              <p className="text-sm font-semibold text-foreground">
+                Inspect the evidence
+              </p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Tool traces and diagnostics stay visible beside the answer instead of buried in a modal.
+                Tool traces and diagnostics stay visible beside the answer
+                instead of buried in a modal.
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-              <p className="text-sm font-semibold text-foreground">Keep continuity</p>
+              <p className="text-sm font-semibold text-foreground">
+                Keep continuity
+              </p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Recent prompts and saved lines let you revisit a thread without rebuilding context.
+                Recent prompts and saved lines let you revisit a thread without
+                rebuilding context.
               </p>
             </div>
           </div>
@@ -290,7 +340,9 @@ export const AnswerCanvas = ({
             <div>
               <p className="text-muted-foreground">Timestamp</p>
               <p className="mt-1 font-medium text-foreground">
-                {diagnostics?.timestamp ? new Date(diagnostics.timestamp).toLocaleString() : "-"}
+                {diagnostics?.timestamp
+                  ? new Date(diagnostics.timestamp).toLocaleString()
+                  : "-"}
               </p>
             </div>
             <div>

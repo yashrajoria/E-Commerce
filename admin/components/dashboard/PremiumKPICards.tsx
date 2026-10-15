@@ -39,17 +39,43 @@ const itemVariants = {
 function formatKPIValue(val: number, prefix = "", suffix = ""): string {
   // If revenue (prefix £), format as currency
   if (prefix === "£") {
-    const formatted = val > 9999 ? (val / 100).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : val.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const formatted =
+      val > 9999
+        ? (val / 100).toLocaleString("en-GB", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })
+        : val.toLocaleString("en-GB", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
     return `£${formatted}`;
   }
   return `${prefix}${val.toLocaleString("en-GB")}${suffix}`;
 }
 
-export default function PremiumKPICards({
-  data,
-}: {
+/** Props accepted by {@link PremiumKPICards}. */
+interface PremiumKPICardsProps {
+  /**
+   * KPI metrics keyed by metric name (`totalRevenue`, `totalOrders`,
+   * `totalProducts`, `activeUsers`), each with its current value and trend.
+   */
   data: Record<string, { value: number; trend: number } | undefined>;
-}) {
+}
+
+/**
+ * Renders the four premium KPI cards with staggered entrance animation and
+ * per-metric trend footers.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <PremiumKPICards data={dashboardData.kpis} />
+ * ```
+ */
+export default function PremiumKPICards({ data }: PremiumKPICardsProps) {
   if (!data) return null;
 
   const stats: KPIStat[] = [

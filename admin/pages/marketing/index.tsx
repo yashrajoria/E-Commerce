@@ -35,46 +35,92 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
-import { Megaphone, Tag, Plus, Copy, DollarSign, Users, Loader2 } from "lucide-react";
+import {
+  Megaphone,
+  Tag,
+  Plus,
+  Copy,
+  DollarSign,
+  Users,
+  Loader2,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { useAdminCoupons, useAdminCampaigns } from "@/lib/hooks/useAdminData";
-import { TableSkeleton, EmptyState, ErrorState } from "@/components/admin/shared/DataStates";
+import {
+  TableSkeleton,
+  EmptyState,
+  ErrorState,
+} from "@/components/admin/shared/DataStates";
 import { toast } from "sonner";
 import axios from "axios";
 import { getErrorMessage, getResponseInfo } from "@/lib/error";
 
+/** Coupon row as returned by the admin coupons API, before {@link normalizeCoupon} reconciles the aliases. */
 type CouponRecord = {
+  /** Unique coupon identifier. */
   id?: string | number;
+  /** Redeemable coupon code. */
   code?: string;
+  /** Discount kind; backend uses `flat` where the UI says `fixed`. */
   type?: "percentage" | "flat" | "fixed" | "freeshipping" | string;
+  /** Normalized discount amount or percentage. */
   discount?: number | string;
+  /** Raw API discount value, aliased into `discount`. */
   value?: number | string;
+  /** Normalized redemption count. */
   usageCount?: number;
+  /** Raw API redemption count, aliased into `usageCount`. */
   used_count?: number;
+  /** Normalized redemption cap; `0` means unlimited. */
   maxUses?: number;
+  /** Raw API redemption cap, aliased into `maxUses`. */
   usage_limit?: number;
+  /** Normalized validity start date. */
   startDate?: string;
+  /** Normalized validity end date. */
   endDate?: string;
+  /** Raw API expiry timestamp, aliased into `endDate`. */
   expires_at?: string;
+  /** Raw API creation timestamp, aliased into `startDate`. */
   created_at?: string;
+  /** Normalized status: `active`, `expired`, or the raw status. */
   status?: string;
+  /** Raw API active flag. */
   active?: boolean;
 };
 
+/** Marketing campaign as returned by the admin campaigns API. */
 type CampaignItem = {
+  /** Unique campaign identifier. */
   id?: string;
+  /** Campaign display name. */
   name: string;
+  /** Lifecycle status used for badge coloring. */
   status: string;
+  /** Estimated audience reach. */
   reach: number | string;
+  /** Recorded clicks. */
   clicks?: number | string;
+  /** Recorded conversions. */
   conversions: number | string;
+  /** Campaign budget. */
   budget?: number | string;
+  /** Amount spent so far. */
   spent?: number | string;
+  /** Attributed revenue. */
   revenue?: number | string;
+  /** Campaign start date. */
   startDate?: string;
+  /** Campaign end date, or `null` when open-ended. */
   endDate?: string | null;
 };
 
+/**
+ * Reconciles the admin coupons API's aliased fields into the flat {@link CouponRecord} shape the table renders.
+ *
+ * @param raw - Coupon row straight from the API.
+ * @returns A coupon with `discount`, `usageCount`, `maxUses`, `startDate`, and `endDate` filled in and `status` derived as `expired` when the expiry is in the past, otherwise `active`/`inactive`.
+ */
 function normalizeCoupon(raw: CouponRecord): CouponRecord {
   const active =
     typeof raw.active === "boolean"
@@ -101,6 +147,7 @@ function normalizeCoupon(raw: CouponRecord): CouponRecord {
   };
 }
 
+/** Tailwind badge classes for each coupon/campaign status. */
 const statusColors: Record<string, string> = {
   active: "bg-emerald-400/10 text-emerald-400 border-emerald-400/20",
   expired: "bg-red-400/10 text-red-400 border-red-400/20",
@@ -108,12 +155,30 @@ const statusColors: Record<string, string> = {
   completed: "bg-blue-400/10 text-blue-400 border-blue-400/20",
 };
 
+/**
+ * Formats an ISO date string for the coupon table.
+ *
+ * @param raw - Date string from the API; may be omitted.
+ * @returns `"-"` when absent, the original string when unparsable, otherwise a locale date string.
+ */
 const formatDate = (raw?: string) => {
   if (!raw) return "-";
   const d = new Date(raw);
   return Number.isNaN(d.getTime()) ? raw : d.toLocaleDateString();
 };
 
+/**
+ * Renders the marketing workspace with coupon KPI stats plus Coupons and Campaigns tabs.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration. Coupons and campaigns come from {@link useAdminCoupons} and {@link useAdminCampaigns}.
+ *
+ * @example
+ * ```tsx
+ * // Route: /marketing — rendered by the Next.js Pages Router.
+ * <Marketing />
+ * ```
+ */
 const Marketing = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -127,7 +192,11 @@ const Marketing = () => {
   });
 
   const { coupons, error, isLoading, mutate } = useAdminCoupons();
-  const { campaigns, isLoading: campaignsLoading, error: campaignsError } = useAdminCampaigns();
+  const {
+    campaigns,
+    isLoading: campaignsLoading,
+    error: campaignsError,
+  } = useAdminCampaigns();
   const couponRows = useMemo(
     () =>
       (Array.isArray(coupons) ? coupons : []).map((c) =>
@@ -136,7 +205,10 @@ const Marketing = () => {
     [coupons],
   );
   const activeCoupons = couponRows.filter((c) => c.status === "active").length;
-  const totalUsage = couponRows.reduce((sum, c) => sum + (c.usageCount || 0), 0);
+  const totalUsage = couponRows.reduce(
+    (sum, c) => sum + (c.usageCount || 0),
+    0,
+  );
 
   const handleCreateCoupon = async () => {
     const code = newCode.trim().toUpperCase();
@@ -160,7 +232,10 @@ const Marketing = () => {
     }
 
     const expiresAt = new Date(`${newExpiresAt}T23:59:59.000Z`);
-    if (Number.isNaN(expiresAt.getTime()) || expiresAt.getTime() <= Date.now()) {
+    if (
+      Number.isNaN(expiresAt.getTime()) ||
+      expiresAt.getTime() <= Date.now()
+    ) {
       toast.error("Expiry date must be in the future");
       return;
     }
@@ -228,7 +303,9 @@ const Marketing = () => {
           <DialogContent className="glass-effect-strong border-border">
             <DialogHeader>
               <DialogTitle className="text-gradient">New Coupon</DialogTitle>
-              <DialogDescription>Create a new discount coupon code</DialogDescription>
+              <DialogDescription>
+                Create a new discount coupon code
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
@@ -253,7 +330,12 @@ const Marketing = () => {
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Type</Label>
-                  <Select value={newType} onValueChange={(v) => setNewType(v as "percentage" | "fixed")}>
+                  <Select
+                    value={newType}
+                    onValueChange={(v) =>
+                      setNewType(v as "percentage" | "fixed")
+                    }
+                  >
                     <SelectTrigger className="bg-background border-border rounded-xl">
                       <SelectValue />
                     </SelectTrigger>
@@ -369,7 +451,10 @@ const Marketing = () => {
             ) : error ? (
               <Card className="glass-effect overflow-hidden border-border">
                 <CardContent className="p-4">
-                  <ErrorState message={error.message} onRetry={() => mutate()} />
+                  <ErrorState
+                    message={error.message}
+                    onRetry={() => mutate()}
+                  />
                 </CardContent>
               </Card>
             ) : couponRows.length === 0 ? (
@@ -383,22 +468,37 @@ const Marketing = () => {
                   <Table>
                     <TableHeader>
                       <TableRow className="border-border/60">
-                        <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">Code</TableHead>
-                        <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">Discount</TableHead>
-                        <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">Usage</TableHead>
-                        <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">Validity</TableHead>
-                        <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">Status</TableHead>
-                        <TableHead className="text-xs uppercase tracking-wider text-muted-foreground text-right">Actions</TableHead>
+                        <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
+                          Code
+                        </TableHead>
+                        <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
+                          Discount
+                        </TableHead>
+                        <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
+                          Usage
+                        </TableHead>
+                        <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
+                          Validity
+                        </TableHead>
+                        <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
+                          Status
+                        </TableHead>
+                        <TableHead className="text-xs uppercase tracking-wider text-muted-foreground text-right">
+                          Actions
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {couponRows.map((coupon, i) => {
                         const usage = coupon.usageCount || 0;
                         const maxUses = coupon.maxUses || 0;
-                        const width = maxUses > 0 ? Math.min(100, (usage / maxUses) * 100) : 0;
+                        const width =
+                          maxUses > 0
+                            ? Math.min(100, (usage / maxUses) * 100)
+                            : 0;
                         const couponKey = String(coupon.id ?? coupon.code ?? i);
                         const discountText =
-                           coupon.type === "percentage"
+                          coupon.type === "percentage"
                             ? `${coupon.discount || 0}%`
                             : coupon.type === "freeshipping"
                               ? "Free shipping"
@@ -424,22 +524,32 @@ const Marketing = () => {
                                 </Button>
                               </div>
                             </TableCell>
-                            <TableCell className="font-semibold text-sm">{discountText}</TableCell>
+                            <TableCell className="font-semibold text-sm">
+                              {discountText}
+                            </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
-                                <span className="text-sm">{usage}/{maxUses || "-"}</span>
+                                <span className="text-sm">
+                                  {usage}/{maxUses || "-"}
+                                </span>
                                 <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
-                                  <div className="h-full gradient-purple rounded-full" style={{ width: `${width}%` }} />
+                                  <div
+                                    className="h-full gradient-purple rounded-full"
+                                    style={{ width: `${width}%` }}
+                                  />
                                 </div>
                               </div>
                             </TableCell>
                             <TableCell className="text-xs text-muted-foreground">
-                              {formatDate(coupon.startDate)} - {formatDate(coupon.endDate)}
+                              {formatDate(coupon.startDate)} -{" "}
+                              {formatDate(coupon.endDate)}
                             </TableCell>
                             <TableCell>
                               <Badge
                                 variant="outline"
-                                className={statusColors[coupon.status || ""] || ""}
+                                className={
+                                  statusColors[coupon.status || ""] || ""
+                                }
                               >
                                 {coupon.status || "unknown"}
                               </Badge>
@@ -463,26 +573,46 @@ const Marketing = () => {
             ) : campaignsError ? (
               <ErrorState message="Failed to load campaigns from database." />
             ) : campaigns.length === 0 ? (
-              <EmptyState title="No campaigns found" description="No promotional campaigns found in database." />
+              <EmptyState
+                title="No campaigns found"
+                description="No promotional campaigns found in database."
+              />
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {(campaigns as CampaignItem[]).map((campaign) => (
-                  <Card key={campaign.id || campaign.name} className="glass-effect border-border">
+                  <Card
+                    key={campaign.id || campaign.name}
+                    className="glass-effect border-border"
+                  >
                     <CardContent className="p-5 space-y-3">
                       <div className="flex items-start justify-between gap-3">
-                        <h3 className="text-sm font-semibold leading-tight">{campaign.name}</h3>
-                        <Badge variant="outline" className={statusColors[campaign.status] || ""}>
+                        <h3 className="text-sm font-semibold leading-tight">
+                          {campaign.name}
+                        </h3>
+                        <Badge
+                          variant="outline"
+                          className={statusColors[campaign.status] || ""}
+                        >
                           {campaign.status}
                         </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Reach: <span className="text-foreground">{Number(campaign.reach).toLocaleString()}</span>
+                        Reach:{" "}
+                        <span className="text-foreground">
+                          {Number(campaign.reach).toLocaleString()}
+                        </span>
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Conversions: <span className="text-foreground">{Number(campaign.conversions).toLocaleString()}</span>
+                        Conversions:{" "}
+                        <span className="text-foreground">
+                          {Number(campaign.conversions).toLocaleString()}
+                        </span>
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Revenue: <span className="text-emerald-400 font-semibold">£{Number(campaign.revenue).toLocaleString()}</span>
+                        Revenue:{" "}
+                        <span className="text-emerald-400 font-semibold">
+                          £{Number(campaign.revenue).toLocaleString()}
+                        </span>
                       </p>
                     </CardContent>
                   </Card>
@@ -498,9 +628,14 @@ const Marketing = () => {
 
 export default Marketing;
 
-
 import type { GetServerSidePropsContext } from "next";
 
+/**
+ * Server-side admin auth gate for the Marketing route.
+ *
+ * @param ctx - Next.js server-side context for the incoming request, including `req`/`res` and cookies.
+ * @returns The {@link requireAdmin} result: `props` with the authenticated admin user, or a redirect to `/` / `/?error=admin_required` when the session is missing or not an admin.
+ */
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { requireAdmin } = await import("@/lib/ssrAuth");
   return requireAdmin(ctx);

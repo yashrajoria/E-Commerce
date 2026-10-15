@@ -13,19 +13,34 @@ import type { Product } from "@/types/shared";
 //   onSave: (product: Product) => void;
 // }
 
+/** Props accepted by {@link EditProductDialog}. */
 interface EditProductDialogProps {
+  /** Product being edited, or `null` when nothing is selected. */
   product?: Product | null;
+  /** Whether the edit dialog is open. */
   open: boolean;
+  /** Called with the next open state when the dialog opens or closes. */
   onOpenChange: (open: boolean) => void;
 }
 
+/**
+ * Renders the product edit dialog, wiring the shared product form into {@link ProductInformation}.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <EditProductDialog product={product} open={isEditOpen} onOpenChange={setIsEditOpen} />
+ * ```
+ */
 const EditProductDialog: React.FC<EditProductDialogProps> = ({
   product,
   open,
   onOpenChange,
 }) => {
   // Debug: product state for development
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     // logger.debug('EditProductModal product state:', { product });
   }
   const [, setFormData] = useState<Partial<Product>>({});
@@ -86,7 +101,9 @@ const EditProductDialog: React.FC<EditProductDialogProps> = ({
                 <ProductInformation
                   type="edit"
                   handleImageUpload={handleImageUpload}
-                  uploadedImages={imageFiles as unknown as import("@ecommerce/shared/src/types/common").UploadedImage[]}
+                  uploadedImages={
+                    imageFiles as unknown as import("@ecommerce/shared/src/types/common").UploadedImage[]
+                  }
                   removeImage={removeImage}
                 />
               </div>

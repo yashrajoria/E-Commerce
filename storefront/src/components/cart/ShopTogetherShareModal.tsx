@@ -18,13 +18,35 @@ import { toast } from "sonner";
 import { formatGBP } from "@/lib/utils";
 import type { CartItem } from "@/context/CartContext";
 
+/** Props accepted by {@link ShopTogetherShareModal}. */
 interface ShopTogetherShareModalProps {
+  /** Whether the modal is visible. */
   isOpen: boolean;
+  /** Closes the modal (close button or backdrop tap). */
   onClose: () => void;
+  /** Cart lines encoded into the shareable link. */
   cart: CartItem[];
+  /** Cart total in major currency units (GBP), quoted in the share text. */
   total: number;
 }
 
+/**
+ * Renders the "Shop Together" modal that turns the current cart into a shareable link.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. Encodes a minimal cart payload into a base64 `sharedCart` query
+ * parameter on `/cart` and offers copy-to-clipboard, native share and WhatsApp shortcuts.
+ *
+ * @example
+ * ```tsx
+ * <ShopTogetherShareModal
+ *   isOpen={isShopTogetherOpen}
+ *   onClose={() => setIsShopTogetherOpen(false)}
+ *   cart={cartItems}
+ *   total={total}
+ * />
+ * ```
+ */
 export function ShopTogetherShareModal({
   isOpen,
   onClose,
@@ -46,7 +68,7 @@ export function ShopTogetherShareModal({
         subscription: item.subscription,
       }));
       const encoded = encodeURIComponent(
-        btoa(unescape(encodeURIComponent(JSON.stringify(minimalPayload))))
+        btoa(unescape(encodeURIComponent(JSON.stringify(minimalPayload)))),
       );
       return `${window.location.origin}/cart?sharedCart=${encoded}`;
     } catch {
@@ -108,16 +130,25 @@ export function ShopTogetherShareModal({
               <div>
                 <h2 className="text-base font-bold text-foreground flex items-center gap-2">
                   Shop Together
-                  <Badge variant="outline" className="text-[10px] bg-primary/5 text-primary border-primary/20">
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] bg-primary/5 text-primary border-primary/20"
+                  >
                     <Sparkles className="h-3 w-3 mr-1" /> Collaborative Cart
                   </Badge>
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  Share this cart session with friends or family to co-curate items
+                  Share this cart session with friends or family to co-curate
+                  items
                 </p>
               </div>
             </div>
-            <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full h-8 w-8">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="rounded-full h-8 w-8"
+            >
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -132,7 +163,9 @@ export function ShopTogetherShareModal({
                   {cart.length} unique {cart.length === 1 ? "item" : "items"}
                 </span>
               </div>
-              <span className="font-bold text-foreground">{formatGBP(total)}</span>
+              <span className="font-bold text-foreground">
+                {formatGBP(total)}
+              </span>
             </div>
 
             {/* Share Link Input */}
@@ -152,7 +185,11 @@ export function ShopTogetherShareModal({
                   size="sm"
                   className="text-xs font-semibold gap-1.5 shrink-0"
                 >
-                  {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied ? (
+                    <Check className="h-3.5 w-3.5 text-emerald-600" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )}
                   {copied ? "Copied" : "Copy Link"}
                 </Button>
               </div>
@@ -174,13 +211,14 @@ export function ShopTogetherShareModal({
                 </Button>
                 <a
                   href={`https://wa.me/?text=${encodeURIComponent(
-                    `Check out our ShopSwift shared shopping bag: ${shareableUrl}`
+                    `Check out our ShopSwift shared shopping bag: ${shareableUrl}`,
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-border bg-background hover:bg-muted transition-colors text-foreground"
                 >
-                  <ExternalLink className="h-3.5 w-3.5 text-emerald-600" /> WhatsApp
+                  <ExternalLink className="h-3.5 w-3.5 text-emerald-600" />{" "}
+                  WhatsApp
                 </a>
               </div>
             </div>
@@ -189,16 +227,26 @@ export function ShopTogetherShareModal({
             <div className="p-3 rounded-lg bg-primary/5 border border-primary/10 text-[11px] text-muted-foreground space-y-1">
               <p className="font-semibold text-foreground">How it works:</p>
               <ul className="list-disc list-inside space-y-0.5">
-                <li>Anyone opening this link can view and load your curated items with 1 click.</li>
+                <li>
+                  Anyone opening this link can view and load your curated items
+                  with 1 click.
+                </li>
                 <li>They can add additional items from the catalog.</li>
-                <li>Either person can proceed to checkout or split the order!</li>
+                <li>
+                  Either person can proceed to checkout or split the order!
+                </li>
               </ul>
             </div>
           </div>
 
           {/* Footer */}
           <div className="p-4 border-t border-border bg-muted/20 flex justify-end">
-            <Button variant="ghost" size="sm" onClick={onClose} className="text-xs">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="text-xs"
+            >
               Close
             </Button>
           </div>
@@ -207,4 +255,3 @@ export function ShopTogetherShareModal({
     </AnimatePresence>
   );
 }
-

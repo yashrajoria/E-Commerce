@@ -6,20 +6,48 @@ import { Package, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
-interface Props {
+/** Props accepted by {@link MobileOrderSummary}. */
+interface MobileOrderSummaryProps {
+  /** Whether the bottom sheet is expanded. */
   isOpen: boolean;
+  /** Dismisses the sheet (close button or backdrop tap). */
   onClose: () => void;
+  /** Cart lines rendered in the summary. */
   cart: CartItem[];
+  /** Total number of units in the cart, shown in the sheet heading. */
   itemCount: number;
+  /** Order subtotal in major currency units (GBP). */
   subtotal: number;
+  /** Shipping cost in major currency units. */
   shipping: number;
+  /** Estimated tax in major currency units. */
   tax: number;
+  /** Relative discount multiplier applied to the subtotal. */
   discount: number;
+  /** Absolute discount amount in major currency units. */
   discountAmount: number;
+  /** Final total to pay in major currency units. */
   total: number;
 }
 
-function MobileSummaryItem({ item }: { item: CartItem }) {
+/** Props accepted by {@link MobileSummaryItem}. */
+interface MobileSummaryItemProps {
+  /** Cart line to summarise. */
+  item: CartItem;
+}
+
+/**
+ * Renders a single cart line inside the mobile order summary sheet.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <MobileSummaryItem item={item} />
+ * ```
+ */
+function MobileSummaryItem({ item }: MobileSummaryItemProps) {
   const [imageFailed, setImageFailed] = useState(false);
   const rawImage = item.images?.[0];
   const isLocalStack = rawImage?.includes("localhost:4566");
@@ -56,6 +84,28 @@ function MobileSummaryItem({ item }: { item: CartItem }) {
   );
 }
 
+/**
+ * Renders the mobile order summary bottom sheet for checkout.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <MobileOrderSummary
+ *   isOpen={showMobileSummary}
+ *   onClose={() => setShowMobileSummary(false)}
+ *   cart={cartItems}
+ *   itemCount={itemCount}
+ *   subtotal={subtotal}
+ *   shipping={shipping}
+ *   tax={tax}
+ *   discount={discount}
+ *   discountAmount={discountAmount}
+ *   total={total}
+ * />
+ * ```
+ */
 export function MobileOrderSummary({
   isOpen,
   onClose,
@@ -67,7 +117,7 @@ export function MobileOrderSummary({
   discount,
   discountAmount,
   total,
-}: Props) {
+}: MobileOrderSummaryProps) {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -90,7 +140,8 @@ export function MobileOrderSummary({
               <div className="w-10 h-1 rounded-full bg-muted mx-auto mb-4" />
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold tracking-tight text-foreground">
-                  Order Summary ({itemCount} {itemCount === 1 ? "item" : "items"})
+                  Order Summary ({itemCount}{" "}
+                  {itemCount === 1 ? "item" : "items"})
                 </h3>
                 <button
                   onClick={onClose}
@@ -111,15 +162,21 @@ export function MobileOrderSummary({
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between text-muted-foreground">
                   <span>Subtotal</span>
-                  <span className="font-medium text-foreground">{formatGBP(subtotal)}</span>
+                  <span className="font-medium text-foreground">
+                    {formatGBP(subtotal)}
+                  </span>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
                   <span>Shipping</span>
-                  <span className="font-medium text-foreground">{shipping === 0 ? "Free" : formatGBP(shipping)}</span>
+                  <span className="font-medium text-foreground">
+                    {shipping === 0 ? "Free" : formatGBP(shipping)}
+                  </span>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
                   <span>Tax</span>
-                  <span className="font-medium text-foreground">{formatGBP(tax)}</span>
+                  <span className="font-medium text-foreground">
+                    {formatGBP(tax)}
+                  </span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-medium">

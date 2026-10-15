@@ -4,7 +4,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 const footerLinks = {
-  Infrastructure: ["Core API", "Webhooks", "Edge Sync", "Auth layers", "Node Status"],
+  Infrastructure: [
+    "Core API",
+    "Webhooks",
+    "Edge Sync",
+    "Auth layers",
+    "Node Status",
+  ],
   Governance: ["Compliance", "Audit Logs", "IAM", "Security", "Reliability"],
   Ecosystem: ["Plugins", "Connectors", "SDKs", "Marketplace", "Community"],
   Enterprise: ["Support", "SLA", "Privacy", "Terms", "GDPR"],
@@ -17,6 +23,17 @@ const socialLinks = [
   { icon: Mail, href: "#", label: "Email" },
 ];
 
+/**
+ * Renders the landing-page footer with link columns, a newsletter input and social icons.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <Footer />
+ * ```
+ */
 export default function Footer() {
   return (
     <footer className="relative border-t border-white/[0.04] bg-[#050505] pt-24 pb-12">
@@ -30,18 +47,24 @@ export default function Footer() {
                 <Cpu className="h-4 w-4 text-white" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] font-bold tracking-[0.2em] leading-none uppercase">ShopSwift</span>
-                <span className="text-[8px] font-light text-muted-foreground tracking-widest uppercase">Admin Pro</span>
+                <span className="text-[10px] font-bold tracking-[0.2em] leading-none uppercase">
+                  ShopSwift
+                </span>
+                <span className="text-[8px] font-light text-muted-foreground tracking-widest uppercase">
+                  Admin Pro
+                </span>
               </div>
             </a>
             <p className="text-sm text-muted-foreground/60 leading-relaxed max-w-xs font-light">
-              Architected for the next generation of industrial commerce. 
+              Architected for the next generation of industrial commerce.
               Reliable, secure, and infinitely scalable infrastructure.
             </p>
 
             {/* Newsletter */}
             <div className="space-y-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">System Updates</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">
+                System Updates
+              </p>
               <div className="flex gap-2 max-w-sm">
                 <Input
                   type="email"
@@ -87,8 +110,10 @@ export default function Footer() {
               &copy; {new Date().getFullYear()} ShopSwift Admin Pro
             </p>
             <div className="flex items-center gap-4">
-               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/40" />
-               <span className="text-[10px] font-bold text-muted-foreground/30 uppercase tracking-widest">Nodes Operational</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/40" />
+              <span className="text-[10px] font-bold text-muted-foreground/30 uppercase tracking-widest">
+                Nodes Operational
+              </span>
             </div>
           </div>
 

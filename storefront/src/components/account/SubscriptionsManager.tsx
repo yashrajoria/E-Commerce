@@ -31,35 +31,59 @@ const INITIAL_SUBSCRIPTIONS: SubscriptionItem[] = [
   {
     id: "sub-101",
     productName: "Signature Dark Roast Espresso Beans (1kg)",
-    image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=300&q=80",
+    image:
+      "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=300&q=80",
     frequency: "4_weeks",
     price: 24.65,
     originalPrice: 29.0,
     status: "active",
-    nextDispatchDate: new Date(Date.now() + 14 * 86400000).toLocaleDateString("en-GB", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    }),
+    nextDispatchDate: new Date(Date.now() + 14 * 86400000).toLocaleDateString(
+      "en-GB",
+      {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      },
+    ),
   },
   {
     id: "sub-102",
     productName: "Organic Botanical Hydrating Face Cleanser",
-    image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=300&q=80",
+    image:
+      "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=300&q=80",
     frequency: "8_weeks",
     price: 18.7,
     originalPrice: 22.0,
     status: "active",
-    nextDispatchDate: new Date(Date.now() + 28 * 86400000).toLocaleDateString("en-GB", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    }),
+    nextDispatchDate: new Date(Date.now() + 28 * 86400000).toLocaleDateString(
+      "en-GB",
+      {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      },
+    ),
   },
 ];
 
+/**
+ * Renders the "Subscribe & Save" management list with pause, skip and cancel controls.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. Subscription state starts from a local sample list and each control
+ * (frequency change, skip next dispatch, pause/resume, cancel) updates local state and surfaces a toast.
+ *
+ * @example
+ * ```tsx
+ * <TabsContent value="subscriptions">
+ *   <SubscriptionsManager />
+ * </TabsContent>
+ * ```
+ */
 export function SubscriptionsManager() {
-  const [subscriptions, setSubscriptions] = useState<SubscriptionItem[]>(INITIAL_SUBSCRIPTIONS);
+  const [subscriptions, setSubscriptions] = useState<SubscriptionItem[]>(
+    INITIAL_SUBSCRIPTIONS,
+  );
 
   const togglePause = (id: string) => {
     setSubscriptions((prev) =>
@@ -69,28 +93,36 @@ export function SubscriptionsManager() {
         toast.info(
           nextStatus === "paused"
             ? `Paused subscription for ${sub.productName}`
-            : `Resumed subscription for ${sub.productName}!`
+            : `Resumed subscription for ${sub.productName}!`,
         );
         return { ...sub, status: nextStatus };
-      })
+      }),
     );
   };
 
-  const handleFrequencyChange = (id: string, newFreq: "2_weeks" | "4_weeks" | "8_weeks") => {
+  const handleFrequencyChange = (
+    id: string,
+    newFreq: "2_weeks" | "4_weeks" | "8_weeks",
+  ) => {
     setSubscriptions((prev) =>
-      prev.map((sub) => (sub.id === id ? { ...sub, frequency: newFreq } : sub))
+      prev.map((sub) => (sub.id === id ? { ...sub, frequency: newFreq } : sub)),
     );
     toast.success("Delivery frequency updated!");
   };
 
   const handleSkipNext = (id: string) => {
-    const nextDate = new Date(Date.now() + 35 * 86400000).toLocaleDateString("en-GB", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
+    const nextDate = new Date(Date.now() + 35 * 86400000).toLocaleDateString(
+      "en-GB",
+      {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      },
+    );
     setSubscriptions((prev) =>
-      prev.map((sub) => (sub.id === id ? { ...sub, nextDispatchDate: nextDate } : sub))
+      prev.map((sub) =>
+        sub.id === id ? { ...sub, nextDispatchDate: nextDate } : sub,
+      ),
     );
     toast.info("Skipped next dispatch. Next delivery pushed by 1 cycle.");
   };
@@ -113,11 +145,15 @@ export function SubscriptionsManager() {
               Subscribe & Save Member Perks Active
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Enjoying 15% guaranteed recurring discount, free tracked express shipping, and flexible skip/pause controls.
+              Enjoying 15% guaranteed recurring discount, free tracked express
+              shipping, and flexible skip/pause controls.
             </p>
           </div>
         </div>
-        <Badge variant="outline" className="border-emerald-500/30 text-emerald-600 font-bold shrink-0">
+        <Badge
+          variant="outline"
+          className="border-emerald-500/30 text-emerald-600 font-bold shrink-0"
+        >
           VIP Replenishment Tier
         </Badge>
       </div>
@@ -126,9 +162,12 @@ export function SubscriptionsManager() {
       {subscriptions.length === 0 ? (
         <div className="p-12 text-center border border-dashed border-border rounded-xl">
           <Package className="h-10 w-10 text-muted-foreground/50 mx-auto mb-3" />
-          <h4 className="text-sm font-bold text-foreground">No Active Subscriptions</h4>
+          <h4 className="text-sm font-bold text-foreground">
+            No Active Subscriptions
+          </h4>
           <p className="text-xs text-muted-foreground mt-1 mb-4">
-            You don&apos;t have any active product subscriptions yet. Look for the &quot;Subscribe &amp; Save 15%&quot; toggle on any product page.
+            You don&apos;t have any active product subscriptions yet. Look for
+            the &quot;Subscribe &amp; Save 15%&quot; toggle on any product page.
           </p>
           <Button asChild size="sm" className="text-xs font-semibold gap-1">
             <Link href="/products">
@@ -174,7 +213,10 @@ export function SubscriptionsManager() {
                       <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                         <Calendar className="h-3.5 w-3.5" />
                         <span>
-                          Next Dispatch: <strong className="text-foreground">{sub.nextDispatchDate}</strong>
+                          Next Dispatch:{" "}
+                          <strong className="text-foreground">
+                            {sub.nextDispatchDate}
+                          </strong>
                         </span>
                       </div>
                     </div>
@@ -204,7 +246,7 @@ export function SubscriptionsManager() {
                       onChange={(e) =>
                         handleFrequencyChange(
                           sub.id,
-                          e.target.value as "2_weeks" | "4_weeks" | "8_weeks"
+                          e.target.value as "2_weeks" | "4_weeks" | "8_weeks",
                         )
                       }
                       className="bg-background border border-border rounded-md px-2 py-1 text-xs font-medium text-foreground focus:outline-hidden"
@@ -232,11 +274,13 @@ export function SubscriptionsManager() {
                     >
                       {isPaused ? (
                         <>
-                          <PlayCircle className="h-3.5 w-3.5 text-emerald-600" /> Resume
+                          <PlayCircle className="h-3.5 w-3.5 text-emerald-600" />{" "}
+                          Resume
                         </>
                       ) : (
                         <>
-                          <PauseCircle className="h-3.5 w-3.5 text-amber-600" /> Pause
+                          <PauseCircle className="h-3.5 w-3.5 text-amber-600" />{" "}
+                          Pause
                         </>
                       )}
                     </Button>

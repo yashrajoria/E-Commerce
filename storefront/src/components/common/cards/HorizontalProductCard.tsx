@@ -9,6 +9,17 @@ import Link from "next/link";
 import React from "react";
 import type { ProductCardVariantProps } from "./types";
 
+/**
+ * Renders the horizontal product card with a side image and a details column including stock hints.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <HorizontalProductCard product={product} state={state} priority={priority} />
+ * ```
+ */
 export function HorizontalProductCard({
   product,
   state,
@@ -37,7 +48,9 @@ export function HorizontalProductCard({
         {primaryImage === "/icons8-image-100.png" ? (
           <div className="w-full h-full min-h-[180px] flex flex-col items-center justify-center text-muted-foreground/40 p-4">
             <Package className="h-10 w-10 stroke-1 mb-1.5" />
-            <span className="text-[11px] font-medium tracking-tight">ShopSwift</span>
+            <span className="text-[11px] font-medium tracking-tight">
+              ShopSwift
+            </span>
           </div>
         ) : (
           <Image
@@ -122,7 +135,9 @@ export function HorizontalProductCard({
               size="icon"
               className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
               onClick={handleWishlistToggle}
-              aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+              aria-label={
+                isWishlisted ? "Remove from wishlist" : "Add to wishlist"
+              }
             >
               <Heart
                 className={`h-4 w-4 transition-colors ${
@@ -154,4 +169,3 @@ export function HorizontalProductCard({
     </div>
   );
 }
-

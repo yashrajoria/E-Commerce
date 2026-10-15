@@ -9,6 +9,17 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+/**
+ * Renders the legacy dark sidebar with spring-animated slide-in navigation links.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <Sidebar />
+ * ```
+ */
 const Sidebar = () => {
   return (
     <motion.aside

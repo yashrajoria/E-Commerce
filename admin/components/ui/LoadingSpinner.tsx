@@ -3,8 +3,19 @@
  */
 import { motion } from "framer-motion";
 
+/** Props accepted by {@link LoadingSpinner}. */
 interface LoadingSpinnerProps {
+  /**
+   * Caption rendered beneath the spinner rings.
+   *
+   * @defaultValue "Loading..."
+   */
   message?: string;
+  /**
+   * Diameter of the spinner and size of the caption text.
+   *
+   * @defaultValue "md"
+   */
   size?: "sm" | "md" | "lg";
 }
 
@@ -14,6 +25,18 @@ const sizeMap = {
   lg: { spinner: 48, text: "text-base" },
 };
 
+/**
+ * Renders a two-ring spinning indicator with a pulsing centre dot and an optional caption.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side `framer-motion` animation, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * // Route: /products — shown full-page while the product list is fetched.
+ * <LoadingSpinner message="Loading products..." size="lg" />
+ * ```
+ */
 const LoadingSpinner = ({
   message = "Loading...",
   size = "md",

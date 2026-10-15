@@ -18,17 +18,46 @@ import {
 import { motion } from "framer-motion";
 import { ArrowUpDown, Filter, Package, Rows3, Search } from "lucide-react";
 
+/** Props accepted by {@link ProductsFilters}. */
 interface ProductsFiltersProps {
+  /** Controlled search term. */
   searchQuery: string;
+  /** Called with the change event when the user types in the search box. */
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  /** Current layout of the product list. */
   viewMode: "grid" | "list";
+  /** Called with the next layout when the view toggle is pressed. */
   onViewModeChange: (mode: "grid" | "list") => void;
+  /** Page size currently selected in the per-page dropdown. */
   perPage: number;
+  /** Called with the chosen page size as a string. */
   onPerPageChange: (value: string) => void;
+  /** Accepted for the filters API but not read by the current markup. */
   showOutOfStock: boolean;
+  /** Accepted for the filters API but not wired to a control in the current markup. */
   onToggleOutOfStock: () => void;
 }
 
+/**
+ * Renders the product search box, grid/list view toggle, filter and sort dropdowns and the per-page selector.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <ProductsFilters
+ *   searchQuery={searchQuery}
+ *   onSearchChange={handleSearchChange}
+ *   viewMode={viewMode}
+ *   onViewModeChange={setViewMode}
+ *   perPage={perPage}
+ *   onPerPageChange={handlePerPageChange}
+ *   showOutOfStock={showOutOfStock}
+ *   onToggleOutOfStock={handleToggleOutOfStock}
+ * />
+ * ```
+ */
 const ProductsFilters = ({
   searchQuery,
   onSearchChange,
@@ -141,10 +170,18 @@ const ProductsFilters = ({
             <SelectValue placeholder={`${perPage} per page`} />
           </SelectTrigger>
           <SelectContent className="bg-popover border-border text-popover-foreground shadow-md">
-            <SelectItem value="12" className="text-xs">12 per page</SelectItem>
-            <SelectItem value="20" className="text-xs">20 per page</SelectItem>
-            <SelectItem value="50" className="text-xs">50 per page</SelectItem>
-            <SelectItem value="100" className="text-xs">100 per page</SelectItem>
+            <SelectItem value="12" className="text-xs">
+              12 per page
+            </SelectItem>
+            <SelectItem value="20" className="text-xs">
+              20 per page
+            </SelectItem>
+            <SelectItem value="50" className="text-xs">
+              50 per page
+            </SelectItem>
+            <SelectItem value="100" className="text-xs">
+              100 per page
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>

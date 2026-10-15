@@ -18,12 +18,31 @@ import { toast } from "sonner";
 import { CheckCircle, Mail, RefreshCcw } from "lucide-react";
 import axios from "axios";
 
+/** Props accepted by {@link OTPVerificationDialog}. */
 interface OTPVerificationDialogProps {
+  /** Whether the verification dialog is visible. */
   open: boolean;
+  /** Called when the dialog requests to be dismissed. */
   onClose: () => void;
+  /** Email address the one-time code was sent to. */
   email: string;
 }
 
+/**
+ * Renders the six-digit email verification dialog used by the admin auth flow.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <OTPVerificationDialog
+ *   open={otpOpen}
+ *   email={pendingEmail}
+ *   onClose={() => setOtpOpen(false)}
+ * />
+ * ```
+ */
 const OTPVerificationDialog = ({
   open,
   onClose,

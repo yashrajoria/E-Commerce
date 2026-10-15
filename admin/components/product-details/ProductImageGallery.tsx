@@ -5,12 +5,43 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { resolveProductImageUrl } from "@ecommerce/shared";
 
+/** Props accepted by {@link ProductImageGallery}. */
 interface ProductImageGalleryProps {
+  /**
+   * Product image URLs; the first one is shown in the main preview.
+   *
+   * @defaultValue []
+   */
   images: string[];
+  /**
+   * Index of the image to show in the main preview.
+   *
+   * @defaultValue 0
+   */
   selectedImage?: number;
+  /**
+   * Called with the thumbnail index when the user picks another image.
+   *
+   * @param index - Index of the newly selected image.
+   */
   onImageSelect?: (index: number) => void;
 }
 
+/**
+ * Renders the product image preview with a thumbnail grid and active-image dots.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <ProductImageGallery
+ *   images={product.images}
+ *   selectedImage={0}
+ *   onImageSelect={setActiveImage}
+ * />
+ * ```
+ */
 const ProductImageGallery = ({
   images = [],
   selectedImage = 0,
@@ -25,7 +56,9 @@ const ProductImageGallery = ({
 
   // Guard for empty images array
   const safeImage =
-    images.length > 0 ? resolveProductImageUrl(images[activeImage]) : "/placeholder.svg";
+    images.length > 0
+      ? resolveProductImageUrl(images[activeImage])
+      : "/placeholder.svg";
 
   return (
     <div className="space-y-4">

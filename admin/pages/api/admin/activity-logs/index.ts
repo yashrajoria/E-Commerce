@@ -49,25 +49,44 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     }));
 
     const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const todayStart = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    ).getTime();
 
     const todayCount = rows.filter(
-      (r) => new Date(r.created_at).getTime() >= todayStart
+      (r) => new Date(r.created_at).getTime() >= todayStart,
     ).length;
 
     const stats = {
       total: logs.length,
       today: todayCount || logs.length,
       security: logs.filter((l) => l.type === "auth").length,
-      errors: logs.filter((l) => l.action.toLowerCase().includes("fail") || l.action.toLowerCase().includes("error")).length,
+      errors: logs.filter(
+        (l) =>
+          l.action.toLowerCase().includes("fail") ||
+          l.action.toLowerCase().includes("error"),
+      ).length,
     };
 
     return res.status(200).json({ logs, stats });
   } catch (error) {
     console.error("Activity Logs API error:", error);
-    return res.status(500).json({ error: "Failed to fetch activity logs from database" });
+    return res
+      .status(500)
+      .json({ error: "Failed to fetch activity logs from database" });
   }
 }
 
+/**
+ * Handles `GET` requests for the admin activity log feed, returning the 100 most recent entries with dashboard statistics.
+ *
+ * @remarks
+ * Wrapped with {@link withAdminApi}: requests must pass a same-origin check and carry a valid admin session.
+ *
+ * @param req - The Next.js API request; no query parameters or body are read.
+ * @param res - The Next.js API response.
+ * @returns A promise that resolves once the response has been sent.
+ */
 export default withAdminApi(handler);
-

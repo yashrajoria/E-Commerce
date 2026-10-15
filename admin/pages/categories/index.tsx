@@ -22,8 +22,21 @@ import { useMemo, useState } from "react";
 import { Category } from "@/types/shared";
 import { toast } from "sonner";
 
+/** Number of category rows shown per pagination page. */
 const ITEMS_PER_PAGE = 10;
 
+/**
+ * Renders category management with KPI stats, search, the category table, pagination, and CRUD dialogs.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration. Categories are loaded through {@link useCategories} and mutated via the `/api/admin/categories` proxy routes.
+ *
+ * @example
+ * ```tsx
+ * // Route: /categories — rendered by the Next.js Pages Router.
+ * <Categories />
+ * ```
+ */
 const Categories = () => {
   const { categories, loading, refresh } = useCategories();
   const [searchQuery, setSearchQuery] = useState("");
@@ -42,7 +55,9 @@ const Categories = () => {
   const [newCategoryLevel, setNewCategoryLevel] = useState<number>(1);
   const [newCategoryActive, setNewCategoryActive] = useState<boolean>(true);
   const [editCategoryName, setEditCategoryName] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    null,
+  );
 
   const filteredCategories = useMemo(() => {
     if (!categories) return [] as Category[];
@@ -87,7 +102,9 @@ const Categories = () => {
         is_active: newCategoryActive,
       };
 
-      await axios.post("/api/admin/categories", payload, { withCredentials: true });
+      await axios.post("/api/admin/categories", payload, {
+        withCredentials: true,
+      });
       toast.success("Category created successfully!");
       setNewCategoryName("");
       setNewCategoryParent(null);
@@ -160,7 +177,11 @@ const Categories = () => {
           />
 
           {/* Bulk Upload Dialog */}
-          <BulkUpload isBulkOpen={isBulkOpen} setIsBulkOpen={setIsBulkOpen} onRefresh={refresh} />
+          <BulkUpload
+            isBulkOpen={isBulkOpen}
+            setIsBulkOpen={setIsBulkOpen}
+            onRefresh={refresh}
+          />
         </>
       }
     >
@@ -296,9 +317,14 @@ const Categories = () => {
 
 export default Categories;
 
-
 import type { GetServerSidePropsContext } from "next";
 
+/**
+ * Server-side admin auth gate for the Categories route.
+ *
+ * @param ctx - Next.js server-side context for the incoming request, including `req`/`res` and cookies.
+ * @returns The {@link requireAdmin} result: `props` with the authenticated admin user, or a redirect to `/` / `/?error=admin_required` when the session is missing or not an admin.
+ */
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { requireAdmin } = await import("@/lib/ssrAuth");
   return requireAdmin(ctx);

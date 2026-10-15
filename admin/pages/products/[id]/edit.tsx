@@ -12,6 +12,18 @@ import { Sparkles } from "lucide-react";
 import { AIMerchantStudioModal } from "@/components/ai/AIMerchantStudioModal";
 import { motion } from "framer-motion";
 
+/**
+ * Renders the edit-product form for the id in the route query, pre-filling {@link useProductForm} with the loaded product.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration. Submitting updates the product and navigates back to its details page.
+ *
+ * @example
+ * ```tsx
+ * // Route: /products/[id]/edit — rendered by the Next.js Pages Router with the product id from the URL.
+ * <EditProductPage />
+ * ```
+ */
 export default function EditProductPage() {
   const router = useRouter();
   const { id } = router.query as { id?: string };
@@ -88,8 +100,10 @@ export default function EditProductPage() {
   }) => {
     form.setValue("name", data.name, { shouldValidate: true });
     form.setValue("description", data.description, { shouldValidate: true });
-    if (data.price) form.setValue("price", data.price, { shouldValidate: true });
-    if (data.brand) form.setValue("brand", data.brand, { shouldValidate: true });
+    if (data.price)
+      form.setValue("price", data.price, { shouldValidate: true });
+    if (data.brand)
+      form.setValue("brand", data.brand, { shouldValidate: true });
   };
 
   return (
@@ -126,7 +140,9 @@ export default function EditProductPage() {
                 }));
                 setUploadedImages((prev) => [...prev, ...newImages]);
               }}
-              uploadedImages={uploadedImages as unknown as import("@ecommerce/shared/src/types/common").UploadedImage[]}
+              uploadedImages={
+                uploadedImages as unknown as import("@ecommerce/shared/src/types/common").UploadedImage[]
+              }
               removeImage={(i) =>
                 setUploadedImages((prev) => prev.filter((_, idx) => idx !== i))
               }
@@ -165,6 +181,12 @@ export default function EditProductPage() {
 
 import type { GetServerSidePropsContext } from "next";
 
+/**
+ * Server-side admin auth gate for the edit-product route.
+ *
+ * @param ctx - Next.js server-side context for the incoming request, including `req`/`res` and cookies.
+ * @returns The {@link requireAuth} result: `props` with the authenticated admin user, or a redirect to `/` / `/?error=admin_required` when the session is missing or not an admin.
+ */
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { requireAuth } = await import("@/lib/ssrAuth");
   return requireAuth(ctx);

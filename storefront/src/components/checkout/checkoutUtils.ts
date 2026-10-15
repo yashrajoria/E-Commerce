@@ -3,9 +3,18 @@ import { formatGBP } from "@/lib/utils";
 export { formatGBP };
 
 /* ─── Validation helpers ─── */
+/** Pattern accepting any non-whitespace local part followed by `@`, a domain and a dotted TLD. */
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/** Pattern accepting 7–18 digits with an optional leading `+` and no spaces or brackets. */
 export const PHONE_RE = /^[+]?[^\s()-]{7,18}$/;
 
+/**
+ * Validates a single shipping field and returns its error message.
+ *
+ * @param name - Field name to validate; unknown names are treated as valid.
+ * @param value - Raw field value; trailing whitespace is ignored.
+ * @returns The error message to display, or an empty string when the value is acceptable.
+ */
 export function validateField(name: string, value: string): string {
   const v = value.trim();
   switch (name) {
@@ -41,6 +50,12 @@ export function validateField(name: string, value: string): string {
 }
 
 /* ─── Delivery date estimation ─── */
+/**
+ * Estimates the arrival date for a delivery taking the given number of days.
+ *
+ * @param days - Transit time in days, counted from today.
+ * @returns The estimated arrival date formatted for a UK audience, e.g. `"Friday, 24 Oct"`.
+ */
 export function getDeliveryDate(days: number): string {
   const d = new Date();
   d.setDate(d.getDate() + days);
@@ -52,7 +67,19 @@ export function getDeliveryDate(days: number): string {
 }
 
 /* ─── Simple debounce utility (local replacement for lodash.debounce) ─── */
-export function debounce<T extends (...args: unknown[]) => unknown>(fn: T, wait = 0) {
+/**
+ * Wraps a function so it only runs after `wait` milliseconds of silence.
+ *
+ * @param fn - Function to debounce; called with the arguments of the last invocation.
+ * @param wait - Delay in milliseconds before the trailing call, defaults to `0`.
+ * @returns The debounced function, augmented with a `cancel` method that discards any pending call.
+ * @remarks
+ * Local replacement for `lodash.debounce`, used by {@link useCheckout} to throttle draft persistence.
+ */
+export function debounce<T extends (...args: unknown[]) => unknown>(
+  fn: T,
+  wait = 0,
+) {
   let timer: ReturnType<typeof setTimeout> | null = null;
 
   const debounced = (...args: Parameters<T>) => {

@@ -8,7 +8,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { TableSkeleton, EmptyState, ErrorState } from "@/components/admin/shared/DataStates";
+import {
+  TableSkeleton,
+  EmptyState,
+  ErrorState,
+} from "@/components/admin/shared/DataStates";
 import { motion } from "framer-motion";
 import {
   Star,
@@ -20,17 +24,27 @@ import {
 import { useState } from "react";
 import { useAdminReviews } from "@/lib/hooks/useAdminData";
 
+/** A customer product review as returned by the admin reviews hook. */
 interface Review {
+  /** Unique review identifier. */
   id: string;
+  /** Name of the reviewing customer. */
   customer: string;
+  /** Reviewed product name. */
   product: string;
+  /** Star rating from 1 to 5. */
   rating: number;
+  /** Review body text. */
   comment: string;
+  /** Pre-formatted submission date. */
   date: string;
+  /** Moderation status of the review. */
   status: "published" | "pending" | "flagged";
+  /** Count of customers who marked the review helpful. */
   helpful: number;
 }
 
+/** Badge label and Tailwind classes for each {@link Review.status}. */
 const statusConfig: Record<string, { label: string; class: string }> = {
   published: {
     label: "Published",
@@ -46,6 +60,18 @@ const statusConfig: Record<string, { label: string; class: string }> = {
   },
 };
 
+/**
+ * Renders the reviews workspace with rating KPI stats, keyword search, and the review feed.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration. Review rows come from {@link useAdminReviews}.
+ *
+ * @example
+ * ```tsx
+ * // Route: /reviews — rendered by the Next.js Pages Router.
+ * <Reviews />
+ * ```
+ */
 const Reviews = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { reviews, stats, isLoading, error, mutate } = useAdminReviews();
@@ -57,12 +83,21 @@ const Reviews = () => {
       r.comment?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const avgRating = stats?.avgRating ?? (reviews.length > 0
-    ? Number((reviews.reduce((s: number, r: Review) => s + r.rating, 0) / reviews.length).toFixed(1))
-    : 5.0);
+  const avgRating =
+    stats?.avgRating ??
+    (reviews.length > 0
+      ? Number(
+          (
+            reviews.reduce((s: number, r: Review) => s + r.rating, 0) /
+            reviews.length
+          ).toFixed(1),
+        )
+      : 5.0);
 
   const fiveStarCount = reviews.filter((r: Review) => r.rating === 5).length;
-  const pendingCount = stats?.pending ?? reviews.filter((r: Review) => r.status === "pending").length;
+  const pendingCount =
+    stats?.pending ??
+    reviews.filter((r: Review) => r.status === "pending").length;
   const totalCount = stats?.total ?? reviews.length;
 
   const renderStars = (rating: number) => (
@@ -72,7 +107,9 @@ const Reviews = () => {
           key={i}
           size={13}
           className={
-            i < rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"
+            i < rating
+              ? "fill-amber-400 text-amber-400"
+              : "text-muted-foreground/30"
           }
         />
       ))}
@@ -136,11 +173,18 @@ const Reviews = () => {
         {isLoading ? (
           <TableSkeleton rows={5} />
         ) : error ? (
-          <ErrorState message="Failed to load customer reviews from database." onRetry={() => mutate()} />
+          <ErrorState
+            message="Failed to load customer reviews from database."
+            onRetry={() => mutate()}
+          />
         ) : filtered.length === 0 ? (
           <EmptyState
             title="No reviews found"
-            description={searchQuery ? "Try refining your search keyword." : "No reviews submitted in the database yet."}
+            description={
+              searchQuery
+                ? "Try refining your search keyword."
+                : "No reviews submitted in the database yet."
+            }
           />
         ) : (
           filtered.map((review, i) => (
@@ -179,7 +223,8 @@ const Reviews = () => {
                             variant="outline"
                             className={`text-[10px] ${statusConfig[review.status]?.class || statusConfig.published.class}`}
                           >
-                            {statusConfig[review.status]?.label || review.status}
+                            {statusConfig[review.status]?.label ||
+                              review.status}
                           </Badge>
                           <span className="text-xs text-muted-foreground">
                             {review.date}
@@ -197,7 +242,8 @@ const Reviews = () => {
                       </p>
                       <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/60">
                         <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <ThumbsUp size={11} /> {review.helpful} people found this helpful
+                          <ThumbsUp size={11} /> {review.helpful} people found
+                          this helpful
                         </span>
                         <div className="flex gap-1">
                           <Button
@@ -224,6 +270,12 @@ const Reviews = () => {
 export default Reviews;
 
 import type { GetServerSidePropsContext } from "next";
+/**
+ * Server-side admin auth gate for the Reviews route.
+ *
+ * @param ctx - Next.js server-side context for the incoming request, including `req`/`res` and cookies.
+ * @returns The {@link requireAdmin} result: `props` with the authenticated admin user, or a redirect to `/` / `/?error=admin_required` when the session is missing or not an admin.
+ */
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { requireAdmin } = await import("@/lib/ssrAuth");
   return requireAdmin(ctx);

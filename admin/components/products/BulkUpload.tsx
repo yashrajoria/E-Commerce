@@ -21,17 +21,46 @@ import {
   Sparkles,
 } from "lucide-react";
 
+/** Props accepted by {@link BulkUpload}. */
 type BulkUploadProps = {
+  /** Rows parsed from the uploaded CSV, one object per product. */
   csvData: Record<string, unknown>[];
+  /** Reads the chosen CSV file and fills {@link BulkUploadProps.csvData}. */
   handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  /** Starts server-side validation of the parsed rows. */
   validateBulkUpload: () => void;
+  /** Uploads the rows once validation has passed. */
   confirmBulkUpload: () => void;
+  /** Whether the bulk CSV flow is the active upload mode. */
   isBulk: boolean;
+  /** Whether validation is currently running. */
   isValidating: boolean;
+  /** Whether the upload is currently running. */
   isUploading: boolean;
+  /** Outcome of the last validation run, shown as a success or warning banner. */
   validationResult?: { success?: boolean; message?: string } | null;
 };
 
+/**
+ * Renders the multi-step bulk product uploader with CSV template download, file picker, data preview, validation result and upload actions.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <BulkUpload
+ *   csvData={csvData}
+ *   handleFileUpload={handleFileUpload}
+ *   validateBulkUpload={validateBulkUpload}
+ *   confirmBulkUpload={confirmBulkUpload}
+ *   isBulk={isBulk}
+ *   isValidating={isValidating}
+ *   isUploading={isUploading}
+ *   validationResult={validationResult}
+ * />
+ * ```
+ */
 const BulkUpload = ({
   csvData,
   handleFileUpload,
@@ -267,23 +296,46 @@ const BulkUpload = ({
                             className="border-white/[0.04] hover:bg-white/[0.02] transition-colors"
                           >
                             <TableCell className="text-sm font-medium">
-                              {String((product as Record<string, unknown>).name ?? (product as Record<string, unknown>).Name ?? "N/A")}
+                              {String(
+                                (product as Record<string, unknown>).name ??
+                                  (product as Record<string, unknown>).Name ??
+                                  "N/A",
+                              )}
                             </TableCell>
                             <TableCell className="text-sm text-muted-foreground max-w-xs truncate">
-                              {String((product as Record<string, unknown>).description ?? (product as Record<string, unknown>).Description ?? "N/A")}
+                              {String(
+                                (product as Record<string, unknown>)
+                                  .description ??
+                                  (product as Record<string, unknown>)
+                                    .Description ??
+                                  "N/A",
+                              )}
                             </TableCell>
                             <TableCell className="text-sm font-mono text-emerald-400">
-                              ${String((product as Record<string, unknown>).price ?? (product as Record<string, unknown>).Price ?? "0.00")}
+                              $
+                              {String(
+                                (product as Record<string, unknown>).price ??
+                                  (product as Record<string, unknown>).Price ??
+                                  "0.00",
+                              )}
                             </TableCell>
                             <TableCell className="text-sm">
-                              {String((product as Record<string, unknown>).quantity ?? (product as Record<string, unknown>).Quantity ?? "0")}
+                              {String(
+                                (product as Record<string, unknown>).quantity ??
+                                  (product as Record<string, unknown>)
+                                    .Quantity ??
+                                  "0",
+                              )}
                             </TableCell>
                             <TableCell>
                               <Badge
                                 variant="secondary"
                                 className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs"
                               >
-                                {String((product as Record<string, unknown>).status ?? "active")}
+                                {String(
+                                  (product as Record<string, unknown>).status ??
+                                    "active",
+                                )}
                               </Badge>
                             </TableCell>
                           </motion.tr>

@@ -4,7 +4,9 @@ import { Check, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
+/** Props accepted by {@link PricingSection}. */
 interface PricingSectionProps {
+  /** Called when a plan's call-to-action button is clicked. */
   onGetStarted: () => void;
 }
 
@@ -66,6 +68,17 @@ const plans = [
   },
 ];
 
+/**
+ * Renders the three-tier pricing cards with a per-plan call to action.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <PricingSection onGetStarted={openLogin} />
+ * ```
+ */
 export default function PricingSection({ onGetStarted }: PricingSectionProps) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });

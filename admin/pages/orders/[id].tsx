@@ -46,7 +46,9 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useOrders } from "@/hooks/useOrders";
 
+/** Lifecycle status of an order as tracked on the order-details page. */
 type OStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+/** Badge icon and color classes for each {@link OStatus}. */
 const statusCfg: Record<OStatus, { icon: React.ReactNode; bg: string }> = {
   pending: {
     icon: <Clock size={14} />,
@@ -69,47 +71,95 @@ const statusCfg: Record<OStatus, { icon: React.ReactNode; bg: string }> = {
     bg: "bg-rose-400/10 text-rose-400 border-rose-400/20",
   },
 };
+/** A single line item in an order. */
 interface OItem {
+  /** Line-item identifier. */
   _id: string;
+  /** Product display name. */
   name: string;
+  /** Stock keeping unit. */
   sku: string;
+  /** Unit price in major currency units. */
   price: number;
+  /** Units ordered. */
   quantity: number;
+  /** Product image URL; empty string when none is available. */
   image: string;
 }
+/** Postal address used for shipping or billing. */
 interface Addr {
+  /** Street address line. */
   street: string;
+  /** City name. */
   city: string;
+  /** State or region code. */
   state: string;
+  /** Postal/ZIP code. */
   zipCode: string;
+  /** Country name. */
   country: string;
 }
+/** Customer summary attached to an order. */
 interface Cust {
+  /** Customer full name. */
   name: string;
+  /** Customer email address. */
   email: string;
+  /** Customer phone number. */
   phone: string;
+  /** Avatar URL; empty string when none is available. */
   avatar: string;
 }
+/** Full order detail rendered by {@link OrderDetailsPage}. */
 interface ODetail {
+  /** Order identifier. */
   _id: string;
+  /** Human-readable order number, e.g. `ORD-2023-001`. */
   orderNumber: string;
+  /** Customer who placed the order. */
   customer: Cust;
+  /** ISO timestamp of when the order was placed. */
   date: string;
+  /** Order total in major currency units. */
   total: number;
+  /** Subtotal before tax, shipping, and discounts. */
   subtotal: number;
+  /** Applied tax amount. */
   tax: number;
+  /** Applied shipping cost. */
   shipping: number;
+  /** Applied discount amount. */
   discount: number;
+  /** Ordered line items. */
   items: OItem[];
+  /** Current lifecycle status. */
   status: OStatus;
+  /** Payment method label, e.g. `Credit Card`. */
   paymentMethod: string;
+  /** Payment gateway reference. */
   paymentId: string;
+  /** Delivery address. */
   shippingAddress: Addr;
+  /** Billing address. */
   billingAddress: Addr;
+  /** Carrier tracking number. */
   trackingNumber: string;
+  /** Optional customer or fulfilment notes. */
   notes?: string;
 }
 
+/**
+ * Renders the order-details view for the route query id: KPI cards, line items, totals, addresses, and notes.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. The URL is read through {@link useRouter} and the placeholder order is loaded on mount; {@link useOrders} is invoked for its side effect only.
+ *
+ * @example
+ * ```tsx
+ * // Route: /orders/[id] — rendered by the Next.js Pages Router with the order id from the URL.
+ * <OrderDetailsPage />
+ * ```
+ */
 const OrderDetailsPage = () => {
   const router = useRouter();
   const { id } = router.query;
@@ -528,9 +578,14 @@ const OrderDetailsPage = () => {
 
 export default OrderDetailsPage;
 
-
 import type { GetServerSidePropsContext } from "next";
 
+/**
+ * Server-side admin auth gate for the order-details route.
+ *
+ * @param ctx - Next.js server-side context for the incoming request, including `req`/`res` and cookies.
+ * @returns The {@link requireAdmin} result: `props` with the authenticated admin user, or a redirect to `/` / `/?error=admin_required` when the session is missing or not an admin.
+ */
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { requireAdmin } = await import("@/lib/ssrAuth");
   return requireAdmin(ctx);

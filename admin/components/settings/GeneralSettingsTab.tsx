@@ -12,29 +12,82 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Store as StoreIcon } from "lucide-react";
 
+/** Props accepted by {@link GeneralSettingsTab}. */
 export interface GeneralSettingsTabProps {
+  /** Name of the active store, shown in the card description. */
   activeStoreName?: string;
+  /** Controlled store display name. */
   storeName: string;
+  /** Called with the next store name as the user types. */
   setStoreName: (v: string) => void;
+  /** Immutable store slug, rendered read-only. */
   storeSlug: string;
+  /** Controlled custom domain value. */
   storeDomain: string;
+  /** Called with the next custom domain as the user types. */
   setStoreDomain: (v: string) => void;
+  /** Controlled base-currency code. */
   currency: string;
+  /** Called with the selected currency code when the select changes. */
   setCurrency: (v: string) => void;
+  /** Controlled contact email address. */
   storeEmail: string;
+  /** Called with the next contact email as the user types. */
   setStoreEmail: (v: string) => void;
+  /** Controlled support phone number. */
   storePhone: string;
+  /** Called with the next support phone number as the user types. */
   setStorePhone: (v: string) => void;
+  /** Controlled storefront language code. */
   language: string;
+  /** Called with the selected language code when the select changes. */
   setLanguage: (v: string) => void;
+  /** Controlled IANA timezone identifier. */
   timezone: string;
+  /** Called with the selected timezone when the select changes. */
   setTimezone: (v: string) => void;
+  /** Controlled physical address of the store. */
   storeAddress: string;
+  /** Called with the next address as the user types. */
   setStoreAddress: (v: string) => void;
+  /** Whether maintenance mode disables customer purchases. */
   maintenanceMode: boolean;
+  /** Called with the next maintenance-mode value when the switch toggles. */
   setMaintenanceMode: (v: boolean) => void;
 }
 
+/**
+ * Renders the store information settings card with identity, localization, contact and maintenance controls.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <GeneralSettingsTab
+ *   activeStoreName={activeStore?.name}
+ *   storeName={storeName}
+ *   setStoreName={setStoreName}
+ *   storeSlug={storeSlug}
+ *   storeDomain={storeDomain}
+ *   setStoreDomain={setStoreDomain}
+ *   currency={currency}
+ *   setCurrency={setCurrency}
+ *   storeEmail={storeEmail}
+ *   setStoreEmail={setStoreEmail}
+ *   storePhone={storePhone}
+ *   setStorePhone={setStorePhone}
+ *   language={language}
+ *   setLanguage={setLanguage}
+ *   timezone={timezone}
+ *   setTimezone={setTimezone}
+ *   storeAddress={storeAddress}
+ *   setStoreAddress={setStoreAddress}
+ *   maintenanceMode={maintenanceMode}
+ *   setMaintenanceMode={setMaintenanceMode}
+ * />
+ * ```
+ */
 export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
   activeStoreName,
   storeName,
@@ -65,7 +118,9 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
         </CardTitle>
         <CardDescription>
           Configure core identity and localization for{" "}
-          <span className="font-semibold text-foreground">{activeStoreName}</span>
+          <span className="font-semibold text-foreground">
+            {activeStoreName}
+          </span>
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -157,7 +212,9 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
             >
               <option value="UTC">UTC</option>
               <option value="America/New_York">America/New_York (EST)</option>
-              <option value="America/Los_Angeles">America/Los_Angeles (PST)</option>
+              <option value="America/Los_Angeles">
+                America/Los_Angeles (PST)
+              </option>
               <option value="Europe/London">Europe/London (GMT)</option>
               <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
             </select>
@@ -178,7 +235,8 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
           <div>
             <p className="text-sm font-medium">Maintenance Mode</p>
             <p className="text-xs text-muted-foreground">
-              Temporarily disable customer purchases and show an under maintenance banner
+              Temporarily disable customer purchases and show an under
+              maintenance banner
             </p>
           </div>
           <Switch
@@ -190,4 +248,3 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
     </Card>
   );
 };
-

@@ -53,7 +53,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         ? Number(
             (
               reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-            ).toFixed(1)
+            ).toFixed(1),
           )
         : 5.0;
 
@@ -68,9 +68,20 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     return res.status(200).json({ reviews, stats });
   } catch (error) {
     console.error("Reviews API error:", error);
-    return res.status(500).json({ error: "Failed to fetch reviews from database" });
+    return res
+      .status(500)
+      .json({ error: "Failed to fetch reviews from database" });
   }
 }
 
+/**
+ * Handles `GET` requests for the admin review list, returning the 100 most recent reviews with rating statistics.
+ *
+ * @remarks
+ * Wrapped with {@link withAdminApi}: requests must pass a same-origin check and carry a valid admin session.
+ *
+ * @param req - The Next.js API request; no query parameters or body are read.
+ * @param res - The Next.js API response.
+ * @returns A promise that resolves once the response has been sent.
+ */
 export default withAdminApi(handler);
-

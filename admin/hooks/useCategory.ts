@@ -4,6 +4,16 @@ import axios from "axios";
 import { toast } from "sonner";
 import { Category } from "@/types/shared";
 
+/**
+ * Loads every product category for the admin catalog screens.
+ *
+ * @remarks
+ * Walks all pages of `GET /api/admin/categories` (`perPage=100`) until the
+ * reported `totalPages` is reached, then reduces each record to the
+ * `{ name, _id, id }` shape the forms use. A toast is shown when loading fails.
+ *
+ * @returns `{ categories, loading, refresh }` where `refresh` re-runs the paged fetch.
+ */
 export const useCategories = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,7 +38,10 @@ export const useCategories = () => {
               ? payload.data
               : [];
         pages.push(...pageItems);
-        totalPages = Number(payload?.meta?.totalPages ?? payload?.meta?.total_pages ?? 1) || 1;
+        totalPages =
+          Number(
+            payload?.meta?.totalPages ?? payload?.meta?.total_pages ?? 1,
+          ) || 1;
         page += 1;
       } while (page <= totalPages);
 

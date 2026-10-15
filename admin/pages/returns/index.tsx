@@ -15,7 +15,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { TableSkeleton, EmptyState, ErrorState } from "@/components/admin/shared/DataStates";
+import {
+  TableSkeleton,
+  EmptyState,
+  ErrorState,
+} from "@/components/admin/shared/DataStates";
 import { motion } from "framer-motion";
 import {
   RotateCcw,
@@ -27,17 +31,27 @@ import {
 import { useState } from "react";
 import { useAdminReturns } from "@/lib/hooks/useAdminData";
 
+/** A customer return request as returned by the admin returns hook. */
 interface ReturnItem {
+  /** Unique return identifier. */
   id: string;
+  /** Order the return belongs to. */
   orderId: string;
+  /** Name of the customer who requested the return. */
   customer: string;
+  /** Returned product name. */
   product: string;
+  /** Customer-provided reason for the return. */
   reason: string;
+  /** Current review status of the return. */
   status: "pending" | "approved" | "rejected" | "completed";
+  /** Pre-formatted request date. */
   requestDate: string;
+  /** Refund amount in major currency units. */
   amount: number;
 }
 
+/** Badge label and Tailwind classes for each {@link ReturnItem.status}. */
 const statusConfig: Record<string, { label: string; class: string }> = {
   pending: {
     label: "Pending",
@@ -57,6 +71,18 @@ const statusConfig: Record<string, { label: string; class: string }> = {
   },
 };
 
+/**
+ * Renders the returns workspace with refund KPI stats, search, and the return-request table.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration. Return rows come from {@link useAdminReturns}.
+ *
+ * @example
+ * ```tsx
+ * // Route: /returns — rendered by the Next.js Pages Router.
+ * <Returns />
+ * ```
+ */
 const Returns = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { returns, stats, isLoading, error, mutate } = useAdminReturns();
@@ -70,11 +96,19 @@ const Returns = () => {
   );
 
   const totalCount = stats?.total ?? returns.length;
-  const pendingCount = stats?.pending ?? returns.filter((r: ReturnItem) => r.status === "pending").length;
-  const approvedCount = returns.filter((r: ReturnItem) => r.status === "approved").length;
-  const totalRefunded = stats?.refunded ?? returns
-    .filter((r: ReturnItem) => r.status === "completed" || r.status === "approved")
-    .reduce((s: number, r: ReturnItem) => s + r.amount, 0);
+  const pendingCount =
+    stats?.pending ??
+    returns.filter((r: ReturnItem) => r.status === "pending").length;
+  const approvedCount = returns.filter(
+    (r: ReturnItem) => r.status === "approved",
+  ).length;
+  const totalRefunded =
+    stats?.refunded ??
+    returns
+      .filter(
+        (r: ReturnItem) => r.status === "completed" || r.status === "approved",
+      )
+      .reduce((s: number, r: ReturnItem) => s + r.amount, 0);
 
   return (
     <PageLayout title="Returns" breadcrumbs={[{ label: "Returns" }]}>
@@ -133,11 +167,18 @@ const Returns = () => {
             {isLoading ? (
               <TableSkeleton rows={5} />
             ) : error ? (
-              <ErrorState message="Failed to load returns from database." onRetry={() => mutate()} />
+              <ErrorState
+                message="Failed to load returns from database."
+                onRetry={() => mutate()}
+              />
             ) : filtered.length === 0 ? (
               <EmptyState
                 title="No returns found"
-                description={searchQuery ? "Try refining your search terms." : "No return requests recorded in the database yet."}
+                description={
+                  searchQuery
+                    ? "Try refining your search terms."
+                    : "No return requests recorded in the database yet."
+                }
               />
             ) : (
               <Table>
@@ -184,7 +225,9 @@ const Returns = () => {
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm font-medium">{item.customer}</span>
+                        <span className="text-sm font-medium">
+                          {item.customer}
+                        </span>
                       </TableCell>
                       <TableCell>
                         <span className="text-sm">{item.product}</span>
@@ -231,6 +274,12 @@ const Returns = () => {
 export default Returns;
 
 import type { GetServerSidePropsContext } from "next";
+/**
+ * Server-side admin auth gate for the Returns route.
+ *
+ * @param ctx - Next.js server-side context for the incoming request, including `req`/`res` and cookies.
+ * @returns The {@link requireAdmin} result: `props` with the authenticated admin user, or a redirect to `/` / `/?error=admin_required` when the session is missing or not an admin.
+ */
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { requireAdmin } = await import("@/lib/ssrAuth");
   return requireAdmin(ctx);

@@ -7,33 +7,59 @@ import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/CartContext";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { formatGBP, trapFocus } from "@/lib/utils";
-import { Minus, Plus, ShoppingBag, Trash2, X, Package, RefreshCw, Users } from "lucide-react";
+import {
+  Minus,
+  Plus,
+  ShoppingBag,
+  Trash2,
+  X,
+  Package,
+  RefreshCw,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import type { SubscriptionPlanOption } from "@/lib/types";
 import { ShopTogetherShareModal } from "../cart/ShopTogetherShareModal";
 
+/** Props accepted by {@link CartDrawer}. */
 interface CartDrawerProps {
+  /** Whether the drawer panel is rendered. */
   isOpen: boolean;
+  /** Called when the user dismisses the drawer via backdrop click, Escape key, close button, or a navigation action. */
   onClose: () => void;
 }
 
-function CartItemRow({
-  item,
-  onUpdateQuantity,
-  onRemove,
-}: {
+/** Props accepted by {@link CartItemRow}. */
+interface CartItemRowProps {
+  /** Line item to display, including subscription metadata when present. */
   item: {
+    /** Unique product/line identifier passed back to the cart actions. */
     id: string | number;
+    /** Product name shown above the price. */
     name: string;
+    /** Unit price in GBP major units. */
     price: number;
+    /** Number of units currently in the cart. */
     quantity: number;
+    /** Product image URLs; the first entry is used as the thumbnail. */
     images?: string[];
+    /** Subscription plan details when the line was added as a subscription. */
     subscription?: SubscriptionPlanOption;
   };
+  /** Called with the line id and the desired quantity when the stepper changes. */
   onUpdateQuantity: (id: string | number, qty: number) => void;
+  /** Called with the line id when the remove button is pressed. */
   onRemove: (id: string | number) => void;
-}) {
+}
+
+/**
+ * Renders a single cart line with thumbnail, quantity stepper, and remove action.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ */
+function CartItemRow({ item, onUpdateQuantity, onRemove }: CartItemRowProps) {
   const [imageFailed, setImageFailed] = useState(false);
   const rawImage = item.images?.[0];
   const isLocalStack = rawImage?.includes("localhost:4566");
@@ -72,9 +98,7 @@ function CartItemRow({
             Renews {item.subscription.frequency.replace("_", " ")} (-15%)
           </span>
         )}
-        <p className="text-sm font-semibold mt-1">
-          {formatGBP(item.price)}
-        </p>
+        <p className="text-sm font-semibold mt-1">{formatGBP(item.price)}</p>
 
         <div className="flex items-center justify-between mt-2.5">
           <div className="flex items-center border border-border rounded-md bg-background">
@@ -110,6 +134,17 @@ function CartItemRow({
   );
 }
 
+/**
+ * Renders the slide-over shopping bag with line items, quantity controls, subtotal, and checkout actions.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+ * ```
+ */
 export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
   const [isShopTogetherOpen, setIsShopTogetherOpen] = useState(false);
@@ -134,7 +169,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     previousFocusedRef.current = document.activeElement as HTMLElement;
     setTimeout(() => {
       const first = panelRef.current?.querySelector<HTMLElement>(
-        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
       );
       first?.focus();
     }, 0);
@@ -176,7 +211,11 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             initial={reduceMotion ? { x: 0 } : { x: 440 }}
             animate={{ x: 0 }}
             exit={reduceMotion ? { x: 0 } : { x: 440 }}
-            transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 30 }}
+            transition={
+              reduceMotion
+                ? { duration: 0 }
+                : { type: "spring", stiffness: 300, damping: 30 }
+            }
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
@@ -246,7 +285,9 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             {cart.length > 0 && (
               <div className="p-6 border-t border-border bg-surface/50 space-y-4">
                 <div className="flex justify-between items-baseline">
-                  <span className="text-sm text-muted-foreground">Subtotal</span>
+                  <span className="text-sm text-muted-foreground">
+                    Subtotal
+                  </span>
                   <span className="text-lg font-semibold tracking-tight">
                     {formatGBP(total)}
                   </span>
@@ -262,7 +303,12 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     </Link>
                   </Button>
                   <div className="grid grid-cols-2 gap-2">
-                    <Button asChild variant="outline" size="sm" className="h-9 text-xs">
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="h-9 text-xs"
+                    >
                       <Link href="/cart" onClick={onClose}>
                         View bag
                       </Link>
@@ -294,4 +340,3 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     </AnimatePresence>
   );
 }
-

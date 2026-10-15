@@ -8,6 +8,19 @@ import {
 } from "@ecommerce/shared";
 import { StorefrontLogo } from "./common/storefront-logo";
 
+/**
+ * Renders a lightweight site navigation bar with primary links, action icons and a mobile dropdown.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * Open state is local to the component and the cart badge is a static `0`; drawer behaviour and live counters are provided by the shared `Header` instead.
+ *
+ * @example
+ * ```tsx
+ * <Navigation />
+ * ```
+ */
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 

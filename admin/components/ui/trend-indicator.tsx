@@ -4,14 +4,38 @@
 import { ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+/** Props accepted by {@link TrendIndicator}. */
 interface TrendIndicatorProps {
+  /** Signed percentage change; the sign selects the arrow and colour. */
   value: number;
+  /**
+   * Unit appended after the absolute value.
+   *
+   * @defaultValue "%"
+   */
   suffix?: string;
+  /** Additional classes merged onto the wrapper span. */
   className?: string;
-  /** Size variant */
+  /**
+   * Size variant.
+   *
+   * @defaultValue "sm"
+   */
   size?: "sm" | "md" | "lg";
 }
 
+/**
+ * Renders an absolute percentage change with a directional arrow and semantic colour.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * // Shown beside a product's sales figure in the dashboard table.
+ * <TrendIndicator value={-4.2} />
+ * ```
+ */
 export function TrendIndicator({
   value,
   suffix = "%",

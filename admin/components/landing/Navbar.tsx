@@ -4,7 +4,9 @@ import { Menu, X, Cpu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
+/** Props accepted by {@link Navbar}. */
 interface NavbarProps {
+  /** Called when the visitor clicks either "Sign In" button. */
   onLogin: () => void;
 }
 
@@ -15,6 +17,17 @@ const navLinks = [
   { label: "Scalability", href: "#pricing" },
 ];
 
+/**
+ * Renders the fixed landing-page navigation bar with scroll-aware styling and a mobile menu.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <Navbar onLogin={openLogin} />
+ * ```
+ */
 export default function Navbar({ onLogin }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -38,9 +51,7 @@ export default function Navbar({ onLogin }: NavbarProps) {
         animate={{ y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled
-            ? "glass-effect-strong py-4"
-            : "bg-transparent py-6"
+          scrolled ? "glass-effect-strong py-4" : "bg-transparent py-6"
         }`}
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -55,8 +66,12 @@ export default function Navbar({ onLogin }: NavbarProps) {
                 <Cpu className="h-5 w-5 text-white" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold tracking-[0.2em] leading-none uppercase">ShopSwift</span>
-                <span className="text-xs font-light text-muted-foreground tracking-widest uppercase">Admin Pro</span>
+                <span className="text-sm font-bold tracking-[0.2em] leading-none uppercase">
+                  ShopSwift
+                </span>
+                <span className="text-xs font-light text-muted-foreground tracking-widest uppercase">
+                  Admin Pro
+                </span>
               </div>
             </motion.a>
 

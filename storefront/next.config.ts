@@ -1,6 +1,17 @@
 import type { NextConfig } from "next";
 import path from "path";
 
+/**
+ * Next.js configuration for the storefront: transpiles the shared workspace
+ * packages, allows remote product images, and applies security headers.
+ *
+ * @remarks
+ * `outputFileTracingRoot` points one level up so the monorepo workspace
+ * packages are traced during builds. Unmatched `/api/*` requests are
+ * deliberately left to 404 — explicit `pages/api` proxies are the only
+ * backend entry points — and the webpack hook intentionally leaves React
+ * resolution to Next/npm to avoid duplicate React instances.
+ */
 const nextConfig: NextConfig = {
   /* config options here */
   transpilePackages: ["@ecommerce/shared", "@ecommerce/ui"],
@@ -37,11 +48,17 @@ const nextConfig: NextConfig = {
         source: "/:path*",
         headers: [
           { key: "X-DNS-Prefetch-Control", value: "on" },
-          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
+          },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
         ],
       },
     ];

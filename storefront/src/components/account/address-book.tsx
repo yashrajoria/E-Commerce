@@ -42,6 +42,20 @@ const addresses = [
   },
 ];
 
+/**
+ * Renders the saved shipping addresses with an add-address dialog.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. Addresses come from a local sample list; the dialog toggles local
+ * state only, so add/edit/delete controls are presentational.
+ *
+ * @example
+ * ```tsx
+ * <TabsContent value="addresses">
+ *   <AddressBook />
+ * </TabsContent>
+ * ```
+ */
 export function AddressBook() {
   const [isAddingAddress, setIsAddingAddress] = useState(false);
 
@@ -67,35 +81,49 @@ export function AddressBook() {
             <div className="space-y-3 pt-2">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label htmlFor="firstName" className="text-xs">First Name</Label>
+                  <Label htmlFor="firstName" className="text-xs">
+                    First Name
+                  </Label>
                   <Input id="firstName" className="h-9 text-xs" />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="lastName" className="text-xs">Last Name</Label>
+                  <Label htmlFor="lastName" className="text-xs">
+                    Last Name
+                  </Label>
                   <Input id="lastName" className="h-9 text-xs" />
                 </div>
               </div>
               <div className="space-y-1">
-                <Label htmlFor="street" className="text-xs">Street Address</Label>
+                <Label htmlFor="street" className="text-xs">
+                  Street Address
+                </Label>
                 <Input id="street" className="h-9 text-xs" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label htmlFor="city" className="text-xs">City</Label>
+                  <Label htmlFor="city" className="text-xs">
+                    City
+                  </Label>
                   <Input id="city" className="h-9 text-xs" />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="state" className="text-xs">County / State</Label>
+                  <Label htmlFor="state" className="text-xs">
+                    County / State
+                  </Label>
                   <Input id="state" className="h-9 text-xs" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label htmlFor="zip" className="text-xs">Postcode</Label>
+                  <Label htmlFor="zip" className="text-xs">
+                    Postcode
+                  </Label>
                   <Input id="zip" className="h-9 text-xs" />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="phone" className="text-xs">Phone</Label>
+                  <Label htmlFor="phone" className="text-xs">
+                    Phone
+                  </Label>
                   <Input id="phone" className="h-9 text-xs" />
                 </div>
               </div>
@@ -128,15 +156,24 @@ export function AddressBook() {
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="font-semibold text-xs capitalize text-foreground">{address.type}</span>
+                <span className="font-semibold text-xs capitalize text-foreground">
+                  {address.type}
+                </span>
                 {address.isDefault && (
-                  <Badge variant="secondary" className="text-[10px] py-0 px-1.5 font-normal">
+                  <Badge
+                    variant="secondary"
+                    className="text-[10px] py-0 px-1.5 font-normal"
+                  >
                     Default
                   </Badge>
                 )}
               </div>
               <div className="flex gap-1">
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                >
                   <Edit className="h-3.5 w-3.5" />
                 </Button>
                 <Button

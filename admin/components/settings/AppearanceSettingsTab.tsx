@@ -11,13 +11,34 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Palette } from "lucide-react";
 
+/** Props accepted by {@link AppearanceSettingsTab}. */
 export interface AppearanceSettingsTabProps {
+  /** Current primary brand colour, as a hex string. */
   primaryColor: string;
+  /** Called with the next hex colour when either colour control changes. */
   setPrimaryColor: (v: string) => void;
+  /** Whether the dark glassmorphism theme is selected. */
   darkMode: boolean;
+  /** Called with the next dark-mode preference when the switch toggles. */
   setDarkMode: (v: boolean) => void;
 }
 
+/**
+ * Renders the branding and theme settings card with a colour picker and a dark-mode switch.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <AppearanceSettingsTab
+ *   primaryColor={primaryColor}
+ *   setPrimaryColor={setPrimaryColor}
+ *   darkMode={darkMode}
+ *   setDarkMode={setDarkMode}
+ * />
+ * ```
+ */
 export const AppearanceSettingsTab: React.FC<AppearanceSettingsTabProps> = ({
   primaryColor,
   setPrimaryColor,
@@ -30,7 +51,9 @@ export const AppearanceSettingsTab: React.FC<AppearanceSettingsTabProps> = ({
         <CardTitle className="text-lg flex items-center gap-2">
           <Palette className="h-5 w-5 text-purple-400" /> Branding & Theme
         </CardTitle>
-        <CardDescription>Customize the storefront and admin color palette</CardDescription>
+        <CardDescription>
+          Customize the storefront and admin color palette
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -55,7 +78,9 @@ export const AppearanceSettingsTab: React.FC<AppearanceSettingsTabProps> = ({
         <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/[0.06]">
           <div>
             <p className="text-sm font-medium">Dark Mode Interface</p>
-            <p className="text-xs text-muted-foreground">Default to dark glassmorphism theme</p>
+            <p className="text-xs text-muted-foreground">
+              Default to dark glassmorphism theme
+            </p>
           </div>
           <Switch checked={darkMode} onCheckedChange={setDarkMode} />
         </div>
@@ -63,4 +88,3 @@ export const AppearanceSettingsTab: React.FC<AppearanceSettingsTabProps> = ({
     </Card>
   );
 };
-

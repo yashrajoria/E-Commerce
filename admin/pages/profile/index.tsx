@@ -31,6 +31,18 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+/**
+ * Renders the admin profile workspace with Profile, Security, and Notifications tabs.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration. The signed-in admin comes from {@link useAdminSession}.
+ *
+ * @example
+ * ```tsx
+ * // Route: /profile — rendered by the Next.js Pages Router.
+ * <Profile />
+ * ```
+ */
 const Profile = () => {
   const { user } = useAdminSession();
   const fallbackName =
@@ -360,12 +372,16 @@ const Profile = () => {
   );
 };
 
-
 export default Profile;
-
 
 import type { GetServerSidePropsContext } from "next";
 
+/**
+ * Server-side admin auth gate for the Profile route.
+ *
+ * @param ctx - Next.js server-side context for the incoming request, including `req`/`res` and cookies.
+ * @returns The {@link requireAdmin} result: `props` with the authenticated admin user, or a redirect to `/` / `/?error=admin_required` when the session is missing or not an admin.
+ */
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { requireAdmin } = await import("@/lib/ssrAuth");
   return requireAdmin(ctx);

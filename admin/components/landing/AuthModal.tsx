@@ -9,31 +9,39 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import {
-  Eye,
-  EyeOff,
-  Mail,
-  LockKeyhole,
-  Loader2,
-  Shield,
-} from "lucide-react";
+import { Eye, EyeOff, Mail, LockKeyhole, Loader2, Shield } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 import { useRouter } from "next/router";
 import { getResponseInfo, getErrorMessage } from "@/lib/error";
 import { useAdminSession } from "@/lib/useAdminSession";
 
+/** Props accepted by {@link AuthModal}. */
 interface AuthModalProps {
+  /** Whether the sign-in modal is visible. */
   open: boolean;
+  /** Called when the modal requests to be dismissed. */
   onClose: () => void;
-  /** @deprecated Public registration is disabled; always shows login. */
+  /**
+   * Preferred view when the modal opens.
+   *
+   * @deprecated Public registration is disabled; always shows login.
+   */
   initialView?: "login" | "register";
 }
 
-export default function AuthModal({
-  open,
-  onClose,
-}: AuthModalProps) {
+/**
+ * Renders the invite-only admin sign-in dialog that authenticates against the admin auth API.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <AuthModal open={authOpen} onClose={closeAuth} initialView="login" />
+ * ```
+ */
+export default function AuthModal({ open, onClose }: AuthModalProps) {
   const router = useRouter();
   const { refresh: refreshAdminSession } = useAdminSession();
   const [isLoading, setIsLoading] = useState(false);
@@ -122,7 +130,9 @@ export default function AuthModal({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="bg-card border-border rounded-2xl p-0 max-w-md overflow-hidden shadow-2xl [&>button]:text-muted-foreground [&>button]:hover:text-foreground">
-        <DialogTitle className="sr-only">Sign in to the admin dashboard</DialogTitle>
+        <DialogTitle className="sr-only">
+          Sign in to the admin dashboard
+        </DialogTitle>
         <DialogDescription className="sr-only">
           Enter your administrator email and password to continue.
         </DialogDescription>
@@ -139,7 +149,9 @@ export default function AuthModal({
               <div className="h-14 w-14 rounded-2xl gradient-purple flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <LockKeyhole className="h-6 w-6 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-foreground">Welcome back</h2>
+              <h2 className="text-2xl font-bold text-foreground">
+                Welcome back
+              </h2>
               <p className="text-sm text-muted-foreground mt-1">
                 Sign in to your admin dashboard
               </p>

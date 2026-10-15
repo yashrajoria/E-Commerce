@@ -47,6 +47,20 @@ const SUGGESTED_PROMPTS = [
   "Recommend an upsell strategy for high-intent customer cohorts.",
 ];
 
+/**
+ * Renders the AI Insights decision-intelligence workspace, composing the
+ * context-handoff header, operating signals, template lanes, prompt composer,
+ * answer canvas, tool timeline and session/diagnostics drawers.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * // Route: /dashboard/ai-insights — rendered by the Next.js Pages Router.
+ * <AIInsightsWorkspace />
+ * ```
+ */
 export const AIInsightsWorkspace = () => {
   const prefersReducedMotion = useReducedMotion();
   const promptRef = useRef<HTMLTextAreaElement | null>(null);

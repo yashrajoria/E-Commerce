@@ -15,26 +15,64 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
+/** Props accepted by {@link AIMerchantStudioModal}. */
 interface AIMerchantStudioModalProps {
+  /** Whether the studio modal is visible. */
   isOpen: boolean;
+  /** Called when the user dismisses the modal without applying. */
   onClose: () => void;
+  /**
+   * Draft product name pre-filled into the prompt input.
+   *
+   * @defaultValue ""
+   */
   initialName?: string;
+  /**
+   * Called with the generated copy when the merchant applies it to the form.
+   *
+   * @param data - Generated product copy and pricing.
+   */
   onApply: (data: {
+    /** Generated product name. */
     name: string;
+    /** Markdown-formatted product description. */
     description: string;
+    /** Recommended price in major currency units. */
     price?: number;
+    /** Suggested brand name. */
     brand?: string;
   }) => void;
 }
 
+/**
+ * Renders the AI Merchant Studio modal that turns a draft product name and
+ * brand tone into generated copy, pricing, tags and an SEO snippet.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <AIMerchantStudioModal
+ *   isOpen={studioOpen}
+ *   onClose={() => setStudioOpen(false)}
+ *   initialName={form.name}
+ *   onApply={(data) => applyStudioCopy(data)}
+ * />
+ * ```
+ */
 export function AIMerchantStudioModal({
   isOpen,
   onClose,
   initialName = "",
   onApply,
 }: AIMerchantStudioModalProps) {
-  const [draftName, setDraftName] = useState(initialName || "Ceramic Table Lamp");
-  const [tone, setTone] = useState<"luxury" | "minimalist" | "energetic">("luxury");
+  const [draftName, setDraftName] = useState(
+    initialName || "Ceramic Table Lamp",
+  );
+  const [tone, setTone] = useState<"luxury" | "minimalist" | "energetic">(
+    "luxury",
+  );
   const [loading, setLoading] = useState(false);
 
   const [generatedOutput, setGeneratedOutput] = useState<{
@@ -60,7 +98,12 @@ export function AIMerchantStudioModal({
         title = `Nordic ${cleanTitle} (Matte Finish)`;
         brand = "Nordic Form";
         price = 79.0;
-        tags = ["#minimalism", "#scandinaviandesign", "#warminterior", "#organic"];
+        tags = [
+          "#minimalism",
+          "#scandinaviandesign",
+          "#warminterior",
+          "#organic",
+        ];
       } else if (tone === "energetic") {
         title = `Pro Edition ${cleanTitle} — Ultimate Performance`;
         brand = "AeroTech";
@@ -137,16 +180,25 @@ Designed with an unwavering focus on texture and proportion, this piece blends u
               <div>
                 <h2 className="text-base font-bold text-foreground flex items-center gap-2">
                   AI Merchant Studio
-                  <Badge variant="outline" className="text-[10px] bg-purple-500/5 text-purple-600 border-purple-500/20">
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] bg-purple-500/5 text-purple-600 border-purple-500/20"
+                  >
                     Copilot &amp; SEO
                   </Badge>
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  Transform raw product notes into high-converting descriptions, SEO meta, and smart pricing
+                  Transform raw product notes into high-converting descriptions,
+                  SEO meta, and smart pricing
                 </p>
               </div>
             </div>
-            <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full h-8 w-8">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="rounded-full h-8 w-8"
+            >
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -156,7 +208,9 @@ Designed with an unwavering focus on texture and proportion, this piece blends u
             {/* Input Controls */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 rounded-xl bg-muted/30 border border-border">
               <div className="sm:col-span-1 space-y-1.5">
-                <label className="text-xs font-semibold text-foreground">Product Draft Name</label>
+                <label className="text-xs font-semibold text-foreground">
+                  Product Draft Name
+                </label>
                 <input
                   type="text"
                   value={draftName}
@@ -167,10 +221,16 @@ Designed with an unwavering focus on texture and proportion, this piece blends u
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-foreground">Brand Tone</label>
+                <label className="text-xs font-semibold text-foreground">
+                  Brand Tone
+                </label>
                 <select
                   value={tone}
-                  onChange={(e) => setTone(e.target.value as "luxury" | "minimalist" | "energetic")}
+                  onChange={(e) =>
+                    setTone(
+                      e.target.value as "luxury" | "minimalist" | "energetic",
+                    )
+                  }
                   className="w-full text-xs bg-background border border-border rounded-lg px-2.5 py-2 text-foreground focus:outline-hidden"
                 >
                   <option value="luxury">Luxury / Artisan</option>
@@ -187,7 +247,8 @@ Designed with an unwavering focus on texture and proportion, this piece blends u
                 >
                   {loading ? (
                     <>
-                      <Sparkles className="h-3.5 w-3.5 animate-spin" /> Drafting...
+                      <Sparkles className="h-3.5 w-3.5 animate-spin" />{" "}
+                      Drafting...
                     </>
                   ) : (
                     <>
@@ -211,14 +272,18 @@ Designed with an unwavering focus on texture and proportion, this piece blends u
                       Brand: {generatedOutput.brand}
                     </Badge>
                   </div>
-                  <h3 className="text-sm font-bold text-foreground">{generatedOutput.name}</h3>
+                  <h3 className="text-sm font-bold text-foreground">
+                    {generatedOutput.name}
+                  </h3>
                 </div>
 
                 {/* Pricing & Tag Pill */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="p-3.5 rounded-xl border border-border bg-background flex items-center justify-between">
                     <div>
-                      <span className="text-[11px] text-muted-foreground block">Recommended Price</span>
+                      <span className="text-[11px] text-muted-foreground block">
+                        Recommended Price
+                      </span>
                       <span className="text-base font-bold text-foreground">
                         £{generatedOutput.suggestedPrice.toFixed(2)}
                       </span>
@@ -236,7 +301,10 @@ Designed with an unwavering focus on texture and proportion, this piece blends u
                     </span>
                     <div className="flex flex-wrap gap-1">
                       {generatedOutput.tags.map((t) => (
-                        <span key={t} className="text-[10px] font-mono bg-muted px-1.5 py-0.5 rounded text-foreground">
+                        <span
+                          key={t}
+                          className="text-[10px] font-mono bg-muted px-1.5 py-0.5 rounded text-foreground"
+                        >
                           {t}
                         </span>
                       ))}
@@ -272,7 +340,12 @@ Designed with an unwavering focus on texture and proportion, this piece blends u
 
           {/* Footer Actions */}
           <div className="p-4 border-t border-border bg-muted/20 flex items-center justify-between">
-            <Button variant="ghost" size="sm" onClick={onClose} className="text-xs">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="text-xs"
+            >
               Discard
             </Button>
             {generatedOutput && (

@@ -4,13 +4,36 @@ import Image from "next/image";
 import { Tag, Check, ShoppingBag } from "lucide-react";
 import type { ActionCard } from "./types";
 
+/** Props accepted by {@link BundleCardRenderer}. */
 export interface BundleCardRendererProps {
+  /** Bundle payload produced by the shopper assistant, including items, prices and the coupon code. */
   card: ActionCard;
+  /** Per-item selection state keyed by item id; an item counts as selected unless it is explicitly false. */
   checkedMap: Record<string, boolean>;
+  /** Called with an item id to toggle that item's selection. */
   onToggleItem: (id: string) => void;
+  /** Called when the user presses the add-all button; disabled while nothing is selected. */
   onAddBundle: () => void;
 }
 
+/**
+ * Renders an assistant-generated bundle as an interactive card with a budget tracker, item checklist and live totals.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * Recomputes the subtotal, a proportionally scaled coupon discount and the share of the target budget used whenever the checklist changes; prices arrive as integer cents and are displayed in dollars.
+ *
+ * @example
+ * ```tsx
+ * <BundleCardRenderer
+ *   card={actionCard}
+ *   checkedMap={checkedItemsMap[message.id] || {}}
+ *   onToggleItem={(itemId) => handleToggleItem(message.id, itemId)}
+ *   onAddBundle={() => handleAddBundleToCart(message.id, actionCard)}
+ * />
+ * ```
+ */
 export const BundleCardRenderer: React.FC<BundleCardRendererProps> = ({
   card,
   checkedMap,
@@ -18,30 +41,35 @@ export const BundleCardRenderer: React.FC<BundleCardRendererProps> = ({
   onAddBundle,
 }) => {
   // Live recalculate subtotal and coupon discount based on checked items
-  const { checkedItems, currentSubtotal, calculatedDiscount, finalTotal, percentBudgetUsed } =
-    useMemo(() => {
-      const checked = card.items.filter((item) => checkedMap[item.id] !== false);
-      const subtotal = checked.reduce((acc, it) => acc + it.price, 0);
+  const {
+    checkedItems,
+    currentSubtotal,
+    calculatedDiscount,
+    finalTotal,
+    percentBudgetUsed,
+  } = useMemo(() => {
+    const checked = card.items.filter((item) => checkedMap[item.id] !== false);
+    const subtotal = checked.reduce((acc, it) => acc + it.price, 0);
 
-      // Proportionate discount from original bundle discount ratio
-      const discountRatio =
-        card.original_price_cents > 0
-          ? card.discount_cents / card.original_price_cents
-          : 0.1;
-      const discount = Math.round(subtotal * discountRatio);
-      const total = Math.max(0, subtotal - discount);
+    // Proportionate discount from original bundle discount ratio
+    const discountRatio =
+      card.original_price_cents > 0
+        ? card.discount_cents / card.original_price_cents
+        : 0.1;
+    const discount = Math.round(subtotal * discountRatio);
+    const total = Math.max(0, subtotal - discount);
 
-      const budget = card.budget_cents || 30000;
-      const percent = Math.min(100, Math.round((total / budget) * 100));
+    const budget = card.budget_cents || 30000;
+    const percent = Math.min(100, Math.round((total / budget) * 100));
 
-      return {
-        checkedItems: checked,
-        currentSubtotal: subtotal,
-        calculatedDiscount: discount,
-        finalTotal: total,
-        percentBudgetUsed: percent,
-      };
-    }, [card, checkedMap]);
+    return {
+      checkedItems: checked,
+      currentSubtotal: subtotal,
+      calculatedDiscount: discount,
+      finalTotal: total,
+      percentBudgetUsed: percent,
+    };
+  }, [card, checkedMap]);
 
   return (
     <motion.div
@@ -53,9 +81,13 @@ export const BundleCardRenderer: React.FC<BundleCardRendererProps> = ({
       <div className="flex items-start justify-between gap-3">
         <div>
           <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">
-            {card.theme ? `${card.theme.toUpperCase()} BUNDLE` : "CURATED BUNDLE"}
+            {card.theme
+              ? `${card.theme.toUpperCase()} BUNDLE`
+              : "CURATED BUNDLE"}
           </span>
-          <h3 className="text-base font-bold text-foreground mt-1.5">{card.title}</h3>
+          <h3 className="text-base font-bold text-foreground mt-1.5">
+            {card.title}
+          </h3>
         </div>
 
         {card.coupon_code && (
@@ -73,7 +105,8 @@ export const BundleCardRenderer: React.FC<BundleCardRendererProps> = ({
         <div className="flex items-center justify-between text-xs font-medium">
           <span className="text-muted-foreground">Target Budget Tracker:</span>
           <span className="text-foreground font-bold">
-            ${(finalTotal / 100).toFixed(2)} / ${(card.budget_cents / 100).toFixed(2)}
+            ${(finalTotal / 100).toFixed(2)} / $
+            {(card.budget_cents / 100).toFixed(2)}
           </span>
         </div>
         <div className="w-full h-2 rounded-full bg-border overflow-hidden">
@@ -89,7 +122,8 @@ export const BundleCardRenderer: React.FC<BundleCardRendererProps> = ({
         <p className="text-[10px] text-muted-foreground flex justify-between">
           <span>{percentBudgetUsed}% of budget used</span>
           <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
-            Under budget by ${((card.budget_cents - finalTotal) / 100).toFixed(2)}
+            Under budget by $
+            {((card.budget_cents - finalTotal) / 100).toFixed(2)}
           </span>
         </p>
       </div>
@@ -97,8 +131,13 @@ export const BundleCardRenderer: React.FC<BundleCardRendererProps> = ({
       {/* Item Checklist */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground px-0.5">
-          <span>Bundle Items ({checkedItems.length} of {card.items.length} selected):</span>
-          <span className="text-[11px] text-violet-600 dark:text-violet-400">Click to toggle</span>
+          <span>
+            Bundle Items ({checkedItems.length} of {card.items.length}{" "}
+            selected):
+          </span>
+          <span className="text-[11px] text-violet-600 dark:text-violet-400">
+            Click to toggle
+          </span>
         </div>
 
         {card.items.map((item) => {
@@ -139,7 +178,9 @@ export const BundleCardRenderer: React.FC<BundleCardRendererProps> = ({
 
               {/* Item Details */}
               <div className="flex-1 min-w-0">
-                <h4 className="text-xs font-semibold text-foreground truncate">{item.name}</h4>
+                <h4 className="text-xs font-semibold text-foreground truncate">
+                  {item.name}
+                </h4>
                 <p className="text-[11px] text-muted-foreground truncate">
                   {item.brand || "ShopSwift"} • {item.sku || "IN-STOCK"}
                 </p>
@@ -183,9 +224,9 @@ export const BundleCardRenderer: React.FC<BundleCardRendererProps> = ({
         className="w-full py-3 rounded-xl font-semibold text-sm text-white bg-linear-to-r from-violet-600 via-indigo-600 to-rose-600 hover:from-violet-700 hover:to-rose-700 shadow-md shadow-violet-500/25 hover:shadow-lg hover:shadow-violet-500/35 active:scale-98 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
       >
         <ShoppingBag className="h-4 w-4" />
-        Add All {checkedItems.length} Items to Cart (${(finalTotal / 100).toFixed(2)})
+        Add All {checkedItems.length} Items to Cart ($
+        {(finalTotal / 100).toFixed(2)})
       </button>
     </motion.div>
   );
 };
-

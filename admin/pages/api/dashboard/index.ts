@@ -97,13 +97,15 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
           cookie: req.headers.cookie || "",
         },
         timeout: 5000,
-      }
+      },
     );
     dashboardData = (response.data?.data ?? response.data) as DashboardData;
   } catch (backendError) {
     console.warn(
       "Backend gateway dashboard failed, falling back to direct DB queries:",
-      backendError instanceof Error ? backendError.message : String(backendError)
+      backendError instanceof Error
+        ? backendError.message
+        : String(backendError),
     );
   }
 
@@ -146,7 +148,10 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         type: `Order ${o.status}`,
         description: `Order ${o.order_number || o.id.slice(0, 8)} placed for £${(o.amount / 100).toFixed(2)}`,
         time: new Date(o.created_at).toLocaleDateString(),
-        variant: o.status === "delivered" || o.status === "completed" ? "success" : "info",
+        variant:
+          o.status === "delivered" || o.status === "completed"
+            ? "success"
+            : "info",
       }));
 
       const topProdRows = await query<{
@@ -222,7 +227,9 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       };
     } catch (dbErr) {
       console.error("Database fallback error:", dbErr);
-      return res.status(500).json({ success: false, error: "Failed to load dashboard data" });
+      return res
+        .status(500)
+        .json({ success: false, error: "Failed to load dashboard data" });
     }
   }
 
@@ -258,4 +265,18 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   return res.status(200).json({ success: true, data: dashboardData });
 }
 
+/**
+ * Serves admin dashboard data at `GET /api/dashboard`.
+ *
+ * @remarks
+ * Wrapped in {@link withAdminApi}, which enforces same-origin checks and an admin session before the proxy runs.
+ * First tries `GET bff/admin/dashboard` with a 5 second timeout; if that fails or returns no KPIs, it assembles the
+ * payload from Postgres directly via {@link query} (orders, users, products, revenue series, recent activity, customer
+ * insights). Order charts and revenue forecast targets are added afterwards, and the result is returned as
+ * `{ success: true, data }`; a database failure yields `500`.
+ *
+ * @param req - The Next.js API request. Must be a `GET`; query parameters are ignored.
+ * @param res - The Next.js API response.
+ * @returns A promise that resolves once the dashboard payload has been sent.
+ */
 export default withAdminApi(handler);

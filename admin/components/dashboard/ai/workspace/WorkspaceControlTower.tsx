@@ -2,12 +2,36 @@ import { Button } from "@/components/ui/button";
 import { BrainCircuit, History, Trash2 } from "lucide-react";
 import React from "react";
 
+/** Props accepted by {@link WorkspaceControlTower}. */
 interface WorkspaceControlTowerProps {
+  /** Prompts saved to the vault; only the first four are rendered. */
   savedPrompts: string[];
+  /**
+   * Called with a vault prompt when the user picks it.
+   *
+   * @param prompt - The selected saved prompt.
+   */
   onUsePrompt: (prompt: string) => void;
+  /** Called when the user asks to open the clear-session confirmation dialog. */
   onOpenClearDialog: () => void;
 }
 
+/**
+ * Renders the sticky control tower sidebar with the workspace runbook, the
+ * saved-prompt vault and the session reset entry point.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <WorkspaceControlTower
+ *   savedPrompts={savedPrompts}
+ *   onUsePrompt={handleSelectTemplate}
+ *   onOpenClearDialog={() => setIsClearDialogOpen(true)}
+ * />
+ * ```
+ */
 export function WorkspaceControlTower({
   savedPrompts,
   onUsePrompt,
@@ -72,8 +96,8 @@ export function WorkspaceControlTower({
             Reset session context
           </p>
           <p className="mt-1 text-xs leading-5 text-[hsl(35,74%,84%)]">
-            Clear the current thread when you want the next answer to start
-            from a clean analytical baseline.
+            Clear the current thread when you want the next answer to start from
+            a clean analytical baseline.
           </p>
           <Button
             type="button"
@@ -89,4 +113,3 @@ export function WorkspaceControlTower({
     </aside>
   );
 }
-

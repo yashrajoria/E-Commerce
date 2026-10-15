@@ -7,6 +7,19 @@ import { useProducts } from "@/hooks/useProducts";
 import { ProductCard } from "@/components/common/product-card";
 import Link from "next/link";
 
+/**
+ * Renders the "Featured Products" grid with a link through to the full catalog.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * Loads up to eight featured products through `useProducts(8, 1, true)`, shows a skeleton grid while loading and renders nothing on error or when the list is empty.
+ *
+ * @example
+ * ```tsx
+ * <FeaturedProducts />
+ * ```
+ */
 export function FeaturedProducts() {
   const { data, isLoading, error } = useProducts(8, 1, true);
   const products = data?.products ?? [];
@@ -46,7 +59,12 @@ export function FeaturedProducts() {
             </h2>
           </div>
 
-          <Button asChild variant="outline" size="sm" className="h-9 px-4 text-xs font-semibold">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="h-9 px-4 text-xs font-semibold"
+          >
             <Link href="/products?sortBy=newest">
               View All Products
               <ArrowRight className="ml-1.5 h-3.5 w-3.5" />

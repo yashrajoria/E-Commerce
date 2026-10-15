@@ -9,10 +9,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
+/** Props accepted by {@link ProductReviews}. */
 interface ProductReviewsProps {
+  /** Identifier of the product being reviewed; the current implementation renders static sample reviews. */
   productId: string;
 }
 
+/** Sample review entries rendered by {@link ProductReviews}. */
 const reviews = [
   {
     id: "1",
@@ -55,6 +58,7 @@ const reviews = [
   },
 ];
 
+/** Star-count distribution used to draw the rating summary bars in {@link ProductReviews}. */
 const ratingDistribution = [
   { stars: 5, count: 45, percentage: 60 },
   { stars: 4, count: 20, percentage: 27 },
@@ -63,6 +67,20 @@ const ratingDistribution = [
   { stars: 1, count: 1, percentage: 1 },
 ];
 
+/**
+ * Renders the product reviews tab with an average rating summary, rating distribution and review list.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * Reviews, the average rating and the distribution are static sample data; the sort dropdown only updates local state and the filter/write/load-more controls are not wired to a backend.
+ *
+ * @example
+ * ```tsx
+ * // Rendered inside the product page "Reviews" tab.
+ * <ProductReviews productId={product.id} />
+ * ```
+ */
 export function ProductReviews({}: ProductReviewsProps) {
   const [sortBy, setSortBy] = useState("newest");
   // const [filterRating, setFilterRating] = useState(0);

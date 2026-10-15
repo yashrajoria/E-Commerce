@@ -17,7 +17,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { Customer, CustomerFilter, CustomerSortKey } from "@/types/customers";
+import type {
+  Customer,
+  CustomerFilter,
+  CustomerSortKey,
+} from "@/types/customers";
 import { formatDate, formatRelativeDate } from "@/lib/utils";
 import { motion } from "framer-motion";
 import {
@@ -31,30 +35,40 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+/** Props accepted by {@link CustomersTable}. */
 interface CustomersTableProps {
+  /** Customers for the current page slice. */
   customers: Customer[];
+  /** Current search, role and sort state. */
   filter: CustomerFilter;
+  /** Called with the column key when a sortable header is clicked. */
   onSort: (key: CustomerSortKey) => void;
+  /** Called when a row is clicked, to open the detail dialog. */
   onCustomerClick: (customer: Customer) => void;
 }
 
+/** Badge colour classes for each customer role. */
 export const ROLE_STYLE: Record<Customer["role"], string> = {
   admin: "bg-amber-400/10 text-amber-400 border-amber-400/20",
   user: "bg-emerald-400/10 text-emerald-400 border-emerald-400/20",
 };
 
+/** Human-readable role labels shown in badges and CSV exports. */
 export const ROLE_LABEL: Record<Customer["role"], string> = {
   admin: "Staff",
   user: "Customer",
 };
 
-const SortIndicator = ({
-  active,
-  order,
-}: {
+/** Props accepted by {@link SortIndicator}. */
+interface SortIndicatorProps {
+  /** Whether its column is the active sort column. */
   active: boolean;
+  /** Direction of the active sort. */
   order: CustomerFilter["sortOrder"];
-}) => {
+}
+
+/** Renders the ascending/descending arrow for a sortable column, hidden until hover when inactive. */
+const SortIndicator = ({ active, order }: SortIndicatorProps) => {
   if (active) {
     return order === "asc" ? (
       <ArrowUp className="h-3 w-3" />
@@ -62,22 +76,33 @@ const SortIndicator = ({
       <ArrowDown className="h-3 w-3" />
     );
   }
-  return <ArrowUpDown className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-40" />;
+  return (
+    <ArrowUpDown className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-40" />
+  );
 };
 
+/** Props accepted by {@link SortableHead}. */
+interface SortableHeadProps {
+  /** Column heading text. */
+  label: string;
+  /** Sort key this column maps to. */
+  sortKey: CustomerSortKey;
+  /** Current filter state, used to highlight the active sort column. */
+  filter: CustomerFilter;
+  /** Called with {@link SortableHeadProps.sortKey} when the heading is clicked. */
+  onSort: (key: CustomerSortKey) => void;
+  /** Extra classes applied to the header cell. */
+  className?: string;
+}
+
+/** Renders a clickable table header that sorts the customer list by its column. */
 const SortableHead = ({
   label,
   sortKey,
   filter,
   onSort,
   className,
-}: {
-  label: string;
-  sortKey: CustomerSortKey;
-  filter: CustomerFilter;
-  onSort: (key: CustomerSortKey) => void;
-  className?: string;
-}) => (
+}: SortableHeadProps) => (
   <TableHead
     className={`text-xs uppercase tracking-wider text-muted-foreground ${className ?? ""}`}
   >
@@ -95,6 +120,12 @@ const SortableHead = ({
   </TableHead>
 );
 
+/**
+ * Derives up to two uppercase initials from a customer's name for use as an avatar fallback.
+ *
+ * @param name - Customer name to shorten, e.g. `"Jane Doe"` → `"JD"`.
+ * @returns Up to two uppercase initials, or `"?"` when the name contains no letters.
+ */
 export const initialsOf = (name: string) =>
   name
     .split(/\s+/)
@@ -104,7 +135,22 @@ export const initialsOf = (name: string) =>
     .slice(0, 2)
     .toUpperCase() || "?";
 
-
+/**
+ * Renders the sortable customers table with role badges, join dates and a per-row actions menu.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <CustomersTable
+ *   customers={customers}
+ *   filter={filter}
+ *   onSort={handleSort}
+ *   onCustomerClick={setSelectedCustomer}
+ * />
+ * ```
+ */
 export const CustomersTable = ({
   customers,
   filter,
@@ -192,7 +238,9 @@ export const CustomersTable = ({
             </TableCell>
             <TableCell>
               <div className="flex flex-col">
-                <span className="text-sm">{formatDate(customer.createdAt)}</span>
+                <span className="text-sm">
+                  {formatDate(customer.createdAt)}
+                </span>
                 <span className="text-xs text-muted-foreground">
                   {formatRelativeDate(customer.createdAt)}
                 </span>
@@ -220,11 +268,15 @@ export const CustomersTable = ({
                   <DropdownMenuItem onClick={() => onCustomerClick(customer)}>
                     <Eye className="h-4 w-4" /> View details
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => copy(customer.email, "Email")}>
+                  <DropdownMenuItem
+                    onClick={() => copy(customer.email, "Email")}
+                  >
                     <Mail className="h-4 w-4" /> Copy email
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => copy(customer.id, "User ID")}>
+                  <DropdownMenuItem
+                    onClick={() => copy(customer.id, "User ID")}
+                  >
                     <Copy className="h-4 w-4" /> Copy user ID
                   </DropdownMenuItem>
                 </DropdownMenuContent>

@@ -11,15 +11,32 @@ import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { DialogHeader, DialogFooter } from "../ui/dialog";
 
+/** Props accepted by {@link BulkUpload}. */
+interface BulkUploadProps {
+  /** Whether the bulk upload dialog is open. */
+  isBulkOpen: boolean;
+  /** Called with the next open state when the dialog opens or closes. */
+  setIsBulkOpen: (open: boolean) => void;
+  /** Called after a successful upload to refresh the category list; when omitted the page is reloaded instead. */
+  onRefresh?: () => void;
+}
+
+/**
+ * Renders the "Bulk Upload" dialog that imports categories from pasted or uploaded CSV content.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <BulkUpload isBulkOpen={isBulkOpen} setIsBulkOpen={setIsBulkOpen} onRefresh={refresh} />
+ * ```
+ */
 export default function BulkUpload({
   isBulkOpen,
   setIsBulkOpen,
   onRefresh,
-}: {
-  isBulkOpen: boolean;
-  setIsBulkOpen: (open: boolean) => void;
-  onRefresh?: () => void;
-}) {
+}: BulkUploadProps) {
   return (
     <Dialog open={isBulkOpen} onOpenChange={setIsBulkOpen}>
       <DialogTrigger asChild>

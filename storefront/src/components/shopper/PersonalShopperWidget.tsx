@@ -16,6 +16,20 @@ import { STARTER_PROMPTS } from "./types";
 import { BundleCardRenderer } from "./BundleCardRenderer";
 import { useShopperChat } from "./useShopperChat";
 
+/**
+ * Renders the floating AI Personal Shopper trigger and its slide-over chat drawer.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * Hidden entirely while the route is under `/checkout`; chat state comes from `useShopperChat`, bundle replies render through `BundleCardRenderer`, and the trigger sits higher on product detail routes (`[id]`) to clear sticky mobile bars.
+ *
+ * @example
+ * ```tsx
+ * // Mounted once in the app shell.
+ * <PersonalShopperWidget />
+ * ```
+ */
 export function PersonalShopperWidget() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -67,7 +81,9 @@ export function PersonalShopperWidget() {
       {/* Floating Trigger Pill */}
       <div
         className={`fixed ${
-          router?.pathname?.includes("[id]") ? "bottom-20 md:bottom-6" : "bottom-4 sm:bottom-6"
+          router?.pathname?.includes("[id]")
+            ? "bottom-20 md:bottom-6"
+            : "bottom-4 sm:bottom-6"
         } right-4 sm:right-6 z-40`}
       >
         <motion.button
@@ -82,7 +98,9 @@ export function PersonalShopperWidget() {
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
           </span>
           <Sparkles className="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-12" />
-          <span className="font-semibold text-xs tracking-tight">AI Shopper</span>
+          <span className="font-semibold text-xs tracking-tight">
+            AI Shopper
+          </span>
         </motion.button>
       </div>
 
@@ -185,8 +203,12 @@ export function PersonalShopperWidget() {
                         <BundleCardRenderer
                           card={msg.actionCard}
                           checkedMap={checkedItemsMap[msg.id] || {}}
-                          onToggleItem={(itemId) => handleToggleItem(msg.id, itemId)}
-                          onAddBundle={() => handleAddBundleToCart(msg.id, msg.actionCard!)}
+                          onToggleItem={(itemId) =>
+                            handleToggleItem(msg.id, itemId)
+                          }
+                          onAddBundle={() =>
+                            handleAddBundleToCart(msg.id, msg.actionCard!)
+                          }
                         />
                       )}
 
@@ -194,19 +216,31 @@ export function PersonalShopperWidget() {
                       {msg.actionCard && !loading && (
                         <div className="mt-2.5 flex flex-wrap gap-1.5 max-w-[95%]">
                           <button
-                            onClick={() => handleSubmit("Make this bundle cheaper / reduce total cost")}
+                            onClick={() =>
+                              handleSubmit(
+                                "Make this bundle cheaper / reduce total cost",
+                              )
+                            }
                             className="text-[11px] font-medium bg-card hover:bg-accent border border-border/70 hover:border-violet-500/50 rounded-lg px-2.5 py-1 text-muted-foreground hover:text-foreground transition-all duration-200 flex items-center gap-1 shadow-2xs"
                           >
                             📉 Lower budget
                           </button>
                           <button
-                            onClick={() => handleSubmit("Can you swap one item for a recommended alternative?")}
+                            onClick={() =>
+                              handleSubmit(
+                                "Can you swap one item for a recommended alternative?",
+                              )
+                            }
                             className="text-[11px] font-medium bg-card hover:bg-accent border border-border/70 hover:border-violet-500/50 rounded-lg px-2.5 py-1 text-muted-foreground hover:text-foreground transition-all duration-200 flex items-center gap-1 shadow-2xs"
                           >
                             🔄 Swap an item
                           </button>
                           <button
-                            onClick={() => handleSubmit("Find the best active discount coupon code")}
+                            onClick={() =>
+                              handleSubmit(
+                                "Find the best active discount coupon code",
+                              )
+                            }
                             className="text-[11px] font-medium bg-card hover:bg-accent border border-border/70 hover:border-violet-500/50 rounded-lg px-2.5 py-1 text-muted-foreground hover:text-foreground transition-all duration-200 flex items-center gap-1 shadow-2xs"
                           >
                             🏷️ Check coupons
@@ -246,8 +280,8 @@ export function PersonalShopperWidget() {
                                 isDone
                                   ? "text-emerald-600 dark:text-emerald-400 font-medium"
                                   : isCurrent
-                                  ? "text-foreground font-medium animate-pulse"
-                                  : "text-muted-foreground/60"
+                                    ? "text-foreground font-medium animate-pulse"
+                                    : "text-muted-foreground/60"
                               }`}
                             >
                               {isDone ? (
@@ -272,7 +306,8 @@ export function PersonalShopperWidget() {
                 {messages.length <= 2 && !loading && (
                   <div className="px-6 py-2 border-t border-border/40 bg-muted/20">
                     <p className="text-[11px] font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
-                      <Zap className="h-3 w-3 text-amber-500" /> Suggested queries:
+                      <Zap className="h-3 w-3 text-amber-500" /> Suggested
+                      queries:
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                       {STARTER_PROMPTS.map((starter) => (
@@ -315,7 +350,8 @@ export function PersonalShopperWidget() {
                   </form>
                   <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground/70 px-1">
                     <span className="flex items-center gap-1">
-                      <ShieldCheck className="h-3 w-3 text-emerald-500" /> Zero-knowledge saved payments
+                      <ShieldCheck className="h-3 w-3 text-emerald-500" />{" "}
+                      Zero-knowledge saved payments
                     </span>
                     <span>Real-time stock verified</span>
                   </div>

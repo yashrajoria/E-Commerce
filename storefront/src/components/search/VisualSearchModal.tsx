@@ -2,14 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Camera,
-  Upload,
-  X,
-  Sparkles,
-  ShoppingBag,
-  Check,
-} from "lucide-react";
+import { Camera, Upload, X, Sparkles, ShoppingBag, Check } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -17,49 +10,83 @@ import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import { formatGBP } from "@/lib/utils";
-import type { VisualSearchResultItem, VisualSearchResponse } from "@/pages/api/products/visual-search";
+import type {
+  VisualSearchResultItem,
+  VisualSearchResponse,
+} from "@/pages/api/products/visual-search";
 
+/** Props accepted by {@link VisualSearchModal}. */
 interface VisualSearchModalProps {
+  /** Whether the modal is visible; the component returns null when false. */
   isOpen: boolean;
+  /** Called to dismiss the modal from the backdrop, the close button, a matching product link or the footer button. */
   onClose: () => void;
 }
 
+/** Curated aesthetic presets users can search by when they do not upload a photo. */
 const PRESETS = [
   {
     id: "minimalist-home",
     label: "Nordic Living",
     icon: "🛋️",
-    thumb: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=300&q=80",
+    thumb:
+      "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=300&q=80",
   },
   {
     id: "tech-desk",
     label: "Tech Workspace",
     icon: "💻",
-    thumb: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&q=80",
+    thumb:
+      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&q=80",
   },
   {
     id: "urban-athleisure",
     label: "Urban Athleisure",
     icon: "👟",
-    thumb: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&q=80",
+    thumb:
+      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&q=80",
   },
   {
     id: "luxury-watch",
     label: "Classic Watches",
     icon: "⌚",
-    thumb: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=300&q=80",
+    thumb:
+      "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=300&q=80",
   },
 ];
 
+/**
+ * Renders the visual "Shop the Look" modal that matches products from an uploaded photo or a style preset.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * POSTs to `/api/products/visual-search` with either a `presetId` or a base64 image, runs the default preset search the first time it opens, and adds matched products to the cart through `useCart`; failed requests fall back to a toast and curated matches.
+ *
+ * @example
+ * ```tsx
+ * <VisualSearchModal
+ *   isOpen={isVisualSearchOpen}
+ *   onClose={() => setIsVisualSearchOpen(false)}
+ * />
+ * ```
+ */
 export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
-  const [selectedPreset, setSelectedPreset] = useState<string>("minimalist-home");
+  const [selectedPreset, setSelectedPreset] =
+    useState<string>("minimalist-home");
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [searchData, setSearchData] = useState<VisualSearchResponse | null>(null);
+  const [searchData, setSearchData] = useState<VisualSearchResponse | null>(
+    null,
+  );
   const { addToCart } = useCart();
   const [addedItemIds, setAddedItemIds] = useState<Record<string, boolean>>({});
 
-  const executeVisualSearch = async (presetId?: string, imageBase64?: string, imageName?: string) => {
+  const executeVisualSearch = async (
+    presetId?: string,
+    imageBase64?: string,
+    imageName?: string,
+  ) => {
     setLoading(true);
     try {
       const res = await fetch("/api/products/visual-search", {
@@ -75,7 +102,9 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
       const data: VisualSearchResponse = await res.json();
       setSearchData(data);
     } catch {
-      toast.error("Visual search encountered an issue. Showing curated matches.");
+      toast.error(
+        "Visual search encountered an issue. Showing curated matches.",
+      );
     } finally {
       setLoading(false);
     }
@@ -107,7 +136,10 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
       name: item.name,
       price: item.price,
       images: item.images?.length ? item.images : ["/placeholder.svg"],
-      category: typeof item.category === "string" ? item.category : item.category?.name || "General",
+      category:
+        typeof item.category === "string"
+          ? item.category
+          : item.category?.name || "General",
       rating: item.rating ?? 5,
       reviews: item.reviews ?? 10,
       quantity: 1,
@@ -154,16 +186,25 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
               <div>
                 <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                   Visual Search & Shop the Look
-                  <Badge variant="outline" className="text-xs bg-primary/5 text-primary border-primary/20">
+                  <Badge
+                    variant="outline"
+                    className="text-xs bg-primary/5 text-primary border-primary/20"
+                  >
                     <Sparkles className="h-3 w-3 mr-1" /> AI Vision
                   </Badge>
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  Upload any photo or pick an inspiration style to find instant visual matches
+                  Upload any photo or pick an inspiration style to find instant
+                  visual matches
                 </p>
               </div>
             </div>
-            <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full h-8 w-8">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="rounded-full h-8 w-8"
+            >
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -196,18 +237,25 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
                 ) : (
                   <>
                     <Upload className="h-6 w-6 text-muted-foreground mb-2 group-hover:scale-110 transition-transform" />
-                    <span className="text-xs font-semibold text-foreground">Upload or Drop Photo</span>
-                    <span className="text-[11px] text-muted-foreground mt-0.5">JPG, PNG, WebP</span>
+                    <span className="text-xs font-semibold text-foreground">
+                      Upload or Drop Photo
+                    </span>
+                    <span className="text-[11px] text-muted-foreground mt-0.5">
+                      JPG, PNG, WebP
+                    </span>
                   </>
                 )}
               </div>
 
               {/* Style Presets */}
               <div className="md:col-span-2 flex flex-col justify-center">
-                <span className="text-xs font-medium text-muted-foreground mb-2">Or choose curated aesthetic look:</span>
+                <span className="text-xs font-medium text-muted-foreground mb-2">
+                  Or choose curated aesthetic look:
+                </span>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {PRESETS.map((preset) => {
-                    const isSelected = selectedPreset === preset.id && !uploadedImage;
+                    const isSelected =
+                      selectedPreset === preset.id && !uploadedImage;
                     return (
                       <button
                         key={preset.id}
@@ -220,7 +268,9 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
                         }`}
                       >
                         <span className="text-base">{preset.icon}</span>
-                        <span className="text-xs font-semibold truncate w-full">{preset.label}</span>
+                        <span className="text-xs font-semibold truncate w-full">
+                          {preset.label}
+                        </span>
                       </button>
                     );
                   })}
@@ -232,19 +282,25 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
             {searchData?.detectedAttributes && (
               <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-muted/40 border border-border/60 text-xs">
                 <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">Detected Aesthetic:</span>
-                  <span className="font-semibold text-foreground">{searchData.detectedAttributes.aesthetic}</span>
+                  <span className="text-muted-foreground">
+                    Detected Aesthetic:
+                  </span>
+                  <span className="font-semibold text-foreground">
+                    {searchData.detectedAttributes.aesthetic}
+                  </span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-muted-foreground mr-1">Palette:</span>
-                  {searchData.detectedAttributes.colorPalette.map((col, idx) => (
-                    <span
-                      key={idx}
-                      className="h-3.5 w-3.5 rounded-full border border-black/10 shadow-2xs inline-block"
-                      style={{ backgroundColor: col }}
-                      title={col}
-                    />
-                  ))}
+                  {searchData.detectedAttributes.colorPalette.map(
+                    (col, idx) => (
+                      <span
+                        key={idx}
+                        className="h-3.5 w-3.5 rounded-full border border-black/10 shadow-2xs inline-block"
+                        style={{ backgroundColor: col }}
+                        title={col}
+                      />
+                    ),
+                  )}
                 </div>
               </div>
             )}
@@ -257,7 +313,8 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
                 </h3>
                 {loading && (
                   <span className="text-xs text-primary flex items-center gap-1">
-                    <Sparkles className="h-3.5 w-3.5 animate-spin" /> Analyzing aesthetics...
+                    <Sparkles className="h-3.5 w-3.5 animate-spin" /> Analyzing
+                    aesthetics...
                   </span>
                 )}
               </div>
@@ -265,7 +322,10 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
               {loading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 py-8">
                   {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="h-48 rounded-xl bg-muted/50 animate-pulse border border-border/50" />
+                    <div
+                      key={i}
+                      className="h-48 rounded-xl bg-muted/50 animate-pulse border border-border/50"
+                    />
                   ))}
                 </div>
               ) : (
@@ -341,9 +401,15 @@ export function VisualSearchModal({ isOpen, onClose }: VisualSearchModalProps) {
           {/* Footer */}
           <div className="p-4 border-t border-border bg-muted/20 flex items-center justify-between">
             <span className="text-xs text-muted-foreground">
-              Tip: Drag any Pinterest or Instagram screenshot right into the upload box!
+              Tip: Drag any Pinterest or Instagram screenshot right into the
+              upload box!
             </span>
-            <Button variant="ghost" size="sm" onClick={onClose} className="text-xs">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="text-xs"
+            >
               Close
             </Button>
           </div>

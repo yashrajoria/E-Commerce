@@ -1,15 +1,40 @@
-import { SHIPPING_OPTIONS, SLIDE_VARIANTS } from "@/components/checkout/checkoutConstants";
-import { formatGBP, getDeliveryDate } from "@/components/checkout/checkoutUtils";
+import {
+  SHIPPING_OPTIONS,
+  SLIDE_VARIANTS,
+} from "@/components/checkout/checkoutConstants";
+import {
+  formatGBP,
+  getDeliveryDate,
+} from "@/components/checkout/checkoutUtils";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { Check, Truck } from "lucide-react";
 
+/** Props accepted by {@link StepDelivery}. */
 interface StepDeliveryProps {
+  /** Currently selected delivery method id, e.g. `"standard"` or `"express"`. */
   shippingMethod: string;
+  /** Slide direction passed to the motion variants. */
   direction: number;
+  /**
+   * Selects a new delivery method.
+   *
+   * @param id - Id of the chosen option in {@link SHIPPING_OPTIONS}.
+   */
   onSelectMethod: (id: string) => void;
 }
 
+/**
+ * Renders step 3 of the checkout wizard: the delivery method picker.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <StepDelivery shippingMethod={shippingMethod} direction={direction} onSelectMethod={setShippingMethod} />
+ * ```
+ */
 export function StepDelivery({
   shippingMethod,
   direction,
@@ -83,7 +108,10 @@ export function StepDelivery({
                           {opt.label}
                         </p>
                         {opt.badge && (
-                          <Badge variant="secondary" className="text-[10px] py-0 px-1.5 font-normal">
+                          <Badge
+                            variant="secondary"
+                            className="text-[10px] py-0 px-1.5 font-normal"
+                          >
                             {opt.badge}
                           </Badge>
                         )}

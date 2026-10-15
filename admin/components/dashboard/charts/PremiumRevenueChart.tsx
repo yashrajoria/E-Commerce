@@ -19,11 +19,27 @@ import { TrendingUp, DollarSign } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { motion } from "framer-motion";
 
+/** A single period's revenue, profit and expense figures. */
 interface RevenueData {
+  /** Period label, e.g. `"Jan"` or `"Mon"`. */
   name: string;
+  /** Gross revenue for the period. */
   revenue: number;
+  /** Net profit for the period. */
   profit: number;
+  /** Expenses for the period. */
   expenses: number;
+}
+
+/** Props accepted by {@link PremiumRevenueChart}. */
+interface PremiumRevenueChartProps {
+  /** Revenue series per period, used by the monthly/weekly toggle. */
+  data: {
+    /** Twelve-month series rendered when the monthly toggle is active. */
+    monthly: RevenueData[];
+    /** Seven-day series rendered when the weekly toggle is active. */
+    weekly: RevenueData[];
+  };
 }
 
 const CustomTooltip = ({
@@ -42,7 +58,9 @@ const CustomTooltip = ({
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-xs bg-[#1f513f]" />
-            <span className="text-xs text-muted-foreground font-medium">Revenue</span>
+            <span className="text-xs text-muted-foreground font-medium">
+              Revenue
+            </span>
           </div>
           <span className="text-sm font-semibold text-foreground">
             {formatCurrency(payload[0]?.value as number)}
@@ -51,7 +69,9 @@ const CustomTooltip = ({
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-xs bg-[#d97706]" />
-            <span className="text-xs text-muted-foreground font-medium">Net Profit</span>
+            <span className="text-xs text-muted-foreground font-medium">
+              Net Profit
+            </span>
           </div>
           <span className="text-sm font-semibold text-[#b45309] dark:text-[#f59e0b]">
             {formatCurrency(payload[1]?.value as number)}
@@ -64,15 +84,36 @@ const CustomTooltip = ({
 
 type Period = "weekly" | "monthly";
 
-export default function PremiumRevenueChart({ data }: { data: { monthly: RevenueData[]; weekly: RevenueData[] } }) {
+/**
+ * Renders the premium revenue-vs-profit area chart with weekly/monthly toggle
+ * and revenue/profit summary metrics.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <PremiumRevenueChart data={dashboardData.revenueCharts} />
+ * ```
+ */
+export default function PremiumRevenueChart({
+  data,
+}: PremiumRevenueChartProps) {
   const [period, setPeriod] = useState<Period>("monthly");
-  
+
   if (!data) return null;
 
-  const chartData = period === "monthly" ? data.monthly || [] : data.weekly || [];
+  const chartData =
+    period === "monthly" ? data.monthly || [] : data.weekly || [];
 
-  const totalRevenue = chartData.reduce((sum: number, d: RevenueData) => sum + d.revenue, 0);
-  const totalProfit = chartData.reduce((sum: number, d: RevenueData) => sum + d.profit, 0);
+  const totalRevenue = chartData.reduce(
+    (sum: number, d: RevenueData) => sum + d.revenue,
+    0,
+  );
+  const totalProfit = chartData.reduce(
+    (sum: number, d: RevenueData) => sum + d.profit,
+    0,
+  );
 
   return (
     <motion.div
@@ -95,14 +136,18 @@ export default function PremiumRevenueChart({ data }: { data: { monthly: Revenue
                   <p className="text-2xl font-bold tracking-tight text-foreground">
                     {formatCurrency(totalRevenue)}
                   </p>
-                  <p className="text-xs text-muted-foreground font-medium">Total Revenue</p>
+                  <p className="text-xs text-muted-foreground font-medium">
+                    Total Revenue
+                  </p>
                 </div>
                 <div className="w-px h-8 bg-border" />
                 <div>
                   <p className="text-lg font-semibold text-[#b45309] dark:text-[#f59e0b]">
                     {formatCurrency(totalProfit)}
                   </p>
-                  <p className="text-xs text-muted-foreground font-medium">Net Profit</p>
+                  <p className="text-xs text-muted-foreground font-medium">
+                    Net Profit
+                  </p>
                 </div>
                 <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-200/50 dark:border-emerald-800/40">
                   <TrendingUp size={12} />

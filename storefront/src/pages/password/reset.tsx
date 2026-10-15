@@ -8,6 +8,19 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/router";
 import { resetPassword } from "@/lib/auth";
 
+/**
+ * Password reset form: exchanges the emailed code for a new password and
+ * redirects home on success.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * // Route: /password/reset — rendered by the Next.js Pages Router.
+ * <ResetPassword />
+ * ```
+ */
 export default function ResetPassword() {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -29,8 +42,15 @@ export default function ResetPassword() {
         if (err && typeof err === "object") {
           try {
             // axios-style error shape
-            const e = err as { response?: { data?: { error?: string } }; message?: string };
-            return e?.response?.data?.error ?? e?.message ?? "Failed to reset password.";
+            const e = err as {
+              response?: { data?: { error?: string } };
+              message?: string;
+            };
+            return (
+              e?.response?.data?.error ??
+              e?.message ??
+              "Failed to reset password."
+            );
           } catch {
             return "Failed to reset password.";
           }

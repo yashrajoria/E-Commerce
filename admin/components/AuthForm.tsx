@@ -18,8 +18,17 @@ import { motion } from "framer-motion";
 import { useAdminSession } from "@/lib/useAdminSession";
 
 /**
- * Standalone email/password admin sign-in card.
- * Prefer AuthModal on the landing page for the primary UX.
+ * Renders a standalone email/password admin sign-in card.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * Prefer {@link AuthModal} on the landing page for the primary UX.
+ *
+ * @example
+ * ```tsx
+ * <AuthForm />
+ * ```
  */
 const AuthForm = () => {
   const router = useRouter();
@@ -31,7 +40,9 @@ const AuthForm = () => {
 
   const getErrorMessage = (err: unknown) => {
     if (axios.isAxiosError(err))
-      return err.response?.data?.message ?? err.response?.data?.error ?? err.message;
+      return (
+        err.response?.data?.message ?? err.response?.data?.error ?? err.message
+      );
     if (err instanceof Error) return err.message;
     return String(err);
   };
@@ -99,7 +110,10 @@ const AuthForm = () => {
         <CardContent>
           <form onSubmit={handleSignIn} className="space-y-4">
             <div className="grid gap-2">
-              <Label htmlFor="signin-email" className="text-foreground font-medium text-xs uppercase tracking-wider">
+              <Label
+                htmlFor="signin-email"
+                className="text-foreground font-medium text-xs uppercase tracking-wider"
+              >
                 Email
               </Label>
               <div className="relative">
@@ -121,7 +135,10 @@ const AuthForm = () => {
             </div>
 
             <div className="grid gap-2 relative">
-              <Label htmlFor="signin-password" className="text-foreground font-medium text-xs uppercase tracking-wider">
+              <Label
+                htmlFor="signin-password"
+                className="text-foreground font-medium text-xs uppercase tracking-wider"
+              >
                 Password
               </Label>
               <div className="relative">

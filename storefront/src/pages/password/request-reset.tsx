@@ -7,6 +7,18 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { requestPasswordReset } from "@/lib/auth";
 
+/**
+ * Password reset request form: emails a reset code to the submitted address.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * // Route: /password/request-reset — rendered by the Next.js Pages Router.
+ * <RequestPasswordReset />
+ * ```
+ */
 export default function RequestPasswordReset() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);

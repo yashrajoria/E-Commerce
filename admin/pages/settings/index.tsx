@@ -20,7 +20,11 @@ import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import axios from "axios";
 import { useStore } from "@/lib/useStore";
-import type { Plan, StoreSubscription, StoreMembership } from "@ecommerce/shared";
+import type {
+  Plan,
+  StoreSubscription,
+  StoreMembership,
+} from "@ecommerce/shared";
 import {
   GeneralSettingsTab,
   BillingSettingsTab,
@@ -32,6 +36,18 @@ import {
   AdvancedSettingsCard,
 } from "@/components/settings";
 
+/**
+ * Renders the multi-tenant settings workspace with eight settings tabs and a global save action.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration. Settings, plans, subscription, and members are loaded from the `/api/bff/admin/stores/:id` endpoints for the {@link useStore} active store.
+ *
+ * @example
+ * ```tsx
+ * // Route: /settings — rendered by the Next.js Pages Router.
+ * <Settings />
+ * ```
+ */
 const Settings = () => {
   const { activeStore, refreshStores } = useStore();
 
@@ -41,7 +57,9 @@ const Settings = () => {
   const [storeDomain, setStoreDomain] = useState("");
   const [storeEmail, setStoreEmail] = useState("store@example.com");
   const [storePhone, setStorePhone] = useState("+1 (555) 000-0000");
-  const [storeAddress, setStoreAddress] = useState("123 Commerce St, Business City");
+  const [storeAddress, setStoreAddress] = useState(
+    "123 Commerce St, Business City",
+  );
   const [currency, setCurrency] = useState("USD");
   const [language, setLanguage] = useState("en");
   const [timezone, setTimezone] = useState("UTC");
@@ -62,7 +80,9 @@ const Settings = () => {
 
   // Billing & Subscription
   const [plans, setPlans] = useState<Plan[]>([]);
-  const [subscription, setSubscription] = useState<StoreSubscription | null>(null);
+  const [subscription, setSubscription] = useState<StoreSubscription | null>(
+    null,
+  );
   const [billingLoading, setBillingLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -82,9 +102,12 @@ const Settings = () => {
     setCurrency(activeStore.currency || "USD");
 
     try {
-      const res = await axios.get(`/api/bff/admin/stores/${activeStore.id}/settings`, {
-        withCredentials: true,
-      });
+      const res = await axios.get(
+        `/api/bff/admin/stores/${activeStore.id}/settings`,
+        {
+          withCredentials: true,
+        },
+      );
       const settings = res.data?.settings;
       if (settings) {
         if (settings.theme_config) {
@@ -92,9 +115,13 @@ const Settings = () => {
           setDarkMode(settings.theme_config.dark_mode ?? true);
         }
         if (settings.notification_config?.smtp) {
-          setSmtpHost(settings.notification_config.smtp.host || "smtp.example.com");
+          setSmtpHost(
+            settings.notification_config.smtp.host || "smtp.example.com",
+          );
           setSmtpPort(settings.notification_config.smtp.port || "587");
-          setSmtpSender(settings.notification_config.smtp.sender || "noreply@shopswift.app");
+          setSmtpSender(
+            settings.notification_config.smtp.sender || "noreply@shopswift.app",
+          );
         }
         if (settings.features) {
           setAutoBackup(settings.features.auto_backup ?? true);
@@ -110,8 +137,12 @@ const Settings = () => {
       setBillingLoading(true);
       const [plansRes, subRes, membersRes] = await Promise.allSettled([
         axios.get("/api/bff/admin/plans", { withCredentials: true }),
-        axios.get(`/api/bff/admin/stores/${activeStore.id}/subscription`, { withCredentials: true }),
-        axios.get(`/api/bff/admin/stores/${activeStore.id}/members`, { withCredentials: true }),
+        axios.get(`/api/bff/admin/stores/${activeStore.id}/subscription`, {
+          withCredentials: true,
+        }),
+        axios.get(`/api/bff/admin/stores/${activeStore.id}/members`, {
+          withCredentials: true,
+        }),
       ]);
 
       if (plansRes.status === "fulfilled" && plansRes.value.data?.plans) {
@@ -142,15 +173,20 @@ const Settings = () => {
       await axios.post(
         `/api/bff/admin/stores/${activeStore.id}/invite`,
         { email: inviteEmail.trim(), role: inviteRole },
-        { withCredentials: true }
+        { withCredentials: true },
       );
       toast.success(`Invitation sent to ${inviteEmail}`);
       setInviteEmail("");
-      const res = await axios.get(`/api/bff/admin/stores/${activeStore.id}/members`, { withCredentials: true });
+      const res = await axios.get(
+        `/api/bff/admin/stores/${activeStore.id}/members`,
+        { withCredentials: true },
+      );
       if (res.data?.members) setMembers(res.data.members);
     } catch (err: unknown) {
       const msg = axios.isAxiosError(err)
-        ? err.response?.data?.message || err.response?.data?.error || "Failed to invite member"
+        ? err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Failed to invite member"
         : "Failed to invite member";
       toast.error(msg);
     } finally {
@@ -161,12 +197,17 @@ const Settings = () => {
   const handleRemoveMember = async (userId: string) => {
     if (!activeStore?.id) return;
     try {
-      await axios.delete(`/api/bff/admin/stores/${activeStore.id}/members/${userId}`, { withCredentials: true });
+      await axios.delete(
+        `/api/bff/admin/stores/${activeStore.id}/members/${userId}`,
+        { withCredentials: true },
+      );
       toast.success("Team member removed");
       setMembers((prev) => prev.filter((m) => m.user_id !== userId));
     } catch (err: unknown) {
       const msg = axios.isAxiosError(err)
-        ? err.response?.data?.message || err.response?.data?.error || "Failed to remove member"
+        ? err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Failed to remove member"
         : "Failed to remove member";
       toast.error(msg);
     }
@@ -187,7 +228,7 @@ const Settings = () => {
           currency: currency,
           domain: storeDomain || undefined,
         },
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       await axios.put(
@@ -210,14 +251,16 @@ const Settings = () => {
             maintenance_mode: maintenanceMode,
           },
         },
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       await refreshStores();
       toast.success("Store configuration and settings saved successfully!");
     } catch (err: unknown) {
       const msg = axios.isAxiosError(err)
-        ? err.response?.data?.message || err.response?.data?.error || "Failed to save settings"
+        ? err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Failed to save settings"
         : "Failed to save settings";
       toast.error(msg);
     } finally {
@@ -231,13 +274,15 @@ const Settings = () => {
       const res = await axios.post(
         `/api/bff/admin/stores/${activeStore.id}/subscription`,
         { plan_id: planId },
-        { withCredentials: true }
+        { withCredentials: true },
       );
       setSubscription(res.data?.subscription);
       toast.success("Subscription plan updated successfully!");
     } catch (err: unknown) {
       const msg = axios.isAxiosError(err)
-        ? err.response?.data?.message || err.response?.data?.error || "Failed to update plan"
+        ? err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Failed to update plan"
         : "Failed to update plan";
       toast.error(msg);
     }
@@ -378,6 +423,12 @@ export default Settings;
 
 import type { GetServerSidePropsContext } from "next";
 
+/**
+ * Server-side admin auth gate for the Settings route.
+ *
+ * @param ctx - Next.js server-side context for the incoming request, including `req`/`res` and cookies.
+ * @returns The {@link requireAdmin} result: `props` with the authenticated admin user, or a redirect to `/` / `/?error=admin_required` when the session is missing or not an admin.
+ */
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { requireAdmin } = await import("@/lib/ssrAuth");
   return requireAdmin(ctx);

@@ -1,6 +1,9 @@
 "use client";
 
-import { ErrorState, TableSkeleton } from "@/components/admin/shared/DataStates";
+import {
+  ErrorState,
+  TableSkeleton,
+} from "@/components/admin/shared/DataStates";
 import PageLayout, { pageItem } from "@/components/layout/PageLayout";
 import { OrdersFilters } from "@/components/orders/OrdersFilters";
 import { OrdersTable } from "@/components/orders/OrdersTable";
@@ -47,8 +50,21 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { toast } from "sonner";
 
+/** Number of orders requested per page from the admin orders API. */
 const ORDERS_PER_PAGE = 10;
 
+/**
+ * Renders the orders list with status KPI stats, filters, the sortable table, pagination, and status dialog.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * // Route: /orders — rendered by the Next.js Pages Router.
+ * <Orders />
+ * ```
+ */
 const Orders = () => {
   const router = useRouter();
   const [filter, setFilter] = useState({
@@ -63,7 +79,17 @@ const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
 
-  const { orders, meta, error: ordersError, isLoading, mutate } = useAdminOrders(currentPage, ORDERS_PER_PAGE, filter.status !== "all" ? filter.status : undefined);
+  const {
+    orders,
+    meta,
+    error: ordersError,
+    isLoading,
+    mutate,
+  } = useAdminOrders(
+    currentPage,
+    ORDERS_PER_PAGE,
+    filter.status !== "all" ? filter.status : undefined,
+  );
 
   const handleSort = (key: string) => {
     setSortConfig((prev) => ({
@@ -159,7 +185,10 @@ const Orders = () => {
           </Card>
         ) : ordersError ? (
           <div className="bg-card border border-border shadow-2xs rounded-lg p-4">
-            <ErrorState message={ordersError.message} onRetry={() => mutate()} />
+            <ErrorState
+              message={ordersError.message}
+              onRetry={() => mutate()}
+            />
           </div>
         ) : orders.length === 0 ? (
           <div className="bg-card border border-border shadow-2xs rounded-lg p-4">
@@ -275,9 +304,14 @@ const Orders = () => {
 
 export default Orders;
 
-
 import type { GetServerSidePropsContext } from "next";
 
+/**
+ * Server-side admin auth gate for the Orders route.
+ *
+ * @param ctx - Next.js server-side context for the incoming request, including `req`/`res` and cookies.
+ * @returns The {@link requireAdmin} result: `props` with the authenticated admin user, or a redirect to `/` / `/?error=admin_required` when the session is missing or not an admin.
+ */
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { requireAdmin } = await import("@/lib/ssrAuth");
   return requireAdmin(ctx);

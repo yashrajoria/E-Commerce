@@ -4,10 +4,7 @@ import { getResponseInfo } from "@/lib/error";
 import { NextApiRequest, NextApiResponse } from "next";
 import { withAdminApi } from "@/lib/requireAdminApi";
 
-async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query;
   const cookie = req.headers.cookie || "";
   const baseUrl = `${getBackendBaseUrl()}/`;
@@ -80,4 +77,17 @@ async function handler(
   }
 }
 
+/**
+ * Proxies product detail operations for `/api/products/[id]`.
+ *
+ * @remarks
+ * Wrapped in {@link withAdminApi}, which enforces same-origin checks and an admin session before the proxy runs.
+ * `GET`, `PUT`, and `DELETE` require `req.query.id` and target `bff/admin/products/{id}`; `POST` creates a product
+ * through `bff/admin/products` without sending the route `id`, so creation is also reachable at this path. Any other
+ * method receives `405`, and upstream failures are mapped through `getResponseInfo`.
+ *
+ * @param req - The Next.js API request; `PUT` and `POST` bodies are forwarded to the backend as JSON.
+ * @param res - The Next.js API response.
+ * @returns A promise that resolves once the proxied product payload has been sent.
+ */
 export default withAdminApi(handler);

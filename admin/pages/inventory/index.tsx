@@ -14,7 +14,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TableSkeleton, EmptyState, ErrorState } from "@/components/admin/shared/DataStates";
+import {
+  TableSkeleton,
+  EmptyState,
+  ErrorState,
+} from "@/components/admin/shared/DataStates";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Package,
@@ -28,6 +32,7 @@ import {
 import { useState, useMemo } from "react";
 import { useAdminInventory } from "@/lib/hooks/useAdminData";
 
+/** Badge label and Tailwind classes used for each stock status. */
 const statusConfig: Record<string, { label: string; class: string }> = {
   "in-stock": {
     label: "In Stock",
@@ -43,13 +48,33 @@ const statusConfig: Record<string, { label: string; class: string }> = {
   },
 };
 
-function getStockStatus(item: { available: number; threshold: number }): "in-stock" | "low" | "out" {
+/**
+ * Classifies an inventory row by comparing its available stock against its low-stock threshold.
+ *
+ * @param item - Inventory row with the available quantity and configured threshold.
+ * @returns `"out"` when nothing is available, `"low"` when availability is at or below a positive threshold, otherwise `"in-stock"`.
+ */
+function getStockStatus(item: {
+  available: number;
+  threshold: number;
+}): "in-stock" | "low" | "out" {
   if (item.available === 0) return "out";
   if (item.threshold > 0 && item.available <= item.threshold) return "low";
   return "in-stock";
 }
 
-
+/**
+ * Renders the inventory workspace with KPI stats, low-stock alerts, search and status tabs, and the stock-level table.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration. Stock rows come from {@link useAdminInventory}.
+ *
+ * @example
+ * ```tsx
+ * // Route: /inventory — rendered by the Next.js Pages Router.
+ * <Inventory />
+ * ```
+ */
 const Inventory = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
@@ -76,10 +101,19 @@ const Inventory = () => {
     });
   }, [inventoryItems, searchQuery, activeTab]);
 
-  const inStockCount = inventoryItems.filter((i: Record<string, unknown>) => i.status === "in-stock").length;
-  const lowStockCount = inventoryItems.filter((i: Record<string, unknown>) => i.status === "low").length;
-  const outOfStockCount = inventoryItems.filter((i: Record<string, unknown>) => i.status === "out").length;
-  const totalStock = inventoryItems.reduce((sum: number, i: Record<string, unknown>) => sum + (i.available as number), 0);
+  const inStockCount = inventoryItems.filter(
+    (i: Record<string, unknown>) => i.status === "in-stock",
+  ).length;
+  const lowStockCount = inventoryItems.filter(
+    (i: Record<string, unknown>) => i.status === "low",
+  ).length;
+  const outOfStockCount = inventoryItems.filter(
+    (i: Record<string, unknown>) => i.status === "out",
+  ).length;
+  const totalStock = inventoryItems.reduce(
+    (sum: number, i: Record<string, unknown>) => sum + (i.available as number),
+    0,
+  );
 
   return (
     <PageLayout
@@ -165,9 +199,12 @@ const Inventory = () => {
                         {statusConfig[item.status].label}
                       </Badge>
                       <div>
-                        <p className="text-sm font-medium font-mono">{item.product_id.substring(0, 8)}...</p>
+                        <p className="text-sm font-medium font-mono">
+                          {item.product_id.substring(0, 8)}...
+                        </p>
                         <p className="text-xs text-muted-foreground">
-                          Available: {item.available} | Threshold: {item.threshold}
+                          Available: {item.available} | Threshold:{" "}
+                          {item.threshold}
                         </p>
                       </div>
                     </div>
@@ -316,7 +353,11 @@ const Inventory = () => {
                             <Progress
                               value={
                                 item.threshold > 0
-                                  ? Math.min(100, (item.available / (item.threshold * 3)) * 100)
+                                  ? Math.min(
+                                      100,
+                                      (item.available / (item.threshold * 3)) *
+                                        100,
+                                    )
                                   : 100
                               }
                               className="h-1.5 bg-white/[0.04]"
@@ -326,7 +367,9 @@ const Inventory = () => {
                         <TableCell>
                           <Badge
                             variant="outline"
-                            className={statusConfig[item.status].class + " text-xs"}
+                            className={
+                              statusConfig[item.status].class + " text-xs"
+                            }
                           >
                             {statusConfig[item.status].label}
                           </Badge>
@@ -351,9 +394,14 @@ const Inventory = () => {
 
 export default Inventory;
 
-
 import type { GetServerSidePropsContext } from "next";
 
+/**
+ * Server-side admin auth gate for the Inventory route.
+ *
+ * @param ctx - Next.js server-side context for the incoming request, including `req`/`res` and cookies.
+ * @returns The {@link requireAdmin} result: `props` with the authenticated admin user, or a redirect to `/` / `/?error=admin_required` when the session is missing or not an admin.
+ */
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { requireAdmin } = await import("@/lib/ssrAuth");
   return requireAdmin(ctx);

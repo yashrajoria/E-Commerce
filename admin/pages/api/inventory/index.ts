@@ -6,10 +6,7 @@ import { withAdminApi } from "@/lib/requireAdminApi";
 
 const API_URL = getAdminApiBaseUrl();
 
-async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -38,7 +35,10 @@ async function handler(
     res.status(200).json({ inventory, meta });
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      console.error("Error fetching inventory:", error.response?.data || error.message);
+      console.error(
+        "Error fetching inventory:",
+        error.response?.data || error.message,
+      );
       const status = error.response?.status || 500;
       return res.status(status).json({ error: "Failed to fetch inventory" });
     }
@@ -47,4 +47,16 @@ async function handler(
   }
 }
 
+/**
+ * Proxies `GET /api/inventory` to the backend admin inventory list.
+ *
+ * @remarks
+ * Wrapped in {@link withAdminApi}, which enforces same-origin checks and an admin session before the proxy runs.
+ * Forwards `page` and `page_size` to `GET bff/admin/inventory` with redirects disabled (to avoid trailing-slash
+ * redirects through the gateway) and returns `{ inventory, meta }`.
+ *
+ * @param req - The Next.js API request; the optional `page` and `page_size` query parameters are forwarded.
+ * @param res - The Next.js API response.
+ * @returns A promise that resolves once the inventory payload has been sent.
+ */
 export default withAdminApi(handler);

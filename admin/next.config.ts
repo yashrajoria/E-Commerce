@@ -33,11 +33,17 @@ const nextConfig: NextConfig = {
         source: "/:path*",
         headers: [
           { key: "X-DNS-Prefetch-Control", value: "on" },
-          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
+          },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
         ],
       },
     ];
@@ -56,4 +62,16 @@ const nextConfig: NextConfig = {
   },
 };
 
+/**
+ * Next.js configuration for the admin app.
+ *
+ * @remarks
+ * Enables React strict mode, transpiles the workspace packages
+ * (`@ecommerce/shared`, `@ecommerce/ui`), allows remote images from CDN and
+ * Supabase/localstack hosts, applies baseline security headers to every route,
+ * and rewrites `/bff/*` to `/api/bff/*`. There is intentionally no catch-all
+ * `/api/*` fallback: unmatched API routes must 404 rather than silently proxy.
+ * The `webpack` hook deliberately returns the config untouched so Next/npm own
+ * React resolution.
+ */
 export default nextConfig;

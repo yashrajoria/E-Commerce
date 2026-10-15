@@ -2,8 +2,14 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { proxyRequest } from "@ecommerce/shared";
 
 /**
- * Invite / provision an admin (or user) via the protected gateway route.
- * Requires an existing admin session cookie — public self-signup is not supported.
+ * Handles `POST` requests on the `/api/auth/register` route, proxying admin user invitations to the upstream `/bff/admin/users` route.
+ *
+ * @remarks
+ * Invite / provision an admin (or user) via the protected gateway route — also mounted as `/api/admin/auth/register`. Requires an existing admin session cookie; public self-signup is not supported, and the session is verified against the gateway `/auth/status` route before proxying. The invited role is forced to `admin` unless the body explicitly requests `"user"`. Requests without a valid admin session return `401`/`403`, upstream responses are relayed verbatim (including their status) and errors thrown while proxying return `500`.
+ *
+ * @param req - The Next.js API request; the JSON body carries the invited user's details.
+ * @param res - The Next.js API response.
+ * @returns A promise that resolves once the upstream response has been relayed.
  */
 export default async function handler(
   req: NextApiRequest,

@@ -30,6 +30,18 @@ import axios from "axios";
 import { useStore } from "@/lib/useStore";
 import type { Plan } from "@ecommerce/shared";
 
+/**
+ * Renders the multi-tenant store onboarding wizard: store identity, plan selection, theme color, and a confirmation step.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration. Plans are fetched from `/api/bff/admin/plans` and the store is created through {@link useStore}'s `createStore`.
+ *
+ * @example
+ * ```tsx
+ * // Route: /onboarding — rendered by the Next.js Pages Router.
+ * <OnboardingPage />
+ * ```
+ */
 const OnboardingPage = () => {
   const router = useRouter();
   const { createStore, refreshStores } = useStore();
@@ -51,7 +63,8 @@ const OnboardingPage = () => {
         const fetchedPlans: Plan[] = res.data?.plans || [];
         setPlans(fetchedPlans);
         if (fetchedPlans.length > 0) {
-          const freePlan = fetchedPlans.find((p) => p.slug === "free") || fetchedPlans[0];
+          const freePlan =
+            fetchedPlans.find((p) => p.slug === "free") || fetchedPlans[0];
           setSelectedPlanId(freePlan.id);
         }
       })
@@ -77,7 +90,7 @@ const OnboardingPage = () => {
       const store = await createStore(
         storeName.trim(),
         storeSlug.trim() || undefined,
-        currency
+        currency,
       );
       if (!store) {
         setLoading(false);
@@ -89,7 +102,7 @@ const OnboardingPage = () => {
         await axios.post(
           `/api/bff/admin/stores/${store.id}/subscription`,
           { plan_id: selectedPlanId },
-          { withCredentials: true }
+          { withCredentials: true },
         );
       }
 
@@ -102,7 +115,7 @@ const OnboardingPage = () => {
             dark_mode: true,
           },
         },
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       toast.success(`Welcome to ShopSwift! Store "${store.name}" is ready.`);
@@ -110,7 +123,9 @@ const OnboardingPage = () => {
       setStep(4);
     } catch (err: unknown) {
       const errorObj = err as { response?: { data?: { message?: string } } };
-      toast.error(errorObj.response?.data?.message || "Failed to complete onboarding");
+      toast.error(
+        errorObj.response?.data?.message || "Failed to complete onboarding",
+      );
     } finally {
       setLoading(false);
     }
@@ -130,8 +145,12 @@ const OnboardingPage = () => {
               <Sparkles size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-foreground">Launch Your Store</h2>
-              <p className="text-xs text-muted-foreground">Step {step} of 3 — Instant SaaS Setup</p>
+              <h2 className="text-lg font-bold text-foreground">
+                Launch Your Store
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                Step {step} of 3 — Instant SaaS Setup
+              </p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -142,8 +161,8 @@ const OnboardingPage = () => {
                   step === s
                     ? "w-8 bg-primary"
                     : step > s
-                    ? "w-4 bg-emerald-400"
-                    : "w-4 bg-muted"
+                      ? "w-4 bg-emerald-400"
+                      : "w-4 bg-muted"
                 }`}
               />
             ))}
@@ -166,19 +185,30 @@ const OnboardingPage = () => {
                     <Store className="h-4 w-4 text-purple-400" /> Store Identity
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    Choose a display name and unique storefront URL for your business.
+                    Choose a display name and unique storefront URL for your
+                    business.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold">Store Name *</Label>
+                    <Label className="text-xs font-semibold">
+                      Store Name *
+                    </Label>
                     <Input
                       placeholder="e.g. Nexus Apparel"
                       value={storeName}
                       onChange={(e) => {
                         setStoreName(e.target.value);
-                        if (!storeSlug || storeSlug === storeName.toLowerCase().replace(/[^a-z0-9]+/g, "-")) {
-                          setStoreSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-"));
+                        if (
+                          !storeSlug ||
+                          storeSlug ===
+                            storeName.toLowerCase().replace(/[^a-z0-9]+/g, "-")
+                        ) {
+                          setStoreSlug(
+                            e.target.value
+                              .toLowerCase()
+                              .replace(/[^a-z0-9]+/g, "-"),
+                          );
                         }
                       }}
                       className="h-10 text-xs bg-background border-border"
@@ -186,20 +216,32 @@ const OnboardingPage = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold">URL Identifier (Slug)</Label>
+                    <Label className="text-xs font-semibold">
+                      URL Identifier (Slug)
+                    </Label>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono text-muted-foreground">shopswift.app/</span>
+                      <span className="text-xs font-mono text-muted-foreground">
+                        shopswift.app/
+                      </span>
                       <Input
                         placeholder="nexus-apparel"
                         value={storeSlug}
-                        onChange={(e) => setStoreSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                        onChange={(e) =>
+                          setStoreSlug(
+                            e.target.value
+                              .toLowerCase()
+                              .replace(/[^a-z0-9-]/g, ""),
+                          )
+                        }
                         className="h-10 text-xs font-mono bg-background border-border"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold">Base Currency</Label>
+                    <Label className="text-xs font-semibold">
+                      Base Currency
+                    </Label>
                     <select
                       value={currency}
                       onChange={(e) => setCurrency(e.target.value)}
@@ -217,7 +259,10 @@ const OnboardingPage = () => {
               </Card>
 
               <div className="flex justify-end">
-                <Button onClick={handleStep1Next} className="gradient-purple text-white gap-2 text-xs h-10 px-6 rounded-xl">
+                <Button
+                  onClick={handleStep1Next}
+                  className="gradient-purple text-white gap-2 text-xs h-10 px-6 rounded-xl"
+                >
                   Next: Choose Plan <ArrowRight size={14} />
                 </Button>
               </div>
@@ -235,10 +280,12 @@ const OnboardingPage = () => {
               <Card className="glass-effect border-border">
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-amber-400" /> Select Subscription Plan
+                    <Zap className="h-4 w-4 text-amber-400" /> Select
+                    Subscription Plan
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    Choose the plan that fits your current operational needs. You can upgrade anytime.
+                    Choose the plan that fits your current operational needs.
+                    You can upgrade anytime.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -257,19 +304,34 @@ const OnboardingPage = () => {
                         >
                           <div>
                             <div className="flex items-center justify-between mb-1">
-                              <span className="font-bold text-xs">{plan.name}</span>
-                              {isSelected && <Check className="h-3.5 w-3.5 text-primary" />}
+                              <span className="font-bold text-xs">
+                                {plan.name}
+                              </span>
+                              {isSelected && (
+                                <Check className="h-3.5 w-3.5 text-primary" />
+                              )}
                             </div>
                             <div className="text-lg font-black text-foreground mb-2">
                               ${plan.price_monthly}
-                              <span className="text-[10px] text-muted-foreground font-normal"> /mo</span>
+                              <span className="text-[10px] text-muted-foreground font-normal">
+                                {" "}
+                                /mo
+                              </span>
                             </div>
                             <ul className="space-y-1 text-[11px] text-muted-foreground">
                               {plan.entitlements?.slice(0, 3).map((e) => (
-                                  <li key={e.feature_key} className="flex items-center gap-1.5">
-                                    <span className="text-emerald-400">✓</span>
-                                    <span>{(e.quota_limit ?? e.limit_value ?? 0) > 0 ? `${e.quota_limit ?? e.limit_value} ` : ""}{e.feature_key.replace(/_/g, " ")}</span>
-                                  </li>
+                                <li
+                                  key={e.feature_key}
+                                  className="flex items-center gap-1.5"
+                                >
+                                  <span className="text-emerald-400">✓</span>
+                                  <span>
+                                    {(e.quota_limit ?? e.limit_value ?? 0) > 0
+                                      ? `${e.quota_limit ?? e.limit_value} `
+                                      : ""}
+                                    {e.feature_key.replace(/_/g, " ")}
+                                  </span>
+                                </li>
                               ))}
                             </ul>
                           </div>
@@ -281,10 +343,17 @@ const OnboardingPage = () => {
               </Card>
 
               <div className="flex justify-between">
-                <Button variant="outline" onClick={() => setStep(1)} className="gap-2 text-xs h-10 px-5 rounded-xl border-border hover:bg-accent">
+                <Button
+                  variant="outline"
+                  onClick={() => setStep(1)}
+                  className="gap-2 text-xs h-10 px-5 rounded-xl border-border hover:bg-accent"
+                >
                   <ArrowLeft size={14} /> Back
                 </Button>
-                <Button onClick={handleStep2Next} className="gradient-purple text-white gap-2 text-xs h-10 px-6 rounded-xl">
+                <Button
+                  onClick={handleStep2Next}
+                  className="gradient-purple text-white gap-2 text-xs h-10 px-6 rounded-xl"
+                >
                   Next: Branding <ArrowRight size={14} />
                 </Button>
               </div>
@@ -302,15 +371,19 @@ const OnboardingPage = () => {
               <Card className="glass-effect border-border">
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Palette className="h-4 w-4 text-purple-400" /> Initial Theme & Aesthetics
+                    <Palette className="h-4 w-4 text-purple-400" /> Initial
+                    Theme & Aesthetics
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    Set your brand accent color. You can fine-tune all appearance settings later.
+                    Set your brand accent color. You can fine-tune all
+                    appearance settings later.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label className="text-xs font-semibold">Primary Accent Color</Label>
+                    <Label className="text-xs font-semibold">
+                      Primary Accent Color
+                    </Label>
                     <div className="flex items-center gap-3">
                       <input
                         type="color"
@@ -329,7 +402,11 @@ const OnboardingPage = () => {
               </Card>
 
               <div className="flex justify-between">
-                <Button variant="outline" onClick={() => setStep(2)} className="gap-2 text-xs h-10 px-5 rounded-xl">
+                <Button
+                  variant="outline"
+                  onClick={() => setStep(2)}
+                  className="gap-2 text-xs h-10 px-5 rounded-xl"
+                >
                   <ArrowLeft size={14} /> Back
                 </Button>
                 <Button
@@ -354,9 +431,13 @@ const OnboardingPage = () => {
               <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/20">
                 <CheckCircle2 size={32} />
               </div>
-              <h2 className="text-xl font-bold text-foreground">Your Store is Ready!</h2>
+              <h2 className="text-xl font-bold text-foreground">
+                Your Store is Ready!
+              </h2>
               <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                <strong className="text-foreground">{storeName}</strong> has been initialized with tenant database isolation, SaaS entitlements, and AI copilot support.
+                <strong className="text-foreground">{storeName}</strong> has
+                been initialized with tenant database isolation, SaaS
+                entitlements, and AI copilot support.
               </p>
               <div className="pt-4 flex justify-center gap-3">
                 <Button
@@ -385,6 +466,12 @@ export default OnboardingPage;
 
 import type { GetServerSidePropsContext } from "next";
 
+/**
+ * Server-side admin auth gate for the Onboarding route.
+ *
+ * @param ctx - Next.js server-side context for the incoming request, including `req`/`res` and cookies.
+ * @returns The {@link requireAdmin} result: `props` with the authenticated admin user, or a redirect to `/` / `/?error=admin_required` when the session is missing or not an admin.
+ */
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { requireAdmin } = await import("@/lib/ssrAuth");
   return requireAdmin(ctx);

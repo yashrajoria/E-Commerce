@@ -21,7 +21,9 @@ import {
 } from "@/lib/ai-contextual-assistant";
 import { cn } from "@/lib/utils";
 
+/** Props accepted by {@link ContextualAIAssistant}. */
 interface ContextualAIAssistantProps {
+  /** Page context resolved by the host page, describing what the assistant can help with. */
   context: AIResolvedPageContext;
 }
 
@@ -40,6 +42,18 @@ const formatTimestamp = (value: string | undefined) => {
   }
 };
 
+/**
+ * Renders the floating contextual AI copilot, which offers quick tasks,
+ * a prompt box and the latest page-aware response.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <ContextualAIAssistant context={pageAIContext} />
+ * ```
+ */
 export const ContextualAIAssistant = ({
   context,
 }: ContextualAIAssistantProps) => {
@@ -112,7 +126,11 @@ export const ContextualAIAssistant = ({
         {isOpen ? (
           <motion.aside
             key="assistant-panel"
-            initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 16, scale: 0.98 }}
+            initial={{
+              opacity: 0,
+              y: prefersReducedMotion ? 0 : 16,
+              scale: 0.98,
+            }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: prefersReducedMotion ? 0 : 14, scale: 0.98 }}
             transition={{ duration: 0.2 }}
@@ -210,7 +228,8 @@ export const ContextualAIAssistant = ({
                         promptValidationMessage && "text-[hsl(43,96%,72%)]",
                       )}
                     >
-                      {promptValidationMessage || "Enter sends. Shift+Enter adds a line."}
+                      {promptValidationMessage ||
+                        "Enter sends. Shift+Enter adds a line."}
                     </p>
                     <p className="text-muted-foreground">
                       {history.length} saved exchanges
@@ -226,7 +245,10 @@ export const ContextualAIAssistant = ({
                     className="gradient-purple h-10 rounded-xl px-4 font-semibold text-white hover:opacity-95"
                   >
                     {lifecycle === "loading" ? (
-                      <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
+                      <LoaderCircle
+                        className="size-4 animate-spin"
+                        aria-hidden="true"
+                      />
                     ) : (
                       <Send className="size-4" aria-hidden="true" />
                     )}
@@ -257,7 +279,10 @@ export const ContextualAIAssistant = ({
                   {lifecycle === "loading" ? (
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-xs text-[hsl(160,84%,72%)]">
-                        <LoaderCircle className="size-3.5 animate-spin" aria-hidden="true" />
+                        <LoaderCircle
+                          className="size-3.5 animate-spin"
+                          aria-hidden="true"
+                        />
                         {liveStatus || "Running page-aware tools..."}
                       </div>
                       {responseText ? (
@@ -320,7 +345,10 @@ export const ContextualAIAssistant = ({
                   ) : (
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                        <Wand2 className="size-4 text-[hsl(43,96%,62%)]" aria-hidden="true" />
+                        <Wand2
+                          className="size-4 text-[hsl(43,96%,62%)]"
+                          aria-hidden="true"
+                        />
                         Ready on this page
                       </div>
                       <p className="text-sm text-muted-foreground">

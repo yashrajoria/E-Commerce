@@ -3,18 +3,23 @@ import axios from "axios";
 import { getAdminApiBaseUrl } from "@/lib/backendUrl";
 import { withAdminApi } from "@/lib/requireAdminApi";
 
-const queryTargets = ["bff/admin/agent/query", "bff/agent/query", "agent/query"];
+const queryTargets = [
+  "bff/admin/agent/query",
+  "bff/agent/query",
+  "agent/query",
+];
 
-async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
-    return res.status(405).json({ success: false, message: "Method not allowed" });
+    return res
+      .status(405)
+      .json({ success: false, message: "Method not allowed" });
   }
 
   if (!req.headers.cookie) {
-    return res.status(401).json({ success: false, message: "Authentication required" });
+    return res
+      .status(401)
+      .json({ success: false, message: "Authentication required" });
   }
 
   const API_URL = getAdminApiBaseUrl();
@@ -63,4 +68,16 @@ async function handler(
   }
 }
 
+/**
+ * Proxies `POST /api/agent/query` to the backend AI agent query endpoint.
+ *
+ * @remarks
+ * Wrapped in {@link withAdminApi}, which enforces same-origin checks and an admin session before the proxy runs.
+ * Requires an authenticated cookie header and tries `bff/admin/agent/query`, then `bff/agent/query`, then `agent/query`,
+ * advancing only while the previous target answers `404`. The JSON body is forwarded with a 28 second timeout.
+ *
+ * @param req - The Next.js API request; `req.body` is the agent query payload forwarded upstream.
+ * @param res - The Next.js API response.
+ * @returns A promise that resolves once the agent response has been relayed to the client.
+ */
 export default withAdminApi(handler);

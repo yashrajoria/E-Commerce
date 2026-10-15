@@ -4,8 +4,20 @@ import { FormStateProps } from "@/components/checkout/checkoutTypes";
 import { motion } from "framer-motion";
 import { MapPin, User } from "lucide-react";
 
-type Props = FormStateProps;
+/** Props accepted by {@link StepShipping}; identical to the shared {@link FormStateProps}. */
+type StepShippingProps = FormStateProps;
 
+/**
+ * Renders step 2 of the checkout wizard: the delivery address form.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <StepShipping {...formStateProps} />
+ * ```
+ */
 export function StepShipping({
   shippingDetails,
   fieldErrors,
@@ -13,7 +25,7 @@ export function StepShipping({
   direction,
   handleChange,
   handleBlur,
-}: Props) {
+}: StepShippingProps) {
   return (
     <motion.section
       key="step-2"

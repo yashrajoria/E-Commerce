@@ -9,12 +9,31 @@ import {
 } from "@/components/ui/dialog";
 import React from "react";
 
+/** Props accepted by {@link ClearSessionDialog}. */
 interface ClearSessionDialogProps {
+  /** Whether the confirmation dialog is visible. */
   open: boolean;
+  /** Called when the dialog requests to open or close. */
   onOpenChange: (open: boolean) => void;
+  /** Called when the user confirms clearing the AI session. */
   onConfirmClear: () => void;
 }
 
+/**
+ * Renders the confirmation dialog for clearing the active AI session context.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <ClearSessionDialog
+ *   open={clearDialogOpen}
+ *   onOpenChange={setClearDialogOpen}
+ *   onConfirmClear={clearSession}
+ * />
+ * ```
+ */
 export function ClearSessionDialog({
   open,
   onOpenChange,
@@ -51,4 +70,3 @@ export function ClearSessionDialog({
     </Dialog>
   );
 }
-

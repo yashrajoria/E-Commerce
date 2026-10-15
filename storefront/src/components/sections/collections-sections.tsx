@@ -9,15 +9,35 @@ import { useCategories } from "@/hooks/useCategories";
 import Image from "next/image";
 import Link from "next/link";
 
+/** View model for one collection tile rendered by {@link CollectionsSection}. */
 interface CollectionViewModel {
+  /** URL-safe identifier derived from the category name. */
   id: string;
+  /** Category display name shown on the tile. */
   title: string;
+  /** Supporting marketing line shown under the title. */
   subtitle: string;
+  /** Image URL taken from the first product in the category, or the placeholder. */
   image: string;
+  /** Number of sampled products grouped into the category. */
   productCount: number;
+  /** Tile size; the first collection renders large, the rest medium. */
   layout: "large" | "medium";
 }
 
+/**
+ * Renders the "Explore Curated Edits" grid of collection tiles grouped by product category.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * Groups the first twelve products from `useProducts` by category (following the order of `useCategories` when available), keeps up to three collections, shows skeleton tiles while loading and renders nothing on error or when no groups exist.
+ *
+ * @example
+ * ```tsx
+ * <CollectionsSection />
+ * ```
+ */
 export function CollectionsSection() {
   const { data: productsData, isLoading, error } = useProducts(12, 1, false);
   const { data: categoriesData = [] } = useCategories();
@@ -113,53 +133,53 @@ export function CollectionsSection() {
 
                 return (
                   <Link href={`/products?${params.toString()}`}>
-                <div
-                  className={`relative overflow-hidden rounded-2xl cursor-pointer ${
-                    collection.layout === "large"
-                      ? "h-80 lg:h-full min-h-[320px]"
-                      : "h-64"
-                  }`}
-                >
-                  {/* Image */}
-                  <Image
-                    src={collection.image}
-                    alt={collection.title}
-                    fill
-                    sizes={
-                      collection.layout === "large"
-                        ? "(max-width: 1024px) 100vw, 66vw"
-                        : "(max-width: 1024px) 100vw, 33vw"
-                    }
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                  />
-
-                  {/* Gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-black/5 transition-opacity duration-300" />
-
-                  {/* Content */}
-                  <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8">
-                    <span className="inline-block text-[11px] font-semibold bg-white/20 text-white backdrop-blur-xs px-2.5 py-0.5 rounded-md mb-3">
-                      {collection.productCount} products
-                    </span>
-                    <h3
-                      className={`font-bold text-white mb-1 ${
+                    <div
+                      className={`relative overflow-hidden rounded-2xl cursor-pointer ${
                         collection.layout === "large"
-                          ? "text-2xl lg:text-3xl"
-                          : "text-xl"
+                          ? "h-80 lg:h-full min-h-[320px]"
+                          : "h-64"
                       }`}
                     >
-                      {collection.title}
-                    </h3>
-                    <p className="text-white/80 text-sm mb-4">
-                      {collection.subtitle}
-                    </p>
+                      {/* Image */}
+                      <Image
+                        src={collection.image}
+                        alt={collection.title}
+                        fill
+                        sizes={
+                          collection.layout === "large"
+                            ? "(max-width: 1024px) 100vw, 66vw"
+                            : "(max-width: 1024px) 100vw, 33vw"
+                        }
+                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                      />
 
-                    <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white group-hover:gap-2.5 transition-all duration-200">
-                      Shop Now
-                      <ArrowRight className="h-4 w-4" />
-                    </span>
-                  </div>
-                </div>
+                      {/* Gradient */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-black/5 transition-opacity duration-300" />
+
+                      {/* Content */}
+                      <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8">
+                        <span className="inline-block text-[11px] font-semibold bg-white/20 text-white backdrop-blur-xs px-2.5 py-0.5 rounded-md mb-3">
+                          {collection.productCount} products
+                        </span>
+                        <h3
+                          className={`font-bold text-white mb-1 ${
+                            collection.layout === "large"
+                              ? "text-2xl lg:text-3xl"
+                              : "text-xl"
+                          }`}
+                        >
+                          {collection.title}
+                        </h3>
+                        <p className="text-white/80 text-sm mb-4">
+                          {collection.subtitle}
+                        </p>
+
+                        <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white group-hover:gap-2.5 transition-all duration-200">
+                          Shop Now
+                          <ArrowRight className="h-4 w-4" />
+                        </span>
+                      </div>
+                    </div>
                   </Link>
                 );
               })()}

@@ -29,6 +29,19 @@ import { Input } from "../ui/input";
 import { BrandLogo } from "./brand-logo";
 import { MegaMenu } from "./mega-menu";
 
+/**
+ * Renders the sticky site header with navigation, search, cart/wishlist counters, account and theme controls.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * Renders a skeleton bar until `mounted` is true (avoiding theme/hydration mismatches), tracks scroll to restyle the bar, and opens the mega menu, cart drawer, wishlist drawer, login modal and visual search modal.
+ *
+ * @example
+ * ```tsx
+ * <Header />
+ * ```
+ */
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -82,7 +95,10 @@ export function Header() {
         <div className="container mx-auto px-4 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <BrandLogo size="md" />
-            <div className="h-9 w-24 rounded-lg bg-muted/40 animate-pulse" aria-hidden />
+            <div
+              className="h-9 w-24 rounded-lg bg-muted/40 animate-pulse"
+              aria-hidden
+            />
           </div>
         </div>
       </header>
@@ -104,7 +120,10 @@ export function Header() {
             <div className="flex items-center gap-6 lg:gap-8 shrink-0">
               <BrandLogo size="md" />
 
-              <nav className="hidden md:flex items-center gap-1" aria-label="Main Navigation">
+              <nav
+                className="hidden md:flex items-center gap-1"
+                aria-label="Main Navigation"
+              >
                 {navLinks.map((link) => {
                   const isActive =
                     link.href === "/products"
@@ -263,7 +282,10 @@ export function Header() {
                     className="h-9 px-2.5 gap-2 text-sm font-medium text-foreground hover:bg-muted/60"
                     onClick={() => setIsAccountOpen((open) => !open)}
                   >
-                    <User className="h-4 w-4 text-muted-foreground" aria-hidden />
+                    <User
+                      className="h-4 w-4 text-muted-foreground"
+                      aria-hidden
+                    />
                     <span className="text-xs font-semibold">Account</span>
                   </Button>
                 ) : (
@@ -328,7 +350,9 @@ export function Header() {
             {isSearchOpen && (
               <motion.div
                 className="pb-3 pt-1 lg:hidden"
-                initial={reduceMotion ? { opacity: 1 } : { opacity: 0, height: 0 }}
+                initial={
+                  reduceMotion ? { opacity: 1 } : { opacity: 0, height: 0 }
+                }
                 animate={{ opacity: 1, height: "auto" }}
                 exit={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
                 transition={{ duration: 0.15 }}

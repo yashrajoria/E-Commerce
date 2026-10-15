@@ -1,8 +1,14 @@
 import * as React from "react";
 import { cn } from "../lib/utils";
 
+/** Props accepted by {@link LoadingSpinner}. */
 export interface LoadingSpinnerProps
   extends React.SVGAttributes<SVGSVGElement> {
+  /**
+   * Spinner dimensions.
+   *
+   * @defaultValue "default"
+   */
   size?: "sm" | "default" | "lg";
 }
 
@@ -12,6 +18,17 @@ const sizeClasses = {
   lg: "h-8 w-8",
 };
 
+/**
+ * Renders an animated spinning ring as an inline SVG.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <LoadingSpinner size="lg" className="text-muted-foreground" />
+ * ```
+ */
 export function LoadingSpinner({
   size = "default",
   className,
@@ -28,7 +45,11 @@ export function LoadingSpinner({
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={cn("animate-spin text-foreground", sizeClasses[size], className)}
+      className={cn(
+        "animate-spin text-foreground",
+        sizeClasses[size],
+        className,
+      )}
       {...props}
     >
       <path d="M21 12a9 9 0 1 1-6.219-8.56" />

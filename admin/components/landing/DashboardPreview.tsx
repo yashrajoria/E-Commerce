@@ -1,7 +1,14 @@
 import { useState, useRef } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShoppingCart, Package, Activity, Users, Zap, TrendingUp } from "lucide-react";
+import {
+  ShoppingCart,
+  Package,
+  Activity,
+  Users,
+  Zap,
+  TrendingUp,
+} from "lucide-react";
 
 const tabs = [
   { id: "analytics", label: "Intelligence", icon: Activity },
@@ -19,21 +26,21 @@ function AnalyticsView() {
             value: "£142.8k",
             sub: "+24.5%",
             icon: TrendingUp,
-            color: "text-primary"
+            color: "text-primary",
           },
           {
             label: "Active Sessions",
             value: "8,421",
             sub: "+15.3%",
             icon: Users,
-            color: "text-accent"
+            color: "text-accent",
           },
           {
             label: "Conversion",
             value: "4.82%",
             sub: "+0.8%",
             icon: Zap,
-            color: "text-emerald-400"
+            color: "text-emerald-400",
           },
         ].map((stat) => (
           <div
@@ -41,37 +48,53 @@ function AnalyticsView() {
             className="group rounded-2xl bg-white/[0.02] border border-white/[0.05] p-5 hover:bg-white/[0.04] transition-all"
           >
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">{stat.label}</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                {stat.label}
+              </p>
               <stat.icon className={`h-3.5 w-3.5 ${stat.color} opacity-70`} />
             </div>
             <p className="text-2xl font-bold tracking-tight">{stat.value}</p>
-            <p className={`text-[10px] font-bold mt-1 ${stat.sub.startsWith('+') ? 'text-emerald-400' : 'text-rose-400'}`}>
-              {stat.sub} <span className="text-muted-foreground/40 font-normal ml-1">vs prev.</span>
+            <p
+              className={`text-[10px] font-bold mt-1 ${stat.sub.startsWith("+") ? "text-emerald-400" : "text-rose-400"}`}
+            >
+              {stat.sub}{" "}
+              <span className="text-muted-foreground/40 font-normal ml-1">
+                vs prev.
+              </span>
             </p>
           </div>
         ))}
       </div>
-      
+
       <div className="rounded-2xl bg-white/[0.02] border border-white/[0.05] p-6 relative overflow-hidden">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h4 className="text-sm font-bold tracking-tight">Revenue Stream</h4>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">Real-time Attribution</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">
+              Real-time Attribution
+            </p>
           </div>
           <div className="flex gap-2">
             <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/[0.03] border border-white/[0.05]">
               <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-              <span className="text-[9px] font-bold text-muted-foreground uppercase">Direct</span>
+              <span className="text-[9px] font-bold text-muted-foreground uppercase">
+                Direct
+              </span>
             </div>
             <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/[0.03] border border-white/[0.05]">
               <div className="w-1.5 h-1.5 rounded-full bg-accent" />
-              <span className="text-[9px] font-bold text-muted-foreground uppercase">Social</span>
+              <span className="text-[9px] font-bold text-muted-foreground uppercase">
+                Social
+              </span>
             </div>
           </div>
         </div>
-        
+
         <div className="flex items-end gap-1.5 h-36">
-          {[40, 55, 45, 60, 75, 65, 80, 90, 70, 85, 95, 100, 85, 75, 60, 45, 55, 70, 85, 100].map((h, i) => (
+          {[
+            40, 55, 45, 60, 75, 65, 80, 90, 70, 85, 95, 100, 85, 75, 60, 45, 55,
+            70, 85, 100,
+          ].map((h, i) => (
             <motion.div
               key={i}
               className="flex-1 rounded-t-sm bg-primary/10 relative group/bar"
@@ -137,9 +160,13 @@ function OrdersView() {
             transition={{ delay: i * 0.1 }}
             className="grid grid-cols-4 px-6 py-4 hover:bg-white/[0.02] transition-colors items-center"
           >
-            <span className="font-mono text-xs font-bold text-primary/80">{order.id}</span>
+            <span className="font-mono text-xs font-bold text-primary/80">
+              {order.id}
+            </span>
             <span className="text-sm font-medium">{order.customer}</span>
-            <span className="text-sm font-bold tracking-tight">{order.amount}</span>
+            <span className="text-sm font-bold tracking-tight">
+              {order.amount}
+            </span>
             <div>
               <span
                 className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider ${order.color}`}
@@ -156,7 +183,12 @@ function OrdersView() {
 
 function ProductsView() {
   const products = [
-    { name: "Premium Headphones", sku: "SKU-HDP-001", stock: 245, price: "£299" },
+    {
+      name: "Premium Headphones",
+      sku: "SKU-HDP-001",
+      stock: 245,
+      price: "£299",
+    },
     { name: "Wireless Mouse", sku: "SKU-MS-042", stock: 18, price: "£79" },
     {
       name: "Mechanical Keyboard",
@@ -184,19 +216,27 @@ function ProductsView() {
             transition={{ delay: i * 0.1 }}
             className="grid grid-cols-4 px-6 py-4 hover:bg-white/[0.02] transition-colors items-center"
           >
-            <span className="text-sm font-bold tracking-tight">{product.name}</span>
-            <span className="text-xs font-mono text-muted-foreground/60">{product.sku}</span>
+            <span className="text-sm font-bold tracking-tight">
+              {product.name}
+            </span>
+            <span className="text-xs font-mono text-muted-foreground/60">
+              {product.sku}
+            </span>
             <div>
               <div className="flex items-center gap-2">
                 <div className="flex-1 h-1 rounded-full bg-white/5 overflow-hidden w-16">
-                  <motion.div 
-                    className={`h-full ${product.stock < 30 ? 'bg-rose-500' : 'bg-primary'}`}
+                  <motion.div
+                    className={`h-full ${product.stock < 30 ? "bg-rose-500" : "bg-primary"}`}
                     initial={{ width: 0 }}
-                    animate={{ width: `${Math.min(100, (product.stock / 250) * 100)}%` }}
+                    animate={{
+                      width: `${Math.min(100, (product.stock / 250) * 100)}%`,
+                    }}
                     transition={{ duration: 1, delay: 0.5 + i * 0.1 }}
                   />
                 </div>
-                <span className="text-[10px] font-bold text-muted-foreground">{product.stock}</span>
+                <span className="text-[10px] font-bold text-muted-foreground">
+                  {product.stock}
+                </span>
               </div>
             </div>
             <span className="text-sm font-bold">{product.price}</span>
@@ -207,13 +247,28 @@ function ProductsView() {
   );
 }
 
+/**
+ * Renders the tabbed dashboard mock-up section that showcases analytics, orders and inventory views.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * // Landing page section anchored at #preview.
+ * <DashboardPreview />
+ * ```
+ */
 export default function DashboardPreview() {
   const [activeTab, setActiveTab] = useState("analytics");
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section id="preview" className="relative py-32 overflow-hidden bg-white/[0.01]">
+    <section
+      id="preview"
+      className="relative py-32 overflow-hidden bg-white/[0.01]"
+    >
       {/* Background Decorative Element */}
       <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/[0.02] to-transparent pointer-events-none" />
 
@@ -235,7 +290,7 @@ export default function DashboardPreview() {
             High-Performance <span className="text-gradient">Operations</span>
           </h2>
           <p className="mt-6 text-lg text-muted-foreground font-light leading-relaxed">
-            Experience an interface built for precision. Our dashboard provides 
+            Experience an interface built for precision. Our dashboard provides
             unparalleled visibility into every layer of your commerce stack.
           </p>
         </motion.div>
@@ -249,7 +304,7 @@ export default function DashboardPreview() {
         >
           {/* Ambient Glows */}
           <div className="absolute -inset-20 bg-primary/5 rounded-[4rem] blur-[100px] pointer-events-none" />
-          
+
           <div className="relative glass-effect-strong rounded-[2rem] border border-white/[0.1] overflow-hidden shadow-2xl">
             {/* Toolbar */}
             <div className="flex items-center justify-between px-8 py-5 border-b border-white/[0.05] bg-white/[0.01]">
@@ -260,7 +315,11 @@ export default function DashboardPreview() {
               </div>
 
               {/* Enhanced Tabs */}
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-auto">
+              <Tabs
+                value={activeTab}
+                onValueChange={setActiveTab}
+                className="w-auto"
+              >
                 <TabsList className="bg-white/[0.03] border border-white/[0.08] h-11 p-1 rounded-xl">
                   {tabs.map((tab) => (
                     <TabsTrigger
@@ -276,10 +335,12 @@ export default function DashboardPreview() {
               </Tabs>
 
               <div className="flex items-center gap-4">
-                 <div className="hidden lg:flex items-center gap-2">
-                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                   <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">System Nominal</span>
-                 </div>
+                <div className="hidden lg:flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
+                    System Nominal
+                  </span>
+                </div>
               </div>
             </div>
 

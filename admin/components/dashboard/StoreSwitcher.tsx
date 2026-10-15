@@ -1,6 +1,13 @@
 import React, { useState } from "react";
 import { useStore } from "@/lib/useStore";
-import { Store, Check, ChevronsUpDown, Plus, Sparkles, Settings } from "lucide-react";
+import {
+  Store,
+  Check,
+  ChevronsUpDown,
+  Plus,
+  Sparkles,
+  Settings,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,10 +30,29 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 
+/** Props accepted by {@link StoreSwitcher}. */
 interface StoreSwitcherProps {
+  /**
+   * Hides the active store name so only the icon is shown in narrow layouts.
+   *
+   * @defaultValue false
+   */
   collapsed?: boolean;
 }
 
+/**
+ * Renders a dropdown for switching between merchant stores, including an
+ * inline dialog for creating a new store.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <StoreSwitcher />
+ * <StoreSwitcher collapsed />
+ * ```
+ */
 export function StoreSwitcher({ collapsed = false }: StoreSwitcherProps) {
   const { stores, activeStore, switchStore, createStore, loading } = useStore();
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
@@ -44,7 +70,7 @@ export function StoreSwitcher({ collapsed = false }: StoreSwitcherProps) {
       const created = await createStore(
         newStoreName.trim(),
         newStoreSlug.trim() || undefined,
-        newStoreCurrency.trim() || "USD"
+        newStoreCurrency.trim() || "USD",
       );
       if (created) {
         setOpenCreateDialog(false);
@@ -57,9 +83,7 @@ export function StoreSwitcher({ collapsed = false }: StoreSwitcherProps) {
   };
 
   if (loading && !activeStore) {
-    return (
-      <div className="h-9 w-36 animate-pulse rounded-lg bg-muted/60" />
-    );
+    return <div className="h-9 w-36 animate-pulse rounded-lg bg-muted/60" />;
   }
 
   return (
@@ -132,20 +156,29 @@ export function StoreSwitcher({ collapsed = false }: StoreSwitcherProps) {
               Create a New Store
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Add an isolated merchant store to your account. Each store has its own catalog, orders, and configuration.
+              Add an isolated merchant store to your account. Each store has its
+              own catalog, orders, and configuration.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreate} className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label htmlFor="store-name" className="text-xs font-semibold">Store Name *</Label>
+              <Label htmlFor="store-name" className="text-xs font-semibold">
+                Store Name *
+              </Label>
               <Input
                 id="store-name"
                 placeholder="e.g. Acme Apparel"
                 value={newStoreName}
                 onChange={(e) => {
                   setNewStoreName(e.target.value);
-                  if (!newStoreSlug || newStoreSlug === newStoreName.toLowerCase().replace(/[^a-z0-9]+/g, "-")) {
-                    setNewStoreSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-"));
+                  if (
+                    !newStoreSlug ||
+                    newStoreSlug ===
+                      newStoreName.toLowerCase().replace(/[^a-z0-9]+/g, "-")
+                  ) {
+                    setNewStoreSlug(
+                      e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+                    );
                   }
                 }}
                 required
@@ -153,20 +186,28 @@ export function StoreSwitcher({ collapsed = false }: StoreSwitcherProps) {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="store-slug" className="text-xs font-semibold">URL Slug (unique)</Label>
+              <Label htmlFor="store-slug" className="text-xs font-semibold">
+                URL Slug (unique)
+              </Label>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <span className="font-mono text-[11px]">shopswift.app/</span>
                 <Input
                   id="store-slug"
                   placeholder="acme-apparel"
                   value={newStoreSlug}
-                  onChange={(e) => setNewStoreSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                  onChange={(e) =>
+                    setNewStoreSlug(
+                      e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""),
+                    )
+                  }
                   className="h-9 text-xs font-mono"
                 />
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="store-currency" className="text-xs font-semibold">Base Currency</Label>
+              <Label htmlFor="store-currency" className="text-xs font-semibold">
+                Base Currency
+              </Label>
               <select
                 id="store-currency"
                 value={newStoreCurrency}

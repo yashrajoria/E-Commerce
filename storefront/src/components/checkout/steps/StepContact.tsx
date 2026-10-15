@@ -4,11 +4,29 @@ import { FormStateProps } from "@/components/checkout/checkoutTypes";
 import { motion } from "framer-motion";
 import { Mail, Phone } from "lucide-react";
 
-type Props = FormStateProps & {
+/** Props accepted by {@link StepContact}, extending the shared form state with login affordances. */
+interface StepContactProps extends FormStateProps {
+  /** Whether a signed-in user is completing the checkout. */
   isAuthenticated?: boolean;
+  /** Opens the login modal from the "Log in" link. */
   onOpenLogin?: () => void;
-};
+}
 
+/**
+ * Renders step 1 of the checkout wizard: contact email and phone fields.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <StepContact
+ *   {...formStateProps}
+ *   isAuthenticated={isAuthenticated}
+ *   onOpenLogin={() => setIsLoginModalOpen(true)}
+ * />
+ * ```
+ */
 export function StepContact({
   shippingDetails,
   fieldErrors,
@@ -18,7 +36,7 @@ export function StepContact({
   handleBlur,
   isAuthenticated,
   onOpenLogin,
-}: Props) {
+}: StepContactProps) {
   return (
     <motion.section
       key="step-1"

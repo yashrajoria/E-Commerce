@@ -9,11 +9,30 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+/** Props accepted by {@link ThemeToggle}. */
 interface ThemeToggleProps {
+  /** Additional classes merged onto the trigger button. */
   className?: string;
+  /**
+   * Size variant forwarded to the underlying `Button`.
+   *
+   * @defaultValue "icon"
+   */
   size?: "default" | "sm" | "lg" | "icon";
 }
 
+/**
+ * Renders an icon button that switches the admin app between light and dark themes.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * // Rendered in the admin header, next to the page title.
+ * <ThemeToggle className="ml-auto" />
+ * ```
+ */
 export function ThemeToggle({ className, size = "icon" }: ThemeToggleProps) {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -67,4 +86,3 @@ export function ThemeToggle({ className, size = "icon" }: ThemeToggleProps) {
 }
 
 export default ThemeToggle;
-

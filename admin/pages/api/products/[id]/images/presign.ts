@@ -7,10 +7,7 @@ import { withAdminApi } from "@/lib/requireAdminApi";
 
 const API_URL = getAdminApiBaseUrl();
 
-async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method not allowed" });
   }
@@ -42,4 +39,16 @@ async function handler(
   }
 }
 
+/**
+ * Proxies `POST /api/products/[id]/images/presign` to the backend image presign endpoint.
+ *
+ * @remarks
+ * Wrapped in {@link withAdminApi}, which enforces same-origin checks and an admin session before the proxy runs.
+ * Requires `req.query.id` and forwards the JSON body to `POST bff/admin/products/{id}/images/presign`, relaying the
+ * upstream status and payload; failures are mapped through `getResponseInfo`.
+ *
+ * @param req - The Next.js API request; `req.query.id` is the product ID and `req.body` carries the presign request.
+ * @param res - The Next.js API response.
+ * @returns A promise that resolves once the presigned upload data or an error response has been sent.
+ */
 export default withAdminApi(handler);

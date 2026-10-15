@@ -16,6 +16,50 @@ import {
 
 import { Category } from "@/types/shared";
 
+/** Props accepted by {@link CategoryTable}. */
+interface CategoryTableProps {
+  /** Whether the category list is still loading. */
+  loading: boolean;
+  /** Categories for the current page slice. */
+  paginatedCategories: Category[];
+  /** Current search term, used to tailor the empty-state copy. */
+  searchQuery: string;
+  /** Opens the create-category dialog. */
+  setIsAddOpen: (open: boolean) => void;
+  /** Opens the edit-category dialog. */
+  setIsEditOpen: (open: boolean) => void;
+  /** Stores the category the user is acting on. */
+  setSelectedCategory: (category: Category) => void;
+  /** Opens the delete-category dialog. */
+  setIsDeleteOpen: (open: boolean) => void;
+  /** Reserved for inline editing; currently unused by this table. */
+  handleEditCategory?: () => void;
+  /** Reserved for inline deletion; currently unused by this table. */
+  handleDeleteCategory?: () => void;
+  /** Seeds the edit dialog's name field before it opens. */
+  setEditCategoryName: (name: string) => void;
+}
+
+/**
+ * Renders the animated category table with loading, empty and populated states.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <CategoryTable
+ *   loading={loading}
+ *   paginatedCategories={paginatedCategories}
+ *   searchQuery={searchQuery}
+ *   setIsAddOpen={setIsAddOpen}
+ *   setIsEditOpen={setIsEditOpen}
+ *   setSelectedCategory={setSelectedCategory}
+ *   setIsDeleteOpen={setIsDeleteOpen}
+ *   setEditCategoryName={setEditCategoryName}
+ * />
+ * ```
+ */
 const CategoryTable = ({
   loading,
   paginatedCategories,
@@ -27,18 +71,7 @@ const CategoryTable = ({
   handleEditCategory,
   handleDeleteCategory,
   setEditCategoryName,
-}: {
-  loading: boolean;
-  paginatedCategories: Category[];
-  searchQuery: string;
-  setIsAddOpen: (open: boolean) => void;
-  setIsEditOpen: (open: boolean) => void;
-  setSelectedCategory: (category: Category) => void;
-  setIsDeleteOpen: (open: boolean) => void;
-  handleEditCategory?: () => void;
-  handleDeleteCategory?: () => void;
-  setEditCategoryName: (name: string) => void;
-}) => {
+}: CategoryTableProps) => {
   // avoid unused variable ESLint errors when callbacks are optional
   void handleEditCategory;
   void handleDeleteCategory;

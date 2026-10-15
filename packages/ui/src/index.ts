@@ -1,3 +1,9 @@
+/**
+ * Barrel module re-exporting the ShopSwift design system: the `cn` class-name utility,
+ * the shadcn-style primitives (with ShopSwift variants and styling) and the shared
+ * pattern components.
+ */
+
 // Utilities
 export { cn } from "./lib/utils";
 
@@ -38,12 +44,7 @@ export {
   DialogTitle,
   DialogDescription,
 } from "./primitives/dialog";
-export {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "./primitives/tabs";
+export { Tabs, TabsList, TabsTrigger, TabsContent } from "./primitives/tabs";
 export { Separator } from "./primitives/separator";
 export { Progress } from "./primitives/progress";
 export { Skeleton } from "./primitives/skeleton";
@@ -63,11 +64,24 @@ export {
 // Patterns
 export { EmptyState, type EmptyStateProps } from "./patterns/empty-state";
 export { ErrorState, type ErrorStateProps } from "./patterns/error-state";
-export { LoadingSpinner, type LoadingSpinnerProps } from "./patterns/loading-spinner";
+export {
+  LoadingSpinner,
+  type LoadingSpinnerProps,
+} from "./patterns/loading-spinner";
 export { LoadingState, type LoadingStateProps } from "./patterns/loading-state";
 export { PageHeader, type PageHeaderProps } from "./patterns/page-header";
 export { FormField, type FormFieldProps } from "./patterns/form-field";
-export { DataTable, type DataTableProps, type Column } from "./patterns/data-table";
-export { MetricDisplay, type MetricDisplayProps } from "./patterns/metric-display";
-export { PriceDisplay, type PriceDisplayProps, formatCurrency } from "./patterns/price-display";
-
+export {
+  DataTable,
+  type DataTableProps,
+  type Column,
+} from "./patterns/data-table";
+export {
+  MetricDisplay,
+  type MetricDisplayProps,
+} from "./patterns/metric-display";
+export {
+  PriceDisplay,
+  type PriceDisplayProps,
+  formatCurrency,
+} from "./patterns/price-display";

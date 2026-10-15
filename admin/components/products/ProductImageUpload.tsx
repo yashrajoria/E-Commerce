@@ -25,22 +25,45 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GripVertical, X } from "lucide-react";
 import Image from "next/image";
 
+/** A single image entry tracked by {@link ProductImageUpload}. */
 interface ImageItem {
+  /** Unique id assigned when the file is added. */
   id: string;
+  /** Original file selected by the user. */
   file: File;
+  /** Local preview or remote URL for the image. */
   url: string;
+  /** Upload progress percentage from 0 to 100. */
   progress?: number;
+  /** Whether the upload finished successfully. */
   uploaded?: boolean;
+  /** Whether an upload is currently in flight. */
   uploading?: boolean;
+  /** Whether the last upload attempt failed. */
   failed?: boolean;
+  /** Cancels the in-flight upload, when one exists. */
   cancel?: () => void;
 }
 
+/** Props accepted by {@link ProductImageUpload}. */
 interface ProductImageUploadProps {
+  /** Images currently attached to the product. */
   images: ImageItem[];
+  /** State setter used to append, update, reorder or remove images. */
   setImages: React.Dispatch<React.SetStateAction<ImageItem[]>>;
 }
 
+/**
+ * Renders the product image uploader with per-file progress, cancel, retry and drag-to-reorder controls.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <ProductImageUpload images={images} setImages={setImages} />
+ * ```
+ */
 export default function ProductImageUpload({
   images,
   setImages,
@@ -135,7 +158,6 @@ export default function ProductImageUpload({
     setImages(images.filter((img) => img.id !== id));
   };
 
-  
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -287,6 +309,29 @@ export default function ProductImageUpload({
   );
 }
 
+/** Props accepted by {@link SortableImage}. */
+interface SortableImageProps {
+  /** Id of the image, used as the drag-and-drop identifier. */
+  id: string;
+  /** Preview or uploaded URL to render. */
+  url: string;
+  /** Upload progress percentage from 0 to 100. */
+  progress?: number;
+  /** Whether the upload finished successfully. */
+  uploaded?: boolean;
+  /** Whether an upload is currently in flight. */
+  uploading?: boolean;
+  /** Whether the last upload attempt failed. */
+  failed?: boolean;
+  /** Removes the image from the list. */
+  onRemove: () => void;
+  /** Cancels the in-flight upload. */
+  onCancel: () => void;
+  /** Retries a failed upload. */
+  onRetry: () => void;
+}
+
+/** Renders one sortable image row with its preview, progress bar and action buttons. */
 function SortableImage({
   id,
   url,
@@ -297,17 +342,7 @@ function SortableImage({
   onRemove,
   onCancel,
   onRetry,
-}: {
-  id: string;
-  url: string;
-  progress?: number;
-  uploaded?: boolean;
-  uploading?: boolean;
-  failed?: boolean;
-  onRemove: () => void;
-  onCancel: () => void;
-  onRetry: () => void;
-}) {
+}: SortableImageProps) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
 
@@ -358,11 +393,22 @@ function SortableImage({
           </Button>
         )}
         {failed && (
-          <Button size="sm" variant="ghost" onClick={onRetry} aria-label="Retry upload">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={onRetry}
+            aria-label="Retry upload"
+          >
             <RotateCcw className="h-4 w-4" />
           </Button>
         )}
-        <Button type="button" variant="ghost" size="icon" onClick={onRemove} aria-label="Remove image">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={onRemove}
+          aria-label="Remove image"
+        >
           <X className="h-4 w-4" />
         </Button>
       </div>

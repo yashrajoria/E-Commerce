@@ -53,3 +53,4 @@ npm run lint
 - **Component Patterns**: Use Tailwind CSS and Radix UI primitives. Avoid raw CSS or inline style tags.
 - **TypeScript Strictness**: Keep types strict; avoid untyped `any`.
 - **Documentation**: Update the owning app's `README.md` when introducing new routes or components.
+

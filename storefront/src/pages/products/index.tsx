@@ -20,10 +20,27 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { VisualSearchModal } from "@/components/search/VisualSearchModal";
 
+/**
+ * Props for {@link SearchPage}, seeded by {@link getServerSideProps}.
+ */
 type SearchPageProps = {
+  /** SSR-fetched first page of the catalog, or `null` when the request failed. */
   initialCatalog: SsrProductsResponse | null;
 };
 
+/**
+ * Product catalog page: search, filters, sort order, grid/list toggle,
+ * pagination, and visual search.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * // Route: /products — rendered by the Next.js Pages Router with SSR-seeded data.
+ * <SearchPage initialCatalog={ssrCatalog} />
+ * ```
+ */
 export default function SearchPage({ initialCatalog }: SearchPageProps) {
   const router = useRouter();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -341,6 +358,13 @@ export default function SearchPage({ initialCatalog }: SearchPageProps) {
   );
 }
 
+/**
+ * Prefetches the first catalog page for `/products` so the initial grid can
+ * render from SSR data.
+ *
+ * @param context - The Next.js Pages Router context for the request; the `page` query parameter seeds paging (values below 1 fall back to page 1).
+ * @returns Props containing `initialCatalog` — the fetched first page, or `null` when the catalog API is unreachable.
+ */
 export const getServerSideProps: GetServerSideProps<SearchPageProps> = async (
   ctx,
 ) => {

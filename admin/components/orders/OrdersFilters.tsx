@@ -10,11 +10,25 @@ import { Button } from "@/components/ui/button";
 import { Filter, Search } from "lucide-react";
 import type { OrdersFilter } from "@/types/shared";
 
+/** Props accepted by {@link OrdersFilters}. */
 interface OrdersFiltersProps {
+  /** Current order search and status filter values. */
   filter: OrdersFilter;
+  /** Called with the changed filter fields, merged into the current filter. */
   onFilterChange: (filter: Partial<OrdersFilter>) => void;
 }
 
+/**
+ * Renders the order search input, status select and additional-filters button.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <OrdersFilters filter={filter} onFilterChange={handleFilterChange} />
+ * ```
+ */
 export const OrdersFilters = ({
   filter,
   onFilterChange,

@@ -5,6 +5,26 @@ import * as TabsPrimitive from "@radix-ui/react-tabs";
 
 import { cn } from "../../utils";
 
+/**
+ * Renders the root of a tab set, owning the active tab state.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. Built on Radix UI's tabs
+ * primitive; compose it with {@link TabsList}, {@link TabsTrigger} and
+ * {@link TabsContent}.
+ *
+ * @example
+ * ```tsx
+ * <Tabs defaultValue="details">
+ *   <TabsList>
+ *     <TabsTrigger value="details">Details</TabsTrigger>
+ *     <TabsTrigger value="reviews">Reviews</TabsTrigger>
+ *   </TabsList>
+ *   <TabsContent value="details">Product details</TabsContent>
+ *   <TabsContent value="reviews">Customer reviews</TabsContent>
+ * </Tabs>
+ * ```
+ */
 function Tabs({
   className,
   ...props
@@ -18,6 +38,19 @@ function Tabs({
   );
 }
 
+/**
+ * Renders the row that holds the {@link TabsTrigger} buttons.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <TabsList>
+ *   <TabsTrigger value="details">Details</TabsTrigger>
+ * </TabsList>
+ * ```
+ */
 function TabsList({
   className,
   ...props
@@ -34,6 +67,19 @@ function TabsList({
   );
 }
 
+/**
+ * Renders the button that activates its matching {@link TabsContent}.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <TabsTrigger value="reviews" disabled={reviewsLoading}>
+ *   Reviews
+ * </TabsTrigger>
+ * ```
+ */
 function TabsTrigger({
   className,
   ...props
@@ -50,6 +96,17 @@ function TabsTrigger({
   );
 }
 
+/**
+ * Renders the panel shown while its matching {@link TabsTrigger} is active.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <TabsContent value="reviews">Customer reviews</TabsContent>
+ * ```
+ */
 function TabsContent({
   className,
   ...props

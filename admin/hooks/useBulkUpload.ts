@@ -14,23 +14,47 @@ import { z } from "zod";
 //   imageurl: z.string().url("Invalid URL format"),
 // });
 
+/** One failed CSV row with the 1-based row number and a human-readable message. */
 type BulkValidationError = { row: number; error: string };
+/** Outcome of validating an uploaded CSV, including the normalized rows ready to import. */
 type BulkValidationResult = {
+  /** Whether every row passed validation. */
   success: boolean;
+  /** Summary line shown above the results, e.g. `"All 12 products passed validation!"`. */
   message: string;
+  /** Per-row failures; empty when `success` is true. */
   errors: BulkValidationError[];
+  /** Rows with normalized header names, ready to send to the bulk endpoint. */
   validated_rows: Record<string, string>[];
+  /** Category names referenced by the CSV that do not exist yet. */
   missing_categories?: string[];
 };
 
+/**
+ * Drives the CSV bulk product import on the add-product page.
+ *
+ * @remarks
+ * Parses the CSV with PapaParse (lower-casing and BOM-stripping headers),
+ * normalizes header aliases (`image`/`image_url` → `imageurl`, `qty` →
+ * `quantity`, `category` → `categories`), validates rows locally, and posts the
+ * file to `/api/products?isBulk=1&auto_create_categories=...`. Validation
+ * failures and upload results are reported as toasts; missing categories prompt
+ * a `window.confirm` before the import proceeds.
+ *
+ * @returns The bulk-upload state and actions: `handleFileUpload`,
+ * `validateBulkUpload`, `handleBulkUpload`, `downloadSampleCSV`, `resetUpload`,
+ * `handleUpload`, `csvData`, `isBulk`, `bulkFile`, `isValidating`,
+ * `isUploading`, `validationResult` and `setCsvData`.
+ */
 export function useBulkUpload() {
   const [csvData, setCsvData] = useState<Record<string, string>[]>([]);
   const [bulkFile, setBulkFile] = useState<File | null>(null);
   const [isBulk, setIsBulk] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  
-  const [validationResult, setValidationResult] = useState<BulkValidationResult | null>(null);
+
+  const [validationResult, setValidationResult] =
+    useState<BulkValidationResult | null>(null);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -39,86 +63,96 @@ export function useBulkUpload() {
     // Reset previous state
     setValidationResult(null);
 
-   Papa.parse(file, {
-  header: true,
-  skipEmptyLines: true,
-  transformHeader: (header) =>
-    header.trim().toLowerCase().replace(/^\uFEFF/, ""),  // strips BOM + whitespace
-  complete: (results) => {
-    setCsvData(results.data as Record<string, string>[]);
-    setIsBulk(true);
-    setBulkFile(file);
-    toast.success(`CSV file loaded successfully! ${results.data.length} rows found.`);
-  },
-  error: (err) => {
-    console.error("CSV Parse Error:", err);
-    toast.error("Error parsing CSV file");
-  },
-});
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (header) =>
+        header
+          .trim()
+          .toLowerCase()
+          .replace(/^\uFEFF/, ""), // strips BOM + whitespace
+      complete: (results) => {
+        setCsvData(results.data as Record<string, string>[]);
+        setIsBulk(true);
+        setBulkFile(file);
+        toast.success(
+          `CSV file loaded successfully! ${results.data.length} rows found.`,
+        );
+      },
+      error: (err) => {
+        console.error("CSV Parse Error:", err);
+        toast.error("Error parsing CSV file");
+      },
+    });
   };
-const normalizeRow = (row: Record<string, unknown>): Record<string, string> => {
-  const normalized: Record<string, string> = {};
-  const keyMap: Record<string, string> = {
-    image_url: "imageurl",
-    image: "imageurl",
-    qty: "quantity",
-    category: "categories",
+  const normalizeRow = (
+    row: Record<string, unknown>,
+  ): Record<string, string> => {
+    const normalized: Record<string, string> = {};
+    const keyMap: Record<string, string> = {
+      image_url: "imageurl",
+      image: "imageurl",
+      qty: "quantity",
+      category: "categories",
+    };
+
+    Object.entries(row).forEach(([rawKey, value]) => {
+      const cleanKey = rawKey.trim().toLowerCase().replace(/\s+/g, "_");
+      const mappedKey = keyMap[cleanKey] || cleanKey;
+      normalized[mappedKey] =
+        typeof value === "string" ? value.trim() : String(value ?? "");
+    });
+
+    return normalized;
   };
 
-  Object.entries(row).forEach(([rawKey, value]) => {
-    const cleanKey = rawKey.trim().toLowerCase().replace(/\s+/g, "_");
-    const mappedKey = keyMap[cleanKey] || cleanKey;
-    normalized[mappedKey] = typeof value === "string" ? value.trim() : String(value ?? "");
-  });
-
-  return normalized;
-};
-
-const validateBulkUpload = (data?: Record<string, string>[]) => {
-  setIsValidating(true);
-  const rows = Object.values(data || csvData).filter(
-    (row) => typeof row === "object" && row !== null && !Array.isArray(row)
-  );
-  const errors: BulkValidationError[] = [];
-  const validRows: Record<string, string>[] = [];
-  rows.forEach((row, index) => {
-    const normalizedRow = normalizeRow(row as Record<string, unknown>);
-    try {
-      // productSchema.parse(normalizedRow);
-      validRows.push(normalizedRow);
-    } catch (error: unknown) {
-      let message = "Validation error";
-      if (error instanceof z.ZodError) {
-        message = error.issues
-          .map((issue) => `${issue.path.join(".") || "row"}: ${issue.message}`)
-          .join("; ");
-      } else if (error instanceof Error) {
-        message = error.message;
+  const validateBulkUpload = (data?: Record<string, string>[]) => {
+    setIsValidating(true);
+    const rows = Object.values(data || csvData).filter(
+      (row) => typeof row === "object" && row !== null && !Array.isArray(row),
+    );
+    const errors: BulkValidationError[] = [];
+    const validRows: Record<string, string>[] = [];
+    rows.forEach((row, index) => {
+      const normalizedRow = normalizeRow(row as Record<string, unknown>);
+      try {
+        // productSchema.parse(normalizedRow);
+        validRows.push(normalizedRow);
+      } catch (error: unknown) {
+        let message = "Validation error";
+        if (error instanceof z.ZodError) {
+          message = error.issues
+            .map(
+              (issue) => `${issue.path.join(".") || "row"}: ${issue.message}`,
+            )
+            .join("; ");
+        } else if (error instanceof Error) {
+          message = error.message;
+        }
+        errors.push({ row: index + 1, error: message });
+        console.error(`Validation error in row ${index + 1}:`, error);
       }
-      errors.push({ row: index + 1, error: message });
-      console.error(`Validation error in row ${index + 1}:`, error);
+    });
+    let result: BulkValidationResult;
+    if (errors.length === 0) {
+      result = {
+        success: true,
+        message: `All ${rows.length} products passed validation!`,
+        errors: [],
+        validated_rows: validRows,
+      };
+    } else {
+      result = {
+        success: false,
+        message: `${errors.length} of ${rows.length} products have issues. Please review.`,
+        errors,
+        validated_rows: validRows,
+      };
     }
-  });
-  let result: BulkValidationResult;
-  if (errors.length === 0) {
-    result = {
-      success: true,
-      message: `All ${rows.length} products passed validation!`,
-      errors: [],
-      validated_rows: validRows,
-    };
-  } else {
-    result = {
-      success: false,
-      message: `${errors.length} of ${rows.length} products have issues. Please review.`,
-      errors,
-      validated_rows: validRows,
-    };
-  }
-  setValidationResult(result);
-  setIsValidating(false);
-  return result;
-};
+    setValidationResult(result);
+    setIsValidating(false);
+    return result;
+  };
 
   const handleBulkUpload = async (autoCreateCategories = true) => {
     if (!bulkFile) {
@@ -158,7 +192,7 @@ const validateBulkUpload = (data?: Record<string, string>[]) => {
       }
       autoCreateCategories = true;
     }
-    
+
     setIsUploading(true);
     try {
       const formData = new FormData();

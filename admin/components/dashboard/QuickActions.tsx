@@ -47,6 +47,17 @@ const actions: QuickAction[] = [
   },
 ];
 
+/**
+ * Renders a grid of operational shortcut links for common store workflows.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <QuickActions />
+ * ```
+ */
 export default function QuickActions() {
   return (
     <Card className="bg-card border border-border shadow-2xs overflow-hidden">

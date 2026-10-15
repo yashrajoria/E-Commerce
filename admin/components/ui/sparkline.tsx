@@ -4,17 +4,59 @@
  */
 import { useMemo } from "react";
 
+/** Props accepted by {@link Sparkline}. */
 interface SparklineProps {
+  /** Series of values to plot; values are scaled to the chart height. */
   data: number[];
+  /**
+   * Stroke colour of the line and base colour of the gradient fill.
+   *
+   * @defaultValue "#8b5cf6"
+   */
   color?: string;
+  /**
+   * Rendered width of the SVG in pixels.
+   *
+   * @defaultValue 120
+   */
   width?: number;
+  /**
+   * Rendered height of the SVG in pixels.
+   *
+   * @defaultValue 40
+   */
   height?: number;
+  /**
+   * Thickness of the line stroke.
+   *
+   * @defaultValue 2
+   */
   strokeWidth?: number;
+  /**
+   * Custom className.
+   *
+   * @defaultValue ""
+   */
   className?: string;
-  /** Unique gradient id to avoid conflicts when multiple sparklines render */
+  /**
+   * Unique gradient id to avoid conflicts when multiple sparklines render.
+   *
+   * @defaultValue "sparkline"
+   */
   id?: string;
 }
 
+/**
+ * Renders a miniature SVG line chart with a soft gradient fill for KPI cards.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; the path is derived from props with `useMemo` and renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <Sparkline id="revenue-spark" data={[12, 18, 15, 24, 31]} color="#10b981" />
+ * ```
+ */
 export function Sparkline({
   data,
   color = "#8b5cf6",

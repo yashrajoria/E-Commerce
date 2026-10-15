@@ -60,6 +60,17 @@ const features = [
   },
 ];
 
+/**
+ * Renders the bento grid of platform capability cards on the landing page.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <FeaturesSection />
+ * ```
+ */
 export default function FeaturesSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
@@ -78,10 +89,11 @@ export default function FeaturesSection() {
             Core Infrastructure
           </div>
           <h2 className="text-4xl sm:text-5xl font-bold tracking-tight leading-[1.1]">
-            Designed for <span className="text-gradient">high-velocity</span> commerce.
+            Designed for <span className="text-gradient">high-velocity</span>{" "}
+            commerce.
           </h2>
           <p className="mt-6 text-lg text-muted-foreground font-light leading-relaxed">
-            The platform provides the industrial-grade tools you need to manage 
+            The platform provides the industrial-grade tools you need to manage
             every layer of your business with absolute precision and scale.
           </p>
         </motion.div>
@@ -96,7 +108,9 @@ export default function FeaturesSection() {
               transition={{ duration: 0.5, delay: i * 0.1 }}
               className="group relative p-8 rounded-3xl glass-effect glass-hover border border-white/[0.05] transition-all duration-500"
             >
-              <div className={`w-12 h-12 rounded-2xl ${feature.gradient} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+              <div
+                className={`w-12 h-12 rounded-2xl ${feature.gradient} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}
+              >
                 <feature.icon className={`w-6 h-6 ${feature.textColor}`} />
               </div>
               <h3 className="text-lg font-bold tracking-tight mb-3 group-hover:text-primary transition-colors">
@@ -105,7 +119,7 @@ export default function FeaturesSection() {
               <p className="text-sm text-muted-foreground leading-relaxed font-light">
                 {feature.description}
               </p>
-              
+
               {/* Subtle hover decoration */}
               <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                 <div className="w-1.5 h-1.5 rounded-full bg-primary/20" />

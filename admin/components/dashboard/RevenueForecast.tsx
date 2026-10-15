@@ -6,16 +6,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendIndicator } from "@/components/ui/trend-indicator";
 import { Target, Calendar, Zap } from "lucide-react";
 
+/** A single revenue/pace metric rendered as a progress row. */
 export interface ForecastItem {
+  /** Metric name, also used to look up a default icon and colour. */
   label: string;
+  /** Value achieved so far in the current period. */
   current: number;
+  /** Period target the metric is measured against. */
   target: number;
+  /** Percentage change versus the previous period, shown by `{@link TrendIndicator}`. */
   trend: number;
+  /** Icon component override; falls back to the label's mapped icon. */
   icon?: React.ElementType;
+  /** Accent colour override for the radial progress ring. */
   color?: string;
 }
 
+/** Props accepted by {@link RevenueForecast}. */
 export interface RevenueForecastProps {
+  /** Metric rows to display; when omitted or empty the built-in default metrics are shown. */
   forecasts?: ForecastItem[];
 }
 
@@ -46,17 +55,26 @@ const defaultMetrics: ForecastItem[] = [
   },
 ];
 
-function RadialProgress({
-  value,
-  max,
-  color,
-  size = 52,
-}: {
+/** Props accepted by {@link RadialProgress}. */
+interface RadialProgressProps {
+  /** Current progress value. */
   value: number;
+  /** Target value that maps to 100%. */
   max: number;
+  /** Stroke colour of the progress arc. */
   color: string;
+  /**
+   * Diameter of the rendered ring in pixels.
+   *
+   * @defaultValue 52
+   */
   size?: number;
-}) {
+}
+
+/**
+ * Renders an animated circular progress ring with the percentage in the middle.
+ */
+function RadialProgress({ value, max, color, size = 52 }: RadialProgressProps) {
   const percentage = Math.min((value / max) * 100, 100);
   const radius = (size - 8) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -103,14 +121,28 @@ const iconMap: Record<string, { icon: React.ElementType; color: string }> = {
   "Conversion Rate": { icon: Zap, color: "#d97706" },
 };
 
-export default function RevenueForecast({ forecasts }: RevenueForecastProps = {}) {
-  const displayMetrics = forecasts && forecasts.length > 0
-    ? forecasts.map((f) => ({
-        ...f,
-        icon: f.icon || iconMap[f.label]?.icon || Target,
-        color: f.color || iconMap[f.label]?.color || "#1f513f",
-      }))
-    : defaultMetrics;
+/**
+ * Renders revenue target-pacing rows with radial progress rings and trend indicators.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <RevenueForecast forecasts={dashboardData.revenueForecast} />
+ * ```
+ */
+export default function RevenueForecast({
+  forecasts,
+}: RevenueForecastProps = {}) {
+  const displayMetrics =
+    forecasts && forecasts.length > 0
+      ? forecasts.map((f) => ({
+          ...f,
+          icon: f.icon || iconMap[f.label]?.icon || Target,
+          color: f.color || iconMap[f.label]?.color || "#1f513f",
+        }))
+      : defaultMetrics;
 
   return (
     <Card className="bg-card border border-border shadow-2xs overflow-hidden">

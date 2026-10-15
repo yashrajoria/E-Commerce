@@ -13,18 +13,49 @@ import {
 } from "../../ui/input-otp";
 import { trapFocus } from "@/lib/utils";
 
+/** Props accepted by {@link OtpVerificationModal}. */
 export interface OtpVerificationModalProps {
+  /** Whether the modal is rendered. */
   isOpen: boolean;
+  /** Email address the verification code was sent to; shown in a badge. */
   email: string;
+  /** Controlled 6-digit code value. */
   otpValue: string;
+  /** Updates the controlled code value. */
   setOtpValue: (value: string) => void;
+  /** Whether verification is in flight; disables the verify button and shows a spinner. */
   loading: boolean;
+  /** Whether a resend request is in flight; disables the resend button. */
   resendLoading: boolean;
+  /** Called when the user dismisses the modal via the close button, backdrop, or Escape key. */
   onClose: () => void;
+  /** Handles code submission. */
   onSubmit: (e: React.FormEvent) => Promise<void>;
+  /** Requests a fresh verification code. */
   onResend: () => Promise<void>;
 }
 
+/**
+ * Renders the email OTP entry dialog with digit slots, verify action, and resend action.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <OtpVerificationModal
+ *   isOpen={isOtp}
+ *   email={email}
+ *   otpValue={otpValue}
+ *   setOtpValue={setOtpValue}
+ *   loading={loading}
+ *   resendLoading={resendLoading}
+ *   onClose={onCloseOtp}
+ *   onSubmit={handleOtpSubmit}
+ *   onResend={handleResendCode}
+ * />
+ * ```
+ */
 export function OtpVerificationModal({
   isOpen,
   email,
@@ -45,7 +76,7 @@ export function OtpVerificationModal({
     prevFocused.current = document.activeElement as HTMLElement;
     setTimeout(() => {
       const first = otpRef.current?.querySelector<HTMLElement>(
-        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
       );
       first?.focus();
     }, 0);
@@ -75,9 +106,17 @@ export function OtpVerificationModal({
           <motion.div
             ref={otpRef}
             className="bg-background/95 backdrop-blur-xl rounded-3xl border border-border/50 shadow-2xl w-full max-w-sm p-8 relative overflow-hidden"
-            initial={reduceMotion ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.9, y: 20 }}
+            initial={
+              reduceMotion
+                ? { opacity: 1, scale: 1, y: 0 }
+                : { opacity: 0, scale: 0.9, y: 20 }
+            }
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={reduceMotion ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.9, y: 20 }}
+            exit={
+              reduceMotion
+                ? { opacity: 1, scale: 1, y: 0 }
+                : { opacity: 0, scale: 0.9, y: 20 }
+            }
             onClick={(e) => e.stopPropagation()}
           >
             <div className="absolute inset-0 bg-linear-to-br from-emerald-500/5 via-rose-500/5 to-amber-500/5 pointer-events-none" />
@@ -117,15 +156,33 @@ export function OtpVerificationModal({
                   onChange={(value) => setOtpValue(value)}
                 >
                   <InputOTPGroup>
-                    <InputOTPSlot index={0} className="w-12 h-12 text-lg border-2" />
-                    <InputOTPSlot index={1} className="w-12 h-12 text-lg border-2" />
-                    <InputOTPSlot index={2} className="w-12 h-12 text-lg border-2" />
+                    <InputOTPSlot
+                      index={0}
+                      className="w-12 h-12 text-lg border-2"
+                    />
+                    <InputOTPSlot
+                      index={1}
+                      className="w-12 h-12 text-lg border-2"
+                    />
+                    <InputOTPSlot
+                      index={2}
+                      className="w-12 h-12 text-lg border-2"
+                    />
                   </InputOTPGroup>
                   <InputOTPSeparator />
                   <InputOTPGroup>
-                    <InputOTPSlot index={3} className="w-12 h-12 text-lg border-2" />
-                    <InputOTPSlot index={4} className="w-12 h-12 text-lg border-2" />
-                    <InputOTPSlot index={5} className="w-12 h-12 text-lg border-2" />
+                    <InputOTPSlot
+                      index={3}
+                      className="w-12 h-12 text-lg border-2"
+                    />
+                    <InputOTPSlot
+                      index={4}
+                      className="w-12 h-12 text-lg border-2"
+                    />
+                    <InputOTPSlot
+                      index={5}
+                      className="w-12 h-12 text-lg border-2"
+                    />
                   </InputOTPGroup>
                 </InputOTP>
               </div>
@@ -172,4 +229,3 @@ export function OtpVerificationModal({
     </AnimatePresence>
   );
 }
-

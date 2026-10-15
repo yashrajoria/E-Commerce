@@ -29,6 +29,18 @@ const getInitials = (name?: string) => {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 };
 
+/**
+ * Renders the collapsible primary dashboard sidebar with grouped navigation,
+ * badge counts, quick search, help entry and the signed-in admin's profile.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <DashboardSidebar />
+ * ```
+ */
 const DashboardSidebar = () => {
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);

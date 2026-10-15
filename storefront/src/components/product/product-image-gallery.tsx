@@ -5,26 +5,49 @@ import { ChevronLeft, ChevronRight, Package, ZoomIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
+/** Props accepted by {@link ProductImageGallery}. */
 interface ProductImageGalleryProps {
+  /** Product image URLs; an empty array falls back to the bundled placeholder image. */
   images: string[];
+  /** Base accessible name for each image; the image index is appended when present. */
   alt?: string;
 }
 
+/**
+ * Renders an interactive product image gallery with zoom, arrow navigation, dot indicators and thumbnails.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * Images that fail to load (including unreachable `localhost:4566` storage URLs) are tracked per index and replaced with a placeholder card.
+ *
+ * @example
+ * ```tsx
+ * <ProductImageGallery images={images} alt={product.name} />
+ * ```
+ */
 export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
-  const [imageErrorMap, setImageErrorMap] = useState<Record<number, boolean>>({});
+  const [imageErrorMap, setImageErrorMap] = useState<Record<number, boolean>>(
+    {},
+  );
 
   const validImages = images.length ? images : ["/icons8-image-100.png"];
   const currentRaw = validImages[selectedImage] || "/icons8-image-100.png";
-  const hasError = imageErrorMap[selectedImage] || currentRaw.includes("localhost:4566") || currentRaw === "/icons8-image-100.png";
+  const hasError =
+    imageErrorMap[selectedImage] ||
+    currentRaw.includes("localhost:4566") ||
+    currentRaw === "/icons8-image-100.png";
 
   const nextImage = () => {
     setSelectedImage((prev) => (prev + 1) % validImages.length);
   };
 
   const prevImage = () => {
-    setSelectedImage((prev) => (prev - 1 + validImages.length) % validImages.length);
+    setSelectedImage(
+      (prev) => (prev - 1 + validImages.length) % validImages.length,
+    );
   };
 
   return (
@@ -34,8 +57,12 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
         {hasError ? (
           <div className="flex flex-col items-center justify-center text-muted-foreground/40 p-12 text-center select-none">
             <Package className="h-20 w-20 stroke-1 mb-3" />
-            <span className="text-sm font-semibold text-foreground tracking-tight">ShopSwift Product</span>
-            <span className="text-xs text-muted-foreground mt-1">Official Catalog Photo</span>
+            <span className="text-sm font-semibold text-foreground tracking-tight">
+              ShopSwift Product
+            </span>
+            <span className="text-xs text-muted-foreground mt-1">
+              Official Catalog Photo
+            </span>
           </div>
         ) : (
           <button
@@ -47,13 +74,19 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
           >
             <Image
               src={currentRaw}
-              alt={alt ? `${alt} ${selectedImage + 1}` : `Product image ${selectedImage + 1}`}
+              alt={
+                alt
+                  ? `${alt} ${selectedImage + 1}`
+                  : `Product image ${selectedImage + 1}`
+              }
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
               className={`object-cover transition-transform duration-300 ${
                 isZoomed ? "scale-150" : "scale-100"
               }`}
-              onError={() => setImageErrorMap((prev) => ({ ...prev, [selectedImage]: true }))}
+              onError={() =>
+                setImageErrorMap((prev) => ({ ...prev, [selectedImage]: true }))
+              }
               priority
             />
           </button>
@@ -103,7 +136,9 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
               <button
                 key={index}
                 className={`w-1.5 h-1.5 rounded-full transition-colors cursor-pointer ${
-                  index === selectedImage ? "bg-foreground" : "bg-muted-foreground/40"
+                  index === selectedImage
+                    ? "bg-foreground"
+                    : "bg-muted-foreground/40"
                 }`}
                 onClick={() => setSelectedImage(index)}
                 aria-label={`Go to image ${index + 1}`}
@@ -117,7 +152,10 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
       {validImages.length > 1 && (
         <div className="flex space-x-2.5 overflow-x-auto pb-1">
           {validImages.map((image, index) => {
-            const isThumbError = imageErrorMap[index] || image.includes("localhost:4566") || image === "/icons8-image-100.png";
+            const isThumbError =
+              imageErrorMap[index] ||
+              image.includes("localhost:4566") ||
+              image === "/icons8-image-100.png";
             return (
               <button
                 key={index}
@@ -138,7 +176,9 @@ export function ProductImageGallery({ images, alt }: ProductImageGalleryProps) {
                     width={64}
                     height={64}
                     className="w-full h-full object-cover"
-                    onError={() => setImageErrorMap((prev) => ({ ...prev, [index]: true }))}
+                    onError={() =>
+                      setImageErrorMap((prev) => ({ ...prev, [index]: true }))
+                    }
                   />
                 )}
               </button>

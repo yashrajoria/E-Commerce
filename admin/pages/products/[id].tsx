@@ -23,6 +23,18 @@ import { useState } from "react";
 import { useProductForm } from "@/hooks/useProductForm";
 import type { Product } from "@/types/shared";
 
+/**
+ * Renders the product-details view for the route query id: KPI cards, images, info, pricing, and inventory.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration. The product is fetched by {@link useProduct} and deleted through {@link useProductForm}.
+ *
+ * @example
+ * ```tsx
+ * // Route: /products/[id] — rendered by the Next.js Pages Router with the product id from the URL.
+ * <ProductDetailPage />
+ * ```
+ */
 const ProductDetailPage = () => {
   const router = useRouter();
   const { id } = router.query;
@@ -269,6 +281,12 @@ const ProductDetailPage = () => {
 
 export default ProductDetailPage;
 
+/**
+ * Server-side admin auth gate for the product-details route.
+ *
+ * @param ctx - Next.js server-side context for the incoming request, including `req`/`res` and cookies.
+ * @returns The {@link requireAuth} result: `props` with the authenticated admin user, or a redirect to `/` / `/?error=admin_required` when the session is missing or not an admin.
+ */
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { requireAuth } = await import("@/lib/ssrAuth");
   return requireAuth(ctx);

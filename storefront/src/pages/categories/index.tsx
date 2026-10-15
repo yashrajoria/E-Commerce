@@ -9,6 +9,18 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Grid, List } from "lucide-react";
 
+/**
+ * Category browsing page with a text filter and grid/carousel layout toggle.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * // Route: /categories — rendered by the Next.js Pages Router.
+ * <CategoriesPage />
+ * ```
+ */
 export default function CategoriesPage() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const [filter, setFilter] = useState("");

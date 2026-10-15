@@ -5,13 +5,26 @@ import { Check, Pencil } from "lucide-react";
 import React from "react";
 import { ShippingDetails } from "./checkoutTypes";
 
-export const ProgressDots = ({
-  current,
-  total,
-}: {
+/** Props accepted by {@link ProgressDots}. */
+interface ProgressDotsProps {
+  /** One-based index of the step the user is currently on. */
   current: number;
+  /** Total number of steps in the wizard. */
   total: number;
-}) => {
+}
+
+/**
+ * Renders a compact progress indicator for the checkout wizard.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <ProgressDots current={currentStep} total={4} />
+ * ```
+ */
+export const ProgressDots = ({ current, total }: ProgressDotsProps) => {
   return (
     <div
       className="flex items-center gap-2"
@@ -57,6 +70,68 @@ export const ProgressDots = ({
   );
 };
 
+/** Props accepted by {@link FormField}. */
+interface FormFieldProps {
+  /** Shipping field this input edits; also used as the DOM `id`/`name`. */
+  name: keyof ShippingDetails;
+  /** Visible field label. */
+  label: string;
+  /** Lucide icon rendered beside the label. */
+  icon: React.ElementType;
+  /**
+   * Input type attribute.
+   *
+   * @defaultValue "text"
+   */
+  type?: string;
+  /** `autocomplete` hint for the browser. */
+  autoComplete?: string;
+  /** Virtual keyboard hint for mobile devices. */
+  inputMode?: "text" | "email" | "tel" | "numeric";
+  /** Placeholder text; falls back to {@link FormFieldProps.label}. */
+  placeholder?: string;
+  /**
+   * Controlled input value.
+   *
+   * @defaultValue ""
+   */
+  value?: string;
+  /** Validation message shown when the field has been touched. */
+  error?: string;
+  /** Whether the user has interacted with the field; gates the error and success styling. */
+  isTouched?: boolean;
+  /**
+   * Called with the new value on every keystroke.
+   *
+   * @param value - The input's current value.
+   */
+  onChange?: (value: string) => void;
+  /** Called when the input loses focus. */
+  onBlur?: () => void;
+}
+
+/**
+ * Renders a labelled checkout input with inline validation feedback.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <FormField
+ *   name="email"
+ *   label="Email Address"
+ *   icon={Mail}
+ *   type="email"
+ *   autoComplete="email"
+ *   value={shippingDetails.email}
+ *   error={fieldErrors.email}
+ *   isTouched={touched.email}
+ *   onChange={(v) => handleChange("email", v)}
+ *   onBlur={() => handleBlur("email")}
+ * />
+ * ```
+ */
 export const FormField = ({
   name,
   label,
@@ -70,20 +145,7 @@ export const FormField = ({
   isTouched,
   onChange,
   onBlur,
-}: {
-  name: keyof ShippingDetails;
-  label: string;
-  icon: React.ElementType;
-  type?: string;
-  autoComplete?: string;
-  inputMode?: "text" | "email" | "tel" | "numeric";
-  placeholder?: string;
-  value?: string;
-  error?: string;
-  isTouched?: boolean;
-  onChange?: (value: string) => void;
-  onBlur?: () => void;
-}) => {
+}: FormFieldProps) => {
   const isValid = isTouched && !error && value.trim().length > 0;
 
   return (
@@ -136,14 +198,39 @@ export const FormField = ({
   );
 };
 
-export const CompletedCard = (props: {
+/** Props accepted by {@link CompletedCard}. */
+interface CompletedCardProps {
+  /** Wizard step this card summarises. */
   step?: number;
+  /** Section title, e.g. `"Shipping Address"`. */
   title: string;
+  /** Condensed summary of the completed section, hidden while editing. */
   summary: React.ReactNode;
+  /** Whether the section's inline edit panel is open; also drives the button label. */
   isEditing?: boolean;
+  /** Toggles the inline edit panel for this section. */
   onEditToggle?: () => void;
+  /** Optional icon shown in the leading badge; defaults to a check mark. */
   icon?: React.ElementType;
-}) => {
+}
+
+/**
+ * Renders a collapsed summary row for a checkout step that has been completed.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <CompletedCard
+ *   step={1}
+ *   title="Contact"
+ *   icon={Mail}
+ *   summary={<span>{shippingDetails.email} · {shippingDetails.phone}</span>}
+ * />
+ * ```
+ */
+export const CompletedCard = (props: CompletedCardProps) => {
   const { title, summary, isEditing, onEditToggle, icon: Icon } = props;
   return (
     <motion.div
@@ -167,9 +254,7 @@ export const CompletedCard = (props: {
             )}
           </div>
           <div>
-            <p className="font-medium text-xs text-foreground">
-              {title}
-            </p>
+            <p className="font-medium text-xs text-foreground">{title}</p>
             {!isEditing && (
               <div className="text-xs text-muted-foreground mt-0.5">
                 {summary}

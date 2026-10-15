@@ -4,13 +4,47 @@ import React, { useEffect, useState } from "react";
 import { Flame, Zap, Users, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+/** Props accepted by {@link UrgencyPulseBadge}. */
 interface UrgencyPulseBadgeProps {
+  /**
+   * Identifier used to seed a deterministic initial viewer count.
+   *
+   * @defaultValue "prod-default"
+   */
   productId?: string;
+  /** Remaining stock; values between 1 and 10 trigger the low-stock scarcity pill. */
   stock?: number;
+  /**
+   * Whether the product can be purchased; false (or `stock === 0`) renders the out-of-stock waitlist notice.
+   *
+   * @defaultValue true
+   */
   inStock?: boolean;
+  /**
+   * Extra class names appended to the root element.
+   *
+   * @defaultValue ""
+   */
   className?: string;
 }
 
+/**
+ * Renders live social-proof and scarcity indicators for a product page.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * The viewer count is derived from a hash of `productId` and then fluctuates every 6.5 seconds between 2 and 14 to simulate live traffic.
+ *
+ * @example
+ * ```tsx
+ * <UrgencyPulseBadge
+ *   productId={product.id}
+ *   inStock={!isOutOfStock}
+ *   stock={product.quantity}
+ * />
+ * ```
+ */
 export function UrgencyPulseBadge({
   productId = "prod-default",
   stock,
@@ -47,7 +81,9 @@ export function UrgencyPulseBadge({
 
   if (isOutOfStock) {
     return (
-      <div className={`flex items-center gap-2 p-2.5 rounded-lg bg-destructive/10 text-destructive border border-destructive/20 text-xs font-medium ${className}`}>
+      <div
+        className={`flex items-center gap-2 p-2.5 rounded-lg bg-destructive/10 text-destructive border border-destructive/20 text-xs font-medium ${className}`}
+      >
         <span className="relative flex h-2 w-2">
           <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive" />
         </span>
@@ -97,7 +133,9 @@ export function UrgencyPulseBadge({
       <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
         <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
         <span>
-          Orders dispatch within <strong className="text-foreground font-semibold">2 hours</strong>. Fast tracked courier delivery.
+          Orders dispatch within{" "}
+          <strong className="text-foreground font-semibold">2 hours</strong>.
+          Fast tracked courier delivery.
         </span>
       </div>
     </div>

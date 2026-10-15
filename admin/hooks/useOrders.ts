@@ -8,7 +8,10 @@ type OrdersResult = {
 
 const ordersInFlight = new Map<string, Promise<OrdersResult>>();
 
-const fetchOrdersOnce = async (key: string, url: string): Promise<OrdersResult> => {
+const fetchOrdersOnce = async (
+  key: string,
+  url: string,
+): Promise<OrdersResult> => {
   const existing = ordersInFlight.get(key);
   if (existing) return existing;
 
@@ -26,15 +29,21 @@ const fetchOrdersOnce = async (key: string, url: string): Promise<OrdersResult> 
   return promise;
 };
 
- 
+/** Query parameters accepted by {@link useOrders}. */
 interface OrdersQuery {
+  /** Load a single order by id instead of a page of orders. */
   orderId?: string;
+  /** 1-based page number for list mode. */
   page?: number;
+  /** Page size for list mode. */
   perPage?: number;
 }
 
+/** Paginated orders payload returned by `GET /api/admin/orders`. */
 interface OrdersApiResponse {
+  /** Orders on the requested page. */
   orders?: unknown[];
+  /** Pagination metadata. */
   meta?: {
     total_pages: number;
     total: number;
@@ -42,6 +51,19 @@ interface OrdersApiResponse {
   };
 }
 
+/**
+ * Loads a page of orders, or one order when `orderId` is given.
+ *
+ * @remarks
+ * Concurrent calls for the same page/order share a single in-flight request
+ * (`ordersInFlight`), so tab switches do not duplicate network traffic. A toast
+ * is shown when loading fails.
+ *
+ * @param query - `orderId` for single-order mode, or `page`/`perPage` for list
+ * mode; `page` defaults to 1 and `perPage` to 10.
+ * @returns `{ orders, loading, meta }` where `meta` reports `total` and
+ * `total_pages` and falls back to `{ total_pages: 1, total: 0 }`.
+ */
 export const useOrders = (query: OrdersQuery) => {
   const [orders, setOrders] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,7 +84,10 @@ export const useOrders = (query: OrdersQuery) => {
       try {
         if (orderId) {
           const key = `order:${orderId}`;
-          const res = await fetchOrdersOnce(key, `/api/admin/orders/${orderId}`);
+          const res = await fetchOrdersOnce(
+            key,
+            `/api/admin/orders/${orderId}`,
+          );
           if (!isActive) return;
           setOrders((res?.data as unknown[]) || []);
         } else {

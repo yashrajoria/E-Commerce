@@ -6,22 +6,70 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
+/** Props accepted by {@link PromptComposer}. */
 interface PromptComposerProps {
+  /** Current prompt text. */
   prompt: string;
+  /**
+   * Called with the updated text when the merchant edits the prompt.
+   *
+   * @param next - The new prompt value.
+   */
   onPromptChange: (next: string) => void;
+  /** Called when the merchant submits the prompt. */
   onSubmit: () => void;
+  /** Called when the merchant clears the prompt. */
   onClear: () => void;
+  /** Called when the merchant saves the prompt to the vault. */
   onSavePrompt: () => void;
+  /** Whether the prompt may currently be submitted. */
   canSubmit: boolean;
+  /** Whether a request is in flight; switches the submit label to "Asking...". */
   pending: boolean;
+  /** Validation hint shown under the textarea, when present. */
   validationMessage: string | null;
+  /** Ref forwarded to the underlying textarea for focus shortcuts. */
   promptRef: RefObject<HTMLTextAreaElement | null>;
+  /** Maximum prompt length shown in the character counter. */
   maxPromptLength: number;
+  /** Recently submitted prompts offered as one-tap chips. */
   recentPrompts: string[];
+  /**
+   * Called with a prompt string when a suggested or recent prompt is used.
+   *
+   * @param value - The prompt text to insert.
+   */
   onUseRecentPrompt: (value: string) => void;
+  /** Built-in starter prompts offered as guided starts. */
   suggestedPrompts: string[];
 }
 
+/**
+ * Renders the command deck: prompt textarea with health indicators, guided
+ * starts, recent prompts and submit/clear/save actions.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <PromptComposer
+ *   prompt={prompt}
+ *   onPromptChange={setPrompt}
+ *   onSubmit={() => submitPrompt()}
+ *   onClear={clearPrompt}
+ *   onSavePrompt={savePrompt}
+ *   canSubmit={canSubmit}
+ *   pending={lifecycle === "loading"}
+ *   validationMessage={promptValidationMessage}
+ *   promptRef={promptRef}
+ *   maxPromptLength={maxPromptLength}
+ *   recentPrompts={recentPrompts}
+ *   onUseRecentPrompt={setPrompt}
+ *   suggestedPrompts={SUGGESTED_PROMPTS}
+ * />
+ * ```
+ */
 export const PromptComposer = ({
   prompt,
   onPromptChange,
@@ -86,7 +134,8 @@ export const PromptComposer = ({
               Direct the investigation
             </h2>
             <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-              Shape the question, pull in a starter, or reuse a recent line of inquiry without losing your session context.
+              Shape the question, pull in a starter, or reuse a recent line of
+              inquiry without losing your session context.
             </p>
           </div>
           <div className="space-y-2 text-right">
@@ -145,7 +194,9 @@ export const PromptComposer = ({
               <p
                 className={cn(
                   "text-slate-300/80",
-                  validationMessage ? "text-[hsl(35,74%,68%)]" : "text-muted-foreground",
+                  validationMessage
+                    ? "text-[hsl(35,74%,68%)]"
+                    : "text-muted-foreground",
                 )}
               >
                 {validationMessage || "Shift+Enter adds a new line"}
@@ -167,25 +218,30 @@ export const PromptComposer = ({
             </p>
           </div>
           <div className="grid gap-2 sm:grid-cols-2">
-          {suggestedPrompts.map((item, index) => (
-            <motion.button
-              key={item}
-              type="button"
-              onClick={() => onUseRecentPrompt(item)}
-              initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.22, delay: prefersReducedMotion ? 0 : 0.05 + index * 0.03 }}
-              whileHover={prefersReducedMotion ? undefined : { y: -1, scale: 1.01 }}
-              whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
-              className="rounded-2xl border border-white/12 bg-white/[0.03] px-3 py-3 text-left transition hover:border-[hsla(23,83%,58%,0.45)] hover:bg-[hsla(23,83%,58%,0.12)]"
-              aria-label={`Use suggested prompt: ${item}`}
-            >
-              <p className="text-sm font-medium text-foreground">{item}</p>
-              <p className="mt-1 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-                Use starter
-              </p>
-            </motion.button>
-          ))}
+            {suggestedPrompts.map((item, index) => (
+              <motion.button
+                key={item}
+                type="button"
+                onClick={() => onUseRecentPrompt(item)}
+                initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.22,
+                  delay: prefersReducedMotion ? 0 : 0.05 + index * 0.03,
+                }}
+                whileHover={
+                  prefersReducedMotion ? undefined : { y: -1, scale: 1.01 }
+                }
+                whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+                className="rounded-2xl border border-white/12 bg-white/[0.03] px-3 py-3 text-left transition hover:border-[hsla(23,83%,58%,0.45)] hover:bg-[hsla(23,83%,58%,0.12)]"
+                aria-label={`Use suggested prompt: ${item}`}
+              >
+                <p className="text-sm font-medium text-foreground">{item}</p>
+                <p className="mt-1 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                  Use starter
+                </p>
+              </motion.button>
+            ))}
           </div>
         </div>
 
@@ -202,7 +258,10 @@ export const PromptComposer = ({
                   onClick={() => onUseRecentPrompt(item)}
                   initial={{ opacity: 0, x: prefersReducedMotion ? 0 : 8 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.2, delay: prefersReducedMotion ? 0 : index * 0.02 }}
+                  transition={{
+                    duration: 0.2,
+                    delay: prefersReducedMotion ? 0 : index * 0.02,
+                  }}
                   whileHover={prefersReducedMotion ? undefined : { y: -1 }}
                   className="rounded-xl border border-white/12 bg-white/[0.03] px-3 py-1.5 text-xs text-foreground transition hover:border-[hsla(191,73%,56%,0.4)] hover:text-[hsl(191,73%,72%)]"
                 >
@@ -242,7 +301,10 @@ export const PromptComposer = ({
             Save Prompt
           </Button>
           <span className="ml-auto inline-flex items-center gap-1 rounded-full border border-white/12 bg-white/[0.04] px-2.5 py-1.5 text-[11px] text-muted-foreground">
-            <Sparkles className="size-3.5 text-[hsl(35,74%,64%)]" aria-hidden="true" />
+            <Sparkles
+              className="size-3.5 text-[hsl(35,74%,64%)]"
+              aria-hidden="true"
+            />
             Ctrl/Cmd+K focus
           </span>
         </div>

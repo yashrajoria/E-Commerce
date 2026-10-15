@@ -1,25 +1,78 @@
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/checkout/CheckoutComponents";
 import { SHIPPING_OPTIONS } from "@/components/checkout/checkoutConstants";
-import { FieldError, ShippingDetails, StepId } from "@/components/checkout/checkoutTypes";
-import { formatGBP, getDeliveryDate } from "@/components/checkout/checkoutUtils";
+import {
+  FieldError,
+  ShippingDetails,
+  StepId,
+} from "@/components/checkout/checkoutTypes";
+import {
+  formatGBP,
+  getDeliveryDate,
+} from "@/components/checkout/checkoutUtils";
 import { Badge } from "@/components/ui/badge";
 import { AnimatePresence, motion } from "framer-motion";
 import { Mail, MapPin, Phone, User } from "lucide-react";
 
-interface Props {
+/** Props accepted by {@link InlineEditPanels}. */
+interface InlineEditPanelsProps {
+  /** Section currently being edited, or `null` when no panel is open. */
   editingSection: StepId | null;
+  /** Closes the open panel without discarding draft changes. */
   onClose: () => void;
+  /** Current values of every shipping field. */
   shippingDetails: ShippingDetails;
+  /** Validation messages keyed by field name. */
   fieldErrors: FieldError;
+  /** Flags marking which fields the user has already interacted with. */
   touched: Record<string, boolean>;
+  /**
+   * Updates one shipping field while the panel is open.
+   *
+   * @param name - Field to update.
+   * @param value - New field value.
+   */
   handleChange: (name: keyof ShippingDetails, value: string) => void;
+  /**
+   * Marks a field as touched and validates its current value.
+   *
+   * @param name - Field that lost focus.
+   */
   handleBlur: (name: keyof ShippingDetails) => void;
+  /**
+   * Runs field validation for a step before the panel is saved.
+   *
+   * @param step - Step whose fields should be validated.
+   */
   validateStep: (step: StepId) => boolean;
+  /** Currently selected delivery method id. */
   shippingMethod: string;
+  /** Selects a different delivery method from the inline panel. */
   setShippingMethod: (v: string) => void;
 }
 
+/**
+ * Renders the inline edit panels for the contact, shipping and delivery sections.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * <InlineEditPanels
+ *   editingSection={editingSection}
+ *   onClose={() => setEditingSection(null)}
+ *   shippingDetails={shippingDetails}
+ *   fieldErrors={fieldErrors}
+ *   touched={touched}
+ *   handleChange={handleChange}
+ *   handleBlur={handleBlur}
+ *   validateStep={validateStep}
+ *   shippingMethod={shippingMethod}
+ *   setShippingMethod={setShippingMethod}
+ * />
+ * ```
+ */
 export function InlineEditPanels({
   editingSection,
   onClose,
@@ -31,7 +84,7 @@ export function InlineEditPanels({
   validateStep,
   shippingMethod,
   setShippingMethod,
-}: Props) {
+}: InlineEditPanelsProps) {
   return (
     <AnimatePresence>
       {editingSection === 1 && (
@@ -70,7 +123,12 @@ export function InlineEditPanels({
               onBlur={() => handleBlur("phone")}
             />
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={onClose}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onClose}
+              >
                 Cancel
               </Button>
               <Button
@@ -167,7 +225,12 @@ export function InlineEditPanels({
               />
             </div>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={onClose}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onClose}
+              >
                 Cancel
               </Button>
               <Button
@@ -225,7 +288,10 @@ export function InlineEditPanels({
                               {opt.label}
                             </p>
                             {opt.badge && (
-                              <Badge variant="secondary" className="text-[10px] py-0 px-1.5 font-normal">
+                              <Badge
+                                variant="secondary"
+                                className="text-[10px] py-0 px-1.5 font-normal"
+                              >
                                 {opt.badge}
                               </Badge>
                             )}

@@ -5,13 +5,35 @@
 
 import React from 'react';
 
+/**
+ * Props accepted by every brand icon.
+ *
+ * @remarks
+ * Extends the standard SVG element attributes, so `className`, `style` and
+ * ARIA attributes pass through to the rendered `<svg>` alongside `size`.
+ */
 export interface IconProps extends React.SVGAttributes<SVGSVGElement> {
+  /**
+   * Rendered width and height in pixels.
+   *
+   * @remarks
+   * Defaults to `24` for every icon except {@link LogoIcon}, which defaults to `32`.
+   */
   size?: number;
+  /** Extra class names merged onto the underlying `<svg>` element. */
   className?: string;
 }
 
 /**
- * Admin Dashboard Icon - Grid/Dashboard symbol
+ * Renders the admin-dashboard icon: a four-tile grid symbol.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <AdminIcon size={20} className="text-primary" />
+ * ```
  */
 export const AdminIcon: React.FC<IconProps> = ({ size = 24, className = '', ...props }) => (
   <svg
@@ -35,7 +57,15 @@ export const AdminIcon: React.FC<IconProps> = ({ size = 24, className = '', ...p
 );
 
 /**
- * Storefront/Shop Icon - Shopping bag
+ * Renders the storefront icon: a shopping bag symbol.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <StorefrontIcon size={28} />
+ * ```
  */
 export const StorefrontIcon: React.FC<IconProps> = ({ size = 24, className = '', ...props }) => (
   <svg
@@ -58,7 +88,15 @@ export const StorefrontIcon: React.FC<IconProps> = ({ size = 24, className = '',
 );
 
 /**
- * Logo Icon - Brand identity
+ * Renders the brand logo mark: a gradient rounded square with the "EC" monogram.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <LogoIcon size={36} aria-label="ShopSwift" />
+ * ```
  */
 export const LogoIcon: React.FC<IconProps> = ({ size = 32, className = '', ...props }) => (
   <svg
@@ -93,7 +131,15 @@ export const LogoIcon: React.FC<IconProps> = ({ size = 32, className = '', ...pr
 );
 
 /**
- * Product Icon
+ * Renders the product icon: a card outline with an image placeholder.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <ProductIcon size={20} />
+ * ```
  */
 export const ProductIcon: React.FC<IconProps> = ({ size = 24, className = '', ...props }) => (
   <svg
@@ -116,7 +162,15 @@ export const ProductIcon: React.FC<IconProps> = ({ size = 24, className = '', ..
 );
 
 /**
- * Category Icon
+ * Renders the category icon: four overlapping circles.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <CategoryIcon size={20} />
+ * ```
  */
 export const CategoryIcon: React.FC<IconProps> = ({ size = 24, className = '', ...props }) => (
   <svg
@@ -140,7 +194,15 @@ export const CategoryIcon: React.FC<IconProps> = ({ size = 24, className = '', .
 );
 
 /**
- * Orders Icon
+ * Renders the orders icon: a report sheet with an upward arrow.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <OrdersIcon size={20} />
+ * ```
  */
 export const OrdersIcon: React.FC<IconProps> = ({ size = 24, className = '', ...props }) => (
   <svg
@@ -162,7 +224,15 @@ export const OrdersIcon: React.FC<IconProps> = ({ size = 24, className = '', ...
 );
 
 /**
- * Customers Icon
+ * Renders the customers icon: a two-person group symbol.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <CustomersIcon size={20} />
+ * ```
  */
 export const CustomersIcon: React.FC<IconProps> = ({ size = 24, className = '', ...props }) => (
   <svg
@@ -186,7 +256,15 @@ export const CustomersIcon: React.FC<IconProps> = ({ size = 24, className = '', 
 );
 
 /**
- * Analytics Icon
+ * Renders the analytics icon: an axis with a rising trend line.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <AnalyticsIcon size={20} className="text-muted-foreground" />
+ * ```
  */
 export const AnalyticsIcon: React.FC<IconProps> = ({ size = 24, className = '', ...props }) => (
   <svg
@@ -209,7 +287,15 @@ export const AnalyticsIcon: React.FC<IconProps> = ({ size = 24, className = '', 
 );
 
 /**
- * Settings Icon
+ * Renders the settings icon: a cog/gear symbol.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <SettingsIcon size={20} />
+ * ```
  */
 export const SettingsIcon: React.FC<IconProps> = ({ size = 24, className = '', ...props }) => (
   <svg
@@ -231,7 +317,15 @@ export const SettingsIcon: React.FC<IconProps> = ({ size = 24, className = '', .
 );
 
 /**
- * Cart Icon
+ * Renders the cart icon: a shopping cart symbol.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <CartIcon size={20} aria-label="Cart" />
+ * ```
  */
 export const CartIcon: React.FC<IconProps> = ({ size = 24, className = '', ...props }) => (
   <svg
@@ -254,7 +348,15 @@ export const CartIcon: React.FC<IconProps> = ({ size = 24, className = '', ...pr
 );
 
 /**
- * Wishlist Icon
+ * Renders the wishlist icon: a heart outline.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <WishlistIcon size={20} />
+ * ```
  */
 export const WishlistIcon: React.FC<IconProps> = ({ size = 24, className = '', ...props }) => (
   <svg
@@ -275,7 +377,15 @@ export const WishlistIcon: React.FC<IconProps> = ({ size = 24, className = '', .
 );
 
 /**
- * Search Icon
+ * Renders the search icon: a magnifier symbol.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <SearchIcon size={18} className="text-muted-foreground" />
+ * ```
  */
 export const SearchIcon: React.FC<IconProps> = ({ size = 24, className = '', ...props }) => (
   <svg
@@ -297,7 +407,15 @@ export const SearchIcon: React.FC<IconProps> = ({ size = 24, className = '', ...
 );
 
 /**
- * Menu Icon
+ * Renders the menu icon: three stacked horizontal lines.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <MenuIcon size={24} aria-label="Open menu" />
+ * ```
  */
 export const MenuIcon: React.FC<IconProps> = ({ size = 24, className = '', ...props }) => (
   <svg
@@ -320,7 +438,15 @@ export const MenuIcon: React.FC<IconProps> = ({ size = 24, className = '', ...pr
 );
 
 /**
- * Close Icon
+ * Renders the close icon: an X symbol.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <CloseIcon size={24} aria-label="Close" />
+ * ```
  */
 export const CloseIcon: React.FC<IconProps> = ({ size = 24, className = '', ...props }) => (
   <svg
@@ -342,7 +468,15 @@ export const CloseIcon: React.FC<IconProps> = ({ size = 24, className = '', ...p
 );
 
 /**
- * Chevron Right Icon
+ * Renders the chevron-right icon: an arrow pointing right.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <ChevronRightIcon size={16} />
+ * ```
  */
 export const ChevronRightIcon: React.FC<IconProps> = ({ size = 24, className = '', ...props }) => (
   <svg
@@ -363,7 +497,15 @@ export const ChevronRightIcon: React.FC<IconProps> = ({ size = 24, className = '
 );
 
 /**
- * Check Icon
+ * Renders the check icon: a checkmark symbol.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <CheckIcon size={16} className="text-primary" />
+ * ```
  */
 export const CheckIcon: React.FC<IconProps> = ({ size = 24, className = '', ...props }) => (
   <svg
@@ -384,7 +526,12 @@ export const CheckIcon: React.FC<IconProps> = ({ size = 24, className = '', ...p
 );
 
 /**
- * Export all icons as a map for easy access
+ * Map of all brand icons keyed by lowercase name.
+ *
+ * @remarks
+ * Convenient for rendering an icon from configuration or a lookup value, e.g.
+ * `const Icon = icons[config.iconKey]`. Every key points at the component of
+ * the same name exported from this module.
  */
 export const icons = {
   admin: AdminIcon,

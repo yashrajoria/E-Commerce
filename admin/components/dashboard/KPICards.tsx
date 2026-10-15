@@ -1,5 +1,16 @@
 import { Card, CardContent } from "@/components/ui/card";
 
+/**
+ * Renders the four compact gradient KPI tiles with hard-coded headline figures.
+ *
+ * @remarks
+ * Server Component — no `"use client"` directive; renders during SSR under the Next.js Pages Router.
+ *
+ * @example
+ * ```tsx
+ * <KPICards />
+ * ```
+ */
 export default function KPICards() {
   const kpis = [
     { label: "Total Sales", value: "£14,200" },

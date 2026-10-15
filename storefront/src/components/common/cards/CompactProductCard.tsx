@@ -8,6 +8,17 @@ import Link from "next/link";
 import React from "react";
 import type { ProductCardVariantProps } from "./types";
 
+/**
+ * Renders a compact single-row product card with thumbnail, name, price, and add button.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <CompactProductCard product={product} state={state} />
+ * ```
+ */
 export function CompactProductCard({
   product,
   state,
@@ -46,7 +57,9 @@ export function CompactProductCard({
             {formatGBP(product.price)}
           </span>
           {isOutOfStock && (
-            <span className="text-[10px] text-destructive font-medium">Sold Out</span>
+            <span className="text-[10px] text-destructive font-medium">
+              Sold Out
+            </span>
           )}
         </div>
       </div>
@@ -63,4 +76,3 @@ export function CompactProductCard({
     </div>
   );
 }
-

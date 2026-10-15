@@ -45,7 +45,9 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       customer: r.customer_name,
       product: r.product_name,
       reason: r.reason,
-      status: (["pending", "approved", "rejected", "completed"].includes(r.status)
+      status: (["pending", "approved", "rejected", "completed"].includes(
+        r.status,
+      )
         ? r.status
         : "pending") as "pending" | "approved" | "rejected" | "completed",
       requestDate: new Date(r.created_at).toISOString().split("T")[0],
@@ -53,7 +55,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     }));
 
     const totalOrdersCount = await query<{ count: string }>(
-      "SELECT count(*) FROM orders"
+      "SELECT count(*) FROM orders",
     );
     const orderTotal = Number(totalOrdersCount[0]?.count) || 1;
 
@@ -71,9 +73,20 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     return res.status(200).json({ returns, stats });
   } catch (error) {
     console.error("Returns API error:", error);
-    return res.status(500).json({ error: "Failed to fetch returns from database" });
+    return res
+      .status(500)
+      .json({ error: "Failed to fetch returns from database" });
   }
 }
 
+/**
+ * Handles `GET` requests for the admin returns list, returning the 100 most recent returns with summary statistics.
+ *
+ * @remarks
+ * Wrapped with {@link withAdminApi}: requests must pass a same-origin check and carry a valid admin session.
+ *
+ * @param req - The Next.js API request; no query parameters or body are read.
+ * @param res - The Next.js API response.
+ * @returns A promise that resolves once the response has been sent.
+ */
 export default withAdminApi(handler);
-

@@ -1,31 +1,49 @@
 import type { ParsedUrlQuery } from "querystring";
 
+/** A one-tap prompt suggestion offered on an admin page's AI assistant. */
 export interface AIQuickAction {
+  /** Stable id used as the React key and analytics label. */
   id: string;
+  /** Short button label. */
   label: string;
+  /** Tooltip-length explanation of what the action does. */
   description: string;
+  /** Prompt text submitted when the action is chosen. */
   prompt: string;
 }
 
+/** Page-aware AI assistant configuration resolved from the current route. */
 export interface AIResolvedPageContext {
+  /** Stable key of the resolved page, e.g. `"orders-list"`. */
   key: string;
+  /** Human-readable page title used in prompts and headings. */
   title: string;
+  /** One-line description of what the page shows. */
   summary: string;
+  /** Placeholder text shown in the assistant input. */
   placeholder: string;
+  /** Themes the assistant should prioritize for this page. */
   focusAreas: string[];
+  /** Quick-action suggestions rendered above the input. */
   quickActions: AIQuickAction[];
+  /** Namespace that keeps this page's prompt history separate, e.g. `"page-orders"`. */
   sessionNamespace: string;
+  /** Path of the page without query params, e.g. `"/orders/ord_12345"`. */
   route: string;
 }
 
+/** Route information the Next.js router exposes, used to resolve a page context. */
 interface ResolveContextInput {
+  /** Route pattern being rendered, e.g. `"/orders/[id]"`. */
   pathname: string;
+  /** Full URL including query string, e.g. `"/orders/ord_12345?tab=timeline"`. */
   asPath: string;
+  /** Parsed query object, used for ids such as `?id=ord_12345`. */
   query: ParsedUrlQuery;
 }
 
 const asScalar = (value: string | string[] | undefined): string =>
-  Array.isArray(value) ? value[0] ?? "" : value ?? "";
+  Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
 
 const compactId = (value: string, max = 10) =>
   value.length > max ? `${value.slice(0, max)}...` : value;
@@ -52,6 +70,18 @@ const createContext = (
   route: routeWithoutQuery(input.asPath),
 });
 
+/**
+ * Resolves the AI assistant configuration for the current admin route.
+ *
+ * @remarks
+ * Matches on the router `pathname`, so dynamic routes such as
+ * `"/products/[id]"` receive the concrete id from `query.id` for titles and
+ * session namespaces.
+ *
+ * @param input - Router information: `pathname`, `asPath` and the parsed `query`.
+ * @returns The {@link AIResolvedPageContext} for a known page, or `null` for the
+ * dedicated AI Insights page and any route without a configured context.
+ */
 export const resolveAIPageContext = (
   input: ResolveContextInput,
 ): AIResolvedPageContext | null => {
@@ -107,7 +137,11 @@ export const resolveAIPageContext = (
         "Operational orders queue with filters, statuses, pagination, and fulfillment progress.",
       placeholder:
         "Ask about pending clusters, shipping delays, or how to triage this order queue...",
-      focusAreas: ["Pending backlog", "Status distribution", "Fulfillment bottlenecks"],
+      focusAreas: [
+        "Pending backlog",
+        "Status distribution",
+        "Fulfillment bottlenecks",
+      ],
       quickActions: [
         action(
           "orders-backlog",
@@ -175,7 +209,11 @@ export const resolveAIPageContext = (
         "Catalog management view with product search, stock visibility, categories, and merchandising controls.",
       placeholder:
         "Ask which products need attention, what to restock, or how to optimize this catalog view...",
-      focusAreas: ["Catalog health", "Stock posture", "Merchandising opportunities"],
+      focusAreas: [
+        "Catalog health",
+        "Stock posture",
+        "Merchandising opportunities",
+      ],
       quickActions: [
         action(
           "products-stock-risk",
@@ -208,7 +246,11 @@ export const resolveAIPageContext = (
         "Product creation workflow for crafting titles, descriptions, pricing, and launch-ready metadata.",
       placeholder:
         "Ask for launch-readiness checks, copy help, or missing product information...",
-      focusAreas: ["Data completeness", "Launch readiness", "Merchandising copy"],
+      focusAreas: [
+        "Data completeness",
+        "Launch readiness",
+        "Merchandising copy",
+      ],
       quickActions: [
         action(
           "product-create-checklist",
@@ -313,7 +355,11 @@ export const resolveAIPageContext = (
         "Customer directory with status, spend, and search filters for relationship and retention work.",
       placeholder:
         "Ask for segment ideas, churn risks, or what this customer list suggests about retention...",
-      focusAreas: ["Customer segmentation", "Retention risk", "Revenue concentration"],
+      focusAreas: [
+        "Customer segmentation",
+        "Retention risk",
+        "Revenue concentration",
+      ],
       quickActions: [
         action(
           "customers-segments",
@@ -346,7 +392,11 @@ export const resolveAIPageContext = (
         "Inventory control view for stock levels, low-stock alerts, threshold health, and operational replenishment.",
       placeholder:
         "Ask which SKUs need urgent attention, what to reorder first, or where thresholds look off...",
-      focusAreas: ["Low stock risk", "Threshold quality", "Replenishment priorities"],
+      focusAreas: [
+        "Low stock risk",
+        "Threshold quality",
+        "Replenishment priorities",
+      ],
       quickActions: [
         action(
           "inventory-triage",
@@ -379,7 +429,11 @@ export const resolveAIPageContext = (
         "Performance analytics workspace for revenue, orders, traffic, and product contribution trends.",
       placeholder:
         "Ask what changed in the charts, what the strongest trend is, or where to dig deeper...",
-      focusAreas: ["Trend interpretation", "Channel performance", "Revenue drivers"],
+      focusAreas: [
+        "Trend interpretation",
+        "Channel performance",
+        "Revenue drivers",
+      ],
       quickActions: [
         action(
           "analytics-trends",
@@ -445,7 +499,11 @@ export const resolveAIPageContext = (
         "Campaign and coupon performance view for evaluating revenue contribution and allocation quality.",
       placeholder:
         "Ask which campaigns deserve more budget, where discounts are leaking margin, or what to pause...",
-      focusAreas: ["Campaign ROI", "Coupon effectiveness", "Budget reallocation"],
+      focusAreas: [
+        "Campaign ROI",
+        "Coupon effectiveness",
+        "Budget reallocation",
+      ],
       quickActions: [
         action(
           "marketing-roi",
@@ -544,7 +602,11 @@ export const resolveAIPageContext = (
         "Review moderation and sentiment view for spotting product issues and reputation opportunities.",
       placeholder:
         "Ask what the reviews imply, which issues to fix, or how to respond to sentiment trends...",
-      focusAreas: ["Sentiment issues", "Moderation priority", "Product quality signals"],
+      focusAreas: [
+        "Sentiment issues",
+        "Moderation priority",
+        "Product quality signals",
+      ],
       quickActions: [
         action(
           "reviews-sentiment",
@@ -577,7 +639,11 @@ export const resolveAIPageContext = (
         "Category management view for assortment structure, empty categories, and product linkage quality.",
       placeholder:
         "Ask where category structure is weak, what to clean up, or how to improve merchandising logic...",
-      focusAreas: ["Category hygiene", "Assortment structure", "Empty category cleanup"],
+      focusAreas: [
+        "Category hygiene",
+        "Assortment structure",
+        "Empty category cleanup",
+      ],
       quickActions: [
         action(
           "categories-cleanup",
@@ -610,7 +676,11 @@ export const resolveAIPageContext = (
         "Operational audit trail for tracing user actions, system events, and unusual activity.",
       placeholder:
         "Ask what looks suspicious, what changed recently, or how to summarize notable activity...",
-      focusAreas: ["Audit trail review", "Operational anomalies", "Security signals"],
+      focusAreas: [
+        "Audit trail review",
+        "Operational anomalies",
+        "Security signals",
+      ],
       quickActions: [
         action(
           "logs-anomalies",
@@ -676,7 +746,11 @@ export const resolveAIPageContext = (
         "Personal admin profile surface for account details, preferences, and account hygiene.",
       placeholder:
         "Ask what to verify, how to keep the profile secure, or what setup is missing...",
-      focusAreas: ["Account hygiene", "Security posture", "Preference completeness"],
+      focusAreas: [
+        "Account hygiene",
+        "Security posture",
+        "Preference completeness",
+      ],
       quickActions: [
         action(
           "profile-security",
@@ -703,12 +777,26 @@ export const resolveAIPageContext = (
   return null;
 };
 
+/**
+ * Wraps a user prompt in the `[SHOPSWIFT_CONTEXT]` envelope sent to the agent.
+ *
+ * @remarks
+ * The envelope carries the page key, title, route, summary, focus areas and
+ * task families, followed by grounding instructions and the raw user request.
+ *
+ * @param context - The resolved page context from {@link resolveAIPageContext}.
+ * @param userPrompt - The operator's question for the current page.
+ * @returns The newline-joined prompt envelope, e.g. starting with
+ * `"[SHOPSWIFT_CONTEXT]"` and ending with `"User request: ..."`.
+ */
 export const buildContextualPrompt = (
   context: AIResolvedPageContext,
   userPrompt: string,
 ): string => {
   const focusAreas = context.focusAreas.join("; ");
-  const taskFamilies = context.quickActions.map((item) => item.label).join("; ");
+  const taskFamilies = context.quickActions
+    .map((item) => item.label)
+    .join("; ");
 
   return [
     "[SHOPSWIFT_CONTEXT]",

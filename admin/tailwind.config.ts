@@ -159,4 +159,14 @@ const config = {
   plugins: [tailwindcssAnimate],
 } satisfies Config;
 
+/**
+ * Tailwind CSS configuration for the admin app.
+ *
+ * @remarks
+ * Uses `class`/`html` dark mode and scans the `pages`, `components`, `app` and
+ * `src` folders. The theme extends Tailwind with HSL CSS-variable colors
+ * (including custom `gold`, `royal`, `emerald`, `amber`, `info` and `sidebar`
+ * palettes), accordion/float/shimmer/glow keyframes and animations, radial and
+ * branded gradient backgrounds, and the `tailwindcss-animate` plugin.
+ */
 export default config;

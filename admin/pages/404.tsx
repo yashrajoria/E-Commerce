@@ -7,6 +7,18 @@ import { Home, Search } from "lucide-react";
 import Head from "next/head";
 import Link from "next/link";
 
+/**
+ * Renders the animated 404 fallback for unmatched admin routes, with shortcuts back to the dashboard and product list.
+ *
+ * @remarks
+ * Client Component — no `"use client"` directive (Next.js Pages Router); relies on client-side state/effects, so it runs in the browser after hydration.
+ *
+ * @example
+ * ```tsx
+ * // Route: any unmatched path — rendered by the Next.js Pages Router.
+ * <NotFoundPage />
+ * ```
+ */
 const NotFoundPage = () => {
   return (
     <>

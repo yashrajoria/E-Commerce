@@ -5,6 +5,18 @@ import * as LabelPrimitive from "@radix-ui/react-label";
 
 import { cn } from "../../utils";
 
+/**
+ * Renders a form label that dims when its associated control is disabled.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. Built on Radix UI's label
+ * primitive, so `htmlFor` wires it to the matching control.
+ *
+ * @example
+ * ```tsx
+ * <Label htmlFor="email">Email</Label>
+ * ```
+ */
 function Label({
   className,
   ...props

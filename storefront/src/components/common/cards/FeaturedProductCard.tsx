@@ -9,6 +9,17 @@ import Link from "next/link";
 import React from "react";
 import type { ProductCardVariantProps } from "./types";
 
+/**
+ * Renders the large spotlight card with the product image beside title, description, pricing, and calls to action.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <FeaturedProductCard product={product} state={state} priority={priority} />
+ * ```
+ */
 export function FeaturedProductCard({
   product,
   state,
@@ -36,7 +47,9 @@ export function FeaturedProductCard({
         {primaryImage === "/icons8-image-100.png" ? (
           <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground/30 p-8">
             <Package className="h-16 w-16 stroke-1 mb-2" />
-            <span className="text-xs font-medium tracking-tight">ShopSwift Spotlight</span>
+            <span className="text-xs font-medium tracking-tight">
+              ShopSwift Spotlight
+            </span>
           </div>
         ) : (
           <Image
@@ -125,7 +138,9 @@ export function FeaturedProductCard({
               size="icon"
               className="h-11 w-11 rounded-xl text-muted-foreground hover:text-foreground border-border/80"
               onClick={handleWishlistToggle}
-              aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+              aria-label={
+                isWishlisted ? "Remove from wishlist" : "Add to wishlist"
+              }
             >
               <Heart
                 className={`h-5 w-5 ${
@@ -157,4 +172,3 @@ export function FeaturedProductCard({
     </div>
   );
 }
-
