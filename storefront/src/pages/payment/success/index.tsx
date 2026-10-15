@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  Suspense,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
@@ -46,6 +40,17 @@ interface NormalizedItem {
 // ---------------------------------------------------------------------------
 // Sub-components
 // ---------------------------------------------------------------------------
+/**
+ * Renders the payment-verification spinner and skeleton bar.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <LoadingState />
+ * ```
+ */
 function LoadingState() {
   return (
     <div className="min-h-90 flex flex-col items-center justify-center">
@@ -59,6 +64,17 @@ function LoadingState() {
   );
 }
 
+/**
+ * Renders the animated SVG checkmark shown on a successful payment.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * <AnimatedCheckmark />
+ * ```
+ */
 function AnimatedCheckmark() {
   return (
     <svg
@@ -90,6 +106,23 @@ function AnimatedCheckmark() {
 // ---------------------------------------------------------------------------
 // Main content
 // ---------------------------------------------------------------------------
+/**
+ * Verifies the payment session from the URL (`session_id`/`payment_id`) and
+ * renders the loading, success, or error state for the confirmation page.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`. The `method=store_credit` query
+ * path skips verification and shows the store-credit success message; on a
+ * verified card payment the cart is cleared and confetti is fired when the
+ * optional `canvas-confetti` module is available.
+ *
+ * @example
+ * ```tsx
+ * <Suspense fallback={<LoadingState />}>
+ *   <PaymentSuccessContent />
+ * </Suspense>
+ * ```
+ */
 function PaymentSuccessContent() {
   const { cart, clearCart } = useCart();
   const { user } = useUser();
@@ -122,6 +155,16 @@ function PaymentSuccessContent() {
   // 1. Extract session_id from URL once
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const method = params.get("method");
+    const orderParam = params.get("order_id");
+    if (method === "store_credit" && orderParam) {
+      setOrderId(orderParam);
+      setStatus("success");
+      setMessage("Your order has been paid and confirmed using Store Credit.");
+      setVerifiedAt(Date.now());
+      clearCartRef.current();
+      return;
+    }
     setSessionId(params.get("session_id"));
     setPaymentId(
       params.get("payment_id") ??
@@ -132,7 +175,7 @@ function PaymentSuccessContent() {
 
   // 2. Verify payment when sessionId is ready
   useEffect(() => {
-    if (sessionId === null) return; // still waiting for URL parse
+    if (status === "success" || sessionId === null) return; // already succeeded via credit or waiting for URL parse
 
     if (!sessionId) {
       setStatus("error");
@@ -166,28 +209,38 @@ function PaymentSuccessContent() {
         setVerifiedAt(Date.now());
 
         // Normalize items — prefer backend response, fall back to cart snapshot
-        const rawItems: unknown = data.items ?? data.line_items ?? data.order?.items ?? null;
+        const rawItems: unknown =
+          data.items ?? data.line_items ?? data.order?.items ?? null;
 
         let normalized: NormalizedItem[];
 
         if (Array.isArray(rawItems) && rawItems.length > 0) {
-          normalized = (rawItems as unknown[]).map((it: unknown, idx: number) => {
-            const item = it as Record<string, unknown>;
-            return {
-              id: String(item.id ?? item.product_id ?? item.sku ?? idx),
-              name: (item.name ?? item.title ?? item.product_name ?? "Product") as string,
-              price: Number(item.price ?? item.unit_price ?? item.amount ?? 0),
-              quantity: Number(item.quantity ?? item.qty ?? 1),
-            } as NormalizedItem;
-          });
+          normalized = (rawItems as unknown[]).map(
+            (it: unknown, idx: number) => {
+              const item = it as Record<string, unknown>;
+              return {
+                id: String(item.id ?? item.product_id ?? item.sku ?? idx),
+                name: (item.name ??
+                  item.title ??
+                  item.product_name ??
+                  "Product") as string,
+                price: Number(
+                  item.price ?? item.unit_price ?? item.amount ?? 0,
+                ),
+                quantity: Number(item.quantity ?? item.qty ?? 1),
+              } as NormalizedItem;
+            },
+          );
         } else {
           const snapshot = cartRef.current ?? [];
-          normalized = (snapshot as CartItem[]).map((it: CartItem, idx: number) => ({
-            id: String(it.id ?? idx),
-            name: it.name ?? it.title ?? "Product",
-            price: Number(it.price ?? 0),
-            quantity: Number(it.quantity ?? 1),
-          }));
+          normalized = (snapshot as CartItem[]).map(
+            (it: CartItem, idx: number) => ({
+              id: String(it.id ?? idx),
+              name: it.name ?? it.title ?? "Product",
+              price: Number(it.price ?? 0),
+              quantity: Number(it.quantity ?? 1),
+            }),
+          );
         }
 
         const computedTotal = normalized.reduce(
@@ -217,7 +270,9 @@ function PaymentSuccessContent() {
             }) => void;
 
             const mod = await import("canvas-confetti");
-            const confetti = ((mod as unknown) as { default?: ConfettiFn }).default ?? ((mod as unknown) as ConfettiFn);
+            const confetti =
+              (mod as unknown as { default?: ConfettiFn }).default ??
+              (mod as unknown as ConfettiFn);
             confetti?.({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
           } catch {
             // package not installed — that's fine
@@ -235,9 +290,17 @@ function PaymentSuccessContent() {
           if (typeof err === "string") return err;
           if (err && typeof err === "object") {
             const e = err as Record<string, unknown>;
-            const r = (e.response as unknown) as Record<string, unknown> | undefined;
-            const dataRec = (r?.data as unknown) as Record<string, unknown> | undefined;
-            return (dataRec?.error as string | undefined) ?? (e.message as string) ?? "An error occurred during verification.";
+            const r = e.response as unknown as
+              | Record<string, unknown>
+              | undefined;
+            const dataRec = r?.data as unknown as
+              | Record<string, unknown>
+              | undefined;
+            return (
+              (dataRec?.error as string | undefined) ??
+              (e.message as string) ??
+              "An error occurred during verification."
+            );
           }
           return "An error occurred during verification.";
         })();
@@ -447,6 +510,19 @@ function PaymentSuccessContent() {
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
+/**
+ * Payment confirmation page: shows the verified order summary, payment
+ * details, and trust badges after checkout.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * // Route: /payment/success?session_id=... — rendered by the Next.js Pages Router.
+ * <PaymentSuccessPage />
+ * ```
+ */
 export default function PaymentSuccessPage() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 

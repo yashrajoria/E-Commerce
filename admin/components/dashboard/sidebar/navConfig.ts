@@ -17,6 +17,15 @@ import {
 } from "lucide-react";
 import type { BadgeCounts, NavItem } from "./types";
 
+/**
+ * Builds the sidebar navigation entries, attaching live badge counts where
+ * available.
+ *
+ * @param badgeCounts - Current record counts used for the Products, Orders,
+ * Customers and Inventory badges; a missing value renders no badge.
+ * @returns The ordered navigation entries grouped by section (`Main`,
+ * `Commerce`, `Finance`, `System`).
+ */
 export const getNavItems = (badgeCounts: BadgeCounts): NavItem[] => [
   {
     icon: LayoutDashboard,
@@ -101,6 +110,12 @@ export const getNavItems = (badgeCounts: BadgeCounts): NavItem[] => [
     section: "Finance",
   },
   {
+    icon: CreditCard,
+    label: "Store Credit",
+    path: "/store-credit",
+    section: "Finance",
+  },
+  {
     icon: Headphones,
     label: "Support",
     path: "/support",
@@ -119,4 +134,3 @@ export const getNavItems = (badgeCounts: BadgeCounts): NavItem[] => [
     section: "System",
   },
 ];
-

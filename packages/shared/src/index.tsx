@@ -1,3 +1,4 @@
+/** Barrel module re-exporting the shared auth components, auth hook and provider, API helpers, axios utilities, types, UI primitives and icons that make up the `@ecommerce/shared` package surface. */
 export { Login } from "./components/auth/Login";
 export { Register } from "./components/auth/Register";
 export { Logout } from "./components/auth/Logout";
@@ -29,6 +30,7 @@ export {
 } from "./utils";
 export * from "./types/models";
 export * from "./types/common";
+export * from "./types/storeCredit";
 export { Button, buttonVariants } from "./components/ui/button";
 export { Avatar, AvatarFallback, AvatarImage } from "./components/ui/avatar";
 export { Badge, badgeVariants } from "./components/ui/badge";

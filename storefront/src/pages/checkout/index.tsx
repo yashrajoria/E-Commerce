@@ -1,11 +1,21 @@
 "use client";
 
 import { AnimatePresence } from "framer-motion";
-import { ArrowLeft, ChevronRight, Lock, Mail, MapPin, Truck } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronRight,
+  Lock,
+  Mail,
+  MapPin,
+  Truck,
+} from "lucide-react";
 import Head from "next/head";
 import Link from "next/link";
 import { STEP_META } from "@/components/checkout/checkoutConstants";
-import { CompletedCard, ProgressDots } from "@/components/checkout/CheckoutComponents";
+import {
+  CompletedCard,
+  ProgressDots,
+} from "@/components/checkout/CheckoutComponents";
 import { formatGBP } from "@/components/checkout/checkoutUtils";
 import { useCheckout } from "@/components/checkout/useCheckout";
 import { CheckoutCTABar } from "@/components/checkout/sections/CheckoutCTABar";
@@ -20,31 +30,93 @@ import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import { LoginModal } from "@/components/common/login-modal";
 
+/**
+ * Multi-step secure checkout page (contact, shipping, delivery, review) with
+ * express checkout, promo codes, store credit, and a mobile order summary.
+ *
+ * @remarks
+ * Client Component — declares `"use client"`.
+ *
+ * @example
+ * ```tsx
+ * // Route: /checkout — rendered by the Next.js Pages Router.
+ * <CheckoutPage />
+ * ```
+ */
 export default function CheckoutPage() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const { cart: cartItems, isHydrated } = useCart();
   const {
-    cart, currentStep, direction, shippingMethod, shippingDetails,
-    touched, fieldErrors, promoCode, discount, promoExpanded, promoError,
-    isProcessing, showMobileSummary, editingSection,
-    subtotal, shipping, tax, discountAmount, total, itemCount, ctaLabel,
-    isAuthenticated, isLoginModalOpen, setIsLoginModalOpen,
-    setShippingMethod, setPromoCode, setPromoExpanded,
-    setShowMobileSummary, setEditingSection,
-    handleChange, handleBlur, validateStep, isStepValid,
-    goToStep, goNext, goBack, applyPromo, completeOrder,
+    cart,
+    currentStep,
+    direction,
+    shippingMethod,
+    shippingDetails,
+    touched,
+    fieldErrors,
+    promoCode,
+    discount,
+    promoExpanded,
+    promoError,
+    isProcessing,
+    showMobileSummary,
+    editingSection,
+    subtotal,
+    shipping,
+    tax,
+    discountAmount,
+    grossTotal,
+    total,
+    itemCount,
+    ctaLabel,
+    storeCreditBalance,
+    storeCreditAmount,
+    setStoreCreditAmount,
+    applyStoreCredit,
+    setApplyStoreCredit,
+    effectiveCreditAmount,
+    isAuthenticated,
+    isLoginModalOpen,
+    setIsLoginModalOpen,
+    setShippingMethod,
+    setPromoCode,
+    setPromoExpanded,
+    setShowMobileSummary,
+    setEditingSection,
+    handleChange,
+    handleBlur,
+    validateStep,
+    isStepValid,
+    goToStep,
+    goNext,
+    goBack,
+    applyPromo,
+    completeOrder,
   } = useCheckout();
 
-  const formStateProps = { shippingDetails, fieldErrors, touched, direction, handleChange, handleBlur };
+  const formStateProps = {
+    shippingDetails,
+    fieldErrors,
+    touched,
+    direction,
+    handleChange,
+    handleBlur,
+  };
 
   if (!isHydrated) {
     return (
       <div className="min-h-screen bg-background">
         <Head>
           <title>Secure Checkout | ShopSwift</title>
-          <meta name="description" content="Complete your order with our secure checkout." />
+          <meta
+            name="description"
+            content="Complete your order with our secure checkout."
+          />
           <link rel="canonical" href={`${siteUrl}/checkout`} />
-          <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+          <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, maximum-scale=1"
+          />
         </Head>
         <div className="min-h-screen flex items-center justify-center px-4">
           <div className="text-center max-w-sm">
@@ -64,13 +136,21 @@ export default function CheckoutPage() {
       <div className="min-h-screen bg-background">
         <Head>
           <title>Secure Checkout | ShopSwift</title>
-          <meta name="description" content="Complete your order with our secure checkout." />
+          <meta
+            name="description"
+            content="Complete your order with our secure checkout."
+          />
           <link rel="canonical" href={`${siteUrl}/checkout`} />
-          <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+          <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, maximum-scale=1"
+          />
         </Head>
         <div className="min-h-screen flex items-center justify-center px-4">
           <div className="text-center max-w-sm rounded-lg border border-border bg-surface p-8">
-            <h1 className="text-lg font-semibold tracking-tight">Your checkout is empty</h1>
+            <h1 className="text-lg font-semibold tracking-tight">
+              Your checkout is empty
+            </h1>
             <p className="mt-1.5 text-xs text-muted-foreground">
               Add items to your bag before proceeding to checkout.
             </p>
@@ -83,9 +163,7 @@ export default function CheckoutPage() {
                 Go Back
               </Button>
               <Button asChild size="sm">
-                <Link href="/products">
-                  Explore Products
-                </Link>
+                <Link href="/products">Explore Products</Link>
               </Button>
             </div>
           </div>
@@ -98,12 +176,23 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-background">
       <Head>
         <title>Secure Checkout | ShopSwift</title>
-        <meta name="description" content="Complete your order with our secure checkout." />
+        <meta
+          name="description"
+          content="Complete your order with our secure checkout."
+        />
         <link rel="canonical" href={`${siteUrl}/checkout`} />
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1"
+        />
       </Head>
 
-      <div id="sr-step-announce" className="sr-only" aria-live="polite" aria-atomic="true" />
+      <div
+        id="sr-step-announce"
+        className="sr-only"
+        aria-live="polite"
+        aria-atomic="true"
+      />
 
       {/* ── Header ── */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
@@ -138,18 +227,43 @@ export default function CheckoutPage() {
         {/* Completed section summaries */}
         <AnimatePresence>
           {currentStep > 1 && (
-            <CompletedCard step={1} title="Contact" icon={Mail}
-              summary={<span>{shippingDetails.email} · {shippingDetails.phone}</span>}
+            <CompletedCard
+              step={1}
+              title="Contact"
+              icon={Mail}
+              summary={
+                <span>
+                  {shippingDetails.email} · {shippingDetails.phone}
+                </span>
+              }
             />
           )}
           {currentStep > 2 && (
-            <CompletedCard step={2} title="Shipping Address" icon={MapPin}
-              summary={<span>{shippingDetails.firstName} {shippingDetails.lastName}, {shippingDetails.address}, {shippingDetails.city}</span>}
+            <CompletedCard
+              step={2}
+              title="Shipping Address"
+              icon={MapPin}
+              summary={
+                <span>
+                  {shippingDetails.firstName} {shippingDetails.lastName},{" "}
+                  {shippingDetails.address}, {shippingDetails.city}
+                </span>
+              }
             />
           )}
           {currentStep > 3 && (
-            <CompletedCard step={3} title="Delivery" icon={Truck}
-              summary={<span>{shippingMethod === "express" ? "Express (2–3 days)" : "Standard (5–7 days)"} — {formatGBP(shipping)}</span>}
+            <CompletedCard
+              step={3}
+              title="Delivery"
+              icon={Truck}
+              summary={
+                <span>
+                  {shippingMethod === "express"
+                    ? "Express (2–3 days)"
+                    : "Standard (5–7 days)"}{" "}
+                  — {formatGBP(shipping)}
+                </span>
+              }
             />
           )}
         </AnimatePresence>
@@ -179,14 +293,32 @@ export default function CheckoutPage() {
           )}
           {currentStep === 2 && <StepShipping {...formStateProps} />}
           {currentStep === 3 && (
-            <StepDelivery shippingMethod={shippingMethod} direction={direction} onSelectMethod={setShippingMethod} />
+            <StepDelivery
+              shippingMethod={shippingMethod}
+              direction={direction}
+              onSelectMethod={setShippingMethod}
+            />
           )}
           {currentStep === 4 && (
             <StepReview
-              cart={cart} subtotal={subtotal} shipping={shipping} tax={tax}
-              discount={discount} discountAmount={discountAmount} total={total}
-              shippingMethod={shippingMethod} promoCode={promoCode}
-              promoExpanded={promoExpanded} promoError={promoError} direction={direction}
+              cart={cart}
+              subtotal={subtotal}
+              shipping={shipping}
+              tax={tax}
+              discount={discount}
+              discountAmount={discountAmount}
+              grossTotal={grossTotal}
+              total={total}
+              storeCreditBalance={storeCreditBalance}
+              storeCreditAmount={storeCreditAmount}
+              applyStoreCredit={applyStoreCredit}
+              onApplyStoreCreditChange={setApplyStoreCredit}
+              onStoreCreditAmountChange={setStoreCreditAmount}
+              shippingMethod={shippingMethod}
+              promoCode={promoCode}
+              promoExpanded={promoExpanded}
+              promoError={promoError}
+              direction={direction}
               onPromoCodeChange={setPromoCode}
               onPromoExpandChange={setPromoExpanded}
               onApplyPromo={applyPromo}
@@ -198,7 +330,9 @@ export default function CheckoutPage() {
         {currentStep > 1 && currentStep < 4 && isStepValid(1) && (
           <div className="mt-4 text-center">
             <button
-              onClick={() => { if (validateStep(currentStep)) goToStep(4); }}
+              onClick={() => {
+                if (validateStep(currentStep)) goToStep(4);
+              }}
               className="text-xs text-muted-foreground hover:text-foreground font-medium hover:underline inline-flex items-center gap-1 transition-colors"
             >
               Jump to Review
