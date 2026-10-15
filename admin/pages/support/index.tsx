@@ -170,7 +170,7 @@ const Support = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search tickets by subject, customer, or ID..."
-                  className="pl-10 bg-white/[0.04] border-white/[0.08] rounded-xl h-9"
+                  className="pl-10 bg-background border-border rounded-xl h-9"
                 />
               </div>
             </div>
@@ -193,7 +193,7 @@ const Support = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.03 }}
                   >
-                    <Card className="glass-effect glass-hover border-white/[0.06] transition-colors cursor-pointer">
+                    <Card className="glass-effect glass-hover border-border transition-colors cursor-pointer">
                       <CardContent className="p-5">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                           <div className="flex-1">
@@ -235,7 +235,7 @@ const Support = () => {
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="gap-1 text-xs hover:bg-white/[0.06] rounded-lg"
+                            className="gap-1 text-xs hover:bg-accent rounded-lg"
                           >
                             View <ArrowRight size={12} />
                           </Button>
@@ -257,7 +257,7 @@ const Support = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.06 }}
               >
-                <Card className="glass-effect border-white/[0.06]">
+                <Card className="glass-effect border-border">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium flex items-center gap-2">
                       <MessageSquare className="h-4 w-4 text-purple-400 shrink-0" />

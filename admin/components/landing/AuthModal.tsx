@@ -121,7 +121,7 @@ export default function AuthModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="glass-effect-strong border-white/[0.08] rounded-2xl p-0 max-w-md overflow-hidden [&>button]:text-muted-foreground [&>button]:hover:text-foreground">
+      <DialogContent className="bg-card border-border rounded-2xl p-0 max-w-md overflow-hidden shadow-2xl [&>button]:text-muted-foreground [&>button]:hover:text-foreground">
         <DialogTitle className="sr-only">Sign in to the admin dashboard</DialogTitle>
         <DialogDescription className="sr-only">
           Enter your administrator email and password to continue.
@@ -136,10 +136,10 @@ export default function AuthModal({
             className="p-8"
           >
             <div className="text-center mb-8">
-              <div className="h-14 w-14 rounded-2xl gradient-purple flex items-center justify-center mx-auto mb-4 shadow-lg shadow-purple-500/20">
+              <div className="h-14 w-14 rounded-2xl gradient-purple flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <LockKeyhole className="h-6 w-6 text-white" />
               </div>
-              <h2 className="text-2xl font-bold">Welcome back</h2>
+              <h2 className="text-2xl font-bold text-foreground">Welcome back</h2>
               <p className="text-sm text-muted-foreground mt-1">
                 Sign in to your admin dashboard
               </p>
@@ -147,11 +147,11 @@ export default function AuthModal({
 
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                <Label className="text-xs font-semibold text-foreground uppercase tracking-wider">
                   Email
                 </Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="email"
                     placeholder="you@example.com"
@@ -161,17 +161,17 @@ export default function AuthModal({
                     }
                     disabled={isLoading}
                     required
-                    className="pl-10 h-11 bg-white/[0.03] border-white/[0.08] focus:border-purple-500/50 rounded-xl"
+                    className="pl-10 h-11 bg-background border-border text-foreground placeholder:text-muted-foreground/60 focus:border-primary rounded-xl"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                <Label className="text-xs font-semibold text-foreground uppercase tracking-wider">
                   Password
                 </Label>
                 <div className="relative">
-                  <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+                  <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
@@ -181,12 +181,12 @@ export default function AuthModal({
                     }
                     disabled={isLoading}
                     required
-                    className="pl-10 pr-10 h-11 bg-white/[0.03] border-white/[0.08] focus:border-purple-500/50 rounded-xl"
+                    className="pl-10 pr-10 h-11 bg-background border-border text-foreground placeholder:text-muted-foreground/60 focus:border-primary rounded-xl"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-foreground transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4" />
@@ -200,7 +200,7 @@ export default function AuthModal({
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-11 gradient-purple text-white border-0 rounded-xl shadow-lg shadow-purple-500/20 hover:shadow-purple-500/35 transition-all duration-300 font-semibold"
+                className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl shadow-xs transition-all font-semibold cursor-pointer"
               >
                 {isLoading ? (
                   <>

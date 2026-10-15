@@ -87,19 +87,19 @@ const AuthForm = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      <Card className="w-full max-w-md backdrop-blur-md bg-white/5 border-white/10 border rounded-2xl shadow-2xl">
+      <Card className="w-full max-w-md bg-card border-border border rounded-2xl shadow-xl">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center text-gradient">
+          <CardTitle className="text-2xl font-bold text-center text-foreground">
             Admin sign in
           </CardTitle>
-          <CardDescription className="text-center text-white/70">
+          <CardDescription className="text-center text-muted-foreground">
             Use the seeded ADMIN_EMAIL account. Self-registration is disabled.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignIn} className="space-y-4">
             <div className="grid gap-2">
-              <Label htmlFor="signin-email" className="text-white/80">
+              <Label htmlFor="signin-email" className="text-foreground font-medium text-xs uppercase tracking-wider">
                 Email
               </Label>
               <div className="relative">
@@ -115,13 +115,13 @@ const AuthForm = () => {
                   }
                   disabled={isLoading}
                   required
-                  className="pl-10 bg-white/5 border-white/10 focus:border-primary transition-colors"
+                  className="pl-10 bg-background border-border text-foreground placeholder:text-muted-foreground/60 focus:border-primary transition-colors"
                 />
               </div>
             </div>
 
             <div className="grid gap-2 relative">
-              <Label htmlFor="signin-password" className="text-white/80">
+              <Label htmlFor="signin-password" className="text-foreground font-medium text-xs uppercase tracking-wider">
                 Password
               </Label>
               <div className="relative">
@@ -137,13 +137,13 @@ const AuthForm = () => {
                   }
                   disabled={isLoading}
                   required
-                  className="pl-10 bg-white/5 border-white/10 focus:border-primary transition-colors"
+                  className="pl-10 bg-background border-border text-foreground placeholder:text-muted-foreground/60 focus:border-primary transition-colors"
                 />
                 <button
                   type="button"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                   aria-pressed={showPassword}
-                  className="absolute right-3 top-3 text-muted-foreground hover:text-white transition-colors"
+                  className="absolute right-3 top-3 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -153,7 +153,7 @@ const AuthForm = () => {
 
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:opacity-90"
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-medium rounded-xl h-10 shadow-xs cursor-pointer"
               disabled={isLoading}
             >
               {isLoading ? (

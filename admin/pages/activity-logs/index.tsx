@@ -79,7 +79,7 @@ const ActivityLogs = () => {
         <Button
           variant="outline"
           size="sm"
-          className="gap-2 text-xs border-white/8 hover:bg-white/4 rounded-xl h-8"
+          className="gap-2 text-xs border-border hover:bg-accent rounded-xl h-8"
         >
           <Download size={13} />
           Export Logs
@@ -129,15 +129,15 @@ const ActivityLogs = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search audit trail by user, action, target..."
-                className="pl-10 bg-white/4 border-white/8 rounded-xl h-9"
+                className="pl-10 bg-background border-border rounded-xl h-9"
               />
             </div>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-40 bg-white/4 border-white/8 rounded-xl h-9 text-xs">
+              <SelectTrigger className="w-40 bg-background border-border rounded-xl h-9 text-xs">
                 <Filter className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
                 <SelectValue placeholder="Filter" />
               </SelectTrigger>
-              <SelectContent className="glass-effect-strong border-white/[0.08]">
+              <SelectContent className="glass-effect-strong border-border">
                 <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="create">Created</SelectItem>
                 <SelectItem value="update">Updated</SelectItem>
@@ -164,7 +164,7 @@ const ActivityLogs = () => {
         ) : (
           <div className="relative">
             {/* Timeline line */}
-            <div className="absolute left-[23px] top-0 bottom-0 w-px bg-white/[0.06]" />
+            <div className="absolute left-[23px] top-0 bottom-0 w-px bg-border" />
 
             <div className="space-y-1">
               {filtered.map((log, i) => {
@@ -180,13 +180,13 @@ const ActivityLogs = () => {
                   >
                     {/* Icon */}
                     <div
-                      className={`relative z-10 h-[46px] w-[46px] rounded-xl ${config.bg} flex items-center justify-center shrink-0 border border-white/[0.06]`}
+                      className={`relative z-10 h-[46px] w-[46px] rounded-xl ${config.bg} flex items-center justify-center shrink-0 border border-border`}
                     >
                       <Icon className={`h-4 w-4 ${config.color}`} />
                     </div>
 
                     {/* Content */}
-                    <Card className="flex-1 glass-effect glass-hover border-white/[0.06] transition-colors">
+                    <Card className="flex-1 glass-effect glass-hover border-border transition-colors">
                       <CardContent className="p-4">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                           <div>

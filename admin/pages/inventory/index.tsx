@@ -90,7 +90,7 @@ const Inventory = () => {
           <Button
             variant="outline"
             size="sm"
-            className="gap-2 text-xs border-white/[0.08] hover:bg-white/[0.04] rounded-xl h-8 hidden sm:flex"
+            className="gap-2 text-xs border-border hover:bg-accent rounded-xl h-8 hidden sm:flex"
           >
             <Download size={13} />
             Export
@@ -153,7 +153,7 @@ const Inventory = () => {
                 .map((item) => (
                   <div
                     key={item.product_id}
-                    className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/[0.04]"
+                    className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/60"
                   >
                     <div className="flex items-center gap-3">
                       <Badge
@@ -193,7 +193,7 @@ const Inventory = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by product ID..."
-                className="pl-10 bg-white/[0.04] border-white/[0.08] rounded-xl h-9"
+                className="pl-10 bg-background border-border rounded-xl h-9"
               />
             </div>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -226,7 +226,7 @@ const Inventory = () => {
             variants={pageItem}
             className="flex items-center justify-center py-16"
           >
-            <Card className="w-full glass-effect overflow-hidden border-white/[0.06]">
+            <Card className="w-full glass-effect overflow-hidden border-border">
               <CardContent className="p-0">
                 <Table>
                   <TableSkeleton rows={6} cols={6} />
@@ -255,11 +255,11 @@ const Inventory = () => {
           </motion.section>
         ) : (
           <motion.section key="table" variants={pageItem}>
-            <Card className="glass-effect overflow-hidden border-white/[0.06]">
+            <Card className="glass-effect overflow-hidden border-border">
               <CardContent className="p-0 overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-white/[0.04]">
+                    <TableRow className="border-border/60">
                       <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
                         Product ID
                       </TableHead>
@@ -287,7 +287,7 @@ const Inventory = () => {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.04 }}
-                        className="border-white/[0.04] hover:bg-white/[0.02] transition-colors"
+                        className="border-border/40 hover:bg-accent/40 transition-colors"
                       >
                         <TableCell>
                           <div className="flex items-center gap-3">

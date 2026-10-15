@@ -115,7 +115,7 @@ const ProductDetailPage = () => {
           <Button
             variant="outline"
             size="sm"
-            className="gap-2 text-xs border-white/[0.08] hover:bg-white/[0.04] rounded-xl h-8"
+            className="gap-2 text-xs border-border hover:bg-accent rounded-xl h-8"
             onClick={() => setIsEditing(!isEditing)}
           >
             <Edit size={13} />
@@ -174,7 +174,7 @@ const ProductDetailPage = () => {
       >
         {/* Image Gallery */}
         <div className="lg:col-span-2">
-          <Card className="glass-effect border-white/[0.06] overflow-hidden">
+          <Card className="glass-effect border-border overflow-hidden">
             <CardContent className="p-4">
               <ProductImageGallery images={p.images || []} />
             </CardContent>
@@ -184,7 +184,7 @@ const ProductDetailPage = () => {
         {/* Product Info */}
         <div className="lg:col-span-3 space-y-6">
           {/* Status & Tags */}
-          <Card className="glass-effect border-white/[0.06]">
+          <Card className="glass-effect border-border">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">Product Details</CardTitle>
@@ -211,7 +211,7 @@ const ProductDetailPage = () => {
 
           {/* Pricing & Inventory */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Card className="glass-effect border-white/[0.06]">
+            <Card className="glass-effect border-border">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-emerald-400" /> Pricing
@@ -239,7 +239,7 @@ const ProductDetailPage = () => {
               </CardContent>
             </Card>
 
-            <Card className="glass-effect border-white/[0.06]">
+            <Card className="glass-effect border-border">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
                   <Package className="h-4 w-4 text-purple-400" /> Inventory

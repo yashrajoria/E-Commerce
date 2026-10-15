@@ -16,3 +16,5 @@ graphify-out-*/
 .graphify_root
 .graphify_labels.json
 *.tsbuildinfo
+.vercel
+.env*

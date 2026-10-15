@@ -146,7 +146,7 @@ const DashboardSidebar = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.1 * sectionIdx }}
-                    className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/60"
+                    className="px-3 mb-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground"
                   >
                     {sectionName}
                   </motion.p>

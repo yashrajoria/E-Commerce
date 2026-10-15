@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Cpu } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 interface NavbarProps {
   onLogin: () => void;
@@ -73,27 +74,31 @@ export default function Navbar({ onLogin }: NavbarProps) {
             </nav>
 
             {/* Desktop Actions */}
-            <div className="hidden md:flex items-center gap-6">
+            <div className="hidden md:flex items-center gap-4">
+              <ThemeToggle />
               <Button
                 onClick={onLogin}
-                className="h-11 px-8 bg-white/[0.03] border border-white/10 hover:bg-white/[0.06] text-white rounded-xl shadow-lg transition-all text-xs font-bold uppercase tracking-widest"
+                className="h-11 px-8 bg-primary text-primary-foreground border border-primary/20 hover:bg-primary/90 rounded-xl shadow-lg shadow-primary/20 transition-all text-xs font-bold uppercase tracking-widest"
               >
                 Sign In
               </Button>
             </div>
 
-            {/* Mobile Menu Toggle */}
-            <button
-              onClick={() => setMobileOpen(!mobileOpen)}
-              className="lg:hidden p-2 rounded-lg hover:bg-white/[0.05] text-foreground transition-colors"
-              aria-label="Toggle menu"
-            >
-              {mobileOpen ? (
-                <X className="h-5 w-5" />
-              ) : (
-                <Menu className="h-5 w-5" />
-              )}
-            </button>
+            {/* Mobile Actions */}
+            <div className="flex items-center gap-2 lg:hidden">
+              <ThemeToggle />
+              <button
+                onClick={() => setMobileOpen(!mobileOpen)}
+                className="p-2 rounded-lg hover:bg-accent text-foreground transition-colors"
+                aria-label="Toggle menu"
+              >
+                {mobileOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </motion.header>
@@ -106,19 +111,19 @@ export default function Navbar({ onLogin }: NavbarProps) {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-x-0 top-[72px] z-40 glass-effect-strong border-b border-white/[0.06] lg:hidden overflow-hidden shadow-2xl"
+            className="fixed inset-x-0 top-[72px] z-40 glass-effect-strong border-b border-border lg:hidden overflow-hidden shadow-2xl"
           >
             <div className="px-6 py-8 space-y-2">
               {navLinks.map((link) => (
                 <button
                   key={link.href}
                   onClick={() => scrollTo(link.href)}
-                  className="block w-full text-left px-4 py-4 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-primary hover:bg-white/[0.02] rounded-xl transition-all"
+                  className="block w-full text-left px-4 py-4 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-primary hover:bg-accent/50 rounded-xl transition-all"
                 >
                   {link.label}
                 </button>
               ))}
-              <div className="pt-6 mt-6 space-y-4 border-t border-white/[0.06]">
+              <div className="pt-6 mt-6 space-y-4 border-t border-border">
                 <Button
                   onClick={() => {
                     setMobileOpen(false);

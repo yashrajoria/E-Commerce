@@ -124,7 +124,7 @@ const Shipping = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by tracking number, order, or customer..."
-              className="pl-10 bg-white/[0.04] border-white/[0.08] rounded-xl h-9"
+              className="pl-10 bg-background border-border rounded-xl h-9"
             />
           </div>
         </div>
@@ -149,7 +149,7 @@ const Shipping = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.03 }}
             >
-              <Card className="glass-effect glass-hover border-white/[0.06] transition-colors">
+              <Card className="glass-effect glass-hover border-border transition-colors">
                 <CardContent className="p-5">
                   <div className="flex flex-col gap-4">
                     {/* Header */}
@@ -206,7 +206,7 @@ const Shipping = () => {
                       </div>
                       <Progress
                         value={shipment.progress}
-                        className="h-2 bg-white/[0.04]"
+                        className="h-2 bg-muted"
                       />
                       <p className="text-[10px] text-muted-foreground mt-1 text-right">
                         {shipment.progress}%

@@ -184,7 +184,7 @@ const Products = () => {
                 ))}
               </div>
             ) : (
-              <div className="w-full glass-effect rounded-xl overflow-hidden border border-white/[0.06]">
+              <div className="w-full glass-effect rounded-xl overflow-hidden border border-border">
                 <Table>
                   <TableSkeleton rows={8} cols={6} />
                 </Table>

@@ -66,7 +66,7 @@ interface TrafficSourceItem {
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipEntry[]; label?: string }) => {
   if (!active || !Array.isArray(payload) || payload.length === 0) return null;
   return (
-    <div className="glass-effect-strong rounded-lg p-3 border border-white/8 text-sm">
+    <div className="glass-effect-strong rounded-lg p-3 border border-border text-sm shadow-xl">
       <p className="font-medium mb-1">{label}</p>
       {payload.map((entry, i) => {
         const name = entry?.name ?? "";
@@ -111,7 +111,7 @@ const Analytics = () => {
           <Button
             variant="outline"
             size="sm"
-            className="gap-2 text-xs border-white/8 hover:bg-white/4 rounded-xl h-8 hidden sm:flex"
+            className="gap-2 text-xs border-border hover:bg-accent rounded-xl h-8 hidden sm:flex"
           >
             <Calendar size={13} />
             Live DB
@@ -119,7 +119,7 @@ const Analytics = () => {
           <Button
             variant="outline"
             size="sm"
-            className="gap-2 text-xs border-white/8 hover:bg-white/4 rounded-xl h-8"
+            className="gap-2 text-xs border-border hover:bg-accent rounded-xl h-8"
           >
             <Download size={13} />
             Export
@@ -194,7 +194,7 @@ const Analytics = () => {
 
             {/* Revenue Tab */}
             <TabsContent value="revenue" className="space-y-6 mt-6">
-              <Card className="glass-effect border-white/6">
+              <Card className="glass-effect border-border">
                 <CardHeader>
                   <CardTitle className="text-lg">Revenue Overview</CardTitle>
                   <CardDescription>
@@ -227,15 +227,18 @@ const Analytics = () => {
                         </defs>
                         <CartesianGrid
                           strokeDasharray="3 3"
-                          stroke="rgba(255,255,255,0.04)"
+                          stroke="currentColor"
+                          className="text-border/60"
                         />
                         <XAxis
                           dataKey="month"
-                          stroke="rgba(255,255,255,0.3)"
+                          stroke="currentColor"
+                          className="text-muted-foreground text-xs"
                           fontSize={12}
                         />
                         <YAxis
-                          stroke="rgba(255,255,255,0.3)"
+                          stroke="currentColor"
+                          className="text-muted-foreground text-xs"
                           fontSize={12}
                           tickFormatter={(v) => `£${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`}
                         />
@@ -257,7 +260,7 @@ const Analytics = () => {
 
             {/* Orders Tab */}
             <TabsContent value="orders" className="space-y-6 mt-6">
-              <Card className="glass-effect border-white/6">
+              <Card className="glass-effect border-border">
                 <CardHeader>
                   <CardTitle className="text-lg">Order Volume</CardTitle>
                   <CardDescription>
@@ -270,7 +273,8 @@ const Analytics = () => {
                       <BarChart data={revenueData}>
                         <CartesianGrid
                           strokeDasharray="3 3"
-                          stroke="rgba(255,255,255,0.04)"
+                          stroke="currentColor"
+                          className="text-border/60"
                         />
                         <XAxis
                           dataKey="month"
@@ -304,7 +308,7 @@ const Analytics = () => {
             <TabsContent value="products" className="space-y-6 mt-6">
               <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                 {/* Category Breakdown */}
-                <Card className="glass-effect border-white/6 lg:col-span-2">
+                <Card className="glass-effect border-border lg:col-span-2">
                   <CardHeader>
                     <CardTitle className="text-lg">Catalog Distribution</CardTitle>
                   </CardHeader>
@@ -352,7 +356,7 @@ const Analytics = () => {
                 </Card>
 
                 {/* Top Products */}
-                <Card className="glass-effect border-white/6 lg:col-span-3">
+                <Card className="glass-effect border-border lg:col-span-3">
                   <CardHeader>
                     <CardTitle className="text-lg">Top Products</CardTitle>
                     <CardDescription>
@@ -366,7 +370,7 @@ const Analytics = () => {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: i * 0.05 }}
-                        className="flex items-center justify-between p-3 rounded-xl bg-white/2 hover:bg-white/4 transition-colors border border-white/4"
+                        className="flex items-center justify-between p-3 rounded-xl bg-card hover:bg-accent/40 transition-colors border border-border/60"
                       >
                         <div className="flex items-center gap-3">
                           <div className="h-8 w-8 rounded-lg gradient-purple flex items-center justify-center text-white text-xs font-bold">
@@ -403,7 +407,7 @@ const Analytics = () => {
 
             {/* Traffic Tab */}
             <TabsContent value="traffic" className="space-y-6 mt-6">
-              <Card className="glass-effect border-white/6">
+              <Card className="glass-effect border-border">
                 <CardHeader>
                   <CardTitle className="text-lg">Traffic Sources</CardTitle>
                   <CardDescription>Where your visitors originate</CardDescription>
@@ -426,13 +430,13 @@ const Analytics = () => {
                           </span>
                           <Badge
                             variant="outline"
-                            className="text-xs border-white/8"
+                            className="text-xs border-border"
                           >
                             {source.percentage}%
                           </Badge>
                         </div>
                       </div>
-                      <div className="h-2 bg-white/4 rounded-full overflow-hidden">
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: `${source.percentage}%` }}

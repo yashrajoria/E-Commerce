@@ -225,7 +225,7 @@ const Marketing = () => {
               Create Coupon
             </Button>
           </DialogTrigger>
-          <DialogContent className="glass-effect-strong border-white/[0.08]">
+          <DialogContent className="glass-effect-strong border-border">
             <DialogHeader>
               <DialogTitle className="text-gradient">New Coupon</DialogTitle>
               <DialogDescription>Create a new discount coupon code</DialogDescription>
@@ -237,7 +237,7 @@ const Marketing = () => {
                   value={newCode}
                   onChange={(e) => setNewCode(e.target.value.toUpperCase())}
                   placeholder="e.g. SAVE20"
-                  className="bg-white/[0.04] border-white/[0.08] rounded-xl font-mono"
+                  className="bg-background border-border rounded-xl font-mono"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -248,16 +248,16 @@ const Marketing = () => {
                     onChange={(e) => setNewDiscount(e.target.value)}
                     type="number"
                     placeholder="0"
-                    className="bg-white/[0.04] border-white/[0.08] rounded-xl"
+                    className="bg-background border-border rounded-xl"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Type</Label>
                   <Select value={newType} onValueChange={(v) => setNewType(v as "percentage" | "fixed")}>
-                    <SelectTrigger className="bg-white/[0.04] border-white/[0.08] rounded-xl">
+                    <SelectTrigger className="bg-background border-border rounded-xl">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="glass-effect-strong border-white/[0.08]">
+                    <SelectContent className="glass-effect-strong border-border">
                       <SelectItem value="percentage">Percentage (%)</SelectItem>
                       <SelectItem value="fixed">Fixed (£)</SelectItem>
                     </SelectContent>
@@ -270,7 +270,7 @@ const Marketing = () => {
                   type="date"
                   value={newExpiresAt}
                   onChange={(e) => setNewExpiresAt(e.target.value)}
-                  className="bg-white/[0.04] border-white/[0.08] rounded-xl"
+                  className="bg-background border-border rounded-xl"
                 />
               </div>
             </div>
@@ -278,7 +278,7 @@ const Marketing = () => {
               <Button
                 variant="outline"
                 onClick={() => setIsCreateOpen(false)}
-                className="rounded-xl border-white/[0.08]"
+                className="rounded-xl border-border"
                 disabled={creating}
               >
                 Cancel
@@ -359,7 +359,7 @@ const Marketing = () => {
 
           <TabsContent value="coupons" className="mt-6">
             {isLoading ? (
-              <Card className="glass-effect overflow-hidden border-white/[0.06]">
+              <Card className="glass-effect overflow-hidden border-border">
                 <CardContent className="p-0">
                   <Table>
                     <TableSkeleton rows={4} cols={6} />
@@ -367,7 +367,7 @@ const Marketing = () => {
                 </CardContent>
               </Card>
             ) : error ? (
-              <Card className="glass-effect overflow-hidden border-white/[0.06]">
+              <Card className="glass-effect overflow-hidden border-border">
                 <CardContent className="p-4">
                   <ErrorState message={error.message} onRetry={() => mutate()} />
                 </CardContent>
@@ -378,11 +378,11 @@ const Marketing = () => {
                 description="Your coupons will appear here."
               />
             ) : (
-              <Card className="glass-effect overflow-hidden border-white/[0.06]">
+              <Card className="glass-effect overflow-hidden border-border">
                 <CardContent className="p-0 overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow className="border-white/[0.04]">
+                      <TableRow className="border-border/60">
                         <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">Code</TableHead>
                         <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">Discount</TableHead>
                         <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">Usage</TableHead>
@@ -398,7 +398,7 @@ const Marketing = () => {
                         const width = maxUses > 0 ? Math.min(100, (usage / maxUses) * 100) : 0;
                         const couponKey = String(coupon.id ?? coupon.code ?? i);
                         const discountText =
-                          coupon.type === "percentage"
+                           coupon.type === "percentage"
                             ? `${coupon.discount || 0}%`
                             : coupon.type === "freeshipping"
                               ? "Free shipping"
@@ -407,17 +407,17 @@ const Marketing = () => {
                         return (
                           <TableRow
                             key={couponKey}
-                            className="border-white/[0.04] hover:bg-white/[0.02] transition-colors"
+                            className="border-border/40 hover:bg-accent/40 transition-colors"
                           >
                             <TableCell>
                               <div className="flex items-center gap-2">
-                                <code className="text-sm font-mono font-semibold bg-white/[0.04] px-2 py-0.5 rounded">
+                                <code className="text-sm font-mono font-semibold bg-muted px-2 py-0.5 rounded">
                                   {coupon.code || "-"}
                                 </code>
                                 <Button
                                   size="icon"
                                   variant="ghost"
-                                  className="h-6 w-6 hover:bg-white/[0.06]"
+                                  className="h-6 w-6 hover:bg-accent"
                                   onClick={() => handleCopyCode(coupon.code)}
                                 >
                                   <Copy className="h-3 w-3" />
@@ -428,7 +428,7 @@ const Marketing = () => {
                             <TableCell>
                               <div className="flex items-center gap-2">
                                 <span className="text-sm">{usage}/{maxUses || "-"}</span>
-                                <div className="w-16 h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+                                <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
                                   <div className="h-full gradient-purple rounded-full" style={{ width: `${width}%` }} />
                                 </div>
                               </div>
@@ -467,7 +467,7 @@ const Marketing = () => {
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {(campaigns as CampaignItem[]).map((campaign) => (
-                  <Card key={campaign.id || campaign.name} className="glass-effect border-white/[0.06]">
+                  <Card key={campaign.id || campaign.name} className="glass-effect border-border">
                     <CardContent className="p-5 space-y-3">
                       <div className="flex items-start justify-between gap-3">
                         <h3 className="text-sm font-semibold leading-tight">{campaign.name}</h3>

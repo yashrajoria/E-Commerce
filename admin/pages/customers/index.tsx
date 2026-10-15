@@ -206,7 +206,7 @@ const Customers = () => {
             size="sm"
             onClick={handleExport}
             disabled={filteredCustomers.length === 0}
-            className="gap-2 text-xs border-white/[0.08] hover:bg-white/[0.04] rounded-xl h-8 hidden sm:flex"
+            className="gap-2 text-xs border-border hover:bg-accent rounded-xl h-8 hidden sm:flex"
           >
             <Download size={13} />
             Export
@@ -274,7 +274,7 @@ const Customers = () => {
       <AnimatePresence mode="wait">
         {isLoading ? (
           <motion.section key="loading" variants={pageItem}>
-            <Card className="glass-effect overflow-hidden border-white/[0.06]">
+            <Card className="glass-effect overflow-hidden border-border">
               <CardContent className="p-0">
                 <Table>
                   <TableSkeleton rows={5} cols={6} />
@@ -311,7 +311,7 @@ const Customers = () => {
           </motion.section>
         ) : (
           <motion.section key="table" variants={pageItem}>
-            <Card className="glass-effect overflow-hidden border-white/[0.06]">
+            <Card className="glass-effect overflow-hidden border-border">
               <CardContent className="p-0 overflow-x-auto">
                 <CustomersTable
                   customers={paginatedCustomers}

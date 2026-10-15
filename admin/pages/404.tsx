@@ -73,7 +73,7 @@ const NotFoundPage = () => {
             <Button
               size="lg"
               variant="outline"
-              className="rounded-xl gap-2 px-6 border-white/[0.08]"
+              className="rounded-xl gap-2 px-6 border-border hover:bg-accent"
               asChild
             >
               <Link href="/products">

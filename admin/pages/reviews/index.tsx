@@ -72,7 +72,7 @@ const Reviews = () => {
           key={i}
           size={13}
           className={
-            i < rating ? "fill-amber-400 text-amber-400" : "text-white/10"
+            i < rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"
           }
         />
       ))}
@@ -125,7 +125,7 @@ const Reviews = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search reviews by customer, product, or keyword..."
-              className="pl-10 bg-white/[0.04] border-white/[0.08] rounded-xl h-9"
+              className="pl-10 bg-background border-border rounded-xl h-9"
             />
           </div>
         </div>
@@ -150,10 +150,10 @@ const Reviews = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.03 }}
             >
-              <Card className="glass-effect glass-hover border-white/[0.06] transition-colors">
+              <Card className="glass-effect glass-hover border-border transition-colors">
                 <CardContent className="p-5">
                   <div className="flex items-start gap-4">
-                    <Avatar className="h-10 w-10 shrink-0 border border-white/[0.06]">
+                    <Avatar className="h-10 w-10 shrink-0 border border-border">
                       <AvatarFallback className="gradient-purple text-white text-xs font-bold">
                         {review.customer
                           .split(" ")
@@ -195,7 +195,7 @@ const Reviews = () => {
                       <p className="text-sm text-muted-foreground/90 leading-relaxed">
                         {review.comment}
                       </p>
-                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[0.04]">
+                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/60">
                         <span className="text-xs text-muted-foreground flex items-center gap-1">
                           <ThumbsUp size={11} /> {review.helpful} people found this helpful
                         </span>
@@ -203,7 +203,7 @@ const Reviews = () => {
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="text-xs h-7 hover:bg-white/[0.06] rounded-lg"
+                            className="text-xs h-7 hover:bg-accent rounded-lg"
                           >
                             Moderate
                           </Button>

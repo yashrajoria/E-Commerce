@@ -252,10 +252,10 @@ const OrderDetailsPage = () => {
             toast.success(`Status → ${v}`);
           }}
         >
-          <SelectTrigger className="w-[150px] h-8 text-xs bg-white/[0.03] border-white/[0.08] rounded-xl">
+          <SelectTrigger className="w-[150px] h-8 text-xs bg-background border-border rounded-xl">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="glass-effect border-white/[0.08]">
+          <SelectContent className="glass-effect border-border">
             {(
               [
                 "pending",
@@ -333,8 +333,8 @@ const OrderDetailsPage = () => {
         className="grid grid-cols-1 lg:grid-cols-3 gap-6"
       >
         <div className="lg:col-span-2 space-y-6">
-          <Card className="glass-effect border-white/[0.06] overflow-hidden">
-            <CardHeader className="border-b border-white/[0.04] pb-4">
+          <Card className="glass-effect border-border overflow-hidden">
+            <CardHeader className="border-b border-border/60 pb-4">
               <CardTitle className="text-base flex items-center gap-2">
                 <Package size={16} className="text-primary" /> Order Items
               </CardTitle>
@@ -342,7 +342,7 @@ const OrderDetailsPage = () => {
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-white/[0.04]">
+                  <TableRow className="border-border/60">
                     <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
                       Product
                     </TableHead>
@@ -364,11 +364,11 @@ const OrderDetailsPage = () => {
                   {order.items.map((it) => (
                     <TableRow
                       key={it._id}
-                      className="border-white/[0.04] hover:bg-white/[0.02]"
+                      className="border-border/40 hover:bg-accent/40"
                     >
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-lg bg-white/[0.04] flex items-center justify-center">
+                          <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
                             <Package
                               size={16}
                               className="text-muted-foreground"
@@ -394,8 +394,8 @@ const OrderDetailsPage = () => {
             </CardContent>
           </Card>
 
-          <Card className="glass-effect border-white/[0.06]">
-            <CardHeader className="border-b border-white/[0.04] pb-4">
+          <Card className="glass-effect border-border">
+            <CardHeader className="border-b border-border/60 pb-4">
               <CardTitle className="text-base flex items-center gap-2">
                 <DollarSign size={16} className="text-primary" /> Summary
               </CardTitle>
@@ -419,7 +419,7 @@ const OrderDetailsPage = () => {
                   </span>
                 </div>
               )}
-              <Separator className="bg-white/[0.06]" />
+              <Separator className="bg-border/60" />
               <div className="flex justify-between text-lg font-bold">
                 <span>Total</span>
                 <span className="text-gradient">£{order.total.toFixed(2)}</span>
@@ -429,8 +429,8 @@ const OrderDetailsPage = () => {
         </div>
 
         <div className="space-y-6">
-          <Card className="glass-effect border-white/[0.06]">
-            <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-white/[0.04]">
+          <Card className="glass-effect border-border">
+            <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-border/60">
               <CardTitle className="text-sm font-semibold">Customer</CardTitle>
               <User size={14} className="text-primary" />
             </CardHeader>
@@ -456,8 +456,8 @@ const OrderDetailsPage = () => {
               )}
             </CardContent>
           </Card>
-          <Card className="glass-effect border-white/[0.06]">
-            <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-white/[0.04]">
+          <Card className="glass-effect border-border">
+            <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-border/60">
               <CardTitle className="text-sm font-semibold">Shipping</CardTitle>
               <MapPin size={14} className="text-primary" />
             </CardHeader>
@@ -470,8 +470,8 @@ const OrderDetailsPage = () => {
               <p>{order.shippingAddress.country}</p>
             </CardContent>
           </Card>
-          <Card className="glass-effect border-white/[0.06]">
-            <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-white/[0.04]">
+          <Card className="glass-effect border-border">
+            <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-border/60">
               <CardTitle className="text-sm font-semibold">Billing</CardTitle>
               <CreditCard size={14} className="text-primary" />
             </CardHeader>
@@ -485,8 +485,8 @@ const OrderDetailsPage = () => {
             </CardContent>
           </Card>
           {order.notes && (
-            <Card className="glass-effect border-white/[0.06]">
-              <CardHeader className="pb-3 border-b border-white/[0.04]">
+            <Card className="glass-effect border-border">
+              <CardHeader className="pb-3 border-b border-border/60">
                 <CardTitle className="text-sm font-semibold">Notes</CardTitle>
               </CardHeader>
               <CardContent className="pt-4 text-sm text-muted-foreground">
@@ -504,14 +504,14 @@ const OrderDetailsPage = () => {
         <Button
           variant="outline"
           size="sm"
-          className="gap-2 rounded-xl border-white/[0.08]"
+          className="gap-2 rounded-xl border-border hover:bg-accent"
         >
           <Printer size={14} /> Print
         </Button>
         <Button
           variant="outline"
           size="sm"
-          className="gap-2 rounded-xl border-white/[0.08]"
+          className="gap-2 rounded-xl border-border hover:bg-accent"
         >
           <Send size={14} /> Email
         </Button>

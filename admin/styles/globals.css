@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
 /* ═══════════════════════════════════════════════════
    SHOPSWIFT ADMIN OPERATIONAL DESIGN SYSTEM
    - High data-density & operational clarity
@@ -9,12 +11,7 @@
    ═══════════════════════════════════════════════════ */
 
 :root,
-html.theme-admin,
-body.theme-admin,
-.theme-admin,
-html.theme-storefront,
-body.theme-storefront,
-.theme-storefront {
+.theme-admin {
   /* Core Operational Palette (Light by default) - Crisp, high-contrast & modern */
   --background: oklch(0.984 0.004 240);
   --foreground: oklch(0.14 0.02 260);
@@ -31,7 +28,7 @@ body.theme-storefront,
   --secondary-foreground: oklch(0.20 0.02 260);
 
   --muted: oklch(0.96 0.005 240);
-  --muted-foreground: oklch(0.50 0.02 250);
+  --muted-foreground: oklch(0.42 0.02 250);
 
   --accent: oklch(0.56 0.16 65);
   --accent-foreground: oklch(0.99 0 0);
@@ -39,8 +36,8 @@ body.theme-storefront,
   --destructive: oklch(0.55 0.20 26);
   --destructive-foreground: oklch(0.99 0 0);
 
-  --border: oklch(0.90 0.006 240);
-  --input: oklch(0.90 0.006 240);
+  --border: oklch(0.88 0.008 240);
+  --input: oklch(0.88 0.008 240);
   --ring: oklch(0.42 0.11 162);
   --radius: 0.5rem;
 
@@ -55,7 +52,7 @@ body.theme-storefront,
   --sidebar-primary-foreground: oklch(0.99 0 0);
   --sidebar-accent: oklch(0.96 0.005 240);
   --sidebar-accent-foreground: oklch(0.14 0.02 260);
-  --sidebar-border: oklch(0.90 0.006 240);
+  --sidebar-border: oklch(0.88 0.008 240);
   --sidebar-ring: oklch(0.42 0.11 162);
 
   /* Legacy Color Compatibility */
@@ -72,24 +69,28 @@ body.theme-storefront,
 }
 
 .dark,
-[data-theme="dark"] {
+[data-theme="dark"],
+html.dark,
+body.dark,
+.dark .theme-admin,
+.theme-admin.dark {
   /* Warm Basalt Graphite Operational Dark Mode — not pitch black */
   --background: oklch(0.18 0.012 60);
-  --foreground: oklch(0.95 0.006 85);
+  --foreground: oklch(0.96 0.006 85);
   --card: oklch(0.22 0.014 60);
-  --card-foreground: oklch(0.95 0.006 85);
-  --popover: oklch(0.26 0.014 60);
-  --popover-foreground: oklch(0.95 0.006 85);
+  --card-foreground: oklch(0.96 0.006 85);
+  --popover: oklch(0.24 0.014 60);
+  --popover-foreground: oklch(0.96 0.006 85);
 
   --primary: oklch(0.66 0.12 162);
   --primary-foreground: oklch(0.15 0.02 162);
   --primary-hover: oklch(0.72 0.12 162);
 
   --secondary: oklch(0.26 0.012 60);
-  --secondary-foreground: oklch(0.95 0.006 85);
+  --secondary-foreground: oklch(0.96 0.006 85);
 
   --muted: oklch(0.26 0.014 60);
-  --muted-foreground: oklch(0.68 0.008 65);
+  --muted-foreground: oklch(0.74 0.010 65);
 
   --accent: oklch(0.74 0.15 65);
   --accent-foreground: oklch(0.18 0.015 65);
@@ -106,11 +107,11 @@ body.theme-storefront,
   --info: oklch(0.66 0.12 225);
 
   --sidebar-background: oklch(0.19 0.012 60);
-  --sidebar-foreground: oklch(0.95 0.006 85);
+  --sidebar-foreground: oklch(0.96 0.006 85);
   --sidebar-primary: oklch(0.66 0.12 162);
   --sidebar-primary-foreground: oklch(0.15 0.02 162);
   --sidebar-accent: oklch(0.26 0.012 60);
-  --sidebar-accent-foreground: oklch(0.95 0.006 85);
+  --sidebar-accent-foreground: oklch(0.96 0.006 85);
   --sidebar-border: oklch(0.32 0.010 60);
   --sidebar-ring: oklch(0.66 0.12 162);
 
@@ -171,6 +172,61 @@ body {
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
   }
 
+  /*
+   * Compatibility utilities for older admin screens.
+   * Keep these tied to the operational tokens so legacy pages remain legible
+   * in both light and dark themes.
+   */
+  .gradient-purple {
+    background: linear-gradient(135deg, oklch(0.42 0.11 162), oklch(0.48 0.14 180));
+    color: #ffffff;
+  }
+
+  .dark .gradient-purple,
+  [data-theme="dark"] .gradient-purple {
+    background: linear-gradient(135deg, oklch(0.50 0.12 162), oklch(0.55 0.14 180));
+    color: #ffffff;
+  }
+
+  .gradient-emerald {
+    background: linear-gradient(135deg, oklch(0.42 0.11 162), oklch(0.52 0.14 148));
+    color: #ffffff;
+  }
+
+  .gradient-rose {
+    background: linear-gradient(135deg, oklch(0.55 0.20 26), oklch(0.56 0.16 65));
+    color: #ffffff;
+  }
+
+  .glass-effect {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.05);
+  }
+
+  .glass-effect-strong {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.08);
+  }
+
+  .glass-hover {
+    transition: border-color 150ms ease, background-color 150ms ease;
+  }
+
+  .glass-hover:hover {
+    background-color: var(--muted);
+    border-color: var(--border);
+  }
+
+  .border-gradient {
+    border-color: var(--border);
+  }
+
+  .glow-purple {
+    box-shadow: 0 8px 24px color-mix(in oklab, var(--primary) 24%, transparent);
+  }
+
   .table-cell-dense {
     padding-top: 0.625rem;
     padding-bottom: 0.625rem;
@@ -213,4 +269,15 @@ body {
 
 .animate-slide-up {
   animation: slideUp 0.3s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

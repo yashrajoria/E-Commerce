@@ -120,7 +120,7 @@ const Returns = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by return ID, order, product, or customer..."
-              className="pl-10 bg-white/[0.04] border-white/[0.08] rounded-xl h-9"
+              className="pl-10 bg-background border-border rounded-xl h-9"
             />
           </div>
         </div>
@@ -128,7 +128,7 @@ const Returns = () => {
 
       {/* Table */}
       <motion.section variants={pageItem}>
-        <Card className="glass-effect overflow-hidden border-white/[0.06]">
+        <Card className="glass-effect overflow-hidden border-border">
           <CardContent className="p-0 overflow-x-auto">
             {isLoading ? (
               <TableSkeleton rows={5} />
@@ -142,7 +142,7 @@ const Returns = () => {
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow className="border-white/[0.04]">
+                  <TableRow className="border-border/60">
                     <TableHead className="text-xs uppercase tracking-wider text-muted-foreground">
                       Return ID
                     </TableHead>
@@ -173,7 +173,7 @@ const Returns = () => {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.03 }}
-                      className="border-white/[0.04] hover:bg-white/[0.02] transition-colors"
+                      className="border-border/40 hover:bg-accent/40 transition-colors"
                     >
                       <TableCell>
                         <span className="font-mono text-xs font-semibold">
@@ -211,7 +211,7 @@ const Returns = () => {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="text-xs hover:bg-white/[0.06] rounded-lg h-7"
+                          className="text-xs hover:bg-accent rounded-lg h-7"
                         >
                           Review
                         </Button>

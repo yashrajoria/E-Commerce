@@ -109,7 +109,7 @@ export default function EditProductPage() {
                 <button
                   type="button"
                   onClick={() => router.back()}
-                  className="mr-2 px-4 py-2 rounded-xl border border-white/[0.06]"
+                  className="mr-2 px-4 py-2 rounded-xl border border-border hover:bg-accent transition-colors text-sm"
                 >
                   Cancel
                 </button>

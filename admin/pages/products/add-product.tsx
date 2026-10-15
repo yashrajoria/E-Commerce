@@ -60,7 +60,7 @@ const AddProductPage = () => {
         <Button
           variant="outline"
           size="sm"
-          className="gap-2 text-xs border-white/[0.08] hover:bg-white/[0.04] rounded-xl h-8"
+          className="gap-2 text-xs border-border hover:bg-accent rounded-xl h-8"
           asChild
         >
           <Link href="/products">
@@ -148,7 +148,7 @@ const AddProductPage = () => {
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="border-white/[0.08] hover:bg-white/[0.04] rounded-xl h-9"
+                      className="border-border hover:bg-accent rounded-xl h-9"
                       onClick={() => form.reset()}
                     >
                       Reset

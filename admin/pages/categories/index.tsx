@@ -210,7 +210,7 @@ const Categories = () => {
                 setCurrentPage(1);
               }}
               placeholder="Search categories..."
-              className="pl-10 bg-white/[0.04] border-white/[0.08] rounded-xl h-9"
+              className="pl-10 bg-background border-border rounded-xl h-9"
             />
           </div>
         </div>

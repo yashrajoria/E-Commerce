@@ -230,7 +230,7 @@ const Orders = () => {
 
       {/* ── Status Update Dialog ── */}
       <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
-        <DialogContent className="sm:max-w-md glass-effect-strong border-white/[0.08]">
+        <DialogContent className="sm:max-w-md glass-effect-strong border-border">
           <DialogHeader>
             <DialogTitle>Update Order Status</DialogTitle>
             <DialogDescription>
@@ -246,10 +246,10 @@ const Orders = () => {
                 setIsUpdateDialogOpen(false);
               }}
             >
-              <SelectTrigger className="bg-white/[0.03] border-white/[0.08] rounded-xl">
+              <SelectTrigger className="bg-background border-border rounded-xl">
                 <SelectValue placeholder="Select new status" />
               </SelectTrigger>
-              <SelectContent className="glass-effect border-white/[0.08]">
+              <SelectContent className="glass-effect border-border">
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="processing">Processing</SelectItem>
                 <SelectItem value="shipped">Shipped</SelectItem>
@@ -262,7 +262,7 @@ const Orders = () => {
             <Button
               variant="outline"
               onClick={() => setIsUpdateDialogOpen(false)}
-              className="rounded-xl border-white/[0.08]"
+              className="rounded-xl border-border"
             >
               Cancel
             </Button>

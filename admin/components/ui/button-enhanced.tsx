@@ -13,10 +13,10 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: 'bg-gradient-to-r from-purple-600 to-purple-700 text-white hover:shadow-lg hover:shadow-purple-500/50 active:scale-95',
-        secondary: 'bg-white/10 text-foreground hover:bg-white/20 border border-white/20',
+        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border',
         destructive: 'bg-red-600 text-white hover:bg-red-700 active:scale-95',
-        outline: 'border border-white/30 text-foreground hover:bg-white/5',
-        ghost: 'text-foreground hover:bg-white/5',
+        outline: 'border border-border text-foreground hover:bg-accent',
+        ghost: 'text-foreground hover:bg-accent',
         success: 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95',
       },
       size: {

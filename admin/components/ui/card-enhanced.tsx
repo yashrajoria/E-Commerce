@@ -12,10 +12,10 @@ const cardVariants = cva(
   {
     variants: {
       variant: {
-        default: 'glass-effect border-white/10 bg-white/5 hover:bg-white/8',
-        elevated: 'glass-effect border-white/15 bg-white/8 shadow-lg shadow-black/20',
-        flat: 'bg-white/2 border-white/5',
-        outline: 'border-white/20 bg-transparent hover:bg-white/2',
+        default: 'glass-effect border-border bg-card hover:bg-accent/40',
+        elevated: 'glass-effect border-border bg-card shadow-lg shadow-black/10',
+        flat: 'bg-muted/40 border border-border',
+        outline: 'border-border bg-transparent hover:bg-accent/40',
         success: 'border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10',
         error: 'border-red-500/30 bg-red-500/5 hover:bg-red-500/10',
       },
@@ -65,7 +65,7 @@ const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(
     <div
       ref={ref}
       className={cn(
-        'flex flex-col space-y-1.5 border-b border-white/10 px-6 py-4',
+        'flex flex-col space-y-1.5 border-b border-border px-6 py-4',
         sticky && 'sticky top-0 z-10',
         className
       )}
@@ -129,7 +129,7 @@ const CardFooter = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      'flex items-center border-t border-white/10 px-6 py-3',
+      'flex items-center border-t border-border px-6 py-3',
       className
     )}
     {...props}

@@ -8,6 +8,7 @@ import CustomerInsights from "@/components/dashboard/CustomerInsights";
 import RevenueForecast from "@/components/dashboard/RevenueForecast";
 import QuickActions from "@/components/dashboard/QuickActions";
 import { LiveIndicator } from "@/components/dashboard/LiveIndicator";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -136,6 +137,7 @@ const Dashboard = ({ name }: { name: string }) => {
             {/* Right: Actions */}
             <div className="flex items-center gap-2">
               <LiveIndicator />
+              <ThemeToggle />
 
               <TooltipProvider delayDuration={0}>
                 <Tooltip>

@@ -115,11 +115,11 @@ const Profile = () => {
           {/* Profile Tab */}
           <TabsContent value="profile" className="space-y-6 mt-6">
             {/* Avatar Card */}
-            <Card className="glass-effect border-white/[0.06] overflow-hidden">
+            <Card className="glass-effect border-border overflow-hidden">
               <CardContent className="p-6">
                 <div className="flex flex-col sm:flex-row items-center gap-6">
                   <div className="relative group">
-                    <Avatar className="h-24 w-24 border-2 border-white/[0.08]">
+                    <Avatar className="h-24 w-24 border-2 border-border">
                       <AvatarImage src={avatar || undefined} />
                       <AvatarFallback className="gradient-purple text-white text-2xl font-bold">
                         {name
@@ -155,7 +155,7 @@ const Profile = () => {
             </Card>
 
             {/* Personal Info */}
-            <Card className="glass-effect border-white/[0.06]">
+            <Card className="glass-effect border-border">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <User className="h-5 w-5 text-purple-400" /> Personal
@@ -173,7 +173,7 @@ const Profile = () => {
                     <Input
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="bg-white/[0.04] border-white/[0.08] rounded-xl h-10"
+                      className="bg-background border-border rounded-xl h-10"
                     />
                   </div>
                   <div className="space-y-2">
@@ -185,7 +185,7 @@ const Profile = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       type="email"
-                      className="bg-white/[0.04] border-white/[0.08] rounded-xl h-10"
+                      className="bg-background border-border rounded-xl h-10"
                     />
                   </div>
                   <div className="space-y-2">
@@ -196,7 +196,7 @@ const Profile = () => {
                     <Input
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="bg-white/[0.04] border-white/[0.08] rounded-xl h-10"
+                      className="bg-background border-border rounded-xl h-10"
                     />
                   </div>
                   <div className="space-y-2">
@@ -207,7 +207,7 @@ const Profile = () => {
                     <Input
                       value="UTC-5 (Eastern)"
                       disabled
-                      className="bg-white/[0.04] border-white/[0.08] rounded-xl h-10 opacity-60"
+                      className="bg-background border-border rounded-xl h-10 opacity-60"
                     />
                   </div>
                 </div>
@@ -226,7 +226,7 @@ const Profile = () => {
 
           {/* Security Tab */}
           <TabsContent value="security" className="space-y-6 mt-6">
-            <Card className="glass-effect border-white/[0.06]">
+            <Card className="glass-effect border-border">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Lock className="h-5 w-5 text-purple-400" /> Change Password
@@ -242,7 +242,7 @@ const Profile = () => {
                     type="password"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="bg-white/[0.04] border-white/[0.08] rounded-xl h-10"
+                    className="bg-background border-border rounded-xl h-10"
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -252,7 +252,7 @@ const Profile = () => {
                       type="password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      className="bg-white/[0.04] border-white/[0.08] rounded-xl h-10"
+                      className="bg-background border-border rounded-xl h-10"
                     />
                   </div>
                   <div className="space-y-2">
@@ -261,7 +261,7 @@ const Profile = () => {
                       type="password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="bg-white/[0.04] border-white/[0.08] rounded-xl h-10"
+                      className="bg-background border-border rounded-xl h-10"
                     />
                   </div>
                 </div>
@@ -277,7 +277,7 @@ const Profile = () => {
               </CardContent>
             </Card>
 
-            <Card className="glass-effect border-white/[0.06]">
+            <Card className="glass-effect border-border">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Shield className="h-5 w-5 text-emerald-400" /> Two-Factor
@@ -288,7 +288,7 @@ const Profile = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-border">
                   <div>
                     <p className="font-medium text-sm">Enable 2FA</p>
                     <p className="text-xs text-muted-foreground">
@@ -303,7 +303,7 @@ const Profile = () => {
 
           {/* Notifications Tab */}
           <TabsContent value="notifications" className="space-y-6 mt-6">
-            <Card className="glass-effect border-white/[0.06]">
+            <Card className="glass-effect border-border">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Bell className="h-5 w-5 text-purple-400" /> Notification
@@ -341,14 +341,14 @@ const Profile = () => {
                   },
                 ].map(({ label, desc, value, setter }, i) => (
                   <div key={label}>
-                    <div className="flex items-center justify-between p-4 rounded-xl hover:bg-white/[0.02] transition-colors">
+                    <div className="flex items-center justify-between p-4 rounded-xl hover:bg-accent/40 transition-colors">
                       <div>
                         <p className="font-medium text-sm">{label}</p>
                         <p className="text-xs text-muted-foreground">{desc}</p>
                       </div>
                       <Switch checked={value} onCheckedChange={setter} />
                     </div>
-                    {i < 3 && <Separator className="bg-white/[0.04]" />}
+                    {i < 3 && <Separator className="bg-border/60" />}
                   </div>
                 ))}
               </CardContent>

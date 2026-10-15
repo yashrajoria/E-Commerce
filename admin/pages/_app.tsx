@@ -9,10 +9,11 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { motion, AnimatePresence } from "framer-motion";
 import { ContextualAIAssistant } from "@/components/ai/ContextualAIAssistant";
 import { resolveAIPageContext } from "@/lib/ai-contextual-assistant";
-import { useAdminSession, AdminSessionProvider } from "@/lib/useAdminSession";
+import { AdminSessionProvider, useAdminSession } from "@/lib/useAdminSession";
 import { StoreProvider } from "@/lib/useStore";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { ThemeProvider } from "next-themes";
 
 // Admin JWT refresh must not hit storefront `/api/user/auth/refresh`.
 setAuthRefreshUrl("/api/admin/auth/refresh");
@@ -208,7 +209,7 @@ function AppContent({ Component, pageProps, router }: AppProps) {
           position="top-right"
           toastOptions={{
             className:
-              "glass-effect-strong border border-white/[0.08] text-foreground",
+              "glass-effect-strong border border-border text-foreground shadow-md",
             duration: 4000,
           }}
           closeButton
@@ -237,10 +238,17 @@ function AppContent({ Component, pageProps, router }: AppProps) {
 
 export default function App(props: AppProps) {
   return (
-    <AdminSessionProvider>
-      <StoreProvider>
-        <AppContent {...props} />
-      </StoreProvider>
-    </AdminSessionProvider>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
+      <AdminSessionProvider>
+        <StoreProvider>
+          <AppContent {...props} />
+        </StoreProvider>
+      </AdminSessionProvider>
+    </ThemeProvider>
   );
 }

@@ -124,7 +124,7 @@ const OnboardingPage = () => {
     >
       <motion.div variants={pageItem} className="space-y-6">
         {/* Progress header */}
-        <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
+        <div className="flex items-center justify-between pb-4 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl gradient-purple flex items-center justify-center text-white">
               <Sparkles size={20} />
@@ -143,7 +143,7 @@ const OnboardingPage = () => {
                     ? "w-8 bg-primary"
                     : step > s
                     ? "w-4 bg-emerald-400"
-                    : "w-4 bg-white/[0.1]"
+                    : "w-4 bg-muted"
                 }`}
               />
             ))}
@@ -160,7 +160,7 @@ const OnboardingPage = () => {
               exit={{ opacity: 0, x: -20 }}
               className="space-y-6"
             >
-              <Card className="glass-effect border-white/[0.08]">
+              <Card className="glass-effect border-border">
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
                     <Store className="h-4 w-4 text-purple-400" /> Store Identity
@@ -181,7 +181,7 @@ const OnboardingPage = () => {
                           setStoreSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-"));
                         }
                       }}
-                      className="h-10 text-xs bg-white/[0.04]"
+                      className="h-10 text-xs bg-background border-border"
                     />
                   </div>
 
@@ -193,7 +193,7 @@ const OnboardingPage = () => {
                         placeholder="nexus-apparel"
                         value={storeSlug}
                         onChange={(e) => setStoreSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
-                        className="h-10 text-xs font-mono bg-white/[0.04]"
+                        className="h-10 text-xs font-mono bg-background border-border"
                       />
                     </div>
                   </div>
@@ -203,7 +203,7 @@ const OnboardingPage = () => {
                     <select
                       value={currency}
                       onChange={(e) => setCurrency(e.target.value)}
-                      className="h-10 w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-1 text-xs text-foreground focus:ring-1 focus:ring-ring"
+                      className="h-10 w-full rounded-xl border border-border bg-background px-3 py-1 text-xs text-foreground focus:ring-1 focus:ring-ring"
                     >
                       <option value="USD">USD ($)</option>
                       <option value="EUR">EUR (€)</option>
@@ -232,7 +232,7 @@ const OnboardingPage = () => {
               exit={{ opacity: 0, x: -20 }}
               className="space-y-6"
             >
-              <Card className="glass-effect border-white/[0.08]">
+              <Card className="glass-effect border-border">
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
                     <Zap className="h-4 w-4 text-amber-400" /> Select Subscription Plan
@@ -252,7 +252,7 @@ const OnboardingPage = () => {
                           className={`p-4 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
                             isSelected
                               ? "border-primary bg-primary/10 shadow-md shadow-primary/10"
-                              : "border-white/[0.08] bg-white/[0.02] hover:border-white/[0.2]"
+                              : "border-border bg-card hover:border-primary/40"
                           }`}
                         >
                           <div>
@@ -281,7 +281,7 @@ const OnboardingPage = () => {
               </Card>
 
               <div className="flex justify-between">
-                <Button variant="outline" onClick={() => setStep(1)} className="gap-2 text-xs h-10 px-5 rounded-xl">
+                <Button variant="outline" onClick={() => setStep(1)} className="gap-2 text-xs h-10 px-5 rounded-xl border-border hover:bg-accent">
                   <ArrowLeft size={14} /> Back
                 </Button>
                 <Button onClick={handleStep2Next} className="gradient-purple text-white gap-2 text-xs h-10 px-6 rounded-xl">
@@ -299,7 +299,7 @@ const OnboardingPage = () => {
               exit={{ opacity: 0, x: -20 }}
               className="space-y-6"
             >
-              <Card className="glass-effect border-white/[0.08]">
+              <Card className="glass-effect border-border">
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
                     <Palette className="h-4 w-4 text-purple-400" /> Initial Theme & Aesthetics
@@ -316,12 +316,12 @@ const OnboardingPage = () => {
                         type="color"
                         value={primaryColor}
                         onChange={(e) => setPrimaryColor(e.target.value)}
-                        className="h-10 w-16 rounded-xl bg-transparent border border-white/[0.1] cursor-pointer"
+                        className="h-10 w-16 rounded-xl bg-transparent border border-border cursor-pointer"
                       />
                       <Input
                         value={primaryColor}
                         onChange={(e) => setPrimaryColor(e.target.value)}
-                        className="h-10 text-xs font-mono bg-white/[0.04] max-w-[140px]"
+                        className="h-10 text-xs font-mono bg-background border-border max-w-[140px]"
                       />
                     </div>
                   </div>

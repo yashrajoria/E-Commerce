@@ -12,6 +12,7 @@ import { StoreSwitcher } from "@/components/dashboard/StoreSwitcher";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bell, Search, LogOut } from "lucide-react";
 import { MenuIcon, CloseIcon, SearchIcon } from "@ecommerce/shared";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import Head from "next/head";
 import Link from "next/link";
 import { useState, ReactNode } from "react";
@@ -137,6 +138,7 @@ const PageLayout = ({
             <div className="flex items-center gap-2">
               <StoreSwitcher />
               <LiveIndicator />
+              <ThemeToggle />
               <TooltipProvider delayDuration={0}>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -193,11 +195,11 @@ const PageLayout = ({
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                className="md:hidden border-t border-white/[0.04] px-4 py-2 overflow-hidden"
+                className="md:hidden border-t border-border px-4 py-2 overflow-hidden bg-card"
               >
                 <Input
                   placeholder="Search..."
-                  className="h-9 bg-white/[0.03] border-white/[0.06] text-sm rounded-xl"
+                  className="h-9 bg-background border-border text-foreground text-sm rounded-lg"
                   autoFocus
                 />
               </motion.div>
