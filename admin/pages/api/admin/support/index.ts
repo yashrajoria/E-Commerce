@@ -57,7 +57,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     };
 
     return res.status(200).json({ tickets, stats });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Support API error:", error);
     return res.status(500).json({ error: "Failed to fetch support tickets from database" });
   }

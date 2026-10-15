@@ -69,7 +69,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     };
 
     return res.status(200).json({ returns, stats });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Returns API error:", error);
     return res.status(500).json({ error: "Failed to fetch returns from database" });
   }

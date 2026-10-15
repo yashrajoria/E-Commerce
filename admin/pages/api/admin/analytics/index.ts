@@ -133,7 +133,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       trafficSources,
       stats,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Analytics API error:", error);
     return res.status(500).json({ error: "Failed to generate analytics from database" });
   }

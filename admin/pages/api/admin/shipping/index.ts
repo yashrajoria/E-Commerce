@@ -58,7 +58,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         st === "in_transit"
           ? "in-transit"
           : st === "delivered" || st === "shipped" || st === "delayed" || st === "in-transit"
-            ? (st as any)
+            ? (st as "processing" | "shipped" | "in-transit" | "delivered" | "delayed")
             : "processing";
 
       const estDate = r.estimated_delivery
@@ -90,7 +90,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     };
 
     return res.status(200).json({ shipments, stats });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Shipping API error:", error);
     return res.status(500).json({ error: "Failed to fetch shipments from database" });
   }

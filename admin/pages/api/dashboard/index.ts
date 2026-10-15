@@ -65,12 +65,29 @@ async function getDbOrderCharts() {
   }
 }
 
+interface DashboardData {
+  kpis?: {
+    totalRevenue?: { value: number; trend: number };
+    totalOrders?: { value: number; trend: number };
+    totalProducts?: { value: number; trend: number };
+    activeUsers?: { value: number; trend: number };
+    [key: string]: unknown;
+  };
+  revenueCharts?: unknown;
+  topProducts?: unknown;
+  recentActivity?: unknown;
+  customerInsights?: unknown;
+  orderCharts?: unknown;
+  revenueForecast?: unknown;
+  [key: string]: unknown;
+}
+
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  let dashboardData: any = null;
+  let dashboardData: DashboardData | null = null;
 
   try {
     const response = await axios.get(
@@ -82,9 +99,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         timeout: 5000,
       }
     );
-    dashboardData = response.data?.data ?? response.data;
+    dashboardData = (response.data?.data ?? response.data) as DashboardData;
   } catch (backendError) {
-    console.warn("Backend gateway dashboard failed, falling back to direct DB queries:", (backendError as any)?.message);
+    console.warn(
+      "Backend gateway dashboard failed, falling back to direct DB queries:",
+      backendError instanceof Error ? backendError.message : String(backendError)
+    );
   }
 
   // If backend did not succeed or returned empty, assemble from Postgres directly
