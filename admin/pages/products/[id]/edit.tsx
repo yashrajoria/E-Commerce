@@ -7,6 +7,9 @@ import { useRouter } from "next/router";
 import { FormProvider } from "react-hook-form";
 import { useProductForm } from "@/hooks/useProductForm";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { Button } from "@/components/ui/button";
+import { Sparkles } from "lucide-react";
+import { AIMerchantStudioModal } from "@/components/ai/AIMerchantStudioModal";
 import { motion } from "framer-motion";
 
 export default function EditProductPage() {
@@ -17,6 +20,7 @@ export default function EditProductPage() {
     { file: File | null; preview?: string; url?: string }[]
   >([]);
   const [imagePreview, setImagePreview] = useState<File | null>(null);
+  const [isAIStudioOpen, setIsAIStudioOpen] = useState(false);
 
   // prepare initialData for form when product is loaded
   const p = product as Product | undefined;
@@ -76,6 +80,18 @@ export default function EditProductPage() {
     router.push(`/products/${id}`);
   });
 
+  const handleApplyAIStudio = (data: {
+    name: string;
+    description: string;
+    price?: number;
+    brand?: string;
+  }) => {
+    form.setValue("name", data.name, { shouldValidate: true });
+    form.setValue("description", data.description, { shouldValidate: true });
+    if (data.price) form.setValue("price", data.price, { shouldValidate: true });
+    if (data.brand) form.setValue("brand", data.brand, { shouldValidate: true });
+  };
+
   return (
     <PageLayout
       title="Edit Product"
@@ -83,6 +99,18 @@ export default function EditProductPage() {
         { label: "Products", href: "/products" },
         { label: "Edit" },
       ]}
+      headerActions={
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setIsAIStudioOpen(true)}
+          className="gap-2 text-xs border-purple-500/40 text-purple-600 dark:text-purple-400 hover:bg-purple-500/10 rounded-xl h-8 font-semibold"
+        >
+          <Sparkles size={13} />
+          AI Studio Magic
+        </Button>
+      }
     >
       <motion.section variants={pageItem} className="space-y-6">
         <FormProvider {...form}>
@@ -124,6 +152,13 @@ export default function EditProductPage() {
           </form>
         </FormProvider>
       </motion.section>
+
+      <AIMerchantStudioModal
+        isOpen={isAIStudioOpen}
+        onClose={() => setIsAIStudioOpen(false)}
+        initialName={form.watch("name")}
+        onApply={handleApplyAIStudio}
+      />
     </PageLayout>
   );
 }

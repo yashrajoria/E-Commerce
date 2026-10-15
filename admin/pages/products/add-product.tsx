@@ -11,11 +11,13 @@ import { Package, FileSpreadsheet, ArrowLeft, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import type { UploadedImage } from "@/hooks/useProductForm";
+import { AIMerchantStudioModal } from "@/components/ai/AIMerchantStudioModal";
 
 const AddProductPage = () => {
   const [uploadMode, setUploadMode] = useState<"single" | "bulk">("single");
   const [imagePreview, setImagePreview] = useState<File | null>(null);
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
+  const [isAIStudioOpen, setIsAIStudioOpen] = useState(false);
 
   const { form, onSubmitSingleProduct } = useProductForm(
     setImagePreview,
@@ -49,6 +51,18 @@ const AddProductPage = () => {
     setUploadedImages((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleApplyAIStudio = (data: {
+    name: string;
+    description: string;
+    price?: number;
+    brand?: string;
+  }) => {
+    form.setValue("name", data.name, { shouldValidate: true });
+    form.setValue("description", data.description, { shouldValidate: true });
+    if (data.price) form.setValue("price", data.price, { shouldValidate: true });
+    if (data.brand) form.setValue("brand", data.brand, { shouldValidate: true });
+  };
+
   return (
     <PageLayout
       title="Add Product"
@@ -57,17 +71,29 @@ const AddProductPage = () => {
         { label: "Add Product" },
       ]}
       headerActions={
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-2 text-xs border-border hover:bg-accent rounded-xl h-8"
-          asChild
-        >
-          <Link href="/products">
-            <ArrowLeft size={13} />
-            Back to Products
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsAIStudioOpen(true)}
+            className="gap-2 text-xs border-purple-500/40 text-purple-600 dark:text-purple-400 hover:bg-purple-500/10 rounded-xl h-8 font-semibold"
+          >
+            <Sparkles size={13} />
+            AI Studio Magic
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2 text-xs border-border hover:bg-accent rounded-xl h-8"
+            asChild
+          >
+            <Link href="/products">
+              <ArrowLeft size={13} />
+              Back to Products
+            </Link>
+          </Button>
+        </div>
       }
     >
       {/* Mode Toggle */}
@@ -181,6 +207,13 @@ const AddProductPage = () => {
           />
         )}
       </motion.section>
+
+      <AIMerchantStudioModal
+        isOpen={isAIStudioOpen}
+        onClose={() => setIsAIStudioOpen(false)}
+        initialName={form.watch("name")}
+        onApply={handleApplyAIStudio}
+      />
     </PageLayout>
   );
 };
