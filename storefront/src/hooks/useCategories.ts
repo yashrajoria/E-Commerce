@@ -68,21 +68,29 @@ const flattenCategoryTree = (items: RawCategory[]): Category[] => {
 };
 
 const fetchCategories = async (signal?: AbortSignal): Promise<Category[]> => {
-  const response = await axiosInstance.get(API_ROUTES.CATEGORIES.ALL, {
-    signal,
-  });
+  const categories: RawCategory[] = [];
+  let page = 1;
+  let totalPages = 1;
 
-  // Backend payload shape can vary (array, wrapped object, or null).
-  // Normalize to a safe array so category consumers can always map/filter.
-  if (Array.isArray(response.data)) {
-    return flattenCategoryTree(response.data as RawCategory[]);
-  }
+  do {
+    const response = await axiosInstance.get(API_ROUTES.CATEGORIES.ALL, {
+      params: { page, perPage: 100 },
+      signal,
+    });
+    const payload = response.data;
+    const pageItems = Array.isArray(payload)
+      ? payload
+      : Array.isArray(payload?.categories)
+        ? payload.categories
+        : Array.isArray(payload?.data)
+          ? payload.data
+          : [];
+    categories.push(...(pageItems as RawCategory[]));
+    totalPages = Number(payload?.meta?.totalPages ?? payload?.meta?.total_pages ?? 1) || 1;
+    page += 1;
+  } while (page <= totalPages);
 
-  if (Array.isArray(response.data?.data)) {
-    return flattenCategoryTree(response.data.data as RawCategory[]);
-  }
-
-  return [];
+  return flattenCategoryTree(categories);
 };
 
 export function useCategories() {

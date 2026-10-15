@@ -8,6 +8,7 @@ const SUPPORTED_AUTH_PATHS = new Set([
   "register",
   "status",
   "verify-email",
+  "resend-verification",
 ]);
 
 export default async function handler(

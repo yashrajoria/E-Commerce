@@ -11,7 +11,7 @@ export const API_ROUTES = {
     LOGIN: route('/user/auth/login'),
     REGISTER: route('/user/auth/register'),
     VERIFY_EMAIL: route('/user/auth/verify-email'),
-    RESEND_VERIFICATION: route('/bff/auth/resend-verification'),
+    RESEND_VERIFICATION: route('/user/auth/resend-verification'),
     REFRESH: route('/user/auth/refresh'),
     REQUEST_PASSWORD_RESET: route('/bff/auth/request-password-reset'),
     RESET_PASSWORD: route('/bff/auth/reset-password'),
