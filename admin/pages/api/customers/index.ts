@@ -7,7 +7,7 @@ const jsonError = (res: NextApiResponse, status: number, error: string) =>
   res.status(status).json({ error });
 
 async function handleGet(req: NextApiRequest, res: NextApiResponse) {
-  const { page = "1", page_size = "20" } = req.query;
+  const { page = "1", page_size = "20", search = "", role = "", sort = "", order = "" } = req.query;
   const cookie = req.headers.cookie;
 
   try {
@@ -19,6 +19,10 @@ async function handleGet(req: NextApiRequest, res: NextApiResponse) {
       params: {
         page: parseInt(page as string, 10) || 1,
         page_size: parseInt(page_size as string, 10) || 20,
+        search,
+        role,
+        sort,
+        order,
       },
       withCredentials: true,
     });
