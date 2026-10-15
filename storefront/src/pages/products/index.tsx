@@ -13,10 +13,12 @@ import {
 import { fetchProductsSsr, type SsrProductsResponse } from "@/lib/ssrProducts";
 import { formatGBP } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Filter, Grid, List, Search } from "lucide-react";
+import { Camera, Filter, Grid, List, Search } from "lucide-react";
 import type { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
+import { useState } from "react";
+import { VisualSearchModal } from "@/components/search/VisualSearchModal";
 
 type SearchPageProps = {
   initialCatalog: SsrProductsResponse | null;
@@ -63,6 +65,7 @@ export default function SearchPage({ initialCatalog }: SearchPageProps) {
     clearAllFilters,
     handlePageChange,
   } = useProductSearchState({ initialCatalog });
+  const [isVisualSearchOpen, setIsVisualSearchOpen] = useState(false);
 
   return (
     <div className="min-h-screen">
@@ -100,6 +103,15 @@ export default function SearchPage({ initialCatalog }: SearchPageProps) {
                 className="pl-10 h-10 rounded-lg border-border/80 bg-background"
               />
             </div>
+            <Button
+              variant="outline"
+              onClick={() => setIsVisualSearchOpen(true)}
+              className="h-10 rounded-lg text-xs font-semibold gap-1.5 border-primary/30 hover:border-primary hover:bg-primary/5 text-primary"
+              title="Shop by visual style or image"
+            >
+              <Camera className="h-4 w-4" />
+              <span className="hidden sm:inline">Visual Search</span>
+            </Button>
             <Button
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
@@ -318,6 +330,11 @@ export default function SearchPage({ initialCatalog }: SearchPageProps) {
           onPageChange={handlePageChange}
         />
       </main>
+
+      <VisualSearchModal
+        isOpen={isVisualSearchOpen}
+        onClose={() => setIsVisualSearchOpen(false)}
+      />
 
       <Footer />
     </div>

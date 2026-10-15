@@ -7,9 +7,11 @@ import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/CartContext";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { formatGBP, trapFocus } from "@/lib/utils";
-import { Minus, Plus, ShoppingBag, Trash2, X, Package } from "lucide-react";
+import { Minus, Plus, ShoppingBag, Trash2, X, Package, RefreshCw, Users } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import type { SubscriptionPlanOption } from "@/lib/types";
+import { ShopTogetherShareModal } from "../cart/ShopTogetherShareModal";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -21,7 +23,14 @@ function CartItemRow({
   onUpdateQuantity,
   onRemove,
 }: {
-  item: { id: string | number; name: string; price: number; quantity: number; images?: string[] };
+  item: {
+    id: string | number;
+    name: string;
+    price: number;
+    quantity: number;
+    images?: string[];
+    subscription?: SubscriptionPlanOption;
+  };
   onUpdateQuantity: (id: string | number, qty: number) => void;
   onRemove: (id: string | number) => void;
 }) {
@@ -57,6 +66,12 @@ function CartItemRow({
         <h3 className="font-medium text-sm leading-snug line-clamp-1">
           {item.name}
         </h3>
+        {item.subscription?.isSubscription && (
+          <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-500/10 px-1.5 py-0.5 rounded mt-0.5">
+            <RefreshCw className="h-2.5 w-2.5" />
+            Renews {item.subscription.frequency.replace("_", " ")} (-15%)
+          </span>
+        )}
         <p className="text-sm font-semibold mt-1">
           {formatGBP(item.price)}
         </p>
@@ -97,6 +112,7 @@ function CartItemRow({
 
 export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
+  const [isShopTogetherOpen, setIsShopTogetherOpen] = useState(false);
 
   const handleUpdateQuantity = (id: string | number, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -245,17 +261,36 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       Checkout
                     </Link>
                   </Button>
-                  <Button asChild variant="outline" className="w-full" size="lg">
-                    <Link href="/cart" onClick={onClose}>
-                      View shopping bag
-                    </Link>
-                  </Button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button asChild variant="outline" size="sm" className="h-9 text-xs">
+                      <Link href="/cart" onClick={onClose}>
+                        View bag
+                      </Link>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsShopTogetherOpen(true)}
+                      className="h-9 text-xs gap-1 border-primary/30 text-primary hover:bg-primary/5"
+                    >
+                      <Users className="h-3.5 w-3.5" />
+                      Shop Together
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}
           </motion.div>
         </>
       )}
+
+      <ShopTogetherShareModal
+        isOpen={isShopTogetherOpen}
+        onClose={() => setIsShopTogetherOpen(false)}
+        cart={cart}
+        total={total}
+      />
     </AnimatePresence>
   );
 }

@@ -5,6 +5,7 @@ import { useUser } from "@/context/UserContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
+  Camera,
   Heart,
   Menu,
   Moon,
@@ -22,6 +23,7 @@ import { AccountDropdown } from "../common/account-dropdown";
 import { CartDrawer } from "../common/cart-drawer";
 import { LoginModal } from "../common/login-modal";
 import { WishlistDrawer } from "../common/wishlist-drawer";
+import { VisualSearchModal } from "../search/VisualSearchModal";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { BrandLogo } from "./brand-logo";
@@ -34,6 +36,7 @@ export function Header() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isVisualSearchOpen, setIsVisualSearchOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
   const { theme, setTheme } = useTheme();
@@ -138,19 +141,28 @@ export function Header() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleSearch}
-                  className="w-full pl-9 pr-10 h-9 text-sm bg-muted/40 border-border/70 hover:border-border focus:bg-background focus:border-ring transition-colors"
+                  className="w-full pl-9 pr-16 h-9 text-sm bg-muted/40 border-border/70 hover:border-border focus:bg-background focus:border-ring transition-colors"
                 />
+                <button
+                  type="button"
+                  onClick={() => setIsVisualSearchOpen(true)}
+                  title="Visual Search / Shop the Look"
+                  className="absolute right-8 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors p-1"
+                  aria-label="Visual Search"
+                >
+                  <Camera className="h-3.5 w-3.5" />
+                </button>
                 {searchQuery ? (
                   <button
                     type="button"
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     aria-label="Clear search"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
                 ) : (
-                  <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground bg-muted border border-border/80 rounded select-none pointer-events-none">
+                  <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 inline-flex items-center gap-0.5 px-1 py-0.5 text-[9px] font-mono text-muted-foreground bg-muted border border-border/80 rounded select-none pointer-events-none">
                     ↵
                   </kbd>
                 )}
@@ -159,6 +171,18 @@ export function Header() {
 
             {/* Right: Actions */}
             <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+              {/* Visual Search Button (Mobile/Tablet & Quick Access) */}
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Visual Search"
+                title="Visual Search / Shop the Look"
+                className="lg:hidden h-9 w-9 text-muted-foreground hover:text-foreground"
+                onClick={() => setIsVisualSearchOpen(true)}
+              >
+                <Camera className="h-4 w-4" />
+              </Button>
+
               {/* Search Toggle (Mobile & Tablet) */}
               <Button
                 variant="ghost"
@@ -351,6 +375,10 @@ export function Header() {
           setIsLoginOpen(false);
           setIsAccountOpen(false);
         }}
+      />
+      <VisualSearchModal
+        isOpen={isVisualSearchOpen}
+        onClose={() => setIsVisualSearchOpen(false)}
       />
     </>
   );

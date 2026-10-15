@@ -3,6 +3,8 @@ import { Header } from "@/components/layout/header";
 import { ProductImageGallery } from "@/components/product/product-image-gallery";
 import { ProductReviews } from "@/components/product/product-reviews";
 import { RelatedProducts } from "@/components/product/related-products";
+import { SubscriptionPurchaseSelector } from "@/components/product/SubscriptionPurchaseSelector";
+import { UrgencyPulseBadge } from "@/components/product/UrgencyPulseBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,16 +69,36 @@ export default function ProductPage({ initialProduct }: ProductPageProps) {
   // use shared formatter from utils
 
   const { addToCart } = useCart();
+  const [subscriptionPlan, setSubscriptionPlan] = useState<{
+    isSubscription: boolean;
+    frequency: "2_weeks" | "4_weeks" | "8_weeks";
+    discountPercent: number;
+  }>({
+    isSubscription: false,
+    frequency: "4_weeks",
+    discountPercent: 15,
+  });
+
+  const effectivePrice =
+    subscriptionPlan.isSubscription && product?.price
+      ? Number((product.price * 0.85).toFixed(2))
+      : product?.price;
 
   const handleAddToCart = () => {
     if (!product || !id) return;
     addToCart({
       ...product,
       id: String(id),
+      price: effectivePrice ?? product.price,
       images: product?.images ?? [],
       quantity,
+      subscription: subscriptionPlan.isSubscription ? subscriptionPlan : undefined,
     });
-    showSuccess(`${product.name} has been added to your cart.`);
+    showSuccess(
+      subscriptionPlan.isSubscription
+        ? `${product.name} subscribed (${subscriptionPlan.frequency.replace("_", " ")}) with 15% discount!`
+        : `${product.name} has been added to your cart.`
+    );
   };
 
   const handleWishlistToggle = () => {
@@ -254,11 +276,23 @@ export default function ProductPage({ initialProduct }: ProductPageProps) {
               )}
             </div>
 
+            <UrgencyPulseBadge
+              productId={id || product?.id}
+              inStock={!isOutOfStock}
+              stock={product?.quantity}
+            />
+
             {product.description ? (
               <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
                 {product.description}
               </p>
             ) : null}
+
+            <SubscriptionPurchaseSelector
+              basePrice={product?.price ?? 0}
+              selectedPlan={subscriptionPlan}
+              onChange={setSubscriptionPlan}
+            />
 
             <div className="flex items-center space-x-3 pt-2">
               <div className="flex items-center border border-border rounded-lg h-11">

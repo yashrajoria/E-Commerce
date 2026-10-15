@@ -2,6 +2,7 @@
 
 import { AddressBook } from "@/components/account/address-book";
 import { OrderHistory } from "@/components/account/order-history";
+import { SubscriptionsManager } from "@/components/account/SubscriptionsManager";
 import { WishlistItems } from "@/components/account/wishlist-items";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
@@ -24,6 +25,7 @@ import {
   LogOut,
   MapPin,
   Package,
+  RefreshCw,
   Settings,
   Shield,
   User,
@@ -244,7 +246,7 @@ export default function AccountPage() {
             onValueChange={setActiveTab}
             className="w-full space-y-6"
           >
-            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 h-auto p-1 bg-surface border border-border rounded-lg">
+            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 md:grid-cols-7 h-auto p-1 bg-surface border border-border rounded-lg">
               <TabsTrigger
                 value="profile"
                 className="flex items-center gap-1.5 py-2 text-xs font-medium"
@@ -258,6 +260,13 @@ export default function AccountPage() {
               >
                 <Package className="h-3.5 w-3.5" />
                 <span>Orders</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="subscriptions"
+                className="flex items-center gap-1.5 py-2 text-xs font-medium"
+              >
+                <RefreshCw className="h-3.5 w-3.5 text-emerald-600" />
+                <span>Subscriptions</span>
               </TabsTrigger>
               <TabsTrigger
                 value="wishlist"
@@ -412,6 +421,11 @@ export default function AccountPage() {
             {/* Orders Tab */}
             <TabsContent value="orders">
               <OrderHistory orders={user?.orders} />
+            </TabsContent>
+
+            {/* Subscriptions Tab */}
+            <TabsContent value="subscriptions">
+              <SubscriptionsManager />
             </TabsContent>
 
             {/* Wishlist Tab */}

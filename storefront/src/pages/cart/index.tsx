@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Minus,
@@ -11,6 +9,7 @@ import {
   Tag,
   Truck,
   Package,
+  Users,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -20,13 +19,15 @@ import { Badge } from "@/components/ui/badge";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import Link from "next/link";
-import { useCart } from "@/context/CartContext";
+import { useCart, type CartItem } from "@/context/CartContext";
 import { formatGBP } from "@/lib/utils";
 import Image from "next/image";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import axios from "axios";
 import { API_ROUTES } from "@/pages/api/constants/apiRoutes";
+import { toast } from "sonner";
+import { ShopTogetherShareModal } from "@/components/cart/ShopTogetherShareModal";
 
 function CartItemRow({
   item,
@@ -149,7 +150,7 @@ function CartItemRow({
 }
 
 export default function CartPage() {
-  const { cart: cartItems, updateQuantity, removeFromCart, isHydrated } = useCart();
+  const { cart: cartItems, updateQuantity, removeFromCart, addToCart, isHydrated } = useCart();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
@@ -157,7 +158,41 @@ export default function CartPage() {
   const [promoMessage, setPromoMessage] = useState<string | null>(null);
   const [promoOk, setPromoOk] = useState(false);
   const [applyingPromo, setApplyingPromo] = useState(false);
+  const [sharedCartItems, setSharedCartItems] = useState<CartItem[] | null>(null);
+  const [isShopTogetherOpen, setIsShopTogetherOpen] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    const rawParam = router.query.sharedCart;
+    const param = Array.isArray(rawParam) ? rawParam[0] : rawParam;
+    if (param) {
+      try {
+        const decoded = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(param)))));
+        if (Array.isArray(decoded) && decoded.length > 0) {
+          setSharedCartItems(decoded);
+        }
+      } catch {
+        // ignore decoding errors
+      }
+    }
+  }, [router.query.sharedCart]);
+
+  const handleMergeSharedCart = () => {
+    if (!sharedCartItems) return;
+    sharedCartItems.forEach((item) => {
+      addToCart({
+        id: String(item.id),
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity || 1,
+        images: item.images || ["/placeholder.svg"],
+        subscription: item.subscription,
+      });
+    });
+    toast.success(`Loaded ${sharedCartItems.length} shared items into your bag!`);
+    setSharedCartItems(null);
+    router.replace("/cart", undefined, { shallow: true });
+  };
 
   const handleUpdateQuantity = (id: string, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -271,16 +306,22 @@ export default function CartPage() {
               <ShoppingBag className="h-6 w-6" />
             </div>
             <h1 className="text-xl font-semibold tracking-tight mb-2">
-              Your shopping bag is empty
+              {sharedCartItems ? "Shared Bag Received!" : "Your shopping bag is empty"}
             </h1>
             <p className="text-sm text-muted-foreground mb-6">
-              You haven&apos;t added any items to your bag yet.
+              {sharedCartItems
+                ? `Your friend shared ${sharedCartItems.length} items with you. Click below to load them into your shopping bag!`
+                : "You haven't added any items to your bag yet."}
             </p>
-            <Button asChild size="default">
-              <Link href="/products">
-                Explore the collection
-              </Link>
-            </Button>
+            {sharedCartItems ? (
+              <Button onClick={handleMergeSharedCart} size="default" className="gap-2">
+                <ShoppingBag className="h-4 w-4" /> Load Shared Items ({sharedCartItems.length})
+              </Button>
+            ) : (
+              <Button asChild size="default">
+                <Link href="/products">Explore the collection</Link>
+              </Button>
+            )}
           </div>
         </main>
         <Footer />
@@ -316,6 +357,41 @@ export default function CartPage() {
             {cartItems.reduce((acc, i) => acc + i.quantity, 0)} {cartItems.length === 1 ? "item" : "items"}
           </Badge>
         </div>
+
+        {sharedCartItems && (
+          <div className="p-4 rounded-xl border border-primary/30 bg-primary/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <Users className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-foreground">
+                  Friend Shared Shopping Bag ({sharedCartItems.length} items)
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Someone invited you to shop together! Click below to merge these items into your bag.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                onClick={handleMergeSharedCart}
+                className="text-xs font-semibold gap-1.5"
+              >
+                <ShoppingBag className="h-3.5 w-3.5" /> Load into My Bag
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSharedCartItems(null)}
+                className="text-xs"
+              >
+                Dismiss
+              </Button>
+            </div>
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-3 gap-8 items-start">
           {/* Items list */}
@@ -435,16 +511,32 @@ export default function CartPage() {
                     Proceed to Checkout
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="lg" className="w-full">
-                  <Link href="/products">
-                    Continue Shopping
-                  </Link>
-                </Button>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button asChild variant="outline" size="sm" className="h-10 text-xs font-semibold">
+                    <Link href="/products">Continue Shopping</Link>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsShopTogetherOpen(true)}
+                    className="h-10 text-xs font-semibold gap-1.5 border-primary/30 text-primary hover:bg-primary/5"
+                  >
+                    <Users className="h-3.5 w-3.5" /> Shop Together
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </main>
+
+      <ShopTogetherShareModal
+        isOpen={isShopTogetherOpen}
+        onClose={() => setIsShopTogetherOpen(false)}
+        cart={cartItems}
+        total={total}
+      />
 
       <Footer />
     </div>

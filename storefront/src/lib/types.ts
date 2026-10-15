@@ -19,8 +19,15 @@ export interface Category extends BaseCategory {
   productCount: number;
 }
 
+export interface SubscriptionPlanOption {
+  isSubscription: boolean;
+  frequency: "2_weeks" | "4_weeks" | "8_weeks";
+  discountPercent: number;
+}
+
 export interface CartItem extends Product {
   quantity: number;
+  subscription?: SubscriptionPlanOption;
 }
 
 export interface Collection extends Omit<BaseCollection, "products"> {

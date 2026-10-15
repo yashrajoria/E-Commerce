@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useUserOrders } from "@/hooks/useOrders";
@@ -7,8 +8,9 @@ import { motion } from "framer-motion";
 import { useQueries } from "@tanstack/react-query";
 import { axiosInstance } from "@/utils/axiosInstance";
 import { API_ROUTES } from "@/pages/api/constants/apiRoutes";
-import { CheckCircle, Clock, Package, Truck } from "lucide-react";
+import { CheckCircle, Clock, Package, RotateCcw, Truck } from "lucide-react";
 import { formatGBP } from "@/lib/utils";
+import { ReturnExchangeModal } from "./ReturnExchangeModal";
 import type { AxiosError } from "axios";
 
 type RawRecord = Record<string, unknown>;
@@ -80,6 +82,7 @@ function safeNumber(v: unknown) {
 
 export function OrderHistory({ orders: ordersProp }: { orders?: unknown }) {
   const data = useUserOrders();
+  const [selectedOrderForReturn, setSelectedOrderForReturn] = useState<NormalizedOrder | null>(null);
 
   let rawOrders: RawRecord[] = [];
   if (Array.isArray(ordersProp)) {
@@ -237,6 +240,15 @@ export function OrderHistory({ orders: ordersProp }: { orders?: unknown }) {
               <Button variant="outline" size="sm" className="h-8 text-xs">
                 View Details
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedOrderForReturn(order)}
+                className="h-8 text-xs gap-1 border-primary/30 text-primary hover:bg-primary/5"
+              >
+                <RotateCcw className="h-3 w-3" />
+                Return / Exchange
+              </Button>
               {order.status === "shipped" && (
                 <Button size="sm" className="h-8 text-xs">
                   Track Package
@@ -246,6 +258,12 @@ export function OrderHistory({ orders: ordersProp }: { orders?: unknown }) {
           </motion.div>
         ))
       )}
+
+      <ReturnExchangeModal
+        isOpen={!!selectedOrderForReturn}
+        order={selectedOrderForReturn}
+        onClose={() => setSelectedOrderForReturn(null)}
+      />
     </div>
   );
 }

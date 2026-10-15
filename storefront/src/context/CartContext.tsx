@@ -13,8 +13,15 @@ import { axiosInstance } from "@/utils/axiosInstance";
 import axios from "axios";
 import { useUser } from "./UserContext";
 
+export interface SubscriptionPlanOption {
+  isSubscription: boolean;
+  frequency: "2_weeks" | "4_weeks" | "8_weeks";
+  discountPercent: number;
+}
+
 export interface CartItem extends Product {
   quantity: number;
+  subscription?: SubscriptionPlanOption;
 }
 
 interface CartContextType {
@@ -90,6 +97,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
             : data.in_stock != null
               ? Boolean(data.in_stock)
               : undefined,
+        subscription:
+          data.subscription && typeof data.subscription === "object"
+            ? (data.subscription as SubscriptionPlanOption)
+            : undefined,
         quantity,
       };
     },
@@ -295,7 +306,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     (itemToAdd: CartItem) => {
       setCart((prevCart) => {
         const existingItemIndex = prevCart.findIndex(
-          (item) => String(item.id) === String(itemToAdd.id),
+          (item) =>
+            String(item.id) === String(itemToAdd.id) &&
+            Boolean(item.subscription?.isSubscription) ===
+              Boolean(itemToAdd.subscription?.isSubscription) &&
+            item.subscription?.frequency === itemToAdd.subscription?.frequency,
         );
         const nextCart =
           existingItemIndex !== -1

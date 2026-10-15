@@ -132,9 +132,18 @@ export function GridProductCard({
               )}
             </div>
 
-            {isLowStock && (
-              <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 shrink-0">
+            {isLowStock ? (
+              <span className="flex items-center gap-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400 shrink-0">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500" />
+                </span>
                 Low stock
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 text-[9px] font-medium text-emerald-600 dark:text-emerald-400 shrink-0">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                In Demand
               </span>
             )}
           </div>
