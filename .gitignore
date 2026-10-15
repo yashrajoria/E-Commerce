@@ -1,5 +1,8 @@
 node_modules
 *.md
+!README.md
+!CLAUDE.md
+!**/*.agent.md
 *.log
 *.err
 *.env
