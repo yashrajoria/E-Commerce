@@ -4,27 +4,6 @@ import axios from "axios";
 import { toast } from "sonner";
 import { Category } from "@/types/shared";
 
-type CategoriesResult = {
-  data: unknown;
-};
-
-let categoriesInFlight: Promise<CategoriesResult> | null = null;
-
-const fetchCategoriesOnce = async (): Promise<CategoriesResult> => {
-  if (!categoriesInFlight) {
-    categoriesInFlight = axios
-      .get("/api/admin/categories", {
-        withCredentials: true,
-      })
-      .then((res) => ({ data: res.data }))
-      .finally(() => {
-        categoriesInFlight = null;
-      });
-  }
-
-  return categoriesInFlight;
-};
-
 export const useCategories = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +11,26 @@ export const useCategories = () => {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const res = await fetchCategoriesOnce();
+      const pages: unknown[] = [];
+      let page = 1;
+      let totalPages = 1;
+      do {
+        const res = await axios.get("/api/admin/categories", {
+          params: { page, perPage: 100 },
+          withCredentials: true,
+        });
+        const payload = res.data;
+        const pageItems = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.categories)
+            ? payload.categories
+            : Array.isArray(payload?.data)
+              ? payload.data
+              : [];
+        pages.push(...pageItems);
+        totalPages = Number(payload?.meta?.totalPages ?? payload?.meta?.total_pages ?? 1) || 1;
+        page += 1;
+      } while (page <= totalPages);
 
       type ApiCategory = {
         _id?: string;
@@ -43,7 +41,7 @@ export const useCategories = () => {
         is_active?: boolean;
       };
 
-      const data = Array.isArray(res.data) ? (res.data as ApiCategory[]) : [];
+      const data = pages as ApiCategory[];
 
       setCategories(
         data.map((cat) => ({

@@ -1,6 +1,5 @@
 import useSWR from "swr";
 import { fetcher } from "../fetcher";
-import type { AdminUserRecord, CustomerMeta } from "@/types/customers";
 
 const extractArray = <T,>(value: unknown): T[] => {
   if (!value || typeof value !== "object") {
@@ -88,47 +87,25 @@ export function useAdminProducts(page = 1, limit = 20, search?: string) {
   };
 }
 
-/**
- * The admin users route is capped at `page_size <= 100` by identity-service
- * and exposes no aggregate endpoint, so the customers page pulls the whole
- * directory once and searches / sorts / paginates it client-side. That also
- * keeps the KPI cards accurate instead of counting a single server page.
- */
-const CUSTOMERS_PAGE_SIZE = 100;
-const CUSTOMERS_MAX_PAGES = 20;
-
-type AdminUsersResponse = {
-  users?: AdminUserRecord[];
-  meta?: CustomerMeta;
-};
-
-async function fetchAllAdminUsers(): Promise<{
-  users: AdminUserRecord[];
-  meta: CustomerMeta;
-}> {
-  const users: AdminUserRecord[] = [];
-  let meta: CustomerMeta = {};
-  let page = 1;
-  let totalPages = 1;
-
-  do {
-    const data = (await fetcher(
-      `/bff/admin/users?page=${page}&page_size=${CUSTOMERS_PAGE_SIZE}`,
-    )) as AdminUsersResponse;
-
-    if (Array.isArray(data?.users)) users.push(...data.users);
-    if (data?.meta) meta = data.meta;
-    totalPages = Number(meta.total_pages) || 1;
-    page += 1;
-  } while (page <= totalPages && page <= CUSTOMERS_MAX_PAGES);
-
-  return { users, meta };
-}
-
-export function useAdminCustomers() {
+export function useAdminCustomers(query: {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  role?: string;
+  sort?: string;
+  order?: string;
+} = {}) {
+  const params = new URLSearchParams({
+    page: String(query.page ?? 1),
+    page_size: String(query.pageSize ?? 10),
+  });
+  if (query.search) params.set("search", query.search);
+  if (query.role && query.role !== "all") params.set("role", query.role);
+  if (query.sort) params.set("sort", query.sort);
+  if (query.order) params.set("order", query.order);
   const { data, error, isLoading, mutate } = useSWR(
-    "/bff/admin/users?all=true",
-    fetchAllAdminUsers,
+    `/bff/admin/users?${params.toString()}`,
+    fetcher,
   );
   return {
     customers: data?.users ?? [],
@@ -192,5 +169,106 @@ export function useAdminReports(type: "sales" | "users" | "inventory") {
     report: data?.data || data,
     error,
     isLoading,
+  };
+}
+
+export function useAdminShipping() {
+  const { data, error, isLoading, mutate } = useSWR(
+    "/api/admin/shipping",
+    fetcher
+  );
+  return {
+    shipments: data?.shipments || [],
+    stats: data?.stats,
+    error,
+    isLoading,
+    mutate,
+  };
+}
+
+export function useAdminSupport() {
+  const { data, error, isLoading, mutate } = useSWR(
+    "/api/admin/support",
+    fetcher
+  );
+  return {
+    tickets: data?.tickets || [],
+    stats: data?.stats,
+    error,
+    isLoading,
+    mutate,
+  };
+}
+
+export function useAdminReturns() {
+  const { data, error, isLoading, mutate } = useSWR(
+    "/api/admin/returns",
+    fetcher
+  );
+  return {
+    returns: data?.returns || [],
+    stats: data?.stats,
+    error,
+    isLoading,
+    mutate,
+  };
+}
+
+export function useAdminReviews() {
+  const { data, error, isLoading, mutate } = useSWR(
+    "/api/admin/reviews",
+    fetcher
+  );
+  return {
+    reviews: data?.reviews || [],
+    stats: data?.stats,
+    error,
+    isLoading,
+    mutate,
+  };
+}
+
+export function useAdminActivityLogs() {
+  const { data, error, isLoading, mutate } = useSWR(
+    "/api/admin/activity-logs",
+    fetcher
+  );
+  return {
+    logs: data?.logs || [],
+    stats: data?.stats,
+    error,
+    isLoading,
+    mutate,
+  };
+}
+
+export function useAdminAnalytics() {
+  const { data, error, isLoading, mutate } = useSWR(
+    "/api/admin/analytics",
+    fetcher
+  );
+  return {
+    data: data || {},
+    revenueData: data?.revenueData || [],
+    categoryData: data?.categoryData || [],
+    topProducts: data?.topProducts || [],
+    trafficSources: data?.trafficSources || [],
+    stats: data?.stats,
+    error,
+    isLoading,
+    mutate,
+  };
+}
+
+export function useAdminCampaigns() {
+  const { data, error, isLoading, mutate } = useSWR(
+    "/api/admin/campaigns",
+    fetcher
+  );
+  return {
+    campaigns: data?.campaigns || [],
+    error,
+    isLoading,
+    mutate,
   };
 }
