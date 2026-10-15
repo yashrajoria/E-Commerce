@@ -1,6 +1,7 @@
 import {
   login as sharedLogin,
   register as sharedRegister,
+  guestAuth as sharedGuestAuth,
   verifyEmail as sharedVerifyEmail,
   resendVerificationEmail as sharedResendVerificationEmail,
   requestPasswordReset as sharedRequestPasswordReset,
@@ -18,6 +19,12 @@ export const registerUser = async (
   password: string,
   fullName: string,
 ) => sharedRegister(email, password, fullName);
+
+export const guestAuth = async (
+  email: string,
+  fullName?: string,
+  phone?: string,
+) => sharedGuestAuth(email, fullName, phone);
 
 export const verifyEmail = async (email: string, code: string) =>
   sharedVerifyEmail(email, code);

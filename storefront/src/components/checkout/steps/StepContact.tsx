@@ -4,7 +4,10 @@ import { FormStateProps } from "@/components/checkout/checkoutTypes";
 import { motion } from "framer-motion";
 import { Mail, Phone } from "lucide-react";
 
-type Props = FormStateProps;
+type Props = FormStateProps & {
+  isAuthenticated?: boolean;
+  onOpenLogin?: () => void;
+};
 
 export function StepContact({
   shippingDetails,
@@ -13,6 +16,8 @@ export function StepContact({
   direction,
   handleChange,
   handleBlur,
+  isAuthenticated,
+  onOpenLogin,
 }: Props) {
   return (
     <motion.section
@@ -39,6 +44,18 @@ export function StepContact({
             <p className="text-xs text-muted-foreground mt-0.5">
               We&apos;ll send your order confirmation and dispatch updates here.
             </p>
+            {!isAuthenticated && onOpenLogin && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Already have an account?{" "}
+                <button
+                  type="button"
+                  onClick={onOpenLogin}
+                  className="font-medium text-foreground underline hover:text-primary transition-colors cursor-pointer"
+                >
+                  Log in
+                </button>
+              </p>
+            )}
           </div>
         </div>
 

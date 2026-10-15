@@ -18,6 +18,7 @@ import { StepReview } from "@/components/checkout/steps/StepReview";
 import { StepShipping } from "@/components/checkout/steps/StepShipping";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
+import { LoginModal } from "@/components/common/login-modal";
 
 export default function CheckoutPage() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -27,6 +28,7 @@ export default function CheckoutPage() {
     touched, fieldErrors, promoCode, discount, promoExpanded, promoError,
     isProcessing, showMobileSummary, editingSection,
     subtotal, shipping, tax, discountAmount, total, itemCount, ctaLabel,
+    isAuthenticated, isLoginModalOpen, setIsLoginModalOpen,
     setShippingMethod, setPromoCode, setPromoExpanded,
     setShowMobileSummary, setEditingSection,
     handleChange, handleBlur, validateStep, isStepValid,
@@ -168,7 +170,13 @@ export default function CheckoutPage() {
 
         {/* Step cards */}
         <AnimatePresence mode="wait" custom={direction}>
-          {currentStep === 1 && <StepContact {...formStateProps} />}
+          {currentStep === 1 && (
+            <StepContact
+              {...formStateProps}
+              isAuthenticated={isAuthenticated}
+              onOpenLogin={() => setIsLoginModalOpen(true)}
+            />
+          )}
           {currentStep === 2 && <StepShipping {...formStateProps} />}
           {currentStep === 3 && (
             <StepDelivery shippingMethod={shippingMethod} direction={direction} onSelectMethod={setShippingMethod} />
@@ -221,6 +229,11 @@ export default function CheckoutPage() {
         ctaLabel={ctaLabel}
         onAction={currentStep === 4 ? completeOrder : goNext}
         onShowSummary={() => setShowMobileSummary(true)}
+      />
+
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
       />
     </div>
   );

@@ -1,8 +1,11 @@
 import { CartItem } from "@/context/CartContext";
 import { useCart } from "@/context/CartContext";
+import { useUser } from "@/context/UserContext";
 import { useToast } from "@/hooks/use-toast";
+import { guestAuth } from "@/lib/auth";
 import { API_ROUTES } from "@/pages/api/constants/apiRoutes";
 import { axiosInstance } from "@/utils/axiosInstance";
+import axios from "axios";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { STEP_META } from "./checkoutConstants";
 import { FieldError, ShippingDetails, StepId } from "./checkoutTypes";
@@ -67,6 +70,9 @@ export interface CheckoutState {
   total: number;
   itemCount: number;
   ctaLabel: string;
+  isAuthenticated: boolean;
+  isLoginModalOpen: boolean;
+  setIsLoginModalOpen: (v: boolean) => void;
   setShippingMethod: (v: string) => void;
   setPromoCode: (v: string) => void;
   setPromoExpanded: (v: boolean) => void;
@@ -85,9 +91,11 @@ export interface CheckoutState {
 
 export function useCheckout(): CheckoutState {
   const { cart } = useCart();
+  const { isAuthenticated, refetchUser } = useUser();
   const { showError, showSuccess } = useToast();
   const pollIntervalRef = useRef<number | null>(null);
 
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState<StepId>(1);
   const [direction, setDirection] = useState<1 | -1>(1);
   const [shippingMethod, setShippingMethod] = useState("standard");
@@ -323,6 +331,22 @@ export function useCheckout(): CheckoutState {
     }
     setIsProcessing(true);
 
+    if (!isAuthenticated) {
+      try {
+        const fullName = `${shippingDetails.firstName} ${shippingDetails.lastName}`.trim();
+        await guestAuth(shippingDetails.email, fullName, shippingDetails.phone);
+        await refetchUser();
+      } catch (err: unknown) {
+        if (axios.isAxiosError(err) && err.response?.data?.error === "ACCOUNT_EXISTS") {
+          showError("An account already exists with this email. Please log in to complete your purchase.");
+          setIsLoginModalOpen(true);
+          return;
+        }
+        showError("Could not start guest checkout. Please try again.");
+        return;
+      }
+    }
+
     const cartSnapshot = cart.map((item) => ({ ...item }));
 
     try {
@@ -411,7 +435,9 @@ export function useCheckout(): CheckoutState {
     }
   }, [
     cart,
+    isAuthenticated,
     promoCode,
+    refetchUser,
     shippingDetails,
     shippingMethod,
     showError,
@@ -441,6 +467,9 @@ export function useCheckout(): CheckoutState {
     total,
     itemCount,
     ctaLabel,
+    isAuthenticated,
+    isLoginModalOpen,
+    setIsLoginModalOpen,
     setShippingMethod,
     setPromoCode,
     setPromoExpanded,

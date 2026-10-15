@@ -10,6 +10,7 @@ export const API_ROUTES = {
   AUTH: {
     LOGIN: route('/user/auth/login'),
     REGISTER: route('/user/auth/register'),
+    GUEST: route('/user/auth/guest'),
     VERIFY_EMAIL: route('/user/auth/verify-email'),
     RESEND_VERIFICATION: route('/user/auth/resend-verification'),
     REFRESH: route('/user/auth/refresh'),

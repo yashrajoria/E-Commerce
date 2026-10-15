@@ -40,6 +40,15 @@ export const register = async (email: string, password: string, name?: string) =
   return response.data;
 };
 
+export const guestAuth = async (email: string, name?: string, phone?: string) => {
+  const response = await axiosInstance.post(API_ROUTES.AUTH.GUEST, {
+    email,
+    name,
+    phone,
+  });
+  return response.data;
+};
+
 export const verifyEmail = async (email: string, code: string) => {
   const response = await axiosInstance.post(API_ROUTES.AUTH.VERIFY_EMAIL, {
     email,

@@ -6,6 +6,7 @@ const SUPPORTED_AUTH_PATHS = new Set([
   "logout",
   "refresh",
   "register",
+  "guest",
   "status",
   "verify-email",
   "resend-verification",
