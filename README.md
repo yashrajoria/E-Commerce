@@ -45,14 +45,45 @@ Both applications are built with **Next.js 15**, **React 19**, and **TypeScript*
 
 ---
 
+## 🏗️ Architecture
+
+```mermaid
+flowchart LR
+  subgraph Monorepo["NPM workspaces"]
+    AD["admin<br/>Next.js, :3000"]
+    SF["storefront<br/>Next.js, :3001"]
+    SH["packages/shared<br/>API client, hooks, types"]
+    UI["packages/ui<br/>primitives, patterns, theme"]
+    AD --> SH
+    SF --> SH
+    AD --> UI
+    SF --> UI
+    SH --> UI
+  end
+  Browser["Browser"] --> AD
+  Browser --> SF
+  AD -->|"Axios, NEXT_PUBLIC_API_BASE_URL"| GW["API Gateway :8080<br/>(E-Commerce-backend)"]
+  SF -->|"Axios, cookies + JWT"| GW
+  GW --> SVC["identity / catalog / order /<br/>notification / agent"]
+  SF -->|"redirect"| Stripe["Stripe Checkout"]
+  Stripe -->|"webhook"| GW
+```
+
+Both apps talk only to the API gateway. The backend lives in [../E-Commerce-backend](../E-Commerce-backend/README.md).
+
+---
+
 ## 📁 Project Structure
 
 ```text
 E-Commerce/
-├── admin/                 # Admin dashboard application (Next.js)
-├── storefront/            # Customer storefront application (Next.js)
+├── admin/                 # Admin dashboard (Next.js, Pages Router): products, orders, inventory,
+│                          #   customers, analytics, marketing, shipping, returns, reviews, support
+├── storefront/            # Customer storefront (Next.js, Pages Router): products, cart, checkout,
+│                          #   account, payment, store
 ├── packages/
-│   └── shared/            # Shared components, hooks, and utilities
+│   ├── shared/            # API client, hooks, types, utils, shared components
+│   └── ui/                # Design system: primitives, patterns, theme
 ├── package.json           # Root workspace configuration
 └── README.md
 ```
@@ -80,8 +111,19 @@ Run both applications concurrently:
 ```bash
 npm run dev:both
 ```
+Other scripts: `build:both`, `lint:both`, `typecheck`.
+
 *   **Admin Dashboard:** [http://localhost:3000](http://localhost:3000)
 *   **Storefront:** [http://localhost:3001](http://localhost:3001)
+
+Backend must be running (see [../E-Commerce-backend](../E-Commerce-backend/README.md)). Point the apps at it via `.env.local` in each app:
+
+| Variable | Purpose |
+|----------|---------|
+| `NEXT_PUBLIC_API_BASE_URL` | API gateway URL (e.g. `http://localhost:8080`) |
+| `NEXT_PUBLIC_SITE_URL` | Public site URL |
+| `NEXT_PUBLIC_DEFAULT_STORE_SLUG` | Default store (multi-tenant) |
+| `NEXT_PUBLIC_CURRENCY`, `NEXT_PUBLIC_LOCALE` | Formatting |
 
 Or run them individually:
 ```bash

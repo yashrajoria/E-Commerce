@@ -1,40 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# ShopSwift Storefront
 
-## Getting Started
+Customer-facing Next.js 15 / React 19 app (Pages Router) in the [E-Commerce monorepo](../README.md). Runs on port `3001`.
 
-First, run the development server:
+## Architecture
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```mermaid
+flowchart LR
+  Page["pages/<br/>products, cart, checkout,<br/>account, payment, store"] --> Hooks["hooks/ + context/<br/>TanStack Query, cart state"]
+  Hooks --> API["@ecommerce/shared API client<br/>Axios + cookies"]
+  Page --> UI["@ecommerce/ui + components/"]
+  API -->|"NEXT_PUBLIC_API_BASE_URL"| GW["API Gateway :8080"]
+  Page -->|"checkout_url redirect"| Stripe["Stripe Checkout"]
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Checkout is idempotent (UUID `Idempotency-Key`). After `POST /cart/checkout` the page polls `GET /payment/status/by-order/{order_id}` until a Stripe `checkout_url` is ready.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## Layout
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+```text
+src/
+├── pages/       # routes: index, products, categories, cart, checkout, account, payment, store, auth
+├── components/  # storefront components
+├── context/     # React context providers
+├── hooks/       # data hooks
+├── lib/ utils/ types/ styles/
+```
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+## Run
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+From the monorepo root (`E-Commerce/`):
 
-## Learn More
+```bash
+npm install
+npm run dev:storefront   # http://localhost:3001
+npm run build:storefront
+npm run lint:storefront
+```
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+Needs the backend gateway reachable at `NEXT_PUBLIC_API_BASE_URL`. See the [root README](../README.md) for env vars and deployment (Vercel).
