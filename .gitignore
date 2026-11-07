@@ -3,6 +3,7 @@ node_modules
 *.log
 *.err
 *.env
+*.tsbuildinfo
 
 # Graphify knowledge graph output (generated)
 graphify-out/
