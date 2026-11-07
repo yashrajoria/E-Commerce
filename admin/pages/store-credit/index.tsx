@@ -47,8 +47,6 @@ import {
   RefreshCw,
   Search,
   Lock,
-  ArrowDownLeft,
-  ArrowUpRight,
   ShieldCheck,
   Scale,
   Users,

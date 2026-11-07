@@ -74,7 +74,6 @@ export default function CheckoutPage() {
     setStoreCreditAmount,
     applyStoreCredit,
     setApplyStoreCredit,
-    effectiveCreditAmount,
     isAuthenticated,
     isLoginModalOpen,
     setIsLoginModalOpen,

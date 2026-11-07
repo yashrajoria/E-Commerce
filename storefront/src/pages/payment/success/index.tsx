@@ -312,7 +312,7 @@ function PaymentSuccessContent() {
     return () => {
       mounted = false;
     };
-  }, [paymentId, sessionId]); // clearCart intentionally excluded via ref
+  }, [paymentId, sessionId, status]); // clearCart intentionally excluded via ref
 
   // Truncate order ID for display
   const truncatedId = useMemo(() => {
