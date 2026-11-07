@@ -4,13 +4,9 @@ import {
   Activity,
   Cpu,
   Layers,
-  Zap,
   ShieldCheck,
   Globe,
   Database,
-  Users,
-  Code2,
-  PieChart,
 } from "lucide-react";
 
 const features = [

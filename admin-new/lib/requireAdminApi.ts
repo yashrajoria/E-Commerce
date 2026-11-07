@@ -8,8 +8,8 @@ type AdminUser = {
   role?: string;
 };
 
-type GuardOk = { ok: true; user: AdminUser | null };
-type GuardDeny = { ok: false };
+export type GuardOk = { ok: true; user: AdminUser | null };
+export type GuardDeny = { ok: false };
 
 const STATUS_CACHE_TTL_MS = 5_000;
 const statusCache = new Map<

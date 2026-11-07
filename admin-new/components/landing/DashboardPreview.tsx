@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, ShoppingCart, Package, Activity, Users, Zap, TrendingUp } from "lucide-react";
+import { ShoppingCart, Package, Activity, Users, Zap, TrendingUp } from "lucide-react";
 
 const tabs = [
   { id: "analytics", label: "Intelligence", icon: Activity },

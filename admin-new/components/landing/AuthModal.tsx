@@ -1,6 +1,11 @@
 import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -117,6 +122,10 @@ export default function AuthModal({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="glass-effect-strong border-white/[0.08] rounded-2xl p-0 max-w-md overflow-hidden [&>button]:text-muted-foreground [&>button]:hover:text-foreground">
+        <DialogTitle className="sr-only">Sign in to the admin dashboard</DialogTitle>
+        <DialogDescription className="sr-only">
+          Enter your administrator email and password to continue.
+        </DialogDescription>
         <AnimatePresence mode="wait">
           <motion.div
             key="login"
