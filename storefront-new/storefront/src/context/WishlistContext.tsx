@@ -25,6 +25,7 @@ const WishlistContext = createContext<WishlistContextType | undefined>(
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
+  const isHydratedRef = React.useRef(false);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -32,39 +33,44 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     }
     const stored = localStorage.getItem("wishlist");
     if (stored) {
-      const parsed = JSON.parse(stored) as Array<
-        WishlistItem & { _id?: string | number; image?: string }
-      >;
-      const normalized = parsed.map((item) => ({
-        ...item,
-        id: item.id ?? item._id,
-        images: item.images?.length
-          ? item.images
-          : item.image
-            ? [item.image]
-            : [],
-      }));
-      setWishlist(normalized);
+      try {
+        const parsed = JSON.parse(stored) as Array<
+          WishlistItem & { _id?: string | number; image?: string }
+        >;
+        const normalized = parsed.map((item) => ({
+          ...item,
+          id: String(item.id ?? item._id),
+          images: item.images?.length
+            ? item.images
+            : item.image
+              ? [item.image]
+              : [],
+        }));
+        setWishlist(normalized);
+      } catch {
+        /* ignore invalid local storage data */
+      }
     }
+    isHydratedRef.current = true;
   }, []);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && isHydratedRef.current) {
       localStorage.setItem("wishlist", JSON.stringify(wishlist));
     }
   }, [wishlist]);
 
   const addToWishlist = (itemToAdd: WishlistItem) => {
     setWishlist((prev) => {
-      if (prev.some((item) => item.id === itemToAdd.id)) {
+      if (prev.some((item) => String(item.id) === String(itemToAdd.id))) {
         return prev;
       }
-      return [...prev, itemToAdd];
+      return [...prev, { ...itemToAdd, id: String(itemToAdd.id) }];
     });
   };
 
   const removeFromWishlist = (id: string | number) => {
-    setWishlist((prev) => prev.filter((item) => item.id !== id));
+    setWishlist((prev) => prev.filter((item) => String(item.id) !== String(id)));
   };
 
   const clearWishlist = () => {
@@ -72,8 +78,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   };
 
   const hasWishlistItem = useMemo(() => {
-    const ids = new Set<string | number>(wishlist.map((item) => item.id));
-    return (id: string | number) => ids.has(id);
+    const ids = new Set<string>(wishlist.map((item) => String(item.id)));
+    return (id: string | number) => ids.has(String(id));
   }, [wishlist]);
 
   return (
